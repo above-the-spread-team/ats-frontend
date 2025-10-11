@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --mygray: 0 0% 80%;
     --primary: 184 72% 27%;
 
     --primary-active: 196 75% 22%;
@@ -55,10 +56,6 @@
     --radius: 0.5rem;
   }
   .dark {
-    --primary: 184 72% 27%;
-
-    --primary-active: 196 75% 22%;
-
     --background: 0 0% 3.9%;
 
     --foreground: 0 0% 98%;

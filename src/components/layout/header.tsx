@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Header() {
   return (
-    <div className="flex justify-between items-center px-6 h-12 bg-primary">
+    <div className="flex justify-between  items-center px-6 h-12 bg-primary">
       <Image
         src="/images/ats-full.svg"
         alt="Above The Spread"
