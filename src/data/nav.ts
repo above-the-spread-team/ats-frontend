@@ -1,5 +1,6 @@
 import { FaCalendarAlt } from "react-icons/fa";
 import { IoBarChart, IoNewspaper } from "react-icons/io5";
+import { IoChatbubbles } from "react-icons/io5";
 import { IconType } from "react-icons";
 
 export interface NavItem {
@@ -23,5 +24,10 @@ export const navItems: NavItem[] = [
     label: "News",
     href: "/news",
     icon: IoNewspaper,
+  },
+  {
+    label: "Discuss",
+    href: "/discuss",
+    icon: IoChatbubbles,
   },
 ];

@@ -19,7 +19,9 @@ export default function Header() {
         className="w-14 mt-1 md:hidden"
       />
 
-      <ThemeToggle />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

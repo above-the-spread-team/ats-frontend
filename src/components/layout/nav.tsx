@@ -8,7 +8,7 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex justify-center items-center px-6 h-8 bg-primary-active  ">
+    <nav className="hidden md:flex justify-center items-center px-6 h-8 bg-primary-active">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
@@ -23,8 +23,8 @@ export default function Nav() {
                 : "text-mygray hover:bg-neutral-800/30 hover:text-white/80"
             }`}
           >
-            <Icon className="w-4 h-4" />
-            <p className="text-sm font-bold">{item.label}</p>
+            <Icon className={`w-4 h-4 ${isActive ? "scale-110" : ""}`} />
+            <p className={`text-sm font-bold`}>{item.label}</p>
           </Link>
         );
       })}
