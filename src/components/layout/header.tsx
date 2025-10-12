@@ -6,22 +6,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function Header() {
   return (
     <div className="flex justify-between  items-center px-4 md:px-6 h-12 bg-primary">
-      <Link href="/" className="cursor-pointer">
+      <Link href="/" className="cursor-pointer hidden md:block">
         <Image
           src="/images/ats-full.svg"
           alt="Above The Spread"
           width={100}
           height={100}
-          className="w-48 mt-1 hidden md:block"
+          className="w-48 mt-1 "
         />
       </Link>
-      <Link href="/" className="cursor-pointer">
+      <Link href="/" className="cursor-pointer md:hidden ">
         <Image
           src="/images/ats.svg"
           alt="Above The Spread"
           width={100}
           height={100}
-          className="w-14 mt-1 md:hidden"
+          className="w-14 mt-1 "
         />
       </Link>
 
