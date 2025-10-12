@@ -2,13 +2,13 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div className="relative bg-red-500 h-[calc(100vh-48px)] overflow-hidden">
       {/* Background Image */}
       <Image
         src="/images/homepage.jpg"
         alt="Homepage Background"
         fill
-        className="object-cover"
+        className="object-cover "
         priority
       />
 
