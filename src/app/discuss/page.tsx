@@ -35,7 +35,7 @@ export default function Discuss() {
     <div className="min-h-screen bg-background p-2 md:p-6 pb-20 md:pb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 md:mb-6 px-1 md:px-0">
-        <h1 className="text-base md:text-2xl font-bold">Discussions</h1>
+        <h1 className="text-base md:text-2xl font-bold">123</h1>
         <button className="bg-primary text-white px-2.5 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-base font-semibold hover:bg-primary-active transition-colors flex-shrink-0">
           + New
         </button>
