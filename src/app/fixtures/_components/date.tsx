@@ -13,7 +13,7 @@ export default function DateCard({ date, day, isToday }: DateCardProps) {
     <div
       className={`${
         isToday ? "bg-primary text-white" : ""
-      } flex flex-col w-16 justify-center items-center px-2 py-1 rounded-md transition-colors duration-150`}
+      } flex flex-col w-12 justify-center items-center mx-1 py-1 rounded-lg transition-colors duration-150`}
     >
       <p className="text-xs font-medium">{isToday ? "Today" : day}</p>
       <p className="text-sm font-semibold">{dayNumber}</p>

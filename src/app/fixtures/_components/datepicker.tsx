@@ -14,11 +14,11 @@ import { IoCalendar } from "react-icons/io5";
 export default function Datepicker() {
   const today = new Date();
   const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 30);
+  startDate.setDate(today.getDate() - 21);
 
   const dates: Date[] = [];
   for (let i = 0; i <= 70; i++) {
-    // 30 + 40 + 1 = 71 dates
+    // 20 + 40 + 1 = 61 dates
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
     dates.push(date);
@@ -229,7 +229,7 @@ export default function Datepicker() {
 
   return (
     <div className="flex justify-center items-center flex-col gap-4 w-full">
-      <div className="w-full max-w-4xl flex justify-between items-end">
+      <div className="w-full max-w-4xl px-4 flex justify-between items-end">
         <p>Today</p>
         <p className="text-2xl font-bold">{currentMonthYear}</p>
         <IoCalendar className="w-5 h-5 text-primary" />
@@ -240,9 +240,10 @@ export default function Datepicker() {
           dragFree: true,
           containScroll: "trimSnaps",
           slidesToScroll: 6,
+          startIndex: 3,
         }}
       >
-        <CarouselContent className="-ml-1">
+        <CarouselContent className="mr-10">
           {dates.map((date, index) => (
             <CarouselItem key={index} className="pl-1 basis-auto">
               <div data-date-card data-date-index={index}>
