@@ -53,6 +53,9 @@ export default function Datepicker() {
     getMonthYear(today)
   );
 
+  // State for selected date - default to today
+  const [selectedDate, setSelectedDate] = React.useState<Date>(today);
+
   // Add debouncing to prevent rapid updates
   const [lastUpdateTime, setLastUpdateTime] = React.useState(0);
   const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -243,14 +246,23 @@ export default function Datepicker() {
           startIndex: 3,
         }}
       >
+        {/* margin right to make the selecteddate center */}
         <CarouselContent className="mr-10">
           {dates.map((date, index) => (
             <CarouselItem key={index} className="pl-1 basis-auto">
-              <div data-date-card data-date-index={index}>
+              <div
+                data-date-card
+                data-date-index={index}
+                onClick={() => setSelectedDate(date)}
+                className="cursor-pointer"
+              >
                 <DateCard
                   date={date}
                   day={getDayAbbreviation(date)}
                   isToday={date.toDateString() === todayString}
+                  isSelected={
+                    date.toDateString() === selectedDate.toDateString()
+                  }
                 />
               </div>
             </CarouselItem>
