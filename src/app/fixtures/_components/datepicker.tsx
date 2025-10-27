@@ -51,7 +51,14 @@ export default function Datepicker() {
   return (
     <div className="flex justify-center items-center flex-col gap-4 w-full">
       <p className="text-2xl font-bold">{getMonthYear(today)}</p>
-      <Carousel className="w-full max-w-4xl">
+      <Carousel
+        className="w-full max-w-4xl"
+        opts={{
+          dragFree: true,
+          containScroll: "trimSnaps",
+          slidesToScroll: 1,
+        }}
+      >
         <CarouselContent className="-ml-1">
           {dates.map((date, index) => (
             <CarouselItem key={index} className="pl-1 basis-auto">
