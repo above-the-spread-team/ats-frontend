@@ -38,6 +38,7 @@ export default function Datepicker() {
   const [dates, setDates] = React.useState(() => generateDateRange(today));
 
   // Carousel ref to control scroll position
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [carouselApi, setCarouselApi] = React.useState<any>(null);
 
   // Function to scroll to index 3 (center position)
