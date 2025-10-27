@@ -48,6 +48,18 @@ export default function Datepicker() {
     carouselApi.scrollTo(3);
   }, [carouselApi]);
 
+  // Function to select today and scroll to center
+  const selectToday = React.useCallback(() => {
+    setSelectedDate(today);
+    const newDates = generateDateRange(today);
+    setDates(newDates);
+
+    // Scroll to center after a short delay to ensure DOM is updated
+    setTimeout(() => {
+      scrollToCenter();
+    }, 100);
+  }, [today, generateDateRange, scrollToCenter]);
+
   const todayString = today.toDateString();
 
   const getDayAbbreviation = (date: Date) => {
@@ -254,7 +266,12 @@ export default function Datepicker() {
   return (
     <div className="flex justify-center items-center flex-col gap-4 w-full">
       <div className="w-full max-w-4xl px-4 flex justify-between items-end">
-        <p>Today</p>
+        <button
+          onClick={selectToday}
+          className="text-left hover:text-primary transition-colors cursor-pointer"
+        >
+          Today
+        </button>
         <p className="text-2xl font-bold">{currentMonthYear}</p>
         <button
           onClick={() => setShowCalendar(true)}
