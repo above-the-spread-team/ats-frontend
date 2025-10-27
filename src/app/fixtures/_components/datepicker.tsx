@@ -280,43 +280,51 @@ export default function Datepicker() {
           <IoCalendar className="w-5 h-5 text-primary" />
         </button>
       </div>
-      <Carousel
-        setApi={setCarouselApi}
-        className="w-full max-w-4xl"
-        opts={{
-          dragFree: true,
-          containScroll: "trimSnaps",
-          slidesToScroll: 6,
-          startIndex: 3,
-        }}
-      >
-        {/* margin right to make the selecteddate center */}
-        <CarouselContent className="mr-10">
-          {dates.map((date, index) => (
-            <CarouselItem key={index} className="pl-1 basis-auto">
-              <div
-                data-date-card
-                data-date-index={index}
-                onClick={() => {
-                  setSelectedDate(date);
-                }}
-                className="cursor-pointer"
-              >
-                <DateCard
-                  date={date}
-                  day={getDayAbbreviation(date)}
-                  isToday={date.toDateString() === todayString}
-                  isSelected={
-                    date.toDateString() === selectedDate.toDateString()
-                  }
-                />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="hidden md:flex" />
-        <CarouselNext className="hidden md:flex" />
-      </Carousel>
+      <div className="relative w-full max-w-4xl">
+        {/* Left gradient overlay */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+
+        {/* Right gradient overlay */}
+        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+        <Carousel
+          setApi={setCarouselApi}
+          className="w-full"
+          opts={{
+            dragFree: true,
+            containScroll: "trimSnaps",
+            slidesToScroll: 6,
+            startIndex: 3,
+          }}
+        >
+          {/* margin right to make the selecteddate center */}
+          <CarouselContent className="mr-10">
+            {dates.map((date, index) => (
+              <CarouselItem key={index} className="pl-1 basis-auto">
+                <div
+                  data-date-card
+                  data-date-index={index}
+                  onClick={() => {
+                    setSelectedDate(date);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <DateCard
+                    date={date}
+                    day={getDayAbbreviation(date)}
+                    isToday={date.toDateString() === todayString}
+                    isSelected={
+                      date.toDateString() === selectedDate.toDateString()
+                    }
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex" />
+          <CarouselNext className="hidden md:flex" />
+        </Carousel>
+      </div>
 
       {/* Calendar Modal */}
       {showCalendar && (
