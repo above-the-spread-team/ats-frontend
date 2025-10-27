@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import DateCard from "./date";
+import Calendar from "./calendar";
 import {
   Carousel,
   CarouselContent,
@@ -13,16 +14,39 @@ import { IoCalendar } from "react-icons/io5";
 
 export default function Datepicker() {
   const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 21);
 
-  const dates: Date[] = [];
-  for (let i = 0; i <= 70; i++) {
-    // 20 + 40 + 1 = 61 dates
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
-    dates.push(date);
-  }
+  // State for selected date - default to today
+  const [selectedDate, setSelectedDate] = React.useState<Date>(today);
+
+  // State for showing calendar
+  const [showCalendar, setShowCalendar] = React.useState(false);
+
+  // Generate date range based on selected date
+  const generateDateRange = React.useCallback((centerDate: Date) => {
+    const startDate = new Date(centerDate);
+    startDate.setDate(centerDate.getDate() - 21);
+
+    const dates: Date[] = [];
+    for (let i = 0; i <= 70; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  }, []);
+
+  const [dates, setDates] = React.useState(() => generateDateRange(today));
+
+  // Carousel ref to control scroll position
+  const [carouselApi, setCarouselApi] = React.useState<any>(null);
+
+  // Function to scroll to index 3 (center position)
+  const scrollToCenter = React.useCallback(() => {
+    if (!carouselApi) return;
+
+    // Always scroll to index 3
+    carouselApi.scrollTo(3);
+  }, [carouselApi]);
 
   const todayString = today.toDateString();
 
@@ -52,9 +76,6 @@ export default function Datepicker() {
   const [currentMonthYear, setCurrentMonthYear] = React.useState(() =>
     getMonthYear(today)
   );
-
-  // State for selected date - default to today
-  const [selectedDate, setSelectedDate] = React.useState<Date>(today);
 
   // Add debouncing to prevent rapid updates
   const [lastUpdateTime, setLastUpdateTime] = React.useState(0);
@@ -235,9 +256,15 @@ export default function Datepicker() {
       <div className="w-full max-w-4xl px-4 flex justify-between items-end">
         <p>Today</p>
         <p className="text-2xl font-bold">{currentMonthYear}</p>
-        <IoCalendar className="w-5 h-5 text-primary" />
+        <button
+          onClick={() => setShowCalendar(true)}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <IoCalendar className="w-5 h-5 text-primary" />
+        </button>
       </div>
       <Carousel
+        setApi={setCarouselApi}
         className="w-full max-w-4xl"
         opts={{
           dragFree: true,
@@ -253,7 +280,9 @@ export default function Datepicker() {
               <div
                 data-date-card
                 data-date-index={index}
-                onClick={() => setSelectedDate(date)}
+                onClick={() => {
+                  setSelectedDate(date);
+                }}
                 className="cursor-pointer"
               >
                 <DateCard
@@ -271,6 +300,24 @@ export default function Datepicker() {
         <CarouselPrevious className="hidden md:flex" />
         <CarouselNext className="hidden md:flex" />
       </Carousel>
+
+      {/* Calendar Modal */}
+      {showCalendar && (
+        <Calendar
+          selectedDate={selectedDate}
+          onDateSelect={(newDate) => {
+            setSelectedDate(newDate);
+            const newDates = generateDateRange(newDate);
+            setDates(newDates);
+
+            // Scroll to center the selected date after a short delay to ensure DOM is updated
+            setTimeout(() => {
+              scrollToCenter();
+            }, 100);
+          }}
+          onClose={() => setShowCalendar(false)}
+        />
+      )}
     </div>
   );
 }
