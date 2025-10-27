@@ -265,15 +265,17 @@ export default function Datepicker() {
   }, [updateCurrentMonthYear, dates]);
 
   return (
-    <div className="flex justify-center items-center flex-col gap-4 w-full">
-      <div className="w-full max-w-4xl px-4 flex justify-between items-end">
+    <div className="flex justify-center items-center flex-col gap-4  py-1 md:py-4 w-full">
+      <div className="w-full max-w-4xl px-4 flex justify-between items-center">
         <button
           onClick={selectToday}
-          className="text-left hover:text-primary transition-colors cursor-pointer"
+          className="text-primary-active dark:text-mygray text-sm md:text-base font-bold cursor-pointer hover:underline"
         >
           Today
         </button>
-        <p className="text-2xl font-bold">{currentMonthYear}</p>
+        <p className="text-xl md:text-2xl text-primary-active dark:text-mygray font-medium ">
+          {currentMonthYear}
+        </p>
         <button
           onClick={() => setShowCalendar(true)}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
