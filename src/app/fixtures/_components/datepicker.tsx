@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { IoCalendar } from "react-icons/io5";
 
 export default function Datepicker() {
   const today = new Date();
@@ -52,6 +53,10 @@ export default function Datepicker() {
     getMonthYear(today)
   );
 
+  // Add debouncing to prevent rapid updates
+  const [lastUpdateTime, setLastUpdateTime] = React.useState(0);
+  const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
   // Function to find the most visible date based on scroll position
   const updateCurrentMonthYear = React.useCallback(() => {
     const carousel =
@@ -81,7 +86,14 @@ export default function Datepicker() {
       const cardCenterX = cardRect.left + cardRect.width / 2;
       const distance = Math.abs(cardCenterX - centerX);
 
-      if (distance < minDistance) {
+      // Only consider cards that are significantly visible (at least 50% visible)
+      const visibilityRatio =
+        Math.min(
+          cardRect.width,
+          carouselRect.width - Math.max(0, cardRect.left - carouselRect.left)
+        ) / cardRect.width;
+
+      if (distance < minDistance && visibilityRatio > 0.5) {
         minDistance = distance;
         closestCard = card;
       }
@@ -94,10 +106,26 @@ export default function Datepicker() {
       const date = dates[dateIndex];
       if (date) {
         const newMonthYear = getMonthYear(date);
-        setCurrentMonthYear(newMonthYear);
+
+        // Debounce updates to prevent flickering
+        const now = Date.now();
+        if (now - lastUpdateTime > 150) {
+          // Only update if 150ms have passed
+          setCurrentMonthYear(newMonthYear);
+          setLastUpdateTime(now);
+        } else {
+          // Clear existing timeout and set a new one
+          if (updateTimeoutRef.current) {
+            clearTimeout(updateTimeoutRef.current);
+          }
+          updateTimeoutRef.current = setTimeout(() => {
+            setCurrentMonthYear(newMonthYear);
+            setLastUpdateTime(Date.now());
+          }, 150);
+        }
       }
     }
-  }, [dates]);
+  }, [dates, lastUpdateTime]);
 
   // Set up automatic updates using multiple approaches
   React.useEffect(() => {
@@ -105,14 +133,14 @@ export default function Datepicker() {
     let intersectionObserver: IntersectionObserver;
 
     const setupObservers = () => {
-      // Method 1: Periodic updates (fallback)
-      intervalId = setInterval(updateCurrentMonthYear, 100);
+      // Method 1: Periodic updates (fallback) - reduced frequency
+      intervalId = setInterval(updateCurrentMonthYear, 300);
 
-      // Method 2: Intersection Observer for date cards
+      // Method 2: Intersection Observer for date cards (more precise)
       intersectionObserver = new IntersectionObserver(
         (entries: IntersectionObserverEntry[]) => {
-          // Find the most visible entry
-          let maxVisibility = 0;
+          // Find the most visible entry with higher threshold
+          let maxVisibility = 0.6; // Require at least 60% visibility
           let bestEntry: IntersectionObserverEntry | undefined;
 
           entries.forEach((entry) => {
@@ -132,13 +160,21 @@ export default function Datepicker() {
             );
             const date = dates[dateIndex];
             if (date) {
-              setCurrentMonthYear(getMonthYear(date));
+              const newMonthYear = getMonthYear(date);
+
+              // Debounce intersection observer updates too
+              const now = Date.now();
+              if (now - lastUpdateTime > 200) {
+                // Longer debounce for intersection observer
+                setCurrentMonthYear(newMonthYear);
+                setLastUpdateTime(now);
+              }
             }
           }
         },
         {
           root: null, // Use viewport as root
-          threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+          threshold: [0.6, 0.7, 0.8, 0.9, 1.0], // Higher thresholds for more stability
         }
       );
 
@@ -185,18 +221,25 @@ export default function Datepicker() {
       clearInterval(intervalId);
       intersectionObserver?.disconnect();
       mutationObserver.disconnect();
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
     };
   }, [updateCurrentMonthYear, dates]);
 
   return (
     <div className="flex justify-center items-center flex-col gap-4 w-full">
-      <p className="text-2xl font-bold">{currentMonthYear}</p>
+      <div className="w-full max-w-4xl flex justify-between items-end">
+        <p>Today</p>
+        <p className="text-2xl font-bold">{currentMonthYear}</p>
+        <IoCalendar className="w-5 h-5 text-primary" />
+      </div>
       <Carousel
         className="w-full max-w-4xl"
         opts={{
           dragFree: true,
           containScroll: "trimSnaps",
-          slidesToScroll: 1,
+          slidesToScroll: 6,
         }}
       >
         <CarouselContent className="-ml-1">
