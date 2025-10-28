@@ -104,7 +104,7 @@ export default function Calendar({
       onClick={onClose}
     >
       <div
-        className="bg-card border border-border rounded-xl shadow-2xl p-3 pb-4 w-[360px] max-w-sm animate-in fade-in-0 zoom-in-95 duration-200"
+        className="bg-card border border-border rounded-3xl shadow-2xl p-3 pb-4 w-[360px] max-w-sm animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -118,7 +118,7 @@ export default function Calendar({
               <ChevronLeft className="w-5 h-5 text-primary" />
             </button>
 
-            <h2 className="text-md font-semibold  w-40 text-center text-primary">
+            <h2 className="text-md font-bold  w-40 text-center text-primary">
               {months[currentMonth]} {currentYear}
             </h2>
 
@@ -155,7 +155,7 @@ export default function Calendar({
           {calendarDays.map((day, index) => (
             <div
               key={index}
-              className={`aspect-square flex items-center justify-center text-xs cursor-pointer rounded-xl transition-all duration-200 ${
+              className={`aspect-square flex items-center justify-center text-sm cursor-pointer rounded-xl transition-all duration-200 ${
                 day === null
                   ? ""
                   : isSelected(day)
