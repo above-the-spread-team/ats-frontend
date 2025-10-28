@@ -273,12 +273,12 @@ export default function Datepicker() {
             onClick={selectToday}
             className="   h-6 w-12 md:text-base font-bold rounded-xl"
           >
-            <p className="text-xs">Today</p>
+            <p className="text-xs scale-95">Today</p>
           </Button>
         ) : (
           <div className="w-12"></div>
         )}
-        <p className="text-lg md:text-xl text-primary-active dark:text-mygray font-medium ">
+        <p className="text-md md:text-lg text-primary dark:text-mygray font-semibold ">
           {currentMonthYear}
         </p>
         <button
