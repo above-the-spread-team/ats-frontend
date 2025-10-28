@@ -13,6 +13,8 @@
 
     --foreground: 0 0% 3.9%;
 
+    --icon-hover: 0 0% 87%;
+
     --card: 0 0% 100%;
 
     --card-foreground: 0 0% 3.9%;
@@ -64,6 +66,8 @@
 
     --card-foreground: 0 0% 98%;
 
+    --icon-hover: 0 0% 20%;
+
     --popover: 0 0% 3.9%;
 
     --popover-foreground: 0 0% 98%;
@@ -108,5 +112,52 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: enter 0.2s ease-out;
+  }
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .fade-in-0 {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .zoom-in-95 {
+    animation: zoomIn 0.2s ease-out;
+  }
+
+  @keyframes zoomIn {
+    from {
+      transform: scale(0.95);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .duration-200 {
+    animation-duration: 200ms;
   }
 }

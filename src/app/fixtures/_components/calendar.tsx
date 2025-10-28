@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ChevronRight, ChevronLeft, X } from "lucide-react";
 
 interface CalendarProps {
   selectedDate: Date;
@@ -98,59 +99,51 @@ export default function Calendar({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-80 max-w-sm">
+    <div
+      className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border rounded-xl shadow-2xl p-3 pb-4 w-[360px] max-w-sm animate-in fade-in-0 zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => navigateMonth("prev")}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="flex justify-between items-center mb-2">
+          <div className="w-10"></div>
+          <div className="flex justify-between gap-2 items-center ">
+            <button
+              onClick={() => navigateMonth("prev")}
+              className="p-2  rounded-full transition-colors text-foreground hover:bg-icon-hover"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
+              <ChevronLeft className="w-5 h-5 text-primary" />
+            </button>
 
-          <h2 className="text-lg font-semibold">
-            {months[currentMonth]} {currentYear}
-          </h2>
+            <h2 className="text-md font-semibold  w-40 text-center text-primary">
+              {months[currentMonth]} {currentYear}
+            </h2>
 
-          <button
-            onClick={() => navigateMonth("next")}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <button
+              onClick={() => navigateMonth("next")}
+              className="p-2  rounded-full transition-colors text-foreground hover:bg-icon-hover"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
+              <ChevronRight className="w-5 h-5 text-primary" />
+            </button>
+          </div>
+          {/* exit button */}
+          <button
+            onClick={onClose}
+            className="p-2  rounded-full transition-colors text-foreground hover:bg-icon-hover"
+          >
+            <X className="w-5 h-5 text-primary" />
           </button>
         </div>
 
         {/* Days of week */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-1 mb-3">
           {daysOfWeek.map((day) => (
             <div
               key={day}
-              className="text-center text-sm font-medium text-gray-500 py-2"
+              className="text-center text-sm font-medium text-muted-foreground py-2"
             >
               {day}
             </div>
@@ -158,34 +151,24 @@ export default function Calendar({
         </div>
 
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 grid-rows-6 gap-3 h-60">
           {calendarDays.map((day, index) => (
             <div
               key={index}
-              className={`aspect-square flex items-center justify-center text-sm cursor-pointer rounded-lg transition-colors ${
+              className={`aspect-square flex items-center justify-center text-xs cursor-pointer rounded-xl transition-all duration-200 ${
                 day === null
                   ? ""
                   : isSelected(day)
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-white font-semibold shadow-md scale-105"
                   : isToday(day)
-                  ? "bg-gray-200 text-gray-900 font-semibold"
-                  : "hover:bg-gray-100"
+                  ? "bg-accent text-accent-foreground border-2 border-primary font-semibold"
+                  : "hover:bg-icon-hover"
               }`}
               onClick={() => day && handleDateClick(day)}
             >
               {day}
             </div>
           ))}
-        </div>
-
-        {/* Close button */}
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

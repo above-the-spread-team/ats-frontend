@@ -11,6 +11,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { IoCalendar } from "react-icons/io5";
+import { Button } from "@/components/ui/button";
 
 export default function Datepicker() {
   const today = new Date();
@@ -265,20 +266,24 @@ export default function Datepicker() {
   }, [updateCurrentMonthYear, dates]);
 
   return (
-    <div className="flex justify-center items-center flex-col gap-4  py-1 md:py-4 w-full">
+    <div className="flex justify-center items-center flex-col gap-1 md:gap-2  py-1 md:py-2 w-full">
       <div className="w-full max-w-4xl px-4 flex justify-between items-center">
-        <button
-          onClick={selectToday}
-          className="text-primary-active dark:text-mygray text-sm md:text-base font-bold cursor-pointer hover:underline"
-        >
-          Today
-        </button>
-        <p className="text-xl md:text-2xl text-primary-active dark:text-mygray font-medium ">
+        {selectedDate.toDateString() !== todayString ? (
+          <Button
+            onClick={selectToday}
+            className="   h-6 w-12 md:text-base font-bold rounded-xl"
+          >
+            <p className="text-xs">Today</p>
+          </Button>
+        ) : (
+          <div className="w-12"></div>
+        )}
+        <p className="text-lg md:text-xl text-primary-active dark:text-mygray font-medium ">
           {currentMonthYear}
         </p>
         <button
           onClick={() => setShowCalendar(true)}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1.5 hover:bg-icon-hover rounded-xl transition-colors"
         >
           <IoCalendar className="w-5 h-5 text-primary" />
         </button>
@@ -324,8 +329,8 @@ export default function Datepicker() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
+          <CarouselPrevious className="hidden md:flex " />
+          <CarouselNext className="hidden md:flex " />
         </Carousel>
       </div>
 
