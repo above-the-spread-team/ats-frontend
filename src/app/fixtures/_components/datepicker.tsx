@@ -278,7 +278,7 @@ export default function Datepicker() {
         ) : (
           <div className="w-12"></div>
         )}
-        <p className="text-md md:text-lg text-primary dark:text-mygray font-semibold ">
+        <p className="text-md md:text-lg text-primary dark:text-mygray font-bold ">
           {currentMonthYear}
         </p>
         <button
