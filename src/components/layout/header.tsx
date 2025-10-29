@@ -10,8 +10,8 @@ export default function Header() {
         <Image
           src="/images/ats-full.svg"
           alt="Above The Spread"
-          width={100}
-          height={100}
+          width={200}
+          height={200}
           className="w-48 mt-1 "
         />
       </Link>
@@ -19,8 +19,8 @@ export default function Header() {
         <Image
           src="/images/ats.svg"
           alt="Above The Spread"
-          width={100}
-          height={100}
+          width={200}
+          height={200}
           className="w-14 mt-1 "
         />
       </Link>
