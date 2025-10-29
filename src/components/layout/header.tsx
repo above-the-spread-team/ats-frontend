@@ -8,19 +8,19 @@ export default function Header() {
     <div className="flex justify-between  items-center px-4 md:px-6 h-12 bg-primary">
       <Link href="/" className="cursor-pointer hidden md:block">
         <Image
-          src="/images/ats-full.svg"
+          src="/images/ats-full.png"
           alt="Above The Spread"
-          width={400}
-          height={400}
+          width={600}
+          height={600}
           className="w-48 mt-1 "
         />
       </Link>
       <Link href="/" className="cursor-pointer md:hidden ">
         <Image
-          src="/images/ats.svg"
+          src="/images/ats.png"
           alt="Above The Spread"
-          width={200}
-          height={200}
+          width={400}
+          height={400}
           className="w-14 mt-1 "
         />
       </Link>
