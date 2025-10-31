@@ -5,25 +5,34 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Header() {
   return (
-    <div className="flex justify-between  items-center px-4 md:px-6 h-12 bg-primary">
-      <Link href="/" className="cursor-pointer hidden md:block">
+    <div className="flex justify-between  items-center px-4 md:px-6 h-12 md:h-14  bg-primary">
+      <Link
+        href="/"
+        className="cursor-pointer gap-2 flex flex-row justify-center items-center "
+      >
+        <Image
+          src="/images/logo.png"
+          alt="Above The Spread"
+          width={600}
+          height={600}
+          className="w-8  "
+        />
         <Image
           src="/images/ats-full.png"
           alt="Above The Spread"
           width={600}
           height={600}
-          className="w-48 mt-1 "
+          className="w-48 mt-2 hidden md:block "
         />
-      </Link>
-      <Link href="/" className="cursor-pointer md:hidden ">
         <Image
           src="/images/ats.png"
           alt="Above The Spread"
-          width={400}
-          height={400}
-          className="w-14 mt-1 "
+          width={600}
+          height={600}
+          className="w-14 mt-1 block md:hidden "
         />
       </Link>
+      <Link href="/" className="cursor-pointer md:hidden "></Link>
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
