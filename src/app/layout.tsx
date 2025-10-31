@@ -4,6 +4,7 @@ import Header from "@/components/layout/header";
 import { ThemeProvider } from "@/providers/theme-provider";
 import Nav from "@/components/layout/nav";
 import MobileNav from "@/components/layout/mobile-nax";
+import { MyQueryClientProvider } from "@/providers/query-client";
 const ff = Arimo({
   weight: ["400", "500", "600", "700"],
   variable: "--font-alan-sans",
@@ -26,10 +27,12 @@ export default function RootLayout({
           enableSystem
           // disableTransitionOnChange
         >
-          <Header />
-          <Nav />
-          {children}
-          <MobileNav />
+          <MyQueryClientProvider>
+            <Header />
+            <Nav />
+            {children}
+            <MobileNav />
+          </MyQueryClientProvider>
         </ThemeProvider>
       </body>
     </html>

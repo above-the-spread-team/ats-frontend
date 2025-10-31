@@ -22,14 +22,14 @@ export default function Header() {
           alt="Above The Spread"
           width={600}
           height={600}
-          className="w-48 mt-2 hidden md:block "
+          className="w-48 max-h-7 mt-2 hidden md:block "
         />
         <Image
           src="/images/ats.png"
           alt="Above The Spread"
           width={600}
           height={600}
-          className="w-14 mt-1 block md:hidden "
+          className="w-14 max-h-7  mt-1 block md:hidden "
         />
       </Link>
       <Link href="/" className="cursor-pointer md:hidden "></Link>
