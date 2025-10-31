@@ -161,3 +161,67 @@
     animation-duration: 200ms;
   }
 }
+
+.theme-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.theme-toggle-input {
+  display: none;
+}
+
+.theme-toggle-icon {
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
+  transition: transform 500ms, color 200ms;
+  line-height: 0.1;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-toggle-icon--moon {
+  /* color: #b4b4b4; */
+}
+
+.theme-toggle-icon--sun {
+  /* color: #ffa500; */
+  scale: 1.1;
+}
+
+/* Loading spinner */
+.custom-loader {
+  width: 45px;
+  height: 45px;
+  display: grid;
+}
+
+.custom-loader::before,
+.custom-loader::after {
+  content: "";
+  grid-area: 1/1;
+  --c: radial-gradient(farthest-side, hsl(168 42% 64%) 92%, transparent);
+  background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%,
+    var(--c) 0 50%;
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  animation: s2 1s infinite;
+}
+
+.custom-loader::before {
+  margin: 4px;
+  --c: radial-gradient(farthest-side, hsl(var(--primary)) 92%, transparent);
+  background-size: 8px 8px;
+  animation-timing-function: linear;
+}
+
+@keyframes s2 {
+  100% {
+    transform: rotate(0.5turn);
+  }
+}

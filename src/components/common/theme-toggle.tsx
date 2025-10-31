@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import "./theme-toggle.css";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -19,7 +18,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      className="toggle text-neutral-200/50 hover:bg-primary-active"
+      className="theme-toggle text-neutral-200/50 hover:bg-primary-active"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       role="button"
       aria-label="Toggle theme"
@@ -31,7 +30,7 @@ export function ThemeToggle() {
       }}
     >
       <div
-        className="icon icon--moon"
+        className="theme-toggle-icon theme-toggle-icon--moon"
         style={{
           transform:
             theme === "dark"
@@ -56,7 +55,7 @@ export function ThemeToggle() {
       </div>
 
       <div
-        className="icon icon--sun"
+        className="theme-toggle-icon theme-toggle-icon--sun"
         style={{
           transform:
             theme === "dark"
