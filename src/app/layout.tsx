@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import Nav from "@/components/layout/nav";
 import MobileNav from "@/components/layout/mobile-nax";
 import { MyQueryClientProvider } from "@/providers/query-client";
+import Footer from "@/components/layout/footer";
 const ff = Arimo({
   weight: ["400", "500", "600", "700"],
   variable: "--font-alan-sans",
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${ff.variable} font-alan-sans overflow-x-hidden antialiased pb-11 md:pb-0`}
+        className={`${ff.variable} font-alan-sans overflow-x-hidden antialiased pb-10 md:pb-0`}
       >
         <ThemeProvider
           attribute="class"
@@ -31,6 +32,7 @@ export default function RootLayout({
             <Header />
             <Nav />
             {children}
+            <Footer />
             <MobileNav />
           </MyQueryClientProvider>
         </ThemeProvider>
