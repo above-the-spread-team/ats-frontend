@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navItems } from "@/data/nav";
+import { phoneNavItems } from "@/data/nav";
 
 export default function MobileNav() {
   const pathname = usePathname();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-primary  z-50">
-      <div className="grid grid-cols-4 h-11">
-        {navItems.map((item) => {
+      <div className="grid grid-cols-5 h-11">
+        {phoneNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
 
@@ -18,7 +18,7 @@ export default function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center pt-1 justify-center gap-0.5 transition-all duration-300 ${
+              className={`flex flex-col items-center py-1 justify-center gap-0.5 transition-all duration-300 ${
                 isActive
                   ? "text-white bg-primary-active"
                   : "text-mygray hover:text-white/80"

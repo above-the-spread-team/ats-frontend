@@ -196,8 +196,8 @@
 
 /* Loading spinner */
 .custom-loader {
-  width: 45px;
-  height: 45px;
+  width: 41px;
+  height: 41px;
   display: grid;
 }
 
@@ -208,7 +208,7 @@
   --c: radial-gradient(farthest-side, hsl(168 42% 64%) 92%, transparent);
   background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%,
     var(--c) 0 50%;
-  background-size: 12px 12px;
+  background-size: 11px 11px;
   background-repeat: no-repeat;
   animation: s2 1s infinite;
 }
@@ -216,7 +216,7 @@
 .custom-loader::before {
   margin: 4px;
   --c: radial-gradient(farthest-side, hsl(var(--primary)) 92%, transparent);
-  background-size: 8px 8px;
+  background-size: 7px 7px;
   animation-timing-function: linear;
 }
 
