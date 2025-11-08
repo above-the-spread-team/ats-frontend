@@ -13,11 +13,16 @@ import {
 import { IoCalendar } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 
-export default function Datepicker() {
-  const today = new Date();
+interface DatepickerProps {
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
+}
 
-  // State for selected date - default to today
-  const [selectedDate, setSelectedDate] = React.useState<Date>(today);
+export default function Datepicker({
+  selectedDate,
+  setSelectedDate,
+}: DatepickerProps) {
+  const today = new Date();
 
   // State for showing calendar
   const [showCalendar, setShowCalendar] = React.useState(false);
@@ -333,7 +338,6 @@ export default function Datepicker() {
           <CarouselNext className="hidden lg:flex " />
         </Carousel>
       </div>
-
       {/* Calendar Modal */}
       {showCalendar && (
         <Calendar
