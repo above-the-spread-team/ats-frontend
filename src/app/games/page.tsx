@@ -61,12 +61,24 @@ export default function Fixtures() {
   const today = React.useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = React.useState<Date>(today);
   const [fixtures, setFixtures] = React.useState<FixtureResponseItem[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState<{
     parameters?: FixturesApiResponse["parameters"];
     results?: number;
   }>({});
+  const [timezone, setTimezone] = React.useState(DEFAULT_TIMEZONE);
+
+  React.useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) {
+        setTimezone(tz);
+      }
+    } catch {
+      setTimezone(DEFAULT_TIMEZONE);
+    }
+  }, []);
 
   React.useEffect(() => {
     const controller = new AbortController();
@@ -80,7 +92,7 @@ export default function Fixtures() {
       try {
         const response = await fetch(
           `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(
-            DEFAULT_TIMEZONE
+            timezone
           )}`,
           { signal: controller.signal }
         );
@@ -119,7 +131,7 @@ export default function Fixtures() {
     return () => {
       controller.abort();
     };
-  }, [selectedDate]);
+  }, [selectedDate, timezone]);
 
   const groupedFixtures = React.useMemo(
     () => groupFixturesByLeague(fixtures),
@@ -141,7 +153,7 @@ export default function Fixtures() {
               {meta.parameters.date}
             </span>{" "}
             (Season {meta.parameters.season}) • timezone{" "}
-            {meta.parameters.timezone ?? DEFAULT_TIMEZONE}
+            {meta.parameters.timezone ?? timezone}
           </p>
         </div>
       )}
