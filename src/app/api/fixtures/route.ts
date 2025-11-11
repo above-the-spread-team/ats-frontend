@@ -42,7 +42,6 @@ export async function GET(req: NextRequest) {
   const errors: Record<string, string> = {};
 
   for (const leagueId of LEAGUE_IDS) {
-    console.log("leagueId", leagueId);
     const params = new URLSearchParams({
       date: dateISO,
       league: leagueId.toString(),
@@ -57,9 +56,6 @@ export async function GET(req: NextRequest) {
         },
         next: { revalidate: 300 },
       });
-      if (leagueId === 39) {
-        console.log("response", response);
-      }
       if (!response.ok) {
         throw new Error(
           `Fetch failed with status ${response.status} ${response.statusText}`

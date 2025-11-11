@@ -3,6 +3,7 @@
 import * as React from "react";
 import DateCard from "./date";
 import Calendar from "./calendar";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -25,10 +26,10 @@ export default function Datepicker({
   const today = new Date();
 
   // State for showing calendar
-  const [showCalendar, setShowCalendar] = React.useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Generate date range based on selected date
-  const generateDateRange = React.useCallback((centerDate: Date) => {
+  const generateDateRange = useCallback((centerDate: Date) => {
     const startDate = new Date(centerDate);
     startDate.setDate(centerDate.getDate() - 21);
 
@@ -41,14 +42,14 @@ export default function Datepicker({
     return dates;
   }, []);
 
-  const [dates, setDates] = React.useState(() => generateDateRange(today));
+  const [dates, setDates] = useState(() => generateDateRange(today));
 
   // Carousel ref to control scroll position
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [carouselApi, setCarouselApi] = React.useState<any>(null);
+  const [carouselApi, setCarouselApi] = useState<any>(null);
 
   // Function to scroll to index 3 (center position)
-  const scrollToCenter = React.useCallback(() => {
+  const scrollToCenter = useCallback(() => {
     if (!carouselApi) return;
 
     // Always scroll to index 3
@@ -56,7 +57,7 @@ export default function Datepicker({
   }, [carouselApi]);
 
   // Function to select today and scroll to center
-  const selectToday = React.useCallback(() => {
+  const selectToday = useCallback(() => {
     setSelectedDate(today);
     const newDates = generateDateRange(today);
     setDates(newDates);
@@ -92,16 +93,17 @@ export default function Datepicker({
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const [currentMonthYear, setCurrentMonthYear] = React.useState(() =>
-    getMonthYear(today)
-  );
+  const [currentMonthYear, setCurrentMonthYear] = useState(getMonthYear(today));
+  useEffect(() => {
+    setCurrentMonthYear(getMonthYear(today));
+  }, [today]);
 
   // Add debouncing to prevent rapid updates
-  const [lastUpdateTime, setLastUpdateTime] = React.useState(0);
-  const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to find the most visible date based on scroll position
-  const updateCurrentMonthYear = React.useCallback(() => {
+  const updateCurrentMonthYear = useCallback(() => {
     const carousel =
       document.querySelector('[data-orientation="horizontal"]') ||
       document.querySelector(".carousel") ||
@@ -171,7 +173,7 @@ export default function Datepicker({
   }, [dates, lastUpdateTime]);
 
   // Set up automatic updates using multiple approaches
-  React.useEffect(() => {
+  useEffect(() => {
     let intervalId: NodeJS.Timeout;
     let intersectionObserver: IntersectionObserver;
 
