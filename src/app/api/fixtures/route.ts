@@ -81,6 +81,10 @@ export async function GET(req: NextRequest) {
     new Map(fixtures.map((fixture) => [fixture.fixture.id, fixture])).values()
   );
 
+  const errorMessages = Object.entries(errors).map(
+    ([leagueId, message]) => `League ${leagueId}: ${message}`
+  );
+
   return NextResponse.json({
     get: "fixtures",
     parameters: {
@@ -90,7 +94,11 @@ export async function GET(req: NextRequest) {
       leagues: LEAGUE_IDS,
     },
     results: uniqueFixtures.length,
-    errors: Object.keys(errors).length > 0 ? errors : null,
+    errors: errorMessages,
+    paging: {
+      current: 1,
+      total: 1,
+    },
     response: uniqueFixtures,
   });
 }
