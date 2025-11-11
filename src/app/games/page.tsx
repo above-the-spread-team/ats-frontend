@@ -1,8 +1,11 @@
 "use client";
 
 import * as React from "react";
-import LoadingFull from "@/components/common/loading-full";
+import FullPage from "@/components/common/full-page";
+import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
+import NoGame from "./_components/no-game";
+import FixturesError from "./_components/error";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 
@@ -160,21 +163,24 @@ export default function Fixtures() {
       )}
 
       {isLoading && (
-        <div className="w-full">
-          <LoadingFull />
-        </div>
+        <FullPage>
+          <Loading />
+        </FullPage>
       )}
 
       {!isLoading && error && (
-        <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive whitespace-pre-line">
-          {error}
-        </div>
+        <FullPage>
+          <FixturesError
+            message={error}
+            onRetry={() => setSelectedDate(new Date(selectedDate))}
+          />
+        </FullPage>
       )}
 
       {!isLoading && !error && groupedFixtures.length === 0 && (
-        <div className="rounded-2xl border border-border/60 bg-card p-6 text-center text-sm text-muted-foreground">
-          No fixtures found for {formatDateParam(selectedDate)}.
-        </div>
+        <FullPage>
+          <NoGame date={formatDateParam(selectedDate)} />
+        </FullPage>
       )}
 
       {!isLoading &&

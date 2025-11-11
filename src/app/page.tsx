@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="relative bg-red-500 h-[calc(100vh-48px)] overflow-hidden">
+    <div className="relative  h-[calc(100vh-48px)] overflow-hidden">
       {/* Background Image */}
       <Image
         src="/images/homepage.jpg"
