@@ -3,6 +3,7 @@
 import * as React from "react";
 import LoadingFull from "@/components/common/loading-full";
 import Datepicker from "./_components/datepicker";
+import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 
 const DEFAULT_TIMEZONE = "Europe/London";
@@ -202,7 +203,7 @@ export default function Fixtures() {
               {group.fixtures.map((fixture) => (
                 <div
                   key={fixture.fixture.id}
-                  className="rounded-2xl border border-border/60 bg-background/70 p-4 text-sm"
+                  className="space-y-3 rounded-2xl border border-border/60 bg-background/70 p-4 text-sm"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div className="flex-1">
@@ -214,16 +215,36 @@ export default function Fixtures() {
                         {fixture.fixture.venue.city}
                       </p>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(fixture.fixture.date).toLocaleTimeString(
-                        undefined,
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}{" "}
-                      • {fixture.fixture.status.short}
-                    </div>
+                    {(() => {
+                      const statusInfo = getFixtureStatus(
+                        fixture.fixture.status.short
+                      );
+                      return (
+                        <div className="flex flex-col items-start gap-1 text-xs text-muted-foreground md:items-end">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${statusInfo.badgeClass}`}
+                            >
+                              {statusInfo.short}
+                            </span>
+                            <span>
+                              {new Date(
+                                fixture.fixture.date
+                              ).toLocaleTimeString(undefined, {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            {statusInfo.long} • {statusInfo.type}
+                          </p>
+                          <p className="max-w-sm text-[11px] text-muted-foreground/80">
+                            {statusInfo.description}
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

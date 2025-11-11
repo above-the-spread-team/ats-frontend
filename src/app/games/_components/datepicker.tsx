@@ -93,10 +93,9 @@ export default function Datepicker({
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const [currentMonthYear, setCurrentMonthYear] = useState(getMonthYear(today));
-  useEffect(() => {
-    setCurrentMonthYear(getMonthYear(today));
-  }, [today]);
+  const [currentMonthYear, setCurrentMonthYear] = useState(
+    getMonthYear(selectedDate)
+  );
 
   // Add debouncing to prevent rapid updates
   const [lastUpdateTime, setLastUpdateTime] = useState(0);
@@ -151,7 +150,6 @@ export default function Datepicker({
       const date = dates[dateIndex];
       if (date) {
         const newMonthYear = getMonthYear(date);
-
         // Debounce updates to prevent flickering
         const now = Date.now();
         if (now - lastUpdateTime > 150) {
@@ -257,9 +255,6 @@ export default function Datepicker({
 
     // Delay setup to ensure DOM is ready
     const timeoutId = setTimeout(setupObservers, 100);
-
-    // Initial call
-    updateCurrentMonthYear();
 
     return () => {
       clearTimeout(timeoutId);
