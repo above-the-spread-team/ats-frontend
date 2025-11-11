@@ -221,50 +221,82 @@ export default function Fixtures() {
                 </p>
               </div>
               <div className="">
-                {group.fixtures.map((fixture) => (
-                  <div
-                    key={fixture.fixture.id}
-                    className="w-[800px] bg-pink-100 my-2 grid grid-cols-7"
-                  >
-                    <div className="flex flex-row items-center justify-end gap-2 col-span-3">
-                      <p>{fixture.teams.home.name} </p>
-                      {fixture.teams.home.logo ? (
-                        <Image
-                          src={fixture.teams.home.logo}
-                          alt={fixture.teams.home.name}
-                          width={100}
-                          height={100}
-                          className="w-10 h-10 object-contain  "
-                        />
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                          {getInitials(fixture.teams.home.name)}
+                {group.fixtures.map((fixture) => {
+                  const statusInfo = getFixtureStatus(
+                    fixture.fixture.status.short
+                  );
+                  const hasStarted =
+                    statusInfo.type === "In Play" ||
+                    statusInfo.type === "Finished";
+                  const kickoffTime = new Date(
+                    fixture.fixture.date
+                  ).toLocaleTimeString(undefined, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZone: fixture.fixture.timezone,
+                  });
+
+                  return (
+                    <div className="flex flex-col items-center bg-red-100 my-2 justify-between">
+                      <div
+                        key={fixture.fixture.id}
+                        className="w-[800px]  grid grid-cols-7"
+                      >
+                        <div className="flex flex-row items-center justify-end gap-2 col-span-3">
+                          <p>{fixture.teams.home.name} </p>
+                          {fixture.teams.home.logo ? (
+                            <Image
+                              src={fixture.teams.home.logo}
+                              alt={fixture.teams.home.name}
+                              width={100}
+                              height={100}
+                              className="w-10 h-10 object-contain"
+                            />
+                          ) : (
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
+                              {getInitials(fixture.teams.home.name)}
+                            </div>
+                          )}
                         </div>
+                        <div className=" col-span-1 flex flex-col items-center justify-center rounded-md px-2 py-3 text-foreground">
+                          {hasStarted ? (
+                            <p className="text-center text-2xl font-bold">
+                              {formatGoals(fixture.goals.home)} -{" "}
+                              {formatGoals(fixture.goals.away)}
+                            </p>
+                          ) : (
+                            <div className="text-center">
+                              <p className="text-lg font-semibold">
+                                {kickoffTime}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-row items-center justify-start gap-2 col-span-3">
+                          {fixture.teams.away.logo ? (
+                            <Image
+                              src={fixture.teams.away.logo}
+                              alt={fixture.teams.away.name}
+                              width={100}
+                              height={100}
+                              className="w-10 h-10 object-contain rounded-md "
+                            />
+                          ) : (
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
+                              {getInitials(fixture.teams.away.name)}
+                            </div>
+                          )}
+                          <p>{fixture.teams.away.name} </p>
+                        </div>
+                      </div>
+                      {hasStarted && (
+                        <p className="text-sm uppercase tracking-wide">
+                          {statusInfo.short}
+                        </p>
                       )}
                     </div>
-                    <div className=" bg-blue-500 col-span-1 flex items-center justify-center">
-                      <p className="text-center text-2xl font-bold">
-                        {fixture.goals.home} - {fixture.goals.away}
-                      </p>
-                    </div>
-                    <div className="flex flex-row items-center justify-start gap-2 col-span-3">
-                      {fixture.teams.away.logo ? (
-                        <Image
-                          src={fixture.teams.away.logo}
-                          alt={fixture.teams.away.name}
-                          width={100}
-                          height={100}
-                          className="w-10 h-10 object-contain rounded-md "
-                        />
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                          {getInitials(fixture.teams.away.name)}
-                        </div>
-                      )}
-                      <p>{fixture.teams.away.name} </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
