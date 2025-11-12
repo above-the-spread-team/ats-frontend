@@ -174,82 +174,81 @@ export default function Fixtures() {
       )}
 
       {!isLoading && (
-        <div className="flex flex-col  justify-center items-center space-y-6">
+        <div className="flex flex-col  justify-center  items-center pt-2 space-y-6">
           {groupedFixtures.map((group) => (
             <div className="" key={group.leagueId}>
-              <div className="flex  justify-center flex-row items-center -ml-2 gap-2">
-                {group.logo ? (
-                  <Image
-                    src={group.logo}
-                    alt={group.leagueName}
-                    width={100}
-                    height={100}
-                    className="w-8 h-8 object-contain"
-                  />
-                ) : null}
-                <p className="text-lg font-bold text-foreground">
-                  {group.leagueName}
-                </p>
-              </div>
-              <div className="">
-                {group.fixtures.map((fixture) => {
-                  const statusInfo = getFixtureStatus(
-                    fixture.fixture.status.short
-                  );
-                  const hasStarted =
-                    statusInfo.type === "In Play" ||
-                    statusInfo.type === "Finished";
-                  const kickoffTime = new Date(
-                    fixture.fixture.date
-                  ).toLocaleTimeString(undefined, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                    timeZone: fixture.fixture.timezone,
-                  });
+              <p className="text-sm md:text-base text-center font-semibold text-foreground">
+                {group.leagueName}
+              </p>
+              {group.fixtures.map((fixture) => {
+                const statusInfo = getFixtureStatus(
+                  fixture.fixture.status.short
+                );
+                const hasStarted =
+                  statusInfo.type === "In Play" ||
+                  statusInfo.type === "Finished";
+                const kickoffTime = new Date(
+                  fixture.fixture.date
+                ).toLocaleTimeString(undefined, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                  timeZone: fixture.fixture.timezone,
+                });
 
-                  return (
-                    <div
-                      key={fixture.fixture.id}
-                      className="flex flex-col items-center   bg-card my-2 py-2"
-                    >
-                      <div className="w-[90vw]  md:w-[700px] lg:w-[800px]  grid grid-cols-7">
-                        <TeamInfo
-                          team={fixture.teams.home}
-                          orientation="home"
-                          className="col-span-3"
-                          nameClassName="text-sm md:text-base font-medium"
-                        />
-                        <div className=" col-span-1   flex flex-col items-center justify-center   text-foreground">
-                          {hasStarted ? (
-                            <p className="text-center text-lg md:text-xl font-bold">
-                              {formatGoals(fixture.goals.home)} -{" "}
+                const borderColor =
+                  statusInfo.type === "Finished"
+                    ? "border-primary/80"
+                    : statusInfo.type !== "In Play"
+                    ? "border-mygray dark:border-mygray/50"
+                    : "";
+
+                return (
+                  <div
+                    key={fixture.fixture.id}
+                    className={`flex flex-col items-center rounded-sm border-l-[6px] ${borderColor} bg-card my-2 py-2`}
+                  >
+                    <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
+                      <TeamInfo
+                        team={fixture.teams.home}
+                        orientation="home"
+                        className="col-span-3"
+                        nameClassName="text-xs md:text-sm font-medium"
+                      />
+                      <div className="col-span-1 flex flex-col items-center justify-center  text-foreground gap-1">
+                        {hasStarted ? (
+                          <div className="flex items-center justify-center gap-4">
+                            <span className="text-lg font-bold md:text-xl">
+                              {formatGoals(fixture.goals.home)}
+                            </span>
+                            <span className="h-6 w-[2px] bg-primary/50 " />
+                            <span className="text-lg font-bold md:text-xl">
                               {formatGoals(fixture.goals.away)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <p className="text-md md:text-lg font-medium">
+                              {kickoffTime}
                             </p>
-                          ) : (
-                            <div className="text-center">
-                              <p className="text-lg md:text-xl font-semibold">
-                                {kickoffTime}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        <TeamInfo
-                          team={fixture.teams.away}
-                          orientation="away"
-                          className="col-span-3"
-                          nameClassName="text-sm md:text-base font-medium"
-                        />
+                          </div>
+                        )}
+                        {statusInfo.type !== "Scheduled" && (
+                          <p className="text-xs font-semibold uppercase tracking-wide">
+                            {statusInfo.short}
+                          </p>
+                        )}
                       </div>
-                      {statusInfo.type !== "Scheduled" && (
-                        <p className="text-xs font-semibold uppercase tracking-wide">
-                          {statusInfo.short}
-                        </p>
-                      )}
+                      <TeamInfo
+                        team={fixture.teams.away}
+                        orientation="away"
+                        className="col-span-3"
+                        nameClassName="text-xs md:text-sm font-medium"
+                      />
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>

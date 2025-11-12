@@ -45,8 +45,10 @@ export default function TeamInfo({
 
   return (
     <div
-      className={`flex items-center gap-2 ${
-        isHome ? "justify-end text-right" : "justify-start text-left"
+      className={`flex items-center gap-2 flex-col md:flex-row  ${
+        isHome
+          ? "flex-col-reverse text-center md:justify-end md:text-right"
+          : "text-center md:justify-start md:text-left"
       } ${className}`}
     >
       {isHome ? (
