@@ -173,7 +173,7 @@ export default function Fixtures() {
       )}
 
       {!isLoading && (
-        <div className="flex flex-col  justify-center  items-center pt-2 space-y-6">
+        <div className="flex flex-col  justify-center  items-center pt-2 pb-3 space-y-4">
           {groupedFixtures.map((group) => (
             <div className="" key={group.leagueId}>
               <p className="text-sm md:text-base text-center font-semibold text-foreground">
@@ -200,13 +200,31 @@ export default function Fixtures() {
                     ? "border-primary/80"
                     : statusInfo.type !== "In Play"
                     ? "border-mygray dark:border-mygray/50"
-                    : "";
+                    : "border-card";
 
                 return (
                   <div
                     key={fixture.fixture.id}
-                    className={`flex flex-col items-center rounded-sm border-l-[6px] ${borderColor} bg-card my-2 py-2`}
+                    className={`flex flex-col items-center rounded-sm border-l-[6px] relative ${borderColor} bg-card my-2 py-2`}
                   >
+                    {/* animation for in play */}
+                    {statusInfo.type === "In Play" && (
+                      <div className="absolute top-3 left-1 pointer-events-none z-10">
+                        <div className="relative w-[10px] h-[10px]">
+                          {/* Outer pulsing ring */}
+                          <div className="absolute inset-0 rounded-full bg-primary/40 animate-ping"></div>
+                          {/* Middle pulsing ring with delay */}
+                          <div
+                            className="absolute inset-0 rounded-full bg-primary/30 animate-ping"
+                            style={{ animationDelay: "0.5s" }}
+                          ></div>
+                          {/* Inner glowing dot */}
+                          <div className="absolute inset-0 rounded-full bg-primary/50 animate-pulse"></div>
+                          {/* Solid center core */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/20 shadow-lg shadow-primary/50"></div>
+                        </div>
+                      </div>
+                    )}
                     <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
                       <TeamInfo
                         team={fixture.teams.home}
