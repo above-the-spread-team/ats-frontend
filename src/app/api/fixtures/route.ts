@@ -63,15 +63,7 @@ export async function GET(req: NextRequest) {
       }
 
       const data = (await response.json()) as FixturesApiResponse;
-      if (leagueId === 275) {
-        console.log(data.response[0].fixture.periods);
-        console.log(data.response[0].fixture.status);
-        console.log(data.response[0].fixture.venue);
-        console.log(data.response[0].fixture.timezone);
-        console.log(data.response[0].fixture.timestamp);
-        console.log(data.response[0].fixture.date);
-        console.log(data.response[0].fixture.date);
-      }
+
       if (!data || !Array.isArray(data.response)) {
         throw new Error("Unexpected payload structure");
       }
