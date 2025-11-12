@@ -33,7 +33,7 @@ export const FIXTURE_STATUS_MAP: Record<string, FixtureStatusMeta> = {
   },
   PST: {
     short: "PST",
-    long: "Match Postponed",
+    long: "Postponed",
     type: "Postponed",
     description: "Fixture postponed to a later date; awaiting new schedule.",
     badgeClass:
@@ -89,14 +89,14 @@ export const FIXTURE_STATUS_MAP: Record<string, FixtureStatusMeta> = {
   },
   SUSP: {
     short: "SUSP",
-    long: "Match Suspended",
+    long: "Suspended",
     type: "In Play",
     description: "Suspended by referee; may resume or be rescheduled.",
     badgeClass: "bg-red-200 text-red-900 dark:bg-red-900/50 dark:text-red-200",
   },
   INT: {
     short: "INT",
-    long: "Match Interrupted",
+    long: "Interrupted",
     type: "In Play",
     description: "Temporarily interrupted; should resume shortly.",
     badgeClass: "bg-red-200 text-red-900 dark:bg-red-900/50 dark:text-red-200",
@@ -111,7 +111,7 @@ export const FIXTURE_STATUS_MAP: Record<string, FixtureStatusMeta> = {
   },
   FT: {
     short: "FT",
-    long: "Match Finished",
+    long: "Finished",
     type: "Finished",
     description: "Match ended after regulation time.",
     badgeClass:
@@ -119,7 +119,7 @@ export const FIXTURE_STATUS_MAP: Record<string, FixtureStatusMeta> = {
   },
   AET: {
     short: "AET",
-    long: "Match Finished (Extra Time)",
+    long: "Finished (Extra Time)",
     type: "Finished",
     description: "Match finished after extra time without penalties.",
     badgeClass:
@@ -127,7 +127,7 @@ export const FIXTURE_STATUS_MAP: Record<string, FixtureStatusMeta> = {
   },
   PEN: {
     short: "PEN",
-    long: "Match Finished (Penalties)",
+    long: "Finished (Penalties)",
     type: "Finished",
     description: "Match decided via penalty shootout.",
     badgeClass:
@@ -135,14 +135,14 @@ export const FIXTURE_STATUS_MAP: Record<string, FixtureStatusMeta> = {
   },
   CANC: {
     short: "CANC",
-    long: "Match Cancelled",
+    long: "Cancelled",
     type: "Cancelled",
     description: "Fixture cancelled and will not be played.",
     badgeClass: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
   },
   ABD: {
     short: "ABD",
-    long: "Match Abandoned",
+    long: "Abandoned",
     type: "Abandoned",
     description:
       "Match abandoned due to external factors (weather, safety, etc.). May or may not be rescheduled.",

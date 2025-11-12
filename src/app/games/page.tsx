@@ -10,8 +10,7 @@ import FixturesError from "./_components/error";
 import { useEffect, useMemo, useState } from "react";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
-
-const DEFAULT_TIMEZONE = "Europe/London";
+import TeamInfo from "./_components/team";
 
 interface LeagueGroup {
   leagueId: number;
@@ -63,17 +62,6 @@ function groupFixturesByLeague(fixtures: FixtureResponseItem[]): LeagueGroup[] {
     .sort((a, b) => a.leagueName.localeCompare(b.leagueName));
 }
 
-function getInitials(text: string | null | undefined, fallback = "??") {
-  if (!text) return fallback;
-  const trimmed = text.trim();
-  if (!trimmed) return fallback;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
 function formatGoals(value: number | null): string {
   if (value === null || Number.isNaN(value)) {
     return "–";
@@ -91,16 +79,12 @@ export default function Fixtures() {
     parameters?: FixturesApiResponse["parameters"];
     results?: number;
   }>({});
-  const [timezone, setTimezone] = React.useState(DEFAULT_TIMEZONE);
-
-  useEffect(() => {
+  const timezone = useMemo(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (tz) {
-        setTimezone(tz);
-      }
+      return tz && tz.trim().length > 0 ? tz : "UTC";
     } catch {
-      setTimezone(DEFAULT_TIMEZONE);
+      return "UTC";
     }
   }, []);
 
@@ -161,19 +145,6 @@ export default function Fixtures() {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
       />
-
-      {/* {meta.parameters && (
-        <div className="rounded-2xl border border-border/60 bg-card p-4 text-xs text-muted-foreground">
-          <p>
-            Showing fixtures for{" "}
-            <span className="font-semibold text-foreground">
-              {meta.parameters.date}
-            </span>{" "}
-            (Season {meta.parameters.season}) • timezone{" "}
-            {meta.parameters.timezone ?? timezone}
-          </p>
-        </div>
-      )} */}
       {meta.parameters && (
         <div className="flex max-w-4xl mx-auto px-6 md:px-8 flex-row items-center justify-between text-xs md:text-sm font-bold dark:text-mygray text-primary">
           <p>Season {meta.parameters.season}</p>
@@ -203,10 +174,10 @@ export default function Fixtures() {
       )}
 
       {!isLoading && (
-        <div className="flex flex-col  justify-center items-center space-y-2">
+        <div className="flex flex-col  justify-center items-center space-y-6">
           {groupedFixtures.map((group) => (
             <div className="" key={group.leagueId}>
-              <div className="flex flex-row items-center gap-2">
+              <div className="flex  justify-center flex-row items-center -ml-2 gap-2">
                 {group.logo ? (
                   <Image
                     src={group.logo}
@@ -233,64 +204,45 @@ export default function Fixtures() {
                   ).toLocaleTimeString(undefined, {
                     hour: "2-digit",
                     minute: "2-digit",
+                    hour12: false,
                     timeZone: fixture.fixture.timezone,
                   });
 
                   return (
-                    <div className="flex flex-col items-center bg-red-100 my-2 justify-between">
-                      <div
-                        key={fixture.fixture.id}
-                        className="w-[800px]  grid grid-cols-7"
-                      >
-                        <div className="flex flex-row items-center justify-end gap-2 col-span-3">
-                          <p>{fixture.teams.home.name} </p>
-                          {fixture.teams.home.logo ? (
-                            <Image
-                              src={fixture.teams.home.logo}
-                              alt={fixture.teams.home.name}
-                              width={100}
-                              height={100}
-                              className="w-10 h-10 object-contain"
-                            />
-                          ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                              {getInitials(fixture.teams.home.name)}
-                            </div>
-                          )}
-                        </div>
-                        <div className=" col-span-1 flex flex-col items-center justify-center rounded-md px-2 py-3 text-foreground">
+                    <div
+                      key={fixture.fixture.id}
+                      className="flex flex-col items-center   bg-card my-2 py-2"
+                    >
+                      <div className="w-[90vw]  md:w-[700px] lg:w-[800px]  grid grid-cols-7">
+                        <TeamInfo
+                          team={fixture.teams.home}
+                          orientation="home"
+                          className="col-span-3"
+                          nameClassName="text-sm md:text-base font-medium"
+                        />
+                        <div className=" col-span-1   flex flex-col items-center justify-center   text-foreground">
                           {hasStarted ? (
-                            <p className="text-center text-2xl font-bold">
+                            <p className="text-center text-lg md:text-xl font-bold">
                               {formatGoals(fixture.goals.home)} -{" "}
                               {formatGoals(fixture.goals.away)}
                             </p>
                           ) : (
                             <div className="text-center">
-                              <p className="text-lg font-semibold">
+                              <p className="text-lg md:text-xl font-semibold">
                                 {kickoffTime}
                               </p>
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-row items-center justify-start gap-2 col-span-3">
-                          {fixture.teams.away.logo ? (
-                            <Image
-                              src={fixture.teams.away.logo}
-                              alt={fixture.teams.away.name}
-                              width={100}
-                              height={100}
-                              className="w-10 h-10 object-contain rounded-md "
-                            />
-                          ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                              {getInitials(fixture.teams.away.name)}
-                            </div>
-                          )}
-                          <p>{fixture.teams.away.name} </p>
-                        </div>
+                        <TeamInfo
+                          team={fixture.teams.away}
+                          orientation="away"
+                          className="col-span-3"
+                          nameClassName="text-sm md:text-base font-medium"
+                        />
                       </div>
-                      {hasStarted && (
-                        <p className="text-sm uppercase tracking-wide">
+                      {statusInfo.type !== "Scheduled" && (
+                        <p className="text-xs font-semibold uppercase tracking-wide">
                           {statusInfo.short}
                         </p>
                       )}
