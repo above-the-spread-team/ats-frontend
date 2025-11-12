@@ -265,7 +265,7 @@ export default function Fixtures() {
                           <div className="flex h-6  items-center justify-center gap-4">
                             {hideScores ? (
                               <>
-                                <span className="text-base font-bold md:text-base">
+                                <span className="text-base  font-bold md:text-base">
                                   –
                                 </span>
                                 <span className="h-6 w-[2px] bg-primary/50 " />
@@ -275,11 +275,11 @@ export default function Fixtures() {
                               </>
                             ) : (
                               <>
-                                <span className="text-lg  font-bold md:text-xl">
+                                <span className="text-lg  w-3  font-bold md:text-xl">
                                   {formatGoals(fixture.goals.home)}
                                 </span>
                                 <span className="h-6 w-[2px] bg-primary/50 " />
-                                <span className="text-lg font-bold md:text-xl">
+                                <span className="text-lg w-3  font-bold md:text-xl">
                                   {formatGoals(fixture.goals.away)}
                                 </span>
                               </>
