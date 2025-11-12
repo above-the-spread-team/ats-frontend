@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
