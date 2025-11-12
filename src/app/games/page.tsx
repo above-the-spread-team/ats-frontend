@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Eye, EyeClosed } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
@@ -74,6 +75,13 @@ export default function Fixtures() {
   const [fixtures, setFixtures] = useState<FixtureResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hideScores, setHideScores] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("hideScores");
+      return stored ? JSON.parse(stored) : false;
+    }
+    return false;
+  });
   const [meta, setMeta] = useState<{
     parameters?: FixturesApiResponse["parameters"];
     results?: number;
@@ -133,6 +141,12 @@ export default function Fixtures() {
     };
   }, [selectedDate, timezone]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hideScores", JSON.stringify(hideScores));
+    }
+  }, [hideScores]);
+
   const groupedFixtures = useMemo(
     () => groupFixturesByLeague(fixtures),
     [fixtures]
@@ -146,8 +160,22 @@ export default function Fixtures() {
       />
       {meta.parameters && (
         <div className="flex max-w-4xl mx-auto px-6 md:px-8 flex-row items-center justify-between text-xs md:text-sm font-bold dark:text-mygray text-primary">
-          <p>Season {meta.parameters.season}</p>
           <p>Timezone: {meta.parameters.timezone ?? timezone}</p>
+          <button
+            onClick={() => setHideScores(!hideScores)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-muted/50 transition-colors"
+            aria-label={hideScores ? "Show scores" : "Hide scores"}
+            title={hideScores ? "Show scores" : "Hide scores"}
+          >
+            {hideScores ? (
+              <EyeClosed className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+            <span className="text-xs font-medium">
+              {hideScores ? "Show" : "Hide"} Scores
+            </span>
+          </button>
         </div>
       )}
 
@@ -232,16 +260,30 @@ export default function Fixtures() {
                         className="col-span-3"
                         nameClassName="text-xs md:text-sm font-medium"
                       />
-                      <div className="col-span-1 flex flex-col items-center justify-center  text-foreground gap-1">
+                      <div className="col-span-1 flex  flex-col items-center justify-center  text-foreground gap-1">
                         {hasStarted ? (
-                          <div className="flex items-center justify-center gap-4">
-                            <span className="text-lg font-bold md:text-xl">
-                              {formatGoals(fixture.goals.home)}
-                            </span>
-                            <span className="h-6 w-[2px] bg-primary/50 " />
-                            <span className="text-lg font-bold md:text-xl">
-                              {formatGoals(fixture.goals.away)}
-                            </span>
+                          <div className="flex h-6  items-center justify-center gap-4">
+                            {hideScores ? (
+                              <>
+                                <span className="text-base font-bold md:text-base">
+                                  –
+                                </span>
+                                <span className="h-6 w-[2px] bg-primary/50 " />
+                                <span className="text-base font-bold md:text-base">
+                                  –
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-lg  font-bold md:text-xl">
+                                  {formatGoals(fixture.goals.home)}
+                                </span>
+                                <span className="h-6 w-[2px] bg-primary/50 " />
+                                <span className="text-lg font-bold md:text-xl">
+                                  {formatGoals(fixture.goals.away)}
+                                </span>
+                              </>
+                            )}
                           </div>
                         ) : (
                           <div className="text-center">
