@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Eye, EyeClosed, Clock8 } from "lucide-react";
+import { Eye, EyeClosed, Clock8, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
@@ -207,10 +208,16 @@ export default function Fixtures() {
         {!isLoading && (
           <div className="flex flex-col  justify-center  items-center pt-2 pb-3 space-y-4">
             {groupedFixtures.map((group) => (
-              <div className="" key={group.leagueId}>
-                <p className="text-sm md:text-base text-center font-semibold text-foreground">
-                  {group.leagueName}
-                </p>
+              <React.Fragment key={group.leagueId}>
+                <Link
+                  className="flex ml-2 items-center gap-1 hover:text-primary"
+                  href={`/tables/standing/${group.leagueId}?season=${group.season}`}
+                >
+                  <p className="text-sm md:text-base text-center font-semibold ">
+                    {group.leagueName}
+                  </p>
+                  <ChevronRight className="w-5 h-5 text-bold mt-0.5  " />
+                </Link>
                 {group.fixtures.map((fixture) => {
                   const statusInfo = getFixtureStatus(
                     fixture.fixture.status.short
@@ -312,7 +319,7 @@ export default function Fixtures() {
                     </div>
                   );
                 })}
-              </div>
+              </React.Fragment>
             ))}
           </div>
         )}

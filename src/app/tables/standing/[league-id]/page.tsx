@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -22,7 +22,15 @@ function getFormColor(result: string | null): string {
 
 export default function StandingsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const leagueId = params["league-id"] as string;
+
+  // Get season from URL query params, default to current year
+  const seasonParam = searchParams.get("season");
+  const initialSeason = seasonParam
+    ? parseInt(seasonParam, 10)
+    : new Date().getFullYear();
 
   const [standings, setStandings] = useState<StandingEntry[]>([]);
   const [leagueInfo, setLeagueInfo] = useState<{
@@ -34,9 +42,7 @@ export default function StandingsPage() {
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSeason, setSelectedSeason] = useState<number>(
-    new Date().getFullYear()
-  );
+  const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -109,12 +115,12 @@ export default function StandingsPage() {
             <p className="text-lg font-semibold text-destructive">
               Invalid league ID
             </p>
-            <Link
-              href="/tables"
+            <button
+              onClick={() => router.back()}
               className="mt-4 inline-block text-primary hover:underline"
             >
-              Back to Leagues
-            </Link>
+              Go Back
+            </button>
           </div>
         </FullPage>
       </MinHeight>
@@ -126,13 +132,13 @@ export default function StandingsPage() {
       <div className="container mx-auto space-y-4 px-4 md:px-6 py-4">
         {/* Header */}
         <div className="flex flex-col gap-4">
-          <Link
-            href="/tables"
+          <button
+            onClick={() => router.back()}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Leagues
-          </Link>
+            Go Back
+          </button>
 
           {leagueInfo && (
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
