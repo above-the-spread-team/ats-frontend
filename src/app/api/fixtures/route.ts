@@ -36,6 +36,13 @@ export async function GET(req: NextRequest) {
     ? parsedDate.toISOString().split("T")[0]
     : new Date().toISOString().split("T")[0];
 
+  // Check if the requested date is today
+  const todayISO = new Date().toISOString().split("T")[0];
+  const isToday = dateISO === todayISO;
+
+  // Use shorter revalidation for today (300s), longer for other dates (1 hour)
+  const revalidateTime = isToday ? 300 : 7200;
+
   const season = new Date(dateISO).getFullYear();
 
   const fixtures: FixtureResponseItem[] = [];
@@ -54,7 +61,7 @@ export async function GET(req: NextRequest) {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        next: { revalidate: 300 },
+        next: { revalidate: revalidateTime },
       });
       if (!response.ok) {
         throw new Error(

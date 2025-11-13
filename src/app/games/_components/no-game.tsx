@@ -8,10 +8,9 @@ export default function NoGame({ date }: { date: string }) {
       <h2 className="text-lg font-semibold text-foreground">
         No fixtures scheduled
       </h2>
-      <p className="max-w-md text-sm text-muted-foreground">
+      <p className="max-w-md text-sm text-center text-muted-foreground">
         We couldn’t find any games for{" "}
-        <span className="font-semibold">{date}</span>. Try selecting another
-        date, or check back later once the fixtures are confirmed.
+        <span className="font-semibold">{date}</span>.
       </p>
     </div>
   );
