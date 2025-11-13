@@ -1,262 +1,259 @@
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
-import { mockStandings } from "@/data/standings-mock";
+import MinHeight from "@/components/common/min-height";
+import Loading from "@/components/common/loading";
+import FullPage from "@/components/common/full-page";
+import type { LeaguesApiResponse, LeagueResponseItem } from "@/type/league";
 
 export default function Tables() {
-  const getFormIcon = (result: string, isMobile = false) => {
-    const size = isMobile ? "w-5 h-5" : "w-6 h-6";
-    if (result === "W")
-      return (
-        <span
-          className={`${size} rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold`}
-        >
-          W
-        </span>
-      );
-    if (result === "D")
-      return (
-        <span
-          className={`${size} rounded-full bg-gray-500 text-white text-xs flex items-center justify-center font-bold`}
-        >
-          D
-        </span>
-      );
-    if (result === "L")
-      return (
-        <span
-          className={`${size} rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold`}
-        >
-          L
-        </span>
-      );
-    return null;
-  };
+  const [leagues, setLeagues] = useState<LeagueResponseItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState<number>(
+    new Date().getFullYear()
+  );
 
-  const getQualificationColor = (description: string | null) => {
-    if (!description) return "";
-    if (description.includes("Champions League"))
-      return "border-l-4 border-l-blue-500";
-    if (description.includes("Europa League"))
-      return "border-l-4 border-l-orange-500";
-    if (description.includes("Relegation"))
-      return "border-l-4 border-l-red-500";
-    return "";
+  const currentSeason = useMemo(() => {
+    return (
+      leagues
+        .flatMap((league) => league.seasons)
+        .find((season) => season.current)?.year || new Date().getFullYear()
+    );
+  }, [leagues]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchLeagues = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/leagues?season=${selectedSeason}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load leagues (${response.status})`);
+        }
+
+        const data = (await response.json()) as LeaguesApiResponse;
+
+        setLeagues(data.response ?? []);
+        if (data.errors && data.errors.length > 0) {
+          setError(data.errors.join("\n"));
+        }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setError(err instanceof Error ? err.message : "Unknown error");
+        setLeagues([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchLeagues();
+
+    return () => {
+      controller.abort();
+    };
+  }, [selectedSeason]);
+
+  const sortedLeagues = useMemo(() => {
+    return [...leagues].sort((a, b) => {
+      // Sort by country first, then by league name
+      const countryCompare = a.country.name.localeCompare(b.country.name);
+      if (countryCompare !== 0) return countryCompare;
+      return a.league.name.localeCompare(b.league.name);
+    });
+  }, [leagues]);
+
+  const getCurrentSeasonData = (league: LeagueResponseItem) => {
+    return (
+      league.seasons.find((s) => s.year === selectedSeason) ||
+      league.seasons.find((s) => s.current) ||
+      league.seasons[league.seasons.length - 1]
+    );
   };
 
   return (
-    <div className="min-h-screen bg-background p-2 md:p-6 pb-20 md:pb-6">
-      <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 px-2 md:px-0">
-        League Standings
-      </h1>
+    <MinHeight>
+      <div className="container mx-auto space-y-4 px-4 md:px-6 py-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            Leagues & Competitions
+          </h1>
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="season-select"
+              className="text-sm font-medium text-muted-foreground"
+            >
+              Season:
+            </label>
+            <select
+              id="season-select"
+              value={selectedSeason}
+              onChange={(e) => setSelectedSeason(parseInt(e.target.value, 10))}
+              className="px-3 py-1.5 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {Array.from({ length: 5 }, (_, i) => {
+                const year = currentSeason - i;
+                return (
+                  <option key={year} value={year}>
+                    {year}/{year + 1}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
 
-      <div className="space-y-6 md:space-y-8">
-        {mockStandings.map((standing) => (
-          <div
-            key={standing.league.id}
-            className="bg-card rounded-lg border border-border overflow-hidden"
-          >
-            {/* League Header */}
-            <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-primary">
-              <Image
-                src={standing.league.logo}
-                alt={standing.league.name}
-                width={28}
-                height={28}
-                className="w-6 h-6 md:w-8 md:h-8"
-              />
-              <div>
-                <h2 className="font-bold text-base md:text-lg text-white">
-                  {standing.league.name}
-                </h2>
-                <p className="text-xs text-white/80 hidden md:block">
-                  {standing.league.country} • Season {standing.league.season}
-                </p>
-              </div>
+        {isLoading && (
+          <FullPage>
+            <Loading />
+          </FullPage>
+        )}
+
+        {!isLoading && error && (
+          <FullPage>
+            <div className="text-center space-y-4">
+              <p className="text-lg font-semibold text-destructive">{error}</p>
+              <button
+                onClick={() => setSelectedSeason(selectedSeason)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+              >
+                Retry
+              </button>
             </div>
+          </FullPage>
+        )}
 
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted text-muted-foreground">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-xs font-semibold">
-                      #
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold">
-                      Team
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      P
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      W
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      D
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      L
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      GF
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      GA
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      GD
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold">
-                      Pts
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold">
-                      Form
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {standing.league.standings[0].map((team) => (
-                    <tr
-                      key={team.team.id}
-                      className={`border-b border-border hover:bg-muted/50 transition-colors ${getQualificationColor(
-                        team.description
-                      )}`}
-                    >
-                      <td className="py-3 px-4 text-sm font-semibold">
-                        {team.rank}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <Image
-                            src={team.team.logo}
-                            alt={team.team.name}
-                            width={24}
-                            height={24}
-                            className="w-6 h-6"
-                          />
-                          <span className="font-medium text-sm">
-                            {team.team.name}
+        {!isLoading && !error && sortedLeagues.length === 0 && (
+          <FullPage>
+            <div className="text-center">
+              <p className="text-lg font-semibold text-muted-foreground">
+                No leagues found for this season
+              </p>
+            </div>
+          </FullPage>
+        )}
+
+        {!isLoading && !error && sortedLeagues.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedLeagues.map((league) => {
+              const seasonData = getCurrentSeasonData(league);
+              const hasStandings = seasonData?.coverage.standings ?? false;
+
+              return (
+                <div
+                  key={league.league.id}
+                  className="bg-card border border-border rounded-lg p-4 md:p-6 hover:shadow-lg transition-shadow"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* League Logo */}
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+                      {league.league.logo ? (
+                        <Image
+                          src={league.league.logo}
+                          alt={league.league.name}
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 64px, 80px"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            {league.league.name.slice(0, 2).toUpperCase()}
                           </span>
                         </div>
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm">
-                        {team.all.played}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm">
-                        {team.all.win}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm">
-                        {team.all.draw}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm">
-                        {team.all.lose}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm">
-                        {team.all.goals.for}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm">
-                        {team.all.goals.against}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm font-semibold">
-                        {team.goalsDiff > 0
-                          ? `+${team.goalsDiff}`
-                          : team.goalsDiff}
-                      </td>
-                      <td className="text-center py-3 px-2 text-sm font-bold">
-                        {team.points}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex gap-1">
-                          {team.form.split("").map((result, i) => (
-                            <div key={i}>{getFormIcon(result)}</div>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </div>
 
-            {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-border">
-              {standing.league.standings[0].map((team) => (
-                <div
-                  key={team.team.id}
-                  className={`p-3 ${getQualificationColor(team.description)}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="text-base font-bold text-muted-foreground w-5 flex-shrink-0">
-                        {team.rank}
-                      </span>
-                      <Image
-                        src={team.team.logo}
-                        alt={team.team.name}
-                        width={28}
-                        height={28}
-                        className="w-7 h-7 flex-shrink-0"
-                      />
-                      <span className="font-semibold text-sm truncate">
-                        {team.team.name}
-                      </span>
-                    </div>
-                    <span className="text-lg font-bold ml-2 flex-shrink-0">
-                      {team.points}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-5 gap-1 text-xs text-center mb-2">
-                    <div>
-                      <div className="text-muted-foreground">P</div>
-                      <div className="font-semibold">{team.all.played}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">W</div>
-                      <div className="font-semibold">{team.all.win}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">D</div>
-                      <div className="font-semibold">{team.all.draw}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">L</div>
-                      <div className="font-semibold">{team.all.lose}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">GD</div>
-                      <div className="font-semibold">
-                        {team.goalsDiff > 0
-                          ? `+${team.goalsDiff}`
-                          : team.goalsDiff}
+                    {/* League Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="text-base md:text-lg font-bold text-foreground line-clamp-2">
+                          {league.league.name}
+                        </h3>
+                        {league.country.flag && (
+                          <div className="relative w-6 h-6 md:w-7 md:h-7 flex-shrink-0">
+                            <Image
+                              src={league.country.flag}
+                              alt={league.country.name}
+                              fill
+                              className="object-contain"
+                              sizes="28px"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{league.country.name}</span>
+                          {league.league.type && (
+                            <>
+                              <span>•</span>
+                              <span className="capitalize">
+                                {league.league.type}
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        {seasonData && (
+                          <div className="text-xs text-muted-foreground">
+                            <div>
+                              {seasonData.start} - {seasonData.end}
+                            </div>
+                            {seasonData.current && (
+                              <span className="inline-block mt-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs font-semibold">
+                                Current Season
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Coverage Badges */}
+                        {seasonData && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {hasStandings && (
+                              <span className="px-2 py-0.5 bg-green-500/20 text-green-600 dark:text-green-400 rounded text-xs font-medium">
+                                Standings
+                              </span>
+                            )}
+                            {seasonData.coverage.fixtures.events && (
+                              <span className="px-2 py-0.5 bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded text-xs font-medium">
+                                Events
+                              </span>
+                            )}
+                            {seasonData.coverage.standings && (
+                              <span className="px-2 py-0.5 bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded text-xs font-medium">
+                                Stats
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center gap-1">
-                    {team.form.split("").map((result, i) => (
-                      <div key={i}>{getFormIcon(result, true)}</div>
-                    ))}
-                  </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Legend */}
-            <div className="p-3 md:p-4 bg-muted/30 text-xs space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 md:w-4 md:h-4 border-l-4 border-l-blue-500 bg-white"></div>
-                <span className="text-xs">Champions League</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 md:w-4 md:h-4 border-l-4 border-l-orange-500 bg-white"></div>
-                <span className="text-xs">Europa League</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 md:w-4 md:h-4 border-l-4 border-l-red-500 bg-white"></div>
-                <span className="text-xs">Relegation Zone</span>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        ))}
+        )}
+
+        {!isLoading && !error && sortedLeagues.length > 0 && (
+          <div className="text-center text-sm text-muted-foreground pt-4">
+            Showing {sortedLeagues.length} league
+            {sortedLeagues.length !== 1 ? "s" : ""}
+          </div>
+        )}
       </div>
-    </div>
+    </MinHeight>
   );
 }
