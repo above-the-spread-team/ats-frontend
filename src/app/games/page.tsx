@@ -211,7 +211,7 @@ export default function Fixtures() {
               <React.Fragment key={group.leagueId}>
                 <Link
                   className="flex ml-2 items-center gap-1 hover:text-primary"
-                  href={`/tables/standing/${group.leagueId}?season=${group.season}`}
+                  href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
                 >
                   <p className="text-sm md:text-base text-center font-semibold ">
                     {group.leagueName}

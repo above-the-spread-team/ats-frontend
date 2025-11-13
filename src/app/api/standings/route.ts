@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type {
-  StandingsApiResponse,
-  StandingResponseItem,
-} from "@/type/standing";
+import type { StandingsApiResponse } from "@/type/standing";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 
@@ -76,7 +73,6 @@ export async function GET(req: NextRequest) {
       },
       next: { revalidate: 3600 }, // 1 hour revalidation as recommended
     });
-
     if (!response.ok) {
       throw new Error(
         `Fetch failed with status ${response.status} ${response.statusText}`

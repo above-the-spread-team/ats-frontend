@@ -34,9 +34,9 @@ export const phoneNavItems: NavItem[] = [
     icon: IoChatbubbles,
   },
   {
-    label: "Discover",
-    href: "/discover",
-    icon: CgMoreO,
+    label: "Stats",
+    href: "/stats",
+    icon: IoBarChart,
   },
 ];
 
@@ -63,18 +63,8 @@ export const navItems: NavItem[] = [
     icon: IoChatbubbles,
   },
   {
-    label: "Tables",
-    href: "/tables",
-    icon: IoBarChart,
-  },
-  {
     label: "Stats",
     href: "/stats",
-    icon: PiRankingFill,
-  },
-  {
-    label: "Teams",
-    href: "/teams",
-    icon: FaPeopleGroup,
+    icon: IoBarChart,
   },
 ];
