@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import MinHeight from "@/components/common/min-height";
 import Loading from "@/components/common/loading";
 import FullPage from "@/components/common/full-page";
@@ -148,10 +149,11 @@ export default function Tables() {
               const seasonData = getCurrentSeasonData(league);
               const hasStandings = seasonData?.coverage.standings ?? false;
 
-              return (
+              const CardContent = (
                 <div
-                  key={league.league.id}
-                  className="bg-card border border-border rounded-lg p-4 md:p-6 hover:shadow-lg transition-shadow"
+                  className={`bg-card border border-border rounded-lg p-4 md:p-6 hover:shadow-lg transition-shadow ${
+                    hasStandings ? "cursor-pointer" : ""
+                  }`}
                 >
                   <div className="flex items-start gap-4">
                     {/* League Logo */}
@@ -242,6 +244,18 @@ export default function Tables() {
                     </div>
                   </div>
                 </div>
+              );
+
+              return hasStandings ? (
+                <Link
+                  key={league.league.id}
+                  href={`/tables/standing/${league.league.id}`}
+                  className="block"
+                >
+                  {CardContent}
+                </Link>
+              ) : (
+                <div key={league.league.id}>{CardContent}</div>
               );
             })}
           </div>

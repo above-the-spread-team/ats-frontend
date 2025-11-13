@@ -1,0 +1,468 @@
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import MinHeight from "@/components/common/min-height";
+import Loading from "@/components/common/loading";
+import FullPage from "@/components/common/full-page";
+import type { StandingsApiResponse, StandingEntry } from "@/type/standing";
+
+function getFormColor(result: string | null): string {
+  if (!result) return "bg-muted text-muted-foreground";
+  const char = result.toUpperCase();
+  if (char === "W") return "bg-green-500/20 text-green-600 dark:text-green-400";
+  if (char === "D")
+    return "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400";
+  if (char === "L") return "bg-red-500/20 text-red-600 dark:text-red-400";
+  return "bg-muted text-muted-foreground";
+}
+
+export default function StandingsPage() {
+  const params = useParams();
+  const leagueId = params["league-id"] as string;
+
+  const [standings, setStandings] = useState<StandingEntry[]>([]);
+  const [leagueInfo, setLeagueInfo] = useState<{
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState<number>(
+    new Date().getFullYear()
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchStandings = async () => {
+      if (!leagueId) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `/api/standings?league=${leagueId}&season=${selectedSeason}`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to load standings (${response.status})`);
+        }
+
+        const data = (await response.json()) as StandingsApiResponse;
+
+        if (data.response && data.response.length > 0) {
+          const league = data.response[0].league;
+          setLeagueInfo({
+            name: league.name,
+            country: league.country,
+            logo: league.logo,
+            flag: league.flag,
+            season: league.season,
+          });
+
+          // Flatten the standings array (it's an array of arrays for groups)
+          const allStandings = league.standings.flat();
+          setStandings(allStandings);
+        } else {
+          setStandings([]);
+        }
+
+        if (data.errors && data.errors.length > 0) {
+          setError(data.errors.join("\n"));
+        }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setError(err instanceof Error ? err.message : "Unknown error");
+        setStandings([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchStandings();
+
+    return () => {
+      controller.abort();
+    };
+  }, [leagueId, selectedSeason]);
+
+  const sortedStandings = useMemo(() => {
+    return [...standings].sort((a, b) => a.rank - b.rank);
+  }, [standings]);
+
+  if (!leagueId) {
+    return (
+      <MinHeight>
+        <FullPage>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-destructive">
+              Invalid league ID
+            </p>
+            <Link
+              href="/tables"
+              className="mt-4 inline-block text-primary hover:underline"
+            >
+              Back to Leagues
+            </Link>
+          </div>
+        </FullPage>
+      </MinHeight>
+    );
+  }
+
+  return (
+    <MinHeight>
+      <div className="container mx-auto space-y-4 px-4 md:px-6 py-4">
+        {/* Header */}
+        <div className="flex flex-col gap-4">
+          <Link
+            href="/tables"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Leagues
+          </Link>
+
+          {leagueInfo && (
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                {leagueInfo.logo && (
+                  <div className="relative w-12 h-12 md:w-16 md:h-16">
+                    <Image
+                      src={leagueInfo.logo}
+                      alt={leagueInfo.name}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 48px, 64px"
+                    />
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                    {leagueInfo.name}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    {leagueInfo.flag && (
+                      <div className="relative w-5 h-5">
+                        <Image
+                          src={leagueInfo.flag}
+                          alt={leagueInfo.country}
+                          fill
+                          className="object-contain"
+                          sizes="20px"
+                        />
+                      </div>
+                    )}
+                    <span className="text-sm text-muted-foreground">
+                      {leagueInfo.country}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="season-select"
+                  className="text-sm font-medium text-muted-foreground"
+                >
+                  Season:
+                </label>
+                <select
+                  id="season-select"
+                  value={selectedSeason}
+                  onChange={(e) =>
+                    setSelectedSeason(parseInt(e.target.value, 10))
+                  }
+                  className="px-3 py-1.5 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}/{year + 1}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {isLoading && (
+          <FullPage>
+            <Loading />
+          </FullPage>
+        )}
+
+        {!isLoading && error && (
+          <FullPage>
+            <div className="text-center space-y-4">
+              <p className="text-lg font-semibold text-destructive">{error}</p>
+              <button
+                onClick={() => setSelectedSeason(selectedSeason)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </FullPage>
+        )}
+
+        {!isLoading && !error && sortedStandings.length === 0 && (
+          <FullPage>
+            <div className="text-center">
+              <p className="text-lg font-semibold text-muted-foreground">
+                No standings available for this league and season
+              </p>
+            </div>
+          </FullPage>
+        )}
+
+        {!isLoading && !error && sortedStandings.length > 0 && (
+          <div className="overflow-x-auto">
+            <div className="min-w-full">
+              {/* Desktop Table */}
+              <table className="hidden md:table w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
+                      Pos
+                    </th>
+                    <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
+                      Team
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      P
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      W
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      D
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      L
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      GF
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      GA
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      GD
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      Pts
+                    </th>
+                    <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
+                      Form
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedStandings.map((standing) => (
+                    <tr
+                      key={standing.team.id}
+                      className="border-b border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <td className="p-3 font-semibold text-foreground">
+                        {standing.rank}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {standing.team.logo && (
+                            <Image
+                              src={standing.team.logo}
+                              alt={standing.team.name}
+                              width={24}
+                              height={24}
+                              className="object-contain"
+                            />
+                          )}
+                          <span className="font-medium text-foreground">
+                            {standing.team.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center text-muted-foreground">
+                        {standing.all.played}
+                      </td>
+                      <td className="p-3 text-center text-muted-foreground">
+                        {standing.all.win}
+                      </td>
+                      <td className="p-3 text-center text-muted-foreground">
+                        {standing.all.draw}
+                      </td>
+                      <td className="p-3 text-center text-muted-foreground">
+                        {standing.all.lose}
+                      </td>
+                      <td className="p-3 text-center text-muted-foreground">
+                        {standing.all.goals.for}
+                      </td>
+                      <td className="p-3 text-center text-muted-foreground">
+                        {standing.all.goals.against}
+                      </td>
+                      <td
+                        className={`p-3 text-center font-semibold ${
+                          standing.goalsDiff > 0
+                            ? "text-green-600 dark:text-green-400"
+                            : standing.goalsDiff < 0
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {standing.goalsDiff > 0 ? "+" : ""}
+                        {standing.goalsDiff}
+                      </td>
+                      <td className="p-3 text-center font-bold text-foreground">
+                        {standing.points}
+                      </td>
+                      <td className="p-3 text-center">
+                        {standing.form && (
+                          <div className="flex items-center justify-center gap-0.5">
+                            {standing.form.split("").map((result, idx) => (
+                              <span
+                                key={idx}
+                                className={`w-5 h-5 rounded text-xs font-bold flex items-center justify-center ${getFormColor(
+                                  result
+                                )}`}
+                              >
+                                {result}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-3">
+                {sortedStandings.map((standing) => (
+                  <div
+                    key={standing.team.id}
+                    className="bg-card border border-border rounded-lg p-4"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold text-foreground w-6">
+                          {standing.rank}
+                        </span>
+                        {standing.team.logo && (
+                          <Image
+                            src={standing.team.logo}
+                            alt={standing.team.name}
+                            width={32}
+                            height={32}
+                            className="object-contain"
+                          />
+                        )}
+                        <span className="font-semibold text-foreground">
+                          {standing.team.name}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-foreground">
+                          {standing.points}
+                        </div>
+                        <div className="text-xs text-muted-foreground">pts</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-xs mb-2">
+                      <div className="text-center">
+                        <div className="text-muted-foreground">Played</div>
+                        <div className="font-semibold text-foreground">
+                          {standing.all.played}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-muted-foreground">W</div>
+                        <div className="font-semibold text-foreground">
+                          {standing.all.win}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-muted-foreground">D</div>
+                        <div className="font-semibold text-foreground">
+                          {standing.all.draw}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-muted-foreground">L</div>
+                        <div className="font-semibold text-foreground">
+                          {standing.all.lose}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <span className="text-muted-foreground">GD: </span>
+                          <span
+                            className={`font-semibold ${
+                              standing.goalsDiff > 0
+                                ? "text-green-600 dark:text-green-400"
+                                : standing.goalsDiff < 0
+                                ? "text-red-600 dark:text-red-400"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {standing.goalsDiff > 0 ? "+" : ""}
+                            {standing.goalsDiff}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">GF: </span>
+                          <span className="font-semibold text-foreground">
+                            {standing.all.goals.for}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">GA: </span>
+                          <span className="font-semibold text-foreground">
+                            {standing.all.goals.against}
+                          </span>
+                        </div>
+                      </div>
+                      {standing.form && (
+                        <div className="flex items-center gap-0.5">
+                          {standing.form.split("").map((result, idx) => (
+                            <span
+                              key={idx}
+                              className={`w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center ${getFormColor(
+                                result
+                              )}`}
+                            >
+                              {result}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </MinHeight>
+  );
+}
