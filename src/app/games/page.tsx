@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeClosed, Clock8 } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
@@ -11,6 +11,8 @@ import { useEffect, useMemo, useState } from "react";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 import TeamInfo from "./_components/team";
+import { Switch } from "@/components/ui/switch";
+import MinHeight from "@/components/common/min-height";
 
 interface LeagueGroup {
   leagueId: number;
@@ -153,165 +155,168 @@ export default function Fixtures() {
   );
 
   return (
-    <div className="container mx-auto space-y-2 ">
-      <Datepicker
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-      />
-      {meta.parameters && (
-        <div className="flex max-w-4xl mx-auto px-6 md:px-8 flex-row items-center justify-between text-xs md:text-sm font-bold dark:text-mygray text-primary">
-          <p>Timezone: {meta.parameters.timezone ?? timezone}</p>
-          <button
-            onClick={() => setHideScores(!hideScores)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-muted/50 transition-colors"
-            aria-label={hideScores ? "Show scores" : "Hide scores"}
-            title={hideScores ? "Show scores" : "Hide scores"}
-          >
-            {hideScores ? (
-              <EyeClosed className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
-            <span className="text-xs font-medium">
-              {hideScores ? "Show" : "Hide"} Scores
-            </span>
-          </button>
-        </div>
-      )}
-
-      {isLoading && (
-        <FullPage>
-          <Loading />
-        </FullPage>
-      )}
-
-      {!isLoading && error && (
-        <FullPage>
-          <FixturesError
-            message={error}
-            onRetry={() => setSelectedDate(new Date(selectedDate))}
-          />
-        </FullPage>
-      )}
-
-      {!isLoading && !error && groupedFixtures.length === 0 && (
-        <FullPage>
-          <NoGame date={formatDateParam(selectedDate)} />
-        </FullPage>
-      )}
-
-      {!isLoading && (
-        <div className="flex flex-col  justify-center  items-center pt-2 pb-3 space-y-4">
-          {groupedFixtures.map((group) => (
-            <div className="" key={group.leagueId}>
-              <p className="text-sm md:text-base text-center font-semibold text-foreground">
-                {group.leagueName}
-              </p>
-              {group.fixtures.map((fixture) => {
-                const statusInfo = getFixtureStatus(
-                  fixture.fixture.status.short
-                );
-                const hasStarted =
-                  statusInfo.type === "In Play" ||
-                  statusInfo.type === "Finished";
-                const kickoffTime = new Date(
-                  fixture.fixture.date
-                ).toLocaleTimeString(undefined, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                  timeZone: fixture.fixture.timezone,
-                });
-
-                const borderColor =
-                  statusInfo.type === "Finished"
-                    ? "border-primary/80"
-                    : statusInfo.type !== "In Play"
-                    ? "border-mygray dark:border-mygray/50"
-                    : "border-card";
-
-                return (
-                  <div
-                    key={fixture.fixture.id}
-                    className={`flex flex-col items-center rounded-sm border-l-[6px] relative ${borderColor} bg-card my-2 py-2`}
-                  >
-                    {/* animation for in play */}
-                    {statusInfo.type === "In Play" && (
-                      <div className="absolute top-3 left-1 pointer-events-none z-10">
-                        <div className="relative w-[10px] h-[10px]">
-                          {/* Outer pulsing ring */}
-                          <div className="absolute inset-0 rounded-full bg-primary/40 animate-ping"></div>
-                          {/* Middle pulsing ring with delay */}
-                          <div
-                            className="absolute inset-0 rounded-full bg-primary/30 animate-ping"
-                            style={{ animationDelay: "0.5s" }}
-                          ></div>
-                          {/* Inner glowing dot */}
-                          <div className="absolute inset-0 rounded-full bg-primary/50 animate-pulse"></div>
-                          {/* Solid center core */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/20 shadow-lg shadow-primary/50"></div>
-                        </div>
-                      </div>
-                    )}
-                    <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
-                      <TeamInfo
-                        team={fixture.teams.home}
-                        orientation="home"
-                        className="col-span-3"
-                        nameClassName="text-xs md:text-sm font-medium"
-                      />
-                      <div className="col-span-1 flex  flex-col items-center justify-center  text-foreground gap-1">
-                        {hasStarted ? (
-                          <div className="flex h-6  items-center justify-center gap-4">
-                            {hideScores ? (
-                              <>
-                                <span className="text-base  font-bold md:text-base">
-                                  –
-                                </span>
-                                <span className="h-6 w-[2px] bg-primary/50 " />
-                                <span className="text-base font-bold md:text-base">
-                                  –
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <span className="text-lg  w-3  font-bold md:text-xl">
-                                  {formatGoals(fixture.goals.home)}
-                                </span>
-                                <span className="h-6 w-[2px] bg-primary/50 " />
-                                <span className="text-lg w-3  font-bold md:text-xl">
-                                  {formatGoals(fixture.goals.away)}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-center">
-                            <p className="text-md md:text-lg font-medium">
-                              {kickoffTime}
-                            </p>
-                          </div>
-                        )}
-                        {statusInfo.type !== "Scheduled" && (
-                          <p className="text-xs font-semibold uppercase tracking-wide">
-                            {statusInfo.short}
-                          </p>
-                        )}
-                      </div>
-                      <TeamInfo
-                        team={fixture.teams.away}
-                        orientation="away"
-                        className="col-span-3"
-                        nameClassName="text-xs md:text-sm font-medium"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+    <MinHeight>
+      <div className="container mx-auto space-y-2 ">
+        <Datepicker
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
+        {meta.parameters && (
+          <div className="flex max-w-4xl mx-auto px-6 md:px-8 flex-row items-center justify-between text-xs md:text-sm font-bold dark:text-mygray text-primary">
+            <div className="flex items-center gap-2">
+              <Clock8 className="w-4 h-4" />{" "}
+              <p>{meta.parameters.timezone ?? timezone}</p>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+            <div className="flex items-center gap-2">
+              {hideScores ? (
+                <EyeClosed className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+              <span className="text-xs font-medium">Scores</span>
+              <Switch
+                checked={hideScores}
+                onCheckedChange={setHideScores}
+                aria-label={hideScores ? "Show scores" : "Hide scores"}
+              />
+            </div>
+          </div>
+        )}
+
+        {isLoading && (
+          <FullPage>
+            <Loading />
+          </FullPage>
+        )}
+
+        {!isLoading && error && (
+          <FullPage>
+            <FixturesError
+              message={error}
+              onRetry={() => setSelectedDate(new Date(selectedDate))}
+            />
+          </FullPage>
+        )}
+
+        {!isLoading && !error && groupedFixtures.length === 0 && (
+          <FullPage>
+            <NoGame date={formatDateParam(selectedDate)} />
+          </FullPage>
+        )}
+
+        {!isLoading && (
+          <div className="flex flex-col  justify-center  items-center pt-2 pb-3 space-y-4">
+            {groupedFixtures.map((group) => (
+              <div className="" key={group.leagueId}>
+                <p className="text-sm md:text-base text-center font-semibold text-foreground">
+                  {group.leagueName}
+                </p>
+                {group.fixtures.map((fixture) => {
+                  const statusInfo = getFixtureStatus(
+                    fixture.fixture.status.short
+                  );
+                  const hasStarted =
+                    statusInfo.type === "In Play" ||
+                    statusInfo.type === "Finished";
+                  const kickoffTime = new Date(
+                    fixture.fixture.date
+                  ).toLocaleTimeString(undefined, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                    timeZone: fixture.fixture.timezone,
+                  });
+
+                  const borderColor =
+                    statusInfo.type === "Finished"
+                      ? "border-primary/80"
+                      : statusInfo.type !== "In Play"
+                      ? "border-mygray dark:border-mygray/50"
+                      : "border-card";
+
+                  return (
+                    <div
+                      key={fixture.fixture.id}
+                      className={`flex flex-col items-center rounded-sm border-l-[6px] relative ${borderColor} bg-card my-2 py-2`}
+                    >
+                      {/* animation for in play */}
+                      {statusInfo.type === "In Play" && (
+                        <div className="absolute top-3 left-1 pointer-events-none z-10">
+                          <div className="relative w-[10px] h-[10px]">
+                            {/* Outer pulsing ring */}
+                            <div className="absolute inset-0 rounded-full bg-primary/40 animate-ping"></div>
+                            {/* Middle pulsing ring with delay */}
+                            <div
+                              className="absolute inset-0 rounded-full bg-primary/30 animate-ping"
+                              style={{ animationDelay: "0.5s" }}
+                            ></div>
+                            {/* Inner glowing dot */}
+                            <div className="absolute inset-0 rounded-full bg-primary/50 animate-pulse"></div>
+                            {/* Solid center core */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/20 shadow-lg shadow-primary/50"></div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
+                        <TeamInfo
+                          team={fixture.teams.home}
+                          orientation="home"
+                          className="col-span-3"
+                          nameClassName="text-xs md:text-sm font-medium"
+                        />
+                        <div className="col-span-1 flex  flex-col items-center justify-center  text-foreground gap-1">
+                          {hasStarted ? (
+                            <div className="flex h-6  items-center justify-center gap-4">
+                              {hideScores ? (
+                                <>
+                                  <span className="text-base  font-bold md:text-base">
+                                    –
+                                  </span>
+                                  <span className="h-6 w-[2px] bg-primary/50 " />
+                                  <span className="text-base font-bold md:text-base">
+                                    –
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-lg  w-3  font-bold md:text-xl">
+                                    {formatGoals(fixture.goals.home)}
+                                  </span>
+                                  <span className="h-6 w-[2px] bg-primary/50 " />
+                                  <span className="text-lg w-3  font-bold md:text-xl">
+                                    {formatGoals(fixture.goals.away)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <p className="text-md md:text-lg font-medium">
+                                {kickoffTime}
+                              </p>
+                            </div>
+                          )}
+                          {statusInfo.type !== "Scheduled" && (
+                            <p className="text-xs font-semibold uppercase tracking-wide">
+                              {statusInfo.short}
+                            </p>
+                          )}
+                        </div>
+                        <TeamInfo
+                          team={fixture.teams.away}
+                          orientation="away"
+                          className="col-span-3"
+                          nameClassName="text-xs md:text-sm font-medium"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </MinHeight>
   );
 }
