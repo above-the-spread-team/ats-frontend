@@ -84,33 +84,10 @@ export default function Tables() {
   return (
     <MinHeight>
       <div className="container mx-auto space-y-4 px-4 md:px-6 py-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Leagues & Competitions
           </h1>
-          <div className="flex items-center gap-2">
-            <label
-              htmlFor="season-select"
-              className="text-sm font-medium text-muted-foreground"
-            >
-              Season:
-            </label>
-            <select
-              id="season-select"
-              value={selectedSeason}
-              onChange={(e) => setSelectedSeason(parseInt(e.target.value, 10))}
-              className="px-3 py-1.5 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {Array.from({ length: 5 }, (_, i) => {
-                const year = currentSeason - i;
-                return (
-                  <option key={year} value={year}>
-                    {year}/{year + 1}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
         </div>
 
         {isLoading && (
