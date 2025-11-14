@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Loading from "@/components/common/loading";
 import FullPage from "@/components/common/full-page";
-import type { TeamsApiResponse, TeamResponseItem } from "@/type/team-info";
+import type { TeamsApiResponse, TeamResponseItem } from "@/type/teams-info";
 import { MapPin, Calendar, Users } from "lucide-react";
 
 interface TeamsProps {
@@ -28,7 +28,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
 
       try {
         const response = await fetch(
-          `/api/team-info?league=${leagueId}&season=${season}`,
+          `/api/teams-info?league=${leagueId}&season=${season}`,
           { signal: controller.signal }
         );
 

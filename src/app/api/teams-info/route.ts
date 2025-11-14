@@ -25,29 +25,51 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Get required id parameter
-  const idParam = req.nextUrl.searchParams.get("id");
-  if (!idParam) {
+  // Get required league parameter
+  const leagueParam = req.nextUrl.searchParams.get("league");
+  if (!leagueParam) {
     return NextResponse.json(
       {
-        error: "Missing required parameter: id",
+        error: "Missing required parameter: league",
       },
       { status: 400 }
     );
   }
 
-  const teamId = parseInt(idParam, 10);
-  if (Number.isNaN(teamId)) {
+  const leagueId = parseInt(leagueParam, 10);
+  if (Number.isNaN(leagueId)) {
     return NextResponse.json(
       {
-        error: "Invalid id parameter. Must be a number.",
+        error: "Invalid league parameter. Must be a number.",
+      },
+      { status: 400 }
+    );
+  }
+
+  // Get required season parameter
+  const seasonParam = req.nextUrl.searchParams.get("season");
+  if (!seasonParam) {
+    return NextResponse.json(
+      {
+        error: "Missing required parameter: season",
+      },
+      { status: 400 }
+    );
+  }
+
+  const season = parseInt(seasonParam, 10);
+  if (Number.isNaN(season)) {
+    return NextResponse.json(
+      {
+        error: "Invalid season parameter. Must be a number.",
       },
       { status: 400 }
     );
   }
 
   const params = new URLSearchParams({
-    id: teamId.toString(),
+    league: leagueId.toString(),
+    season: season.toString(),
   });
 
   try {
@@ -70,23 +92,24 @@ export async function GET(req: NextRequest) {
       throw new Error("Unexpected payload structure");
     }
 
-    // Return the first team from the response (since we're querying by id, there should be only one)
     return NextResponse.json({
       get: "teams",
       parameters: {
-        id: teamId,
+        league: leagueId,
+        season,
       },
       results: data.results,
       errors: data.errors || [],
       paging: data.paging,
-      response: data.response[0] || null,
+      response: data.response,
     });
   } catch (error) {
     return NextResponse.json(
       {
         get: "teams",
         parameters: {
-          id: teamId,
+          league: leagueId,
+          season,
         },
         results: 0,
         errors: [error instanceof Error ? error.message : "Unknown error"],
@@ -94,7 +117,7 @@ export async function GET(req: NextRequest) {
           current: 1,
           total: 1,
         },
-        response: null,
+        response: [],
       },
       { status: 500 }
     );
