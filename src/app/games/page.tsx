@@ -211,11 +211,11 @@ export default function Fixtures() {
             <div className="flex flex-col  justify-center  items-center pt-2 pb-10 md:pt-3 md:pb-12 space-y-5">
               {groupedFixtures.map((group) => (
                 <div
-                  className="justify-center items-center flex flex-col space-y-4"
+                  className="justify-center items-center flex flex-col space-y-2"
                   key={group.leagueId}
                 >
                   <Link
-                    className="flex ml-2 -mb-1  items-center gap-1 hover:text-primary"
+                    className="flex ml-2   items-center gap-1 hover:text-primary"
                     href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
                   >
                     <p className="text-sm md:text-base text-center font-semibold ">
@@ -227,9 +227,9 @@ export default function Fixtures() {
                     const statusInfo = getFixtureStatus(
                       fixture.fixture.status.short
                     );
+                    const isInPlay = statusInfo.type === "In Play";
                     const hasStarted =
-                      statusInfo.type === "In Play" ||
-                      statusInfo.type === "Finished";
+                      isInPlay || statusInfo.type === "Finished";
                     const kickoffTime = new Date(
                       fixture.fixture.date
                     ).toLocaleTimeString(undefined, {
@@ -239,35 +239,27 @@ export default function Fixtures() {
                       timeZone: fixture.fixture.timezone,
                     });
 
-                    const borderColor =
-                      statusInfo.type === "Finished"
-                        ? "border-primary/80"
-                        : statusInfo.type !== "In Play"
-                        ? "border-mygray dark:border-mygray/50"
-                        : "border-card";
+                    const borderClass = isInPlay
+                      ? ""
+                      : `border-l-[6px] ${
+                          statusInfo.type === "Finished"
+                            ? "border-primary/80"
+                            : "border-mygray dark:border-mygray/50"
+                        }`;
 
                     return (
                       <div
                         key={fixture.fixture.id}
-                        className={`flex flex-col items-center rounded-sm border-l-[6px] relative ${borderColor} bg-card  py-2`}
+                        className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden`}
                       >
-                        {/* animation for in play */}
-                        {statusInfo.type === "In Play" && (
-                          <div className="absolute top-3 left-1 pointer-events-none z-10">
-                            <div className="relative w-[10px] h-[10px]">
-                              {/* Outer pulsing ring */}
-                              <div className="absolute inset-0 rounded-full bg-primary/40 animate-ping"></div>
-                              {/* Middle pulsing ring with delay */}
-                              <div
-                                className="absolute inset-0 rounded-full bg-primary/30 animate-ping"
-                                style={{ animationDelay: "0.5s" }}
-                              ></div>
-                              {/* Inner glowing dot */}
-                              <div className="absolute inset-0 rounded-full bg-primary/50 animate-pulse"></div>
-                              {/* Solid center core */}
-                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/20 shadow-lg shadow-primary/50"></div>
-                            </div>
-                          </div>
+                        {isInPlay && (
+                          <>
+                            <span className="pointer-events-none absolute inset-y-0 left-0 w-[6px] animate-pulse bg-gradient-to-b from-primary via-primary/80 to-primary/30"></span>
+                            <span
+                              className="pointer-events-none absolute inset-y-0 left-0 w-[6px] bg-primary/50 blur-sm opacity-70 animate-pulse"
+                              style={{ animationDelay: "0.4s" }}
+                            ></span>
+                          </>
                         )}
                         <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
                           <TeamInfo

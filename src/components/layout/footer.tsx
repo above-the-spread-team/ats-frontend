@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { navItems } from "@/data/nav";
@@ -19,7 +21,11 @@ const socials = [
   },
 ];
 
+import { usePathname } from "next/navigation";
+
 export default function Footer() {
+  const pathname = usePathname();
+
   return (
     <footer className="bg-primary-active text-white  hidden md:block">
       <div className="container mx-auto px-4 py-6 space-y-8">
@@ -46,15 +52,28 @@ export default function Footer() {
           </Link>
 
           <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-md px-3 py-1 text-white/80 hover:bg-white/10 hover:text-white transition"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`group relative rounded-full px-3 py-1 transition text-white/80 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <span className="relative z-10">{item.label}</span>
+                  <span
+                    className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-gradient-to-r from-white/10 via-white/80 to-white/10 opacity-0 transition-all duration-300 ${
+                      isActive ? "w-[70%] opacity-100" : ""
+                    }`}
+                  />
+                </Link>
+              );
+            })}
           </div>
         </div>
 
