@@ -11,7 +11,10 @@ export default function Nav() {
     <nav className="hidden md:flex justify-center items-center px-6 h-8 bg-primary-active">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href;
+        const isActive =
+          item.href === "/"
+            ? pathname === "/"
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
         return (
           <Link

@@ -1,6 +1,15 @@
-export default function FullPage({ children }: { children: React.ReactNode }) {
+interface FullPageProps {
+  children: React.ReactNode;
+  center?: boolean;
+}
+
+export default function FullPage({ children, center = false }: FullPageProps) {
   return (
-    <div className="flex min-h-[60vh] w-full items-center justify-center p-4 md:h-[calc(100vh-150px)]">
+    <div
+      className={` min-h-[60vh] md:min-h-[calc(100vh-190px)] w-full ${
+        center ? "flex items-center justify-center" : ""
+      } `}
+    >
       {children}
     </div>
   );

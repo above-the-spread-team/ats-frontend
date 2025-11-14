@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { phoneNavItems } from "@/data/nav";
+import { navItems } from "@/data/nav";
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -10,9 +10,12 @@ export default function MobileNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-primary  z-50">
       <div className="grid grid-cols-5 h-11">
-        {phoneNavItems.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
             <Link

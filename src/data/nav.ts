@@ -8,35 +8,6 @@ export interface NavItem {
   icon: IconType;
 }
 
-export const phoneNavItems: NavItem[] = [
-  {
-    label: "Home",
-    href: "/",
-    icon: FaHome,
-  },
-  {
-    label: "Games",
-    href: "/games",
-    icon: FaCalendarAlt,
-  },
-
-  {
-    label: "News",
-    href: "/news",
-    icon: IoNewspaper,
-  },
-  {
-    label: "Discuss",
-    href: "/discuss",
-    icon: IoChatbubbles,
-  },
-  {
-    label: "Stats",
-    href: "/stats",
-    icon: IoBarChart,
-  },
-];
-
 export const navItems: NavItem[] = [
   {
     label: "Home",
