@@ -179,6 +179,7 @@ export default function Fixtures() {
                 checked={hideScores}
                 onCheckedChange={setHideScores}
                 aria-label={hideScores ? "Show scores" : "Hide scores"}
+                className="data-[state=unchecked]:bg-primary/50"
               />
             </div>
           </div>
@@ -207,11 +208,14 @@ export default function Fixtures() {
 
         {!isLoading && !error && groupedFixtures.length > 0 && (
           <FullPage>
-            <div className="flex flex-col  justify-center  items-center pt-2 pb-3 space-y-4">
+            <div className="flex flex-col  justify-center  items-center pt-2 pb-10 md:pt-3 md:pb-12 space-y-5">
               {groupedFixtures.map((group) => (
-                <React.Fragment key={group.leagueId}>
+                <div
+                  className="justify-center items-center flex flex-col space-y-4"
+                  key={group.leagueId}
+                >
                   <Link
-                    className="flex ml-2 items-center gap-1 hover:text-primary"
+                    className="flex ml-2 -mb-1  items-center gap-1 hover:text-primary"
                     href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
                   >
                     <p className="text-sm md:text-base text-center font-semibold ">
@@ -245,7 +249,7 @@ export default function Fixtures() {
                     return (
                       <div
                         key={fixture.fixture.id}
-                        className={`flex flex-col items-center rounded-sm border-l-[6px] relative ${borderColor} bg-card my-2 py-2`}
+                        className={`flex flex-col items-center rounded-sm border-l-[6px] relative ${borderColor} bg-card  py-2`}
                       >
                         {/* animation for in play */}
                         {statusInfo.type === "In Play" && (
@@ -272,7 +276,7 @@ export default function Fixtures() {
                             className="col-span-3"
                             nameClassName="text-xs md:text-sm font-medium"
                           />
-                          <div className="col-span-1 flex  flex-col items-center justify-center  text-foreground gap-1">
+                          <div className="col-span-1 flex  flex-col items-center justify-center   gap-1">
                             {hasStarted ? (
                               <div className="flex h-6  items-center justify-center gap-4">
                                 {hideScores ? (
@@ -320,7 +324,7 @@ export default function Fixtures() {
                       </div>
                     );
                   })}
-                </React.Fragment>
+                </div>
               ))}
             </div>
           </FullPage>

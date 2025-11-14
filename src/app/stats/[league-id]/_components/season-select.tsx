@@ -10,11 +10,7 @@ interface SeasonSelectProps {
   activeTab?: TabType;
 }
 
-export default function SeasonSelect({
-  leagueId,
-  season,
-  activeTab,
-}: SeasonSelectProps) {
+export default function SeasonSelect({ season, activeTab }: SeasonSelectProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

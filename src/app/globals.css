@@ -11,11 +11,11 @@
 
     --background: 0 0% 94%;
 
-    --foreground: 0 0% 3.9%;
+    --foreground: 0 0% 6.5%;
 
     --icon-hover: 0 0% 93%;
 
-    --card: 0 0% 100%;
+    --card: 0 0% 99.5%;
 
     --card-foreground: 0 0% 3.9%;
 
@@ -60,7 +60,7 @@
   .dark {
     --background: 0 0% 15%;
 
-    --foreground: 0 0% 98%;
+    --foreground: 0 0% 93.5%;
 
     --card: 0 0% 3.9%;
 
