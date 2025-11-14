@@ -214,8 +214,8 @@ export default function Fixtures() {
                   href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
                 >
                   <p className="text-sm md:text-base text-center font-semibold ">
-                    {group.leagueName}
-                  </p>
+                  {group.leagueName}
+                </p>
                   <ChevronRight className="w-5 h-5 text-bold mt-0.5  " />
                 </Link>
                 {group.fixtures.map((fixture) => {

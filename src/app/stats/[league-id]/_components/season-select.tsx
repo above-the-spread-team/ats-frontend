@@ -1,13 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 type TabType = "standings" | "leaders" | "teams";
 
 interface SeasonSelectProps {
   leagueId: string;
   season: number;
-  activeTab: TabType;
+  activeTab?: TabType;
 }
 
 export default function SeasonSelect({
@@ -16,14 +16,22 @@ export default function SeasonSelect({
   activeTab,
 }: SeasonSelectProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const handleSeasonChange = (newSeason: number) => {
-    const params = new URLSearchParams();
+    // Get current search params and update only the season
+    const params = new URLSearchParams(searchParams.toString());
     params.set("season", newSeason.toString());
-    if (activeTab !== "standings") {
+
+    // Preserve the tab parameter if it exists in the URL
+    // If no tab in URL but activeTab is provided and not "standings", set it
+    if (!searchParams.get("tab") && activeTab && activeTab !== "standings") {
       params.set("tab", activeTab);
     }
-    router.push(`/stats/${leagueId}?${params.toString()}`);
+
+    // Use current pathname to preserve the route structure (works for both league and team pages)
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (

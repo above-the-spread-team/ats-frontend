@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import Loading from "@/components/common/loading";
 import FullPage from "@/components/common/full-page";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
@@ -13,6 +15,12 @@ interface SquadProps {
 const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"];
 
 export default function Squad({ teamId }: SquadProps) {
+  const searchParams = useSearchParams();
+  const seasonParam = searchParams.get("season");
+  const season = seasonParam
+    ? parseInt(seasonParam, 10)
+    : new Date().getFullYear();
+
   const [squad, setSquad] = useState<SquadsApiResponse["response"][0] | null>(
     null
   );
@@ -161,9 +169,10 @@ export default function Squad({ teamId }: SquadProps) {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {players.map((player) => (
-              <div
+              <Link
                 key={player.id}
-                className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                href={`/stats/player/${player.id}?season=${season}`}
+                className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer"
               >
                 {player.photo && (
                   <div className="relative w-12 h-12 flex-shrink-0">
@@ -188,7 +197,7 @@ export default function Squad({ teamId }: SquadProps) {
                     <span>{player.age} years</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
