@@ -16,8 +16,6 @@ interface TeamNavProps {
 export default function TeamNav({
   activeTab,
   setActiveTab,
-  leagueId,
-  teamId,
   season,
 }: TeamNavProps) {
   const router = useRouter();

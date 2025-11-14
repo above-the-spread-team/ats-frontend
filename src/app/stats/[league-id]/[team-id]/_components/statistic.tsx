@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Loading from "@/components/common/loading";
 import FullPage from "@/components/common/full-page";
 import type { TeamStatisticsApiResponse } from "@/type/team-statistics";

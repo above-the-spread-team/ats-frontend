@@ -1,9 +1,6 @@
 import { FaCalendarAlt, FaHome } from "react-icons/fa";
 import { IoBarChart, IoNewspaper, IoChatbubbles } from "react-icons/io5";
 import { IconType } from "react-icons";
-import { FaPeopleGroup } from "react-icons/fa6";
-import { PiRankingFill } from "react-icons/pi";
-import { CgMoreO } from "react-icons/cg";
 
 export interface NavItem {
   label: string;

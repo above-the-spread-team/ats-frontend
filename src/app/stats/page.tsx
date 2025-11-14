@@ -16,14 +16,6 @@ export default function Tables() {
     new Date().getFullYear()
   );
 
-  const currentSeason = useMemo(() => {
-    return (
-      leagues
-        .flatMap((league) => league.seasons)
-        .find((season) => season.current)?.year || new Date().getFullYear()
-    );
-  }, [leagues]);
-
   useEffect(() => {
     const controller = new AbortController();
 

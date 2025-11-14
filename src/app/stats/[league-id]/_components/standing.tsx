@@ -23,13 +23,6 @@ interface StandingsProps {
 
 export default function Standings({ leagueId, season }: StandingsProps) {
   const [standings, setStandings] = useState<StandingEntry[]>([]);
-  const [leagueInfo, setLeagueInfo] = useState<{
-    name: string;
-    country: string;
-    logo: string;
-    flag: string;
-    season: number;
-  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,14 +49,6 @@ export default function Standings({ leagueId, season }: StandingsProps) {
 
         if (data.response && data.response.length > 0) {
           const league = data.response[0].league;
-          setLeagueInfo({
-            name: league.name,
-            country: league.country,
-            logo: league.logo,
-            flag: league.flag,
-            season: league.season,
-          });
-
           // Flatten the standings array (it's an array of arrays for groups)
           const allStandings = league.standings.flat();
           setStandings(allStandings);
