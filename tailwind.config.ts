@@ -28,6 +28,7 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           active: "hsl(var(--primary-active))",
           font: "hsl(var(--primary-font))",
+          title: "hsl(var(--primary-title))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

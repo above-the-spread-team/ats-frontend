@@ -6,6 +6,7 @@
   :root {
     --mygray: 0 0% 80%;
     --primary: 184 72% 27%;
+    --primary-title: 184 72% 27%;
     --primary-font: 184 72% 27%;
 
     --primary-active: 196 75% 22%;
@@ -62,7 +63,8 @@
     --background: 0 0% 15%;
 
     --foreground: 0 0% 93.5%;
-    --primary-font: 172 56% 91%;
+    --primary-title: 0 0% 80%;
+    --primary-font: 172 47% 76%;
 
     --card: 0 0% 3.9%;
 

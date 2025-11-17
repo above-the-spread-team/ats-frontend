@@ -216,7 +216,7 @@ export default function Fixtures() {
                   className="flex ml-2   items-center gap-1 hover:text-primary"
                   href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
                 >
-                  <p className="text-sm md:text-base text-center font-semibold ">
+                  <p className="text-sm  md:text-base text-center font-semibold ">
                     {group.leagueName}
                   </p>
                   <ChevronRight className="w-5 h-5 text-bold mt-0.5  " />

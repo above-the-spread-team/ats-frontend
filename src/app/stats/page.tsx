@@ -159,7 +159,7 @@ export default function Tables() {
     <div className="container mx-auto   px-4 max-w-6xl  py-3 md:py-4">
       {/* Header */}
       <div className="space-y-3 md:space-y-4">
-        <h1 className="text-xl md:text-2xl font-bold text-primary-font">
+        <h1 className="text-xl md:text-2xl font-bold text-primary-title">
           Leagues & Cups
         </h1>
 
@@ -171,7 +171,7 @@ export default function Tables() {
             placeholder="Search leagues or countries..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm md:text-xs border border-primary/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full scale-95 pl-10 pr-4 py-2 text-base md:text-sm border border-primary/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
