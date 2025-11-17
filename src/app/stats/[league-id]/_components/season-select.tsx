@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 type TabType = "standings" | "leaders" | "teams";
 
 interface SeasonSelectProps {
-  leagueId: string;
+  leagueId?: string;
   season: number;
   activeTab?: TabType;
 }

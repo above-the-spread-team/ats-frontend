@@ -34,7 +34,7 @@ export default function LeagueCard({
               src={league.league.logo}
               alt={league.league.name}
               fill
-              className="object-contain  "
+              className="object-contain dark:p-1 dark:bg-mygray/30 dark:rounded-lg  "
             />
           ) : (
             <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">

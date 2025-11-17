@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Trophy, Award, Search } from "lucide-react";
+import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
@@ -245,17 +245,25 @@ export default function Tables() {
       {/* Empty State */}
       {!isLoading && !error && totalFilteredCount === 0 && (
         <FullPage center minusHeight={minusHeight}>
-          <div className="text-center space-y-2">
-            <p className="text-lg font-semibold text-muted-foreground">
+          <div className="text-center space-y-4 max-w-md mx-auto px-4">
+            <div className="flex justify-center">
+              {searchQuery.trim() ? (
+                <SearchX className="w-8 h-8 md:w-10 md:h-10 text-primary-font" />
+              ) : (
+                <Inbox className="w-8 h-8 md:w-10 md:h-10 text-muted-foreground" />
+              )}
+            </div>
+            <p className="text-xs md:text-sm font-semibold text-muted-foreground">
               {searchQuery.trim()
-                ? "No leagues found matching your search"
+                ? `No leagues match "${searchQuery}"`
                 : "No leagues found for this season"}
             </p>
             {searchQuery.trim() && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="text-sm text-primary hover:underline"
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-medium text-primary-font bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
               >
+                <SearchX className="w-4 h-4" />
                 Clear search
               </button>
             )}

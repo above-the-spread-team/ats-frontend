@@ -12,7 +12,7 @@ interface FullPageProps {
 export default function FullPage({
   children,
   center = false,
-  minusHeight = 210,
+  minusHeight = 200,
   className = "",
 }: FullPageProps) {
   const id = useId();
