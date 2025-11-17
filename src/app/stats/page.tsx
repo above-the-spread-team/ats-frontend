@@ -171,7 +171,7 @@ export default function Tables() {
             placeholder="Search leagues or countries..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-base md:text-sm border border-primary/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full pl-10 pr-4 py-2 text-sm md:text-xs border border-primary/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
