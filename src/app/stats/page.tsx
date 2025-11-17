@@ -165,13 +165,15 @@ export default function Tables() {
 
         {/* Search */}
         <div className="relative w-full md:w-auto md:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-font" />
+          <div className="absolute left-5 md:left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+            <Search className="w-4 h-4 text-primary-font scale-95 md:scale-100" />
+          </div>
           <input
             type="text"
             placeholder="Search leagues or countries..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full scale-95 pl-10 pr-4 py-2 text-base md:text-sm border border-primary/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full scale-95 md:scale-100 pl-10 pr-4 py-1.5 md:py-2 text-base md:text-sm border border-primary/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
