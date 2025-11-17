@@ -1,3 +1,7 @@
+"use client";
+
+import { useId } from "react";
+
 interface FullPageProps {
   children: React.ReactNode;
   center?: boolean;
@@ -8,16 +12,32 @@ interface FullPageProps {
 export default function FullPage({
   children,
   center = false,
-  minusHeight = 200,
+  minusHeight = 210,
   className = "",
 }: FullPageProps) {
+  const id = useId();
+  const uniqueClass = `full-page-${id.replace(/:/g, "-")}`;
+
   return (
-    <div
-      className={` min-h-[60vh] md:min-h-[calc(100vh-${minusHeight}px)] w-full ${
-        center ? "flex items-center justify-center" : ""
-      } ${className}`}
-    >
-      {children}
-    </div>
+    <>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (min-width: 768px) {
+              .${uniqueClass} {
+                min-height: calc(100vh - ${minusHeight}px) !important;
+              }
+            }
+          `,
+        }}
+      />
+      <div
+        className={`min-h-[60vh] w-full ${uniqueClass} ${
+          center ? "flex items-center justify-center" : ""
+        } ${className}`}
+      >
+        {children}
+      </div>
+    </>
   );
 }
