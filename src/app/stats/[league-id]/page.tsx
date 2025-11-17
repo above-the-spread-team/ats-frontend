@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import MinHeight from "@/components/common/min-height";
+import FullPage from "@/components/common/full-page";
 import StatsNav from "./_components/nav";
 import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
@@ -74,7 +74,7 @@ export default function LeagueStatsPage() {
   }, [leagueId]);
 
   return (
-    <MinHeight>
+    <FullPage>
       <div className="container mx-auto space-y-4 px-4 md:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* League Information */}
@@ -164,6 +164,6 @@ export default function LeagueStatsPage() {
           )}
         </div>
       </div>
-    </MinHeight>
+    </FullPage>
   );
 }

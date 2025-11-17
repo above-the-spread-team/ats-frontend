@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import MinHeight from "@/components/common/min-height";
-import Loading from "@/components/common/loading";
 import FullPage from "@/components/common/full-page";
+import Loading from "@/components/common/loading";
 import type { PlayerStatisticsApiResponse } from "@/type/player-statistics";
 
 export default function PlayerPage() {
@@ -76,138 +75,132 @@ export default function PlayerPage() {
 
   if (isLoading) {
     return (
-      <MinHeight>
-        <FullPage>
-          <Loading />
-        </FullPage>
-      </MinHeight>
+      <FullPage>
+        <Loading />
+      </FullPage>
     );
   }
 
   if (error || !playerData) {
     return (
-      <MinHeight>
-        <FullPage>
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold text-destructive">
-              {error || "No player data available"}
-            </p>
-          </div>
-        </FullPage>
-      </MinHeight>
+      <FullPage>
+        <div className="text-center space-y-4">
+          <p className="text-lg font-semibold text-destructive">
+            {error || "No player data available"}
+          </p>
+        </div>
+      </FullPage>
     );
   }
 
   const { player, statistics } = playerData;
 
   return (
-    <MinHeight>
-      <div className="container mx-auto space-y-6 px-4 md:px-6 py-4">
-        {/* Player Header */}
-        <div className="flex items-center gap-4">
-          {player.photo && (
-            <div className="relative w-20 h-20 md:w-24 md:h-24">
-              <Image
-                src={player.photo}
-                alt={player.name}
-                fill
-                className="object-cover rounded-full"
-                sizes="(max-width: 768px) 80px, 96px"
-              />
-            </div>
-          )}
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              {player.name}
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-muted-foreground">
-                {player.nationality}
-              </span>
-              {player.age && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-sm text-muted-foreground">
-                    {player.age} years old
-                  </span>
-                </>
-              )}
-              {statistics.length > 0 && statistics[0].games.position && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-sm text-muted-foreground">
-                    {statistics[0].games.position}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Statistics */}
-        {statistics.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-foreground">
-              Statistics ({season})
-            </h2>
-            {statistics.map((stat, idx) => (
-              <div
-                key={idx}
-                className="bg-card border border-border rounded-lg p-4 md:p-6"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  {stat.team.logo && (
-                    <div className="relative w-12 h-12">
-                      <Image
-                        src={stat.team.logo}
-                        alt={stat.team.name}
-                        fill
-                        className="object-contain"
-                        sizes="48px"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-foreground">
-                      {stat.team.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {stat.league.name} ({stat.league.country})
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Appearances</p>
-                    <p className="text-xl font-bold text-foreground">
-                      {stat.games.appearences}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Goals</p>
-                    <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                      {stat.goals.total}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Assists</p>
-                    <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                      {stat.goals.assists}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Rating</p>
-                    <p className="text-xl font-bold text-foreground">
-                      {parseFloat(stat.games.rating).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+    <div className="container mx-auto space-y-6 px-4 md:px-6 py-4">
+      {/* Player Header */}
+      <div className="flex items-center gap-4">
+        {player.photo && (
+          <div className="relative w-20 h-20 md:w-24 md:h-24">
+            <Image
+              src={player.photo}
+              alt={player.name}
+              fill
+              className="object-cover rounded-full"
+              sizes="(max-width: 768px) 80px, 96px"
+            />
           </div>
         )}
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            {player.name}
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm text-muted-foreground">
+              {player.nationality}
+            </span>
+            {player.age && (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-sm text-muted-foreground">
+                  {player.age} years old
+                </span>
+              </>
+            )}
+            {statistics.length > 0 && statistics[0].games.position && (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-sm text-muted-foreground">
+                  {statistics[0].games.position}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-    </MinHeight>
+
+      {/* Statistics */}
+      {statistics.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">
+            Statistics ({season})
+          </h2>
+          {statistics.map((stat, idx) => (
+            <div
+              key={idx}
+              className="bg-card border border-border rounded-lg p-4 md:p-6"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                {stat.team.logo && (
+                  <div className="relative w-12 h-12">
+                    <Image
+                      src={stat.team.logo}
+                      alt={stat.team.name}
+                      fill
+                      className="object-contain"
+                      sizes="48px"
+                    />
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-semibold text-foreground">
+                    {stat.team.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {stat.league.name} ({stat.league.country})
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Appearances</p>
+                  <p className="text-xl font-bold text-foreground">
+                    {stat.games.appearences}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Goals</p>
+                  <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {stat.goals.total}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Assists</p>
+                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    {stat.goals.assists}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Rating</p>
+                  <p className="text-xl font-bold text-foreground">
+                    {parseFloat(stat.games.rating).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

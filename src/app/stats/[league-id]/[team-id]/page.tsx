@@ -5,9 +5,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import MinHeight from "@/components/common/min-height";
-import Loading from "@/components/common/loading";
 import FullPage from "@/components/common/full-page";
+import Loading from "@/components/common/loading";
 import type { TeamResponseItem } from "@/type/teams-info";
 import SeasonSelect from "../_components/season-select";
 import TeamNav from "./_components/nav";
@@ -78,16 +77,14 @@ export default function TeamPage() {
 
   if (isLoadingTeam) {
     return (
-      <MinHeight>
-        <FullPage>
-          <Loading />
-        </FullPage>
-      </MinHeight>
+      <FullPage>
+        <Loading />
+      </FullPage>
     );
   }
 
   return (
-    <MinHeight>
+    <FullPage>
       <div className="container mx-auto space-y-6 px-4 md:px-6 pb-4">
         {/* Header */}
         <div className="flex flex-col gap-4">
@@ -157,6 +154,6 @@ export default function TeamPage() {
 
         {activeTab === "squad" && <Squad teamId={teamId} />}
       </div>
-    </MinHeight>
+    </FullPage>
   );
 }

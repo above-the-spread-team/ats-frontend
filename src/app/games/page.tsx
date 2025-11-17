@@ -13,7 +13,6 @@ import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 import TeamInfo from "./_components/team";
 import { Switch } from "@/components/ui/switch";
-import MinHeight from "@/components/common/min-height";
 
 interface LeagueGroup {
   leagueId: number;
@@ -156,172 +155,169 @@ export default function Fixtures() {
   );
 
   return (
-    <MinHeight>
-      <div className="container mx-auto space-y-2 ">
-        <Datepicker
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-        />
-        {meta.parameters && (
-          <div className="flex max-w-4xl mx-auto px-6 md:px-8 flex-row items-center justify-between text-xs md:text-sm font-bold dark:text-mygray text-primary">
-            <div className="flex items-center gap-2">
-              <Clock8 className="w-4 h-4" />{" "}
-              <p>{meta.parameters.timezone ?? timezone}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {hideScores ? (
-                <EyeClosed className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-              <span className="text-xs font-medium">Scores</span>
-              <Switch
-                checked={hideScores}
-                onCheckedChange={setHideScores}
-                aria-label={hideScores ? "Show scores" : "Hide scores"}
-                className="data-[state=unchecked]:bg-primary/50"
-              />
-            </div>
+    <div className="container mx-auto  space-y-2 max-w-4xl">
+      <Datepicker
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+      />
+      {meta.parameters && (
+        <div className="flex  mx-auto px-6 md:px-8 flex-row items-center justify-between text-xs md:text-sm font-bold dark:text-mygray text-primary">
+          <div className="flex items-center gap-2">
+            <Clock8 className="w-4 h-4" />{" "}
+            <p>{meta.parameters.timezone ?? timezone}</p>
           </div>
-        )}
-
-        {isLoading && (
-          <FullPage center>
-            <Loading />
-          </FullPage>
-        )}
-
-        {!isLoading && error && (
-          <FullPage center>
-            <FixturesError
-              message={error}
-              onRetry={() => setSelectedDate(new Date(selectedDate))}
+          <div className="flex items-center gap-2">
+            {hideScores ? (
+              <EyeClosed className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+            <span className="text-xs font-medium">Scores</span>
+            <Switch
+              checked={hideScores}
+              onCheckedChange={setHideScores}
+              aria-label={hideScores ? "Show scores" : "Hide scores"}
+              className="data-[state=unchecked]:bg-primary/50"
             />
-          </FullPage>
-        )}
+          </div>
+        </div>
+      )}
 
-        {!isLoading && !error && groupedFixtures.length === 0 && (
-          <FullPage center>
-            <NoGame date={formatDateParam(selectedDate)} />
-          </FullPage>
-        )}
+      {isLoading && (
+        <FullPage center>
+          <Loading />
+        </FullPage>
+      )}
 
-        {!isLoading && !error && groupedFixtures.length > 0 && (
-          <FullPage>
-            <div className="flex flex-col  justify-center  items-center pt-2 pb-10 md:pt-3 md:pb-12 space-y-5">
-              {groupedFixtures.map((group) => (
-                <div
-                  className="justify-center items-center flex flex-col space-y-2"
-                  key={group.leagueId}
+      {!isLoading && error && (
+        <FullPage center>
+          <FixturesError
+            message={error}
+            onRetry={() => setSelectedDate(new Date(selectedDate))}
+          />
+        </FullPage>
+      )}
+
+      {!isLoading && !error && groupedFixtures.length === 0 && (
+        <FullPage center>
+          <NoGame date={formatDateParam(selectedDate)} />
+        </FullPage>
+      )}
+
+      {!isLoading && !error && groupedFixtures.length > 0 && (
+        <FullPage>
+          <div className="flex flex-col  justify-center  items-center pt-2 pb-10 md:pt-3 md:pb-12 space-y-5">
+            {groupedFixtures.map((group) => (
+              <div
+                className="justify-center items-center flex flex-col space-y-2"
+                key={group.leagueId}
+              >
+                <Link
+                  className="flex ml-2   items-center gap-1 hover:text-primary"
+                  href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
                 >
-                  <Link
-                    className="flex ml-2   items-center gap-1 hover:text-primary"
-                    href={`/stats/${group.leagueId}?season=${group.season}&tab=standings`}
-                  >
-                    <p className="text-sm md:text-base text-center font-semibold ">
-                      {group.leagueName}
-                    </p>
-                    <ChevronRight className="w-5 h-5 text-bold mt-0.5  " />
-                  </Link>
-                  {group.fixtures.map((fixture) => {
-                    const statusInfo = getFixtureStatus(
-                      fixture.fixture.status.short
-                    );
-                    const isInPlay = statusInfo.type === "In Play";
-                    const hasStarted =
-                      isInPlay || statusInfo.type === "Finished";
-                    const kickoffTime = new Date(
-                      fixture.fixture.date
-                    ).toLocaleTimeString(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                      timeZone: fixture.fixture.timezone,
-                    });
+                  <p className="text-sm md:text-base text-center font-semibold ">
+                    {group.leagueName}
+                  </p>
+                  <ChevronRight className="w-5 h-5 text-bold mt-0.5  " />
+                </Link>
+                {group.fixtures.map((fixture) => {
+                  const statusInfo = getFixtureStatus(
+                    fixture.fixture.status.short
+                  );
+                  const isInPlay = statusInfo.type === "In Play";
+                  const hasStarted = isInPlay || statusInfo.type === "Finished";
+                  const kickoffTime = new Date(
+                    fixture.fixture.date
+                  ).toLocaleTimeString(undefined, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                    timeZone: fixture.fixture.timezone,
+                  });
 
-                    const borderClass = isInPlay
-                      ? ""
-                      : `border-l-[6px] ${
-                          statusInfo.type === "Finished"
-                            ? "border-primary/80"
-                            : "border-mygray dark:border-mygray/50"
-                        }`;
+                  const borderClass = isInPlay
+                    ? ""
+                    : `border-l-[6px] ${
+                        statusInfo.type === "Finished"
+                          ? "border-primary/80"
+                          : "border-mygray dark:border-mygray/50"
+                      }`;
 
-                    return (
-                      <div
-                        key={fixture.fixture.id}
-                        className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden`}
-                      >
-                        {isInPlay && (
-                          <>
-                            <span className="pointer-events-none absolute inset-y-0 left-0 w-[6px] animate-pulse bg-gradient-to-b from-primary via-primary/80 to-primary/30"></span>
-                            <span
-                              className="pointer-events-none absolute inset-y-0 left-0 w-[6px] bg-primary/50 blur-sm opacity-70 animate-pulse"
-                              style={{ animationDelay: "0.4s" }}
-                            ></span>
-                          </>
-                        )}
-                        <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
-                          <TeamInfo
-                            team={fixture.teams.home}
-                            orientation="home"
-                            className="col-span-3"
-                            nameClassName="text-xs md:text-sm font-medium"
-                          />
-                          <div className="col-span-1 flex  flex-col items-center justify-center   gap-1">
-                            {hasStarted ? (
-                              <div className="flex h-6  items-center justify-center gap-4">
-                                {hideScores ? (
-                                  <>
-                                    <span className="text-base  font-bold md:text-base">
-                                      –
-                                    </span>
-                                    <span className="h-6 w-[2px] bg-primary/50 " />
-                                    <span className="text-base font-bold md:text-base">
-                                      –
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="text-lg  w-3  font-bold md:text-xl">
-                                      {formatGoals(fixture.goals.home)}
-                                    </span>
-                                    <span className="h-6 w-[2px] bg-primary/50 " />
-                                    <span className="text-lg w-3  font-bold md:text-xl">
-                                      {formatGoals(fixture.goals.away)}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="text-center">
-                                <p className="text-md md:text-lg font-medium">
-                                  {kickoffTime}
-                                </p>
-                              </div>
-                            )}
-                            {statusInfo.type !== "Scheduled" && (
-                              <p className="text-xs font-semibold uppercase tracking-wide">
-                                {statusInfo.short}
+                  return (
+                    <div
+                      key={fixture.fixture.id}
+                      className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden`}
+                    >
+                      {isInPlay && (
+                        <>
+                          <span className="pointer-events-none absolute inset-y-0 left-0 w-[6px] animate-pulse bg-gradient-to-b from-primary via-primary/80 to-primary/30"></span>
+                          <span
+                            className="pointer-events-none absolute inset-y-0 left-0 w-[6px] bg-primary/50 blur-sm opacity-70 animate-pulse"
+                            style={{ animationDelay: "0.4s" }}
+                          ></span>
+                        </>
+                      )}
+                      <div className="w-[90vw]  md:w-[700px] lg:w-[750px]  grid grid-cols-7">
+                        <TeamInfo
+                          team={fixture.teams.home}
+                          orientation="home"
+                          className="col-span-3"
+                          nameClassName="text-xs md:text-sm font-medium"
+                        />
+                        <div className="col-span-1 flex  flex-col items-center justify-center   gap-1">
+                          {hasStarted ? (
+                            <div className="flex h-6  items-center justify-center gap-4">
+                              {hideScores ? (
+                                <>
+                                  <span className="text-base  font-bold md:text-base">
+                                    –
+                                  </span>
+                                  <span className="h-6 w-[2px] bg-primary/50 " />
+                                  <span className="text-base font-bold md:text-base">
+                                    –
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-lg  w-3  font-bold md:text-xl">
+                                    {formatGoals(fixture.goals.home)}
+                                  </span>
+                                  <span className="h-6 w-[2px] bg-primary/50 " />
+                                  <span className="text-lg w-3  font-bold md:text-xl">
+                                    {formatGoals(fixture.goals.away)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <p className="text-md md:text-lg font-medium">
+                                {kickoffTime}
                               </p>
-                            )}
-                          </div>
-                          <TeamInfo
-                            team={fixture.teams.away}
-                            orientation="away"
-                            className="col-span-3"
-                            nameClassName="text-xs md:text-sm font-medium"
-                          />
+                            </div>
+                          )}
+                          {statusInfo.type !== "Scheduled" && (
+                            <p className="text-xs font-semibold uppercase tracking-wide">
+                              {statusInfo.short}
+                            </p>
+                          )}
                         </div>
+                        <TeamInfo
+                          team={fixture.teams.away}
+                          orientation="away"
+                          className="col-span-3"
+                          nameClassName="text-xs md:text-sm font-medium"
+                        />
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </FullPage>
-        )}
-      </div>
-    </MinHeight>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </FullPage>
+      )}
+    </div>
   );
 }
