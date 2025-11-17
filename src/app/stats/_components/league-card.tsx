@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { LeagueResponseItem, LeagueSeason } from "@/type/league";
-import { Earth, Calendar } from "lucide-react";
+import { Earth } from "lucide-react";
 interface LeagueCardProps {
   league: LeagueResponseItem;
   season: number;
