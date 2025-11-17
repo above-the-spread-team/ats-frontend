@@ -1,6 +1,13 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TabType = "standings" | "leaders" | "teams";
 
@@ -15,10 +22,11 @@ export default function SeasonSelect({ season, activeTab }: SeasonSelectProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const handleSeasonChange = (newSeason: number) => {
+  const handleSeasonChange = (newSeason: string) => {
+    const seasonNum = parseInt(newSeason, 10);
     // Get current search params and update only the season
     const params = new URLSearchParams(searchParams.toString());
-    params.set("season", newSeason.toString());
+    params.set("season", seasonNum.toString());
 
     // Preserve the tab parameter if it exists in the URL
     // If no tab in URL but activeTab is provided and not "standings", set it
@@ -30,6 +38,11 @@ export default function SeasonSelect({ season, activeTab }: SeasonSelectProps) {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const seasons = Array.from({ length: 5 }, (_, i) => {
+    const year = new Date().getFullYear() - i;
+    return { value: year.toString(), label: `${year}/${year + 1}` };
+  });
+
   return (
     <div className="flex items-center justify-end gap-2">
       <label
@@ -38,21 +51,25 @@ export default function SeasonSelect({ season, activeTab }: SeasonSelectProps) {
       >
         Season:
       </label>
-      <select
-        id="season-select"
-        value={season}
-        onChange={(e) => handleSeasonChange(parseInt(e.target.value, 10))}
-        className="px-3 py-1.5 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-      >
-        {Array.from({ length: 5 }, (_, i) => {
-          const year = new Date().getFullYear() - i;
-          return (
-            <option key={year} value={year}>
-              {year}/{year + 1}
-            </option>
-          );
-        })}
-      </select>
+      <Select value={season.toString()} onValueChange={handleSeasonChange}>
+        <SelectTrigger
+          id="season-select"
+          className="w-[100px] md:w-[120px] rounded-xl  font-medium  ring-1 ring-mygray"
+        >
+          <SelectValue placeholder="Select season" />
+        </SelectTrigger>
+        <SelectContent className="rounded-2xl p-1 bg-primary-active text-mygray">
+          {seasons.map((seasonOption) => (
+            <SelectItem
+              key={seasonOption.value}
+              value={seasonOption.value}
+              className="rounded-xl font-medium "
+            >
+              {seasonOption.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

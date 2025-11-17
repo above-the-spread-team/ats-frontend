@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { LeagueResponseItem, LeagueSeason } from "@/type/league";
-
+import { Earth, Calendar } from "lucide-react";
 interface LeagueCardProps {
   league: LeagueResponseItem;
   season: number;
@@ -34,7 +34,7 @@ export default function LeagueCard({
               src={league.league.logo}
               alt={league.league.name}
               fill
-              className="object-contain dark:p-1 dark:bg-mygray/30 dark:rounded-lg  "
+              className="object-contain dark:p-1 dark:bg-mygray/50 dark:rounded-lg  "
             />
           ) : (
             <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
@@ -51,31 +51,40 @@ export default function LeagueCard({
             {league.league.name}
           </h4>
 
-          <p className="text-sm text-muted-foreground">{league.country.name}</p>
-
-          {seasonData && (
-            <>
-              {seasonData.current && (
-                <span className="inline-block px-2 py-0.5 bg-primary/20 text-primary-font rounded-full text-xs font-semibold">
-                  Current Season
-                </span>
-              )}
-              <div className="text-xs text-muted-foreground">
-                {seasonData.start} - {seasonData.end}
-              </div>
-            </>
-          )}
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">
+              {league.country.name}
+            </p>
+            {league.country.flag ? (
+              <Image
+                src={league.country.flag}
+                alt={league.country.name}
+                width={32}
+                height={32}
+                className="object-contain w-4 md:w-6"
+              />
+            ) : (
+              <Earth className="w-4 md:w-5 text-muted-foreground" />
+            )}
+          </div>
         </div>
-        {league.country.flag && (
-          <Image
-            src={league.country.flag}
-            alt={league.country.name}
-            width={32}
-            height={32}
-            className="object-contain w-4 md:w-6"
-          />
-        )}
       </div>
+      {/* Season Info */}
+      {seasonData && (
+        <div className="flex items-center gap-2 mt-1 pt-2 border-t border-border/50">
+          {/* <Calendar className="w-3 h-3 text-muted-foreground flex-shrink-0" /> */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {seasonData.current && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary-font">
+                Current Season
+              </span>
+            )}
+            <span className="text-xs text-foreground">
+              {seasonData.start} - {seasonData.end}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 

@@ -25,7 +25,7 @@ export default function Section({
       <div className="flex items-center gap-2">
         <Icon className="w-5 h-5 text-primary" />
         <h3 className="md:text-base font-bold text-foreground">{title}</h3>
-        <span className="px-2 py-0.5 bg-muted rounded-full text-xs font-medium text-muted-foreground">
+        <span className="px-2 py-0.5 bg-mygray/20 rounded-full text-xs font-medium text-muted-foreground">
           {count}
         </span>
       </div>
