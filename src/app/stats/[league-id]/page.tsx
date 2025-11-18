@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
-import { Trophy, Award, Earth, ArrowLeft } from "lucide-react";
+import { Trophy, Award, Earth } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import StatsNav from "./_components/nav";
 import SeasonSelect from "./_components/season-select";
@@ -164,7 +163,7 @@ export default function LeagueStatsPage() {
           season={selectedSeason}
         />
       </div>
-      <div className=" container mx-auto max-w-6xl pb-10 pt-4 ">
+      <div className=" container mx-auto max-w-6xl pb-10 pt-2 ">
         {/* Tab Content */}
         {activeTab === "standings" && (
           <Standings leagueId={leagueId} season={selectedSeason} />
