@@ -22,6 +22,69 @@ import {
 import FullPage from "@/components/common/full-page";
 import type { LeadersApiResponse, LeaderResponseItem } from "@/type/leader";
 
+// Component to handle player image errors gracefully
+function PlayerImage({
+  src,
+  alt,
+  playerName,
+}: {
+  src: string;
+  alt: string;
+  playerName: string;
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  if (imageError) {
+    return (
+      <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0 bg-muted rounded-full flex items-center justify-center">
+        <span className="text-[8px] md:text-xs font-bold text-foreground/70">
+          {playerName
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="rounded-full object-cover"
+        sizes="(max-width: 768px) 20px, 32px"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
+
+// Component to handle team logo errors gracefully
+function TeamLogoImage({ src, alt }: { src: string; alt: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (imageError) {
+    return null; // Don't show anything if team logo fails
+  }
+
+  return (
+    <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 20px, 24px"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
+
 type LeaderType =
   | "topscorers"
   | "topassists"
@@ -409,15 +472,22 @@ export default function Leader({ leagueId, season }: LeaderProps) {
                             href={`/stats/player/${item.player.id}`}
                             className="flex items-center gap-1.5 md:gap-3 hover:opacity-80 transition-opacity"
                           >
-                            {item.player.photo && (
-                              <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0">
-                                <Image
-                                  src={item.player.photo}
-                                  alt={item.player.name}
-                                  fill
-                                  className="rounded-full object-cover"
-                                  sizes="(max-width: 768px) 20px, 32px"
-                                />
+                            {item.player.photo ? (
+                              <PlayerImage
+                                src={item.player.photo}
+                                alt={item.player.name}
+                                playerName={item.player.name}
+                              />
+                            ) : (
+                              <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0 bg-muted rounded-full flex items-center justify-center">
+                                <span className="text-[8px] md:text-xs font-bold text-foreground/70">
+                                  {item.player.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .slice(0, 2)
+                                    .toUpperCase()}
+                                </span>
                               </div>
                             )}
                             <p className="font-semibold text-foreground text-xs md:text-sm">
@@ -429,16 +499,11 @@ export default function Leader({ leagueId, season }: LeaderProps) {
                         {/* Team */}
                         <LeaderCell className="text-center ">
                           {stats && stats.team.logo && (
-                            <div className="flex items-center justify-start pl-4 md:pl-[21px]">
-                              <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
-                                <Image
-                                  src={stats.team.logo}
-                                  alt={stats.team.name}
-                                  fill
-                                  className="object-contain"
-                                  sizes="(max-width: 768px) 20px, 24px"
-                                />
-                              </div>
+                            <div className="flex items-center justify-center">
+                              <TeamLogoImage
+                                src={stats.team.logo}
+                                alt={stats.team.name}
+                              />
                             </div>
                           )}
                         </LeaderCell>

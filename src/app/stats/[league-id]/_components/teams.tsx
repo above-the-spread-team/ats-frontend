@@ -7,6 +7,42 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
 import type { TeamsApiResponse, TeamResponseItem } from "@/type/teams-info";
 
+// Component to handle image errors gracefully
+function TeamLogoImage({
+  src,
+  alt,
+  teamName,
+}: {
+  src: string;
+  alt: string;
+  teamName: string;
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  if (imageError) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-muted to-muted/80 rounded-xl flex items-center justify-center shadow-inner">
+        <span className="text-[10px] md:text-xs font-bold text-foreground/70">
+          {teamName.slice(0, 2).toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full bg-gradient-to-br from-muted/50 to-muted/30 rounded-xl shadow-inner">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 40px, 48px"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
+
 interface TeamsProps {
   leagueId: string;
   season: number;
@@ -77,7 +113,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
               >
                 <div className="relative flex flex-col items-center text-center space-y-2.5 md:space-y-3 flex-1">
                   {/* Logo Skeleton */}
-                  <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+                  <div className="relative w-8 h-8 md:w-10 md:h-10 flex-shrink-0">
                     <Skeleton className="w-full h-full rounded-xl" />
                   </div>
 
@@ -133,22 +169,18 @@ export default function Teams({ leagueId, season }: TeamsProps) {
                 {/* Subtle gradient overlay on hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/5 group-hover:to-primary/5 transition-all duration-300 rounded-xl" />
 
-                <div className="relative flex flex-col items-center text-center space-y-2.5 md:space-y-3 flex-1 z-10">
+                <div className="relative flex flex-col items-center justify-between text-center space-y-2.5 md:space-y-3 flex-1 z-10">
                   {/* Team Logo */}
-                  <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <div className="relative w-8 h-8 md:w-10 md:h-10 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
                     {item.team.logo ? (
-                      <div className="relative w-full h-full bg-gradient-to-br from-muted/50 to-muted/30 rounded-xl p-1.5 md:p-2 shadow-inner">
-                        <Image
-                          src={item.team.logo}
-                          alt={item.team.name}
-                          fill
-                          className="object-contain"
-                          sizes="(max-width: 768px) 48px, 56px"
-                        />
-                      </div>
+                      <TeamLogoImage
+                        src={item.team.logo}
+                        alt={item.team.name}
+                        teamName={item.team.name}
+                      />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-muted to-muted/80 rounded-xl flex items-center justify-center shadow-inner">
-                        <span className="text-xs font-bold text-foreground/70">
+                        <span className="text-[10px] md:text-xs font-bold text-foreground/70">
                           {item.team.name.slice(0, 2).toUpperCase()}
                         </span>
                       </div>

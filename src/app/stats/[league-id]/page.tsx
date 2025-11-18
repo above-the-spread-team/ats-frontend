@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Trophy, Award, Earth } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import IconBg from "@/components/common/icon-bg";
 import StatsNav from "./_components/nav";
 import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
@@ -90,14 +91,16 @@ export default function LeagueStatsPage() {
           ) : league ? (
             <div className="flex items-center gap-3">
               {league.league.logo && (
-                <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0 ">
-                  <Image
-                    src={league.league.logo}
-                    alt={league.league.name}
-                    fill
-                    className="object-contain dark:p-1 dark:bg-mygray/50 dark:rounded-lg "
-                    sizes="(max-width: 768px) 48px, 56px"
-                  />
+                <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+                  <IconBg className="w-full h-full">
+                    <Image
+                      src={league.league.logo}
+                      alt={league.league.name}
+                      fill
+                      className="object-contain dark:p-1"
+                      sizes="(max-width: 768px) 48px, 56px"
+                    />
+                  </IconBg>
                 </div>
               )}
               <div className="flex flex-col">
