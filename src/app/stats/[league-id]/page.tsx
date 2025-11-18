@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import FullPage from "@/components/common/full-page";
+import Link from "next/link";
+import { Trophy, Award, Earth, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import StatsNav from "./_components/nav";
 import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
@@ -74,96 +76,110 @@ export default function LeagueStatsPage() {
   }, [leagueId]);
 
   return (
-    <FullPage>
-      <div className="container mx-auto space-y-4 px-4 md:px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* League Information */}
-          {isLoadingLeague ? (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-muted rounded-lg animate-pulse" />
-              <div className="space-y-2">
-                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                <div className="h-3 w-24 bg-muted rounded animate-pulse" />
-              </div>
+    <div className="container mx-auto max-w-6xl space-y-4 px-4 md:px-6   md:py-4">
+      <Link
+        href="/stats"
+        className="hidden md:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back to Leagues</span>
+      </Link>
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        {/* League Information */}
+        {isLoadingLeague ? (
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-12 h-12 md:w-14 md:h-14 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
             </div>
-          ) : league ? (
-            <div className="flex items-center gap-3">
-              {league.league.logo && (
-                <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
-                  <Image
-                    src={league.league.logo}
-                    alt={league.league.name}
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 768px) 48px, 56px"
-                  />
-                </div>
-              )}
-              <div className="flex flex-col">
-                <h1 className="text-lg md:text-xl font-bold text-foreground">
-                  {league.league.name}
-                </h1>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {league.country.flag && (
-                    <div className="relative w-4 h-4 flex-shrink-0">
-                      <Image
-                        src={league.country.flag}
-                        alt={league.country.name}
-                        fill
-                        className="object-contain"
-                        sizes="16px"
-                      />
-                    </div>
-                  )}
-                  <span className="text-sm text-muted-foreground">
-                    {league.country.name}
-                  </span>
-                  {league.league.type && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
+          </div>
+        ) : league ? (
+          <div className="flex items-center gap-3">
+            {league.league.logo && (
+              <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+                <Image
+                  src={league.league.logo}
+                  alt={league.league.name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 48px, 56px"
+                />
+              </div>
+            )}
+            <div className="flex flex-col">
+              <h1 className="text-base md:text-lg font-bold text-foreground">
+                {league.league.name}
+              </h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                {league.country.flag ? (
+                  <div className="relative w-4 h-4 flex-shrink-0">
+                    <Image
+                      src={league.country.flag}
+                      alt={league.country.name}
+                      fill
+                      className="object-contain"
+                      sizes="16px"
+                    />
+                  </div>
+                ) : (
+                  <Earth className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {league.country.name}
+                </span>
+                {league.league.type && (
+                  <>
+                    <span className="text-muted-foreground">•</span>
+                    <div className="flex items-center gap-1.5">
+                      {league.league.type === "League" ? (
+                        <Award className="w-3.5 h-3.5 text-muted-foreground" />
+                      ) : league.league.type === "Cup" ? (
+                        <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
+                      ) : null}
                       <span className="text-sm text-muted-foreground capitalize">
                         {league.league.type}
                       </span>
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              League information unavailable
-            </div>
-          )}
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            League information unavailable
+          </div>
+        )}
 
-          {/* Season Selector */}
+        {/* Season Selector */}
+        <div className="flex w-full justify-end md:justify-start md:w-auto">
           <SeasonSelect
             leagueId={leagueId}
             season={selectedSeason}
             activeTab={activeTab}
           />
         </div>
-
-        {/* Tab Navigation */}
-        <StatsNav
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          leagueId={leagueId}
-          season={selectedSeason}
-        />
-
-        {/* Tab Content */}
-        <div className="mt-4">
-          {activeTab === "standings" && (
-            <Standings leagueId={leagueId} season={selectedSeason} />
-          )}
-          {activeTab === "leaders" && (
-            <Leader leagueId={leagueId} season={selectedSeason} />
-          )}
-          {activeTab === "teams" && (
-            <Teams leagueId={leagueId} season={selectedSeason} />
-          )}
-        </div>
       </div>
-    </FullPage>
+
+      {/* Tab Navigation */}
+      <StatsNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        leagueId={leagueId}
+        season={selectedSeason}
+      />
+
+      {/* Tab Content */}
+      {activeTab === "standings" && (
+        <Standings leagueId={leagueId} season={selectedSeason} />
+      )}
+      {activeTab === "leaders" && (
+        <Leader leagueId={leagueId} season={selectedSeason} />
+      )}
+      {activeTab === "teams" && (
+        <Teams leagueId={leagueId} season={selectedSeason} />
+      )}
+    </div>
   );
 }

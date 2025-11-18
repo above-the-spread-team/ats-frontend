@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Trophy, BarChart3, Users } from "lucide-react";
-
+import { BarChart3, Trophy, Users } from "lucide-react";
 type TabType = "standings" | "leaders" | "teams";
 
 interface StatsNavProps {
@@ -21,8 +20,8 @@ export default function StatsNav({
   const router = useRouter();
 
   const tabs = [
-    { id: "standings" as TabType, label: "Standings", icon: Trophy },
-    { id: "leaders" as TabType, label: "Leaders", icon: BarChart3 },
+    { id: "standings" as TabType, label: "Standings", icon: BarChart3 },
+    { id: "leaders" as TabType, label: "Leaders", icon: Trophy },
     { id: "teams" as TabType, label: "Teams", icon: Users },
   ];
 
@@ -45,7 +44,7 @@ export default function StatsNav({
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-2 md:px-4  py-1.5 md:py-2 border-b-2 transition-colors whitespace-nowrap ${
               isActive
                 ? "border-primary text-primary font-semibold"
                 : "border-transparent text-muted-foreground hover:text-foreground"

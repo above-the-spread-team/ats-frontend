@@ -181,8 +181,8 @@ export default function Tables() {
         <div className="flex gap-2 border-b border-border overflow-x-auto">
           {[
             { id: "all" as LeagueType, label: "All", icon: null },
-            { id: "league" as LeagueType, label: "Leagues", icon: Trophy },
-            { id: "cup" as LeagueType, label: "Cups", icon: Award },
+            { id: "league" as LeagueType, label: "Leagues", icon: Award },
+            { id: "cup" as LeagueType, label: "Cups", icon: Trophy },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = selectedType === tab.id;
@@ -276,14 +276,14 @@ export default function Tables() {
         <FullPage minusHeight={minusHeight} className="space-y-4 mt-4 pb-10">
           <Section
             title="Cups"
-            icon={Award}
+            icon={Trophy}
             count={groupedLeagues.cup.length}
             leagues={groupedLeagues.cup}
             renderLeagueCard={renderLeagueCard}
           />
           <Section
             title="Leagues"
-            icon={Trophy}
+            icon={Award}
             count={groupedLeagues.league.length}
             leagues={groupedLeagues.league}
             renderLeagueCard={renderLeagueCard}
