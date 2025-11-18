@@ -1,8 +1,17 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
-import Loading from "@/components/common/loading";
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import FullPage from "@/components/common/full-page";
 import type { StandingsApiResponse, StandingEntry } from "@/type/standing";
 
@@ -16,9 +25,38 @@ function getFormColor(result: string | null): string {
   return "bg-muted text-muted-foreground";
 }
 
+const tableColumns = [
+  { label: "", align: "left" as const },
+  { label: "Team", align: "left" as const },
+  { label: "P", align: "center" as const },
+  { label: "W", align: "center" as const },
+  { label: "D", align: "center" as const },
+  { label: "L", align: "center" as const },
+  { label: "GF", align: "center" as const },
+  { label: "GA", align: "center" as const },
+  { label: "GD", align: "center" as const },
+  { label: "Pts", align: "center" as const },
+  { label: "Form", align: "center" as const },
+];
+
 interface StandingsProps {
   leagueId: string;
   season: number;
+}
+
+// Reusable cell styles
+const cellBaseClass = "px-1 md:px-4 py-1.5 md:py-2";
+const cellStatClass = `${cellBaseClass} text-center text-[10px] md:text-sm text-muted-foreground`;
+
+// Reusable TableCell wrapper component
+function StandingCell({
+  className = cellBaseClass,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return <TableCell className={className}>{children}</TableCell>;
 }
 
 export default function Standings({ leagueId, season }: StandingsProps) {
@@ -93,264 +131,217 @@ export default function Standings({ leagueId, season }: StandingsProps) {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {isLoading && (
-        <FullPage>
-          <Loading />
-        </FullPage>
-      )}
-
-      {!isLoading && error && (
-        <FullPage>
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold text-destructive">{error}</p>
-          </div>
-        </FullPage>
-      )}
-
-      {!isLoading && !error && sortedStandings.length === 0 && (
-        <FullPage>
-          <div className="text-center">
-            <p className="text-lg font-semibold text-muted-foreground">
-              No standings available for this league and season
-            </p>
-          </div>
-        </FullPage>
-      )}
-
-      {!isLoading && !error && sortedStandings.length > 0 && (
-        <div className="overflow-x-auto">
-          <div className="min-w-full">
-            {/* Desktop Table */}
-            <table className="hidden md:table w-full border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
-                    Pos
-                  </th>
-                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
-                    Team
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    P
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    W
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    D
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    L
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    GF
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    GA
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    GD
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    Pts
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    Form
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedStandings.map((standing) => (
-                  <tr
-                    key={standing.team.id}
-                    className="border-b border-border hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="p-3 font-semibold text-foreground">
-                      {standing.rank}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        {standing.team.logo && (
-                          <Image
-                            src={standing.team.logo}
-                            alt={standing.team.name}
-                            width={24}
-                            height={24}
-                            className="object-contain"
-                          />
-                        )}
-                        <span className="font-medium text-foreground">
-                          {standing.team.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-3 text-center text-muted-foreground">
-                      {standing.all.played}
-                    </td>
-                    <td className="p-3 text-center text-muted-foreground">
-                      {standing.all.win}
-                    </td>
-                    <td className="p-3 text-center text-muted-foreground">
-                      {standing.all.draw}
-                    </td>
-                    <td className="p-3 text-center text-muted-foreground">
-                      {standing.all.lose}
-                    </td>
-                    <td className="p-3 text-center text-muted-foreground">
-                      {standing.all.goals.for}
-                    </td>
-                    <td className="p-3 text-center text-muted-foreground">
-                      {standing.all.goals.against}
-                    </td>
-                    <td
-                      className={`p-3 text-center font-semibold ${
-                        standing.goalsDiff > 0
-                          ? "text-green-600 dark:text-green-400"
-                          : standing.goalsDiff < 0
-                          ? "text-red-600 dark:text-red-400"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {standing.goalsDiff > 0 ? "+" : ""}
-                      {standing.goalsDiff}
-                    </td>
-                    <td className="p-3 text-center font-bold text-foreground">
-                      {standing.points}
-                    </td>
-                    <td className="p-3 text-center">
-                      {standing.form && (
-                        <div className="flex items-center justify-center gap-0.5">
-                          {standing.form.split("").map((result, idx) => (
-                            <span
-                              key={idx}
-                              className={`w-5 h-5 rounded text-xs font-bold flex items-center justify-center ${getFormColor(
-                                result
-                              )}`}
-                            >
-                              {result}
-                            </span>
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="overflow-x-auto -mx-4 md:mx-0">
+          <div className="min-w-full inline-block md:block">
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    {tableColumns.map((column) => (
+                      <TableHead
+                        key={column.label}
+                        className={`${
+                          column.align === "left" ? "text-left" : "text-center"
+                        } p-1.5 md:p-4  text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
+                      >
+                        {column.label}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 10 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="p-1.5 md:p-4">
+                        <Skeleton className="h-3 md:h-5 w-4 md:w-6" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4">
+                        <div className="flex items-center gap-1 md:gap-3">
+                          <Skeleton className="h-4 w-4 md:h-6 md:w-6 rounded" />
+                          <Skeleton className="h-3 md:h-4 w-20 md:w-32" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-5 md:w-8 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-5 md:w-8 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 md:w-10 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <Skeleton className="h-3 md:h-5 w-5 md:w-8 mx-auto" />
+                      </TableCell>
+                      <TableCell className="p-1.5 md:p-4 text-center">
+                        <div className="flex items-center justify-center gap-0.5 md:gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton
+                              key={i}
+                              className="h-3 w-3 md:h-5 md:w-5 rounded"
+                            />
                           ))}
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden space-y-3">
-              {sortedStandings.map((standing) => (
-                <div
-                  key={standing.team.id}
-                  className="bg-card border border-border rounded-lg p-4"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-foreground w-6">
-                        {standing.rank}
-                      </span>
-                      {standing.team.logo && (
-                        <Image
-                          src={standing.team.logo}
-                          alt={standing.team.name}
-                          width={32}
-                          height={32}
-                          className="object-contain"
-                        />
-                      )}
-                      <span className="font-semibold text-foreground">
-                        {standing.team.name}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-foreground">
-                        {standing.points}
-                      </div>
-                      <div className="text-xs text-muted-foreground">pts</div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-2 text-xs mb-2">
-                    <div className="text-center">
-                      <div className="text-muted-foreground">Played</div>
-                      <div className="font-semibold text-foreground">
-                        {standing.all.played}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-muted-foreground">W</div>
-                      <div className="font-semibold text-foreground">
-                        {standing.all.win}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-muted-foreground">D</div>
-                      <div className="font-semibold text-foreground">
-                        {standing.all.draw}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-muted-foreground">L</div>
-                      <div className="font-semibold text-foreground">
-                        {standing.all.lose}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <span className="text-muted-foreground">GD: </span>
-                        <span
-                          className={`font-semibold ${
-                            standing.goalsDiff > 0
-                              ? "text-green-600 dark:text-green-400"
-                              : standing.goalsDiff < 0
-                              ? "text-red-600 dark:text-red-400"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {standing.goalsDiff > 0 ? "+" : ""}
-                          {standing.goalsDiff}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">GF: </span>
-                        <span className="font-semibold text-foreground">
-                          {standing.all.goals.for}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">GA: </span>
-                        <span className="font-semibold text-foreground">
-                          {standing.all.goals.against}
-                        </span>
-                      </div>
-                    </div>
-                    {standing.form && (
-                      <div className="flex items-center gap-0.5">
-                        {standing.form.split("").map((result, idx) => (
-                          <span
-                            key={idx}
-                            className={`w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center ${getFormColor(
-                              result
-                            )}`}
-                          >
-                            {result}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <FullPage>
+        <div className="text-center space-y-4">
+          <p className="text-lg font-semibold text-destructive">{error}</p>
+        </div>
+      </FullPage>
+    );
+  }
+
+  if (sortedStandings.length === 0) {
+    return (
+      <FullPage>
+        <div className="text-center">
+          <p className="text-lg font-semibold text-muted-foreground">
+            No standings available for this league and season
+          </p>
+        </div>
+      </FullPage>
+    );
+  }
+
+  return (
+    <div className="container mx-auto max-w-6xl  ">
+      <div className="overflow-x-auto">
+        <div className="min-w-full inline-block md:block">
+          {/* Table - visible on all sizes */}
+          <div className="">
+            <Table>
+              <TableHeader className="bg-card">
+                <TableRow>
+                  {tableColumns.map((column) => (
+                    <TableHead
+                      key={column.label}
+                      className={`${
+                        column.align === "left" ? "text-left" : "text-center"
+                      } px-2 md:px-4  md:py-4  text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
+                    >
+                      {column.label}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody className="">
+                {sortedStandings.map((standing) => {
+                  return (
+                    <TableRow key={standing.team.id} className="">
+                      <StandingCell>
+                        <span className="font-bold pl-1 text-foreground text-[10px] md:text-sm">
+                          {standing.rank}
+                        </span>
+                      </StandingCell>
+                      <StandingCell>
+                        <Link
+                          href={`/stats/${leagueId}/${standing.team.id}?season=${season}`}
+                          className="flex items-center gap-1.5 md:gap-3 hover:opacity-80 transition-opacity"
+                        >
+                          {standing.team.logo && (
+                            <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0">
+                              <Image
+                                src={standing.team.logo}
+                                alt={standing.team.name}
+                                fill
+                                className="object-contain"
+                                sizes="(max-width: 768px) 20px, 32px"
+                              />
+                            </div>
+                          )}
+                          <span className="font-semibold text-foreground text-[10px] md:text-sm truncate max-w-[80px] md:max-w-none">
+                            {standing.team.name}
+                          </span>
+                        </Link>
+                      </StandingCell>
+                      <StandingCell className={cellStatClass}>
+                        {standing.all.played}
+                      </StandingCell>
+                      <StandingCell className={cellStatClass}>
+                        {standing.all.win}
+                      </StandingCell>
+                      <StandingCell className={cellStatClass}>
+                        {standing.all.draw}
+                      </StandingCell>
+                      <StandingCell className={cellStatClass}>
+                        {standing.all.lose}
+                      </StandingCell>
+                      <StandingCell className={cellStatClass}>
+                        {standing.all.goals.for}
+                      </StandingCell>
+                      <StandingCell className={cellStatClass}>
+                        {standing.all.goals.against}
+                      </StandingCell>
+                      <StandingCell
+                        className={`${cellBaseClass} text-center font-semibold text-[10px] md:text-sm ${
+                          standing.goalsDiff > 0
+                            ? "text-green-600 dark:text-green-400"
+                            : standing.goalsDiff < 0
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {standing.goalsDiff > 0 ? "+" : ""}
+                        {standing.goalsDiff}
+                      </StandingCell>
+                      <StandingCell className={`${cellBaseClass} text-center`}>
+                        <span className="font-bold text-foreground text-xs md:text-base">
+                          {standing.points}
+                        </span>
+                      </StandingCell>
+                      <StandingCell className={`${cellBaseClass} text-center `}>
+                        {standing.form && (
+                          <div className="flex  items-center justify-center gap-0.5 md:gap-1">
+                            {standing.form.split("").map((result, idx) => (
+                              <span
+                                key={idx}
+                                className={`w-4  h-4 md:w-6 md:h-6 rounded text-[8px] md:text-xs font-bold flex items-center justify-center ${getFormColor(
+                                  result
+                                )}`}
+                              >
+                                {result}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </StandingCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
