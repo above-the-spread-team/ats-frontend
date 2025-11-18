@@ -67,6 +67,9 @@ const getTableColumns = (type: LeaderType) => {
       { label: "Assists", align: "center" as const },
       { label: "Goals", align: "center" as const },
       { label: "Played", align: "center" as const },
+      { label: "Chances", align: "center" as const },
+      { label: "C/90", align: "center" as const },
+      { label: "Passes", align: "center" as const },
       { label: "Pos", align: "center" as const },
     ];
   } else {
@@ -206,6 +209,17 @@ export default function Leader({ leagueId, season }: LeaderProps) {
     return (shotsOnTarget / totalShots) * 100;
   };
 
+  // Helper functions for assists
+  const getChancesPer90 = (
+    stats: LeaderResponseItem["statistics"][0]
+  ): number | null => {
+    if (!stats) return null;
+    const chances = stats.passes.key ?? 0;
+    const minutes = stats.games.minutes ?? 0;
+    if (minutes === 0) return null;
+    return (chances / minutes) * 90;
+  };
+
   if (error) {
     return (
       <FullPage>
@@ -261,10 +275,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
                             <LeaderCell key={column.label}>
                               <div className="flex items-center gap-1.5 md:gap-3">
                                 <Skeleton className="h-5 w-5 md:h-8 md:w-8 rounded-full" />
-                                <div className="space-y-1">
-                                  <Skeleton className="h-3 md:h-4 w-20 md:w-32" />
-                                  <Skeleton className="h-2 md:h-3 w-16 md:w-24" />
-                                </div>
+                                <Skeleton className="h-3 md:h-4 w-20 md:w-32" />
                               </div>
                             </LeaderCell>
                           );
@@ -299,9 +310,9 @@ export default function Leader({ leagueId, season }: LeaderProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Dropdown Selector */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center pt-2 gap-2 px-4">
         <label
           htmlFor="leader-type-select"
           className="text-sm font-medium text-muted-foreground"
@@ -409,21 +420,16 @@ export default function Leader({ leagueId, season }: LeaderProps) {
                                 />
                               </div>
                             )}
-                            <div>
-                              <p className="font-semibold text-foreground text-xs md:text-sm">
-                                {item.player.name}
-                              </p>
-                              <p className="text-[10px] md:text-xs text-muted-foreground">
-                                {item.player.nationality}
-                              </p>
-                            </div>
+                            <p className="font-semibold text-foreground text-xs md:text-sm">
+                              {item.player.name}
+                            </p>
                           </Link>
                         </LeaderCell>
 
                         {/* Team */}
-                        <LeaderCell>
+                        <LeaderCell className="text-center ">
                           {stats && stats.team.logo && (
-                            <div className="flex items-center justify-center">
+                            <div className="flex items-center justify-start pl-4 md:pl-[21px]">
                               <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
                                 <Image
                                   src={stats.team.logo}
@@ -543,6 +549,29 @@ export default function Leader({ leagueId, season }: LeaderProps) {
                             {/* Played */}
                             <LeaderCell className={cellStatClass}>
                               {stats?.games.appearences ?? 0}
+                            </LeaderCell>
+
+                            {/* Chances Created */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.passes.key ?? 0}
+                            </LeaderCell>
+
+                            {/* Chances per 90 */}
+                            <LeaderCell className={cellStatClass}>
+                              {getChancesPer90(stats) !== null ? (
+                                <span className="text-xs md:text-sm">
+                                  {getChancesPer90(stats)!.toFixed(2)}
+                                </span>
+                              ) : (
+                                <span className="text-xs md:text-sm text-muted-foreground">
+                                  —
+                                </span>
+                              )}
+                            </LeaderCell>
+
+                            {/* Total Passes */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.passes.total ?? 0}
                             </LeaderCell>
 
                             {/* Position */}
