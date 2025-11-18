@@ -134,76 +134,76 @@ export default function Standings({ leagueId, season }: StandingsProps) {
   // Loading skeleton
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="overflow-x-auto -mx-4 md:mx-0">
-          <div className="min-w-full inline-block md:block">
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    {tableColumns.map((column) => (
-                      <TableHead
-                        key={column.label}
-                        className={`${
-                          column.align === "left" ? "text-left" : "text-center"
-                        } p-1.5 md:p-4  text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
-                      >
-                        {column.label}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 10 }).map((_, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="p-1.5 md:p-4">
-                        <Skeleton className="h-3 md:h-5 w-4 md:w-6" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4">
-                        <div className="flex items-center gap-1 md:gap-3">
-                          <Skeleton className="h-4 w-4 md:h-6 md:w-6 rounded" />
-                          <Skeleton className="h-3 md:h-4 w-20 md:w-32" />
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-5 md:w-8 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-5 md:w-8 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-4 w-6 md:w-10 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <Skeleton className="h-3 md:h-5 w-5 md:w-8 mx-auto" />
-                      </TableCell>
-                      <TableCell className="p-1.5 md:p-4 text-center">
-                        <div className="flex items-center justify-center gap-0.5 md:gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Skeleton
-                              key={i}
-                              className="h-3 w-3 md:h-5 md:w-5 rounded"
-                            />
-                          ))}
-                        </div>
-                      </TableCell>
-                    </TableRow>
+      <div className="overflow-x-auto">
+        <div className="min-w-full inline-block md:block">
+          <div className="overflow-hidden">
+            <Table>
+              <TableHeader className="bg-card ">
+                <TableRow>
+                  {tableColumns.map((column) => (
+                    <TableHead
+                      key={column.label}
+                      className={`${
+                        column.align === "left" ? "text-left" : "text-center"
+                      } px-2 md:px-4 md:py-4 text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
+                    >
+                      {column.label}
+                    </TableHead>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 12 }).map((_, idx) => (
+                  <TableRow key={idx}>
+                    <StandingCell>
+                      <Skeleton className="h-3 md:h-5 w-4 md:w-6 ml-1" />
+                    </StandingCell>
+                    <StandingCell>
+                      <div className="flex items-center gap-1.5 md:gap-3">
+                        <Skeleton className="h-5 w-5 md:h-8 md:w-8 rounded" />
+                        <Skeleton className="h-3 md:h-4 w-20 md:w-32" />
+                      </div>
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      <Skeleton className="h-3 md:h-4 w-4 md:w-6 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      <Skeleton className="h-3 md:h-4 w-5 md:w-8 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      <Skeleton className="h-3 md:h-4 w-5 md:w-8 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={`${cellBaseClass} text-center`}>
+                      <Skeleton className="h-3 md:h-4 w-6 md:w-10 mx-auto" />
+                    </StandingCell>
+                    <StandingCell className={`${cellBaseClass} text-center`}>
+                      <Skeleton className="h-3 md:h-5 w-5 md:w-8 mx-auto" />
+                    </StandingCell>
+                    <StandingCell
+                      className={`${cellBaseClass} text-center pr-2 md:pr-0`}
+                    >
+                      <div className="flex items-center justify-center gap-0.5 md:gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Skeleton
+                            key={i}
+                            className="h-4 w-4 md:h-6 md:w-6 rounded"
+                          />
+                        ))}
+                      </div>
+                    </StandingCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>
@@ -233,113 +233,113 @@ export default function Standings({ leagueId, season }: StandingsProps) {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl  ">
-      <div className="overflow-x-auto">
-        <div className="min-w-full inline-block md:block">
-          {/* Table - visible on all sizes */}
-          <div className="">
-            <Table>
-              <TableHeader className="bg-card">
-                <TableRow>
-                  {tableColumns.map((column) => (
-                    <TableHead
-                      key={column.label}
-                      className={`${
-                        column.align === "left" ? "text-left" : "text-center"
-                      } px-2 md:px-4  md:py-4  text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
-                    >
-                      {column.label}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody className="">
-                {sortedStandings.map((standing) => {
-                  return (
-                    <TableRow key={standing.team.id} className="">
-                      <StandingCell>
-                        <span className="font-bold pl-1 text-foreground text-[10px] md:text-sm">
-                          {standing.rank}
-                        </span>
-                      </StandingCell>
-                      <StandingCell>
-                        <Link
-                          href={`/stats/${leagueId}/${standing.team.id}?season=${season}`}
-                          className="flex items-center gap-1.5 md:gap-3 hover:opacity-80 transition-opacity"
-                        >
-                          {standing.team.logo && (
-                            <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0">
-                              <Image
-                                src={standing.team.logo}
-                                alt={standing.team.name}
-                                fill
-                                className="object-contain"
-                                sizes="(max-width: 768px) 20px, 32px"
-                              />
-                            </div>
-                          )}
-                          <span className="font-semibold text-foreground text-[10px] md:text-sm truncate max-w-[80px] md:max-w-none">
-                            {standing.team.name}
-                          </span>
-                        </Link>
-                      </StandingCell>
-                      <StandingCell className={cellStatClass}>
-                        {standing.all.played}
-                      </StandingCell>
-                      <StandingCell className={cellStatClass}>
-                        {standing.all.win}
-                      </StandingCell>
-                      <StandingCell className={cellStatClass}>
-                        {standing.all.draw}
-                      </StandingCell>
-                      <StandingCell className={cellStatClass}>
-                        {standing.all.lose}
-                      </StandingCell>
-                      <StandingCell className={cellStatClass}>
-                        {standing.all.goals.for}
-                      </StandingCell>
-                      <StandingCell className={cellStatClass}>
-                        {standing.all.goals.against}
-                      </StandingCell>
-                      <StandingCell
-                        className={`${cellBaseClass} text-center font-semibold text-[10px] md:text-sm ${
-                          standing.goalsDiff > 0
-                            ? "text-green-600 dark:text-green-400"
-                            : standing.goalsDiff < 0
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-muted-foreground"
-                        }`}
+    <div className="overflow-x-auto">
+      <div className="min-w-full inline-block md:block">
+        {/* Table - visible on all sizes */}
+        <div className="overflow-hidden">
+          <Table>
+            <TableHeader className="!py-0 ">
+              <TableRow>
+                {tableColumns.map((column) => (
+                  <TableHead
+                    key={column.label}
+                    className={`${
+                      column.align === "left" ? "text-left" : "text-center"
+                    } px-2 md:px-4    text-[10px] md:text-xs font-semibold text-muted-foreground  tracking-wider`}
+                  >
+                    {column.label}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody className="">
+              {sortedStandings.map((standing) => {
+                return (
+                  <TableRow key={standing.team.id} className="">
+                    <StandingCell>
+                      <span className="font-bold pl-1 text-foreground text-[10px] md:text-sm">
+                        {standing.rank}
+                      </span>
+                    </StandingCell>
+                    <StandingCell>
+                      <Link
+                        href={`/stats/${leagueId}/${standing.team.id}?season=${season}`}
+                        className="flex items-center gap-1.5 md:gap-3 hover:opacity-80 transition-opacity"
                       >
-                        {standing.goalsDiff > 0 ? "+" : ""}
-                        {standing.goalsDiff}
-                      </StandingCell>
-                      <StandingCell className={`${cellBaseClass} text-center`}>
-                        <span className="font-bold text-foreground text-xs md:text-base">
-                          {standing.points}
-                        </span>
-                      </StandingCell>
-                      <StandingCell className={`${cellBaseClass} text-center `}>
-                        {standing.form && (
-                          <div className="flex  items-center justify-center gap-0.5 md:gap-1">
-                            {standing.form.split("").map((result, idx) => (
-                              <span
-                                key={idx}
-                                className={`w-4  h-4 md:w-6 md:h-6 rounded text-[8px] md:text-xs font-bold flex items-center justify-center ${getFormColor(
-                                  result
-                                )}`}
-                              >
-                                {result}
-                              </span>
-                            ))}
+                        {standing.team.logo && (
+                          <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0">
+                            <Image
+                              src={standing.team.logo}
+                              alt={standing.team.name}
+                              fill
+                              className="object-contain"
+                              sizes="(max-width: 768px) 20px, 32px"
+                            />
                           </div>
                         )}
-                      </StandingCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                        <span className="font-semibold text-foreground text-[10px] md:text-sm truncate max-w-[80px] md:max-w-none">
+                          {standing.team.name}
+                        </span>
+                      </Link>
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      {standing.all.played}
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      {standing.all.win}
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      {standing.all.draw}
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      {standing.all.lose}
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      {standing.all.goals.for}
+                    </StandingCell>
+                    <StandingCell className={cellStatClass}>
+                      {standing.all.goals.against}
+                    </StandingCell>
+                    <StandingCell
+                      className={`${cellBaseClass} text-center font-semibold text-[10px] md:text-sm ${
+                        standing.goalsDiff > 0
+                          ? "text-green-600 dark:text-green-400"
+                          : standing.goalsDiff < 0
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {standing.goalsDiff > 0 ? "+" : ""}
+                      {standing.goalsDiff}
+                    </StandingCell>
+                    <StandingCell className={`${cellBaseClass} text-center`}>
+                      <span className="font-bold text-foreground text-xs md:text-base">
+                        {standing.points}
+                      </span>
+                    </StandingCell>
+                    <StandingCell
+                      className={`${cellBaseClass} text-center pr-2 md:pr-0`}
+                    >
+                      {standing.form && (
+                        <div className="flex  items-center justify-center gap-0.5 md:gap-1">
+                          {standing.form.split("").map((result, idx) => (
+                            <span
+                              key={idx}
+                              className={`w-4  h-4 md:w-6 md:h-6 rounded text-[8px] md:text-xs font-bold flex items-center justify-center ${getFormColor(
+                                result
+                              )}`}
+                            >
+                              {result}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </StandingCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

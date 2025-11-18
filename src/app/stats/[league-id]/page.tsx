@@ -77,14 +77,7 @@ export default function LeagueStatsPage() {
 
   return (
     <>
-      <div className="container mx-auto max-w-6xl space-y-4 px-4 md:px-6   md:py-4">
-        <Link
-          href="/stats"
-          className="hidden md:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Leagues</span>
-        </Link>
+      <div className="container mx-auto max-w-6xl space-y-4 px-4 md:px-6  pt-4 ">
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           {/* League Information */}
           {isLoadingLeague ? (
@@ -98,12 +91,12 @@ export default function LeagueStatsPage() {
           ) : league ? (
             <div className="flex items-center gap-3">
               {league.league.logo && (
-                <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+                <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0 ">
                   <Image
                     src={league.league.logo}
                     alt={league.league.name}
                     fill
-                    className="object-contain"
+                    className="object-contain dark:p-1 dark:bg-mygray/50 dark:rounded-lg "
                     sizes="(max-width: 768px) 48px, 56px"
                   />
                 </div>
@@ -171,7 +164,7 @@ export default function LeagueStatsPage() {
           season={selectedSeason}
         />
       </div>
-      <div className="mt-2 md:mt-0">
+      <div className=" container mx-auto max-w-6xl pb-10 pt-4 ">
         {/* Tab Content */}
         {activeTab === "standings" && (
           <Standings leagueId={leagueId} season={selectedSeason} />
