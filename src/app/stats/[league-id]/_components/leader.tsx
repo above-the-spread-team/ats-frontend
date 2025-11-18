@@ -1,8 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Loading from "@/components/common/loading";
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import FullPage from "@/components/common/full-page";
 import type { LeadersApiResponse, LeaderResponseItem } from "@/type/leader";
 
@@ -23,6 +39,64 @@ const LEADER_OPTIONS: { value: LeaderType; label: string }[] = [
   { value: "topyellowcards", label: "Yellow Cards" },
   { value: "topredcards", label: "Red Cards" },
 ];
+
+// Get table columns based on leader type
+const getTableColumns = (type: LeaderType) => {
+  const baseColumns = [
+    { label: "", align: "left" as const },
+    { label: "Player", align: "left" as const },
+    { label: "Team", align: "left" as const },
+  ];
+
+  if (type === "topscorers") {
+    return [
+      ...baseColumns,
+      { label: "Goals", align: "center" as const },
+      { label: "Assists", align: "center" as const },
+      { label: "Played", align: "center" as const },
+      { label: "G/90", align: "center" as const },
+      { label: "Min/G", align: "center" as const },
+      { label: "Shots", align: "center" as const },
+      { label: "Conv%", align: "center" as const },
+      { label: "Acc%", align: "center" as const },
+      { label: "Pos", align: "center" as const },
+    ];
+  } else if (type === "topassists") {
+    return [
+      ...baseColumns,
+      { label: "Assists", align: "center" as const },
+      { label: "Goals", align: "center" as const },
+      { label: "Played", align: "center" as const },
+      { label: "Pos", align: "center" as const },
+    ];
+  } else {
+    // Cards
+    return [
+      ...baseColumns,
+      {
+        label: type === "topyellowcards" ? "Yellow" : "Red",
+        align: "center" as const,
+      },
+      { label: "Played", align: "center" as const },
+      { label: "Pos", align: "center" as const },
+    ];
+  }
+};
+
+// Reusable cell styles
+const cellBaseClass = "px-1 md:px-4 py-1.5 md:py-2";
+const cellStatClass = `${cellBaseClass} text-center text-xs md:text-sm text-muted-foreground`;
+
+// Reusable TableCell wrapper component
+function LeaderCell({
+  className = cellBaseClass,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return <TableCell className={className}>{children}</TableCell>;
+}
 
 export default function Leader({ leagueId, season }: LeaderProps) {
   const [selectedType, setSelectedType] = useState<LeaderType>("topscorers");
@@ -106,13 +180,46 @@ export default function Leader({ leagueId, season }: LeaderProps) {
     }
   };
 
-  if (isLoading) {
-    return (
-      <FullPage>
-        <Loading />
-      </FullPage>
-    );
-  }
+  // Helper functions for calculations
+  const getGoalsPer90 = (
+    stats: LeaderResponseItem["statistics"][0]
+  ): number | null => {
+    if (!stats) return null;
+    const goals = stats.goals.total ?? 0;
+    const minutes = stats.games.minutes ?? 0;
+    if (minutes === 0) return null;
+    return (goals / minutes) * 90;
+  };
+
+  const getMinutesPerGoal = (
+    stats: LeaderResponseItem["statistics"][0]
+  ): number | null => {
+    if (!stats) return null;
+    const goals = stats.goals.total ?? 0;
+    const minutes = stats.games.minutes ?? 0;
+    if (goals === 0) return null;
+    return minutes / goals;
+  };
+
+  const getGoalConversion = (
+    stats: LeaderResponseItem["statistics"][0]
+  ): number | null => {
+    if (!stats) return null;
+    const goals = stats.goals.total ?? 0;
+    const totalShots = stats.shots.total ?? 0;
+    if (totalShots === 0) return null;
+    return (goals / totalShots) * 100;
+  };
+
+  const getShotAccuracy = (
+    stats: LeaderResponseItem["statistics"][0]
+  ): number | null => {
+    if (!stats) return null;
+    const shotsOnTarget = stats.shots.on ?? 0;
+    const totalShots = stats.shots.total ?? 0;
+    if (totalShots === 0) return null;
+    return (shotsOnTarget / totalShots) * 100;
+  };
 
   if (error) {
     return (
@@ -121,6 +228,88 @@ export default function Leader({ leagueId, season }: LeaderProps) {
           <p className="text-lg font-semibold text-destructive">{error}</p>
         </div>
       </FullPage>
+    );
+  }
+
+  // Loading skeleton
+  if (isLoading) {
+    const columns = getTableColumns(selectedType);
+    return (
+      <div className="space-y-4">
+        {/* Dropdown Selector Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="overflow-x-auto">
+          <div className="min-w-full inline-block md:block">
+            <div className="overflow-hidden">
+              <Table>
+                <TableHeader className="bg-card">
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableHead
+                        key={column.label}
+                        className={`${
+                          column.align === "left" ? "text-left" : "text-center"
+                        } px-2 md:px-4 text-xs md:text-xs font-semibold text-muted-foreground tracking-wider`}
+                      >
+                        {column.label}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 10 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      {columns.map((column, colIdx) => {
+                        if (colIdx === 0) {
+                          return (
+                            <LeaderCell key={column.label}>
+                              <Skeleton className="h-3 md:h-5 w-4 md:w-6 ml-1" />
+                            </LeaderCell>
+                          );
+                        } else if (colIdx === 1) {
+                          return (
+                            <LeaderCell key={column.label}>
+                              <div className="flex items-center gap-1.5 md:gap-3">
+                                <Skeleton className="h-5 w-5 md:h-8 md:w-8 rounded-full" />
+                                <div className="space-y-1">
+                                  <Skeleton className="h-3 md:h-4 w-20 md:w-32" />
+                                  <Skeleton className="h-2 md:h-3 w-16 md:w-24" />
+                                </div>
+                              </div>
+                            </LeaderCell>
+                          );
+                        } else if (colIdx === 2) {
+                          return (
+                            <LeaderCell key={column.label}>
+                              <div className="flex items-center justify-center">
+                                <Skeleton className="h-5 w-5 md:h-6 md:w-6 rounded" />
+                              </div>
+                            </LeaderCell>
+                          );
+                        } else {
+                          return (
+                            <LeaderCell
+                              key={column.label}
+                              className={cellStatClass}
+                            >
+                              <Skeleton className="h-3 md:h-4 w-6 md:w-10 mx-auto" />
+                            </LeaderCell>
+                          );
+                        }
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -134,18 +323,28 @@ export default function Leader({ leagueId, season }: LeaderProps) {
         >
           Leader Type:
         </label>
-        <select
-          id="leader-type-select"
+        <Select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value as LeaderType)}
-          className="px-3 py-1.5 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          onValueChange={(value) => setSelectedType(value as LeaderType)}
         >
-          {LEADER_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            id="leader-type-select"
+            className="w-[140px] md:w-[160px] rounded-xl font-medium ring-1 ring-mygray"
+          >
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent className="rounded-2xl p-1 bg-primary-active text-mygray">
+            {LEADER_OPTIONS.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="rounded-xl font-medium"
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {leaders.length === 0 && !isLoading && (
@@ -159,172 +358,244 @@ export default function Leader({ leagueId, season }: LeaderProps) {
       )}
 
       {leaders.length > 0 && (
-        <div className="space-y-4">
-          {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
-                    Rank
-                  </th>
-                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
-                    Player
-                  </th>
-                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground">
-                    Team
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    {getStatLabel()}
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    Appearances
-                  </th>
-                  <th className="text-center p-3 text-xs font-semibold text-muted-foreground">
-                    Position
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaders.map((item, index) => {
-                  const stats = item.statistics[0];
-                  const rank = index + 1;
-                  const statValue = getStatValue(item);
+        <div className="overflow-x-auto">
+          <div className="min-w-full inline-block md:block">
+            <div className="overflow-hidden">
+              <Table>
+                <TableHeader className="bg-card">
+                  <TableRow>
+                    {getTableColumns(selectedType).map((column) => (
+                      <TableHead
+                        key={column.label}
+                        className={`${
+                          column.align === "left" ? "text-left" : "text-center"
+                        } px-2 md:px-4 text-xs md:text-xs font-semibold text-muted-foreground tracking-wider`}
+                      >
+                        {column.label}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {leaders.map((item, index) => {
+                    const stats = item.statistics[0];
+                    const rank = index + 1;
+                    const statValue = getStatValue(item);
+                    const isTopScorers = selectedType === "topscorers";
+                    const isTopAssists = selectedType === "topassists";
 
-                  return (
-                    <tr
-                      key={item.player.id}
-                      className="border-b border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <td className="p-3 font-semibold text-foreground">
-                        {rank}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-3">
-                          {item.player.photo && (
-                            <Image
-                              src={item.player.photo}
-                              alt={item.player.name}
-                              width={40}
-                              height={40}
-                              className="rounded-full object-cover"
-                            />
-                          )}
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {item.player.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.player.nationality}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        {stats && (
-                          <div className="flex items-center gap-2">
-                            {stats.team.logo && (
-                              <Image
-                                src={stats.team.logo}
-                                alt={stats.team.name}
-                                width={24}
-                                height={24}
-                                className="object-contain"
-                              />
+                    // Calculations for top scorers
+                    const goalsPer90 = isTopScorers
+                      ? getGoalsPer90(stats)
+                      : null;
+                    const minutesPerGoal = isTopScorers
+                      ? getMinutesPerGoal(stats)
+                      : null;
+                    const goalConversion = isTopScorers
+                      ? getGoalConversion(stats)
+                      : null;
+                    const shotAccuracy = isTopScorers
+                      ? getShotAccuracy(stats)
+                      : null;
+
+                    return (
+                      <TableRow key={item.player.id}>
+                        {/* Rank */}
+                        <LeaderCell>
+                          <span className="font-bold pl-1 text-foreground text-xs md:text-sm">
+                            {rank}
+                          </span>
+                        </LeaderCell>
+
+                        {/* Player */}
+                        <LeaderCell>
+                          <Link
+                            href={`/stats/player/${item.player.id}`}
+                            className="flex items-center gap-1.5 md:gap-3 hover:opacity-80 transition-opacity"
+                          >
+                            {item.player.photo && (
+                              <div className="relative w-5 h-5 md:w-8 md:h-8 flex-shrink-0">
+                                <Image
+                                  src={item.player.photo}
+                                  alt={item.player.name}
+                                  fill
+                                  className="rounded-full object-cover"
+                                  sizes="(max-width: 768px) 20px, 32px"
+                                />
+                              </div>
                             )}
-                            <span className="text-sm text-foreground">
-                              {stats.team.name}
-                            </span>
-                          </div>
+                            <div>
+                              <p className="font-semibold text-foreground text-xs md:text-sm">
+                                {item.player.name}
+                              </p>
+                              <p className="text-[10px] md:text-xs text-muted-foreground">
+                                {item.player.nationality}
+                              </p>
+                            </div>
+                          </Link>
+                        </LeaderCell>
+
+                        {/* Team */}
+                        <LeaderCell>
+                          {stats && stats.team.logo && (
+                            <div className="flex items-center justify-center">
+                              <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+                                <Image
+                                  src={stats.team.logo}
+                                  alt={stats.team.name}
+                                  fill
+                                  className="object-contain"
+                                  sizes="(max-width: 768px) 20px, 24px"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </LeaderCell>
+
+                        {/* Top Scorers Columns */}
+                        {isTopScorers && (
+                          <>
+                            {/* Goals */}
+                            <LeaderCell
+                              className={`${cellBaseClass} text-center`}
+                            >
+                              <span className="font-bold text-primary text-xs md:text-base">
+                                {stats?.goals.total ?? 0}
+                              </span>
+                            </LeaderCell>
+
+                            {/* Assists */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.goals.assists ?? 0}
+                            </LeaderCell>
+
+                            {/* Played */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.games.appearences ?? 0}
+                            </LeaderCell>
+
+                            {/* Goals per 90 */}
+                            <LeaderCell className={cellStatClass}>
+                              {goalsPer90 !== null ? (
+                                <span className="text-xs md:text-sm">
+                                  {goalsPer90.toFixed(2)}
+                                </span>
+                              ) : (
+                                <span className="text-xs md:text-sm text-muted-foreground">
+                                  —
+                                </span>
+                              )}
+                            </LeaderCell>
+
+                            {/* Minutes per Goal */}
+                            <LeaderCell className={cellStatClass}>
+                              {minutesPerGoal !== null ? (
+                                <span className="text-xs md:text-sm">
+                                  {Math.round(minutesPerGoal)}
+                                </span>
+                              ) : (
+                                <span className="text-xs md:text-sm text-muted-foreground">
+                                  —
+                                </span>
+                              )}
+                            </LeaderCell>
+
+                            {/* Total Shots */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.shots.total ?? 0}
+                            </LeaderCell>
+
+                            {/* Goal Conversion */}
+                            <LeaderCell className={cellStatClass}>
+                              {goalConversion !== null ? (
+                                <span className="text-xs md:text-sm">
+                                  {goalConversion.toFixed(1)}%
+                                </span>
+                              ) : (
+                                <span className="text-xs md:text-sm text-muted-foreground">
+                                  —
+                                </span>
+                              )}
+                            </LeaderCell>
+
+                            {/* Shot Accuracy */}
+                            <LeaderCell className={cellStatClass}>
+                              {shotAccuracy !== null ? (
+                                <span className="text-xs md:text-sm">
+                                  {shotAccuracy.toFixed(1)}%
+                                </span>
+                              ) : (
+                                <span className="text-xs md:text-sm text-muted-foreground">
+                                  —
+                                </span>
+                              )}
+                            </LeaderCell>
+
+                            {/* Position */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.games.position ?? "—"}
+                            </LeaderCell>
+                          </>
                         )}
-                      </td>
-                      <td className="p-3 text-center">
-                        <span className="text-lg font-bold text-primary">
-                          {statValue}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center text-muted-foreground">
-                        {stats?.games.appearences ?? 0}
-                      </td>
-                      <td className="p-3 text-center text-muted-foreground text-sm">
-                        {stats?.games.position ?? "—"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
 
-          {/* Mobile Cards */}
-          <div className="md:hidden space-y-3">
-            {leaders.map((item, index) => {
-              const stats = item.statistics[0];
-              const rank = index + 1;
-              const statValue = getStatValue(item);
+                        {/* Top Assists Columns */}
+                        {isTopAssists && (
+                          <>
+                            {/* Assists */}
+                            <LeaderCell
+                              className={`${cellBaseClass} text-center`}
+                            >
+                              <span className="font-bold text-primary text-xs md:text-base">
+                                {statValue}
+                              </span>
+                            </LeaderCell>
 
-              return (
-                <div
-                  key={item.player.id}
-                  className="bg-card border border-border rounded-lg p-4"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-foreground w-6">
-                        {rank}
-                      </span>
-                      {item.player.photo && (
-                        <Image
-                          src={item.player.photo}
-                          alt={item.player.name}
-                          width={48}
-                          height={48}
-                          className="rounded-full object-cover"
-                        />
-                      )}
-                      <div>
-                        <p className="font-semibold text-foreground">
-                          {item.player.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {item.player.nationality}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">
-                        {statValue}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {getStatLabel()}
-                      </div>
-                    </div>
-                  </div>
+                            {/* Goals */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.goals.total ?? 0}
+                            </LeaderCell>
 
-                  {stats && (
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <div className="flex items-center gap-2">
-                        {stats.team.logo && (
-                          <Image
-                            src={stats.team.logo}
-                            alt={stats.team.name}
-                            width={20}
-                            height={20}
-                            className="object-contain"
-                          />
+                            {/* Played */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.games.appearences ?? 0}
+                            </LeaderCell>
+
+                            {/* Position */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.games.position ?? "—"}
+                            </LeaderCell>
+                          </>
                         )}
-                        <span className="text-sm text-foreground">
-                          {stats.team.name}
-                        </span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {stats.games.appearences} apps • {stats.games.position}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+
+                        {/* Cards Columns */}
+                        {!isTopScorers && !isTopAssists && (
+                          <>
+                            {/* Cards */}
+                            <LeaderCell
+                              className={`${cellBaseClass} text-center`}
+                            >
+                              <span className="font-bold text-primary text-xs md:text-base">
+                                {statValue}
+                              </span>
+                            </LeaderCell>
+
+                            {/* Played */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.games.appearences ?? 0}
+                            </LeaderCell>
+
+                            {/* Position */}
+                            <LeaderCell className={cellStatClass}>
+                              {stats?.games.position ?? "—"}
+                            </LeaderCell>
+                          </>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       )}
