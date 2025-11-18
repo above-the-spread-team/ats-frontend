@@ -138,14 +138,14 @@ export default function Standings({ leagueId, season }: StandingsProps) {
         <div className="min-w-full inline-block md:block">
           <div className="overflow-hidden">
             <Table>
-              <TableHeader className="bg-card ">
+              <TableHeader className="bg-card  ">
                 <TableRow>
                   {tableColumns.map((column) => (
                     <TableHead
                       key={column.label}
                       className={`${
                         column.align === "left" ? "text-left" : "text-center"
-                      } px-2 md:px-4 md:py-4 text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider`}
+                      } px-2 md:px-4   text-[10px] md:text-xs font-semibold text-muted-foreground  tracking-wider`}
                     >
                       {column.label}
                     </TableHead>
@@ -238,7 +238,7 @@ export default function Standings({ leagueId, season }: StandingsProps) {
         {/* Table - visible on all sizes */}
         <div className="overflow-hidden">
           <Table>
-            <TableHeader className="!py-0 ">
+            <TableHeader className="bg-card">
               <TableRow>
                 {tableColumns.map((column) => (
                   <TableHead

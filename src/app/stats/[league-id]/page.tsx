@@ -163,7 +163,7 @@ export default function LeagueStatsPage() {
           season={selectedSeason}
         />
       </div>
-      <div className=" container mx-auto max-w-6xl pb-10 pt-2 ">
+      <div className=" container mx-auto max-w-6xl pb-10 pt-2 md:pt-4 ">
         {/* Tab Content */}
         {activeTab === "standings" && (
           <Standings leagueId={leagueId} season={selectedSeason} />
