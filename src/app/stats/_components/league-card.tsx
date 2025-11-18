@@ -75,11 +75,11 @@ export default function LeagueCard({
           {/* <Calendar className="w-3 h-3 text-muted-foreground flex-shrink-0" /> */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {seasonData.current && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary-font">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-xl text-xs font-medium bg-primary/20 text-primary-font/70">
                 Current Season
               </span>
             )}
-            <span className="text-xs text-foreground">
+            <span className="text-xs text-muted-foreground/90">
               {seasonData.start} - {seasonData.end}
             </span>
           </div>
