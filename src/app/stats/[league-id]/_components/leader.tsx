@@ -236,7 +236,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
     return (
       <div className="space-y-4">
         {/* Dropdown Selector Skeleton */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center pt-2 md:pt-0 gap-2 px-4">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-8 w-32" />
         </div>
@@ -312,7 +312,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
   return (
     <div className="space-y-3">
       {/* Dropdown Selector */}
-      <div className="flex items-center pt-2 gap-2 px-4">
+      <div className="flex items-center pt-2 md:pt-0 gap-2 px-4">
         <label
           htmlFor="leader-type-select"
           className="text-sm font-medium text-muted-foreground"
