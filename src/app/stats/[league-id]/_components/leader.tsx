@@ -165,21 +165,6 @@ export default function Leader({ leagueId, season }: LeaderProps) {
     }
   };
 
-  const getStatLabel = (): string => {
-    switch (selectedType) {
-      case "topscorers":
-        return "Goals";
-      case "topassists":
-        return "Assists";
-      case "topyellowcards":
-        return "Yellow Cards";
-      case "topredcards":
-        return "Red Cards";
-      default:
-        return "";
-    }
-  };
-
   // Helper functions for calculations
   const getGoalsPer90 = (
     stats: LeaderResponseItem["statistics"][0]
