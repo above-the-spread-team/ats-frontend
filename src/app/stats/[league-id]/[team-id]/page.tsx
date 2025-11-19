@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Building2, Armchair } from "lucide-react";
+import { ArrowLeft, MapPin, Building2, Armchair, Divide } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import IconBg from "@/components/common/icon-bg";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -196,13 +196,17 @@ export default function TeamPage() {
               )}
             </div>
           </div>
-          <div className="flex w-full justify-end md:justify-start md:w-auto">
-            <SeasonSelect
-              leagueId={leagueId}
-              season={season}
-              activeTab="teams"
-            />
-          </div>
+          {activeTab !== "squad" ? (
+            <div className="flex w-full justify-end md:justify-start md:w-auto">
+              <SeasonSelect
+                leagueId={leagueId}
+                season={season}
+                activeTab="teams"
+              />
+            </div>
+          ) : (
+            <div>{""}</div>
+          )}
         </div>
 
         {teamInfo && (

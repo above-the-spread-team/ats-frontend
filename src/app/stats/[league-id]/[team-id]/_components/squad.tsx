@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
+import { Users, Calendar } from "lucide-react";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
 
 interface SquadProps {
@@ -58,9 +59,8 @@ function PlayerImage({
 export default function Squad({ teamId }: SquadProps) {
   const searchParams = useSearchParams();
   const seasonParam = searchParams.get("season");
-  const season = seasonParam
-    ? parseInt(seasonParam, 10)
-    : new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
+  const season = seasonParam ? parseInt(seasonParam, 10) : currentYear;
 
   const [squad, setSquad] = useState<SquadsApiResponse["response"][0] | null>(
     null
@@ -156,19 +156,39 @@ export default function Squad({ teamId }: SquadProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 md:space-y-6 px-1 md:px-0">
+      <div className="space-y-5 md:space-y-6 px-1 md:px-0">
+        {/* Total Players and Season Skeleton */}
+        <div className="flex items-center justify-between px-2 rounded-2xl">
+          <div className="flex items-center gap-2">
+            <Skeleton className="w-6 h-6 md:w-7 md:h-7 rounded-md" />
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-4 md:h-5 w-24 md:w-28" />
+              <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="w-6 h-6 md:w-7 md:h-7 rounded-md" />
+            <div className="flex flex-col items-end gap-1">
+              <Skeleton className="h-4 md:h-5 w-20 md:w-24" />
+              <Skeleton className="h-3 md:h-4 w-16 md:w-20" />
+            </div>
+          </div>
+        </div>
+
         {/* Position Sections Skeleton */}
         {Array.from({ length: 4 }).map((_, idx) => (
-          <div key={idx} className="">
-            <Skeleton className="h-5 md:h-6 w-32 mb-3 md:mb-4" />
+          <div key={idx} className="space-y-3 md:space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-border/50">
+              <Skeleton className="h-5 md:h-6 w-32" />
+            </div>
             <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3">
               {Array.from({ length: 7 }).map((_, playerIdx) => (
                 <div
                   key={playerIdx}
-                  className="flex flex-col items-center gap-2 py-2 bg-card rounded-2xl"
+                  className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-card rounded-xl"
                 >
                   <Skeleton className="w-12 h-12 md:w-14 md:h-14 rounded-full" />
-                  <div className="w-full text-center space-y-1">
+                  <div className="w-full text-center space-y-1.5">
                     <Skeleton className="h-3.5 md:h-4 w-16 mx-auto" />
                     <Skeleton className="h-3 md:h-3.5 w-12 mx-auto" />
                   </div>
@@ -194,39 +214,74 @@ export default function Squad({ teamId }: SquadProps) {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 px-1 md:px-0">
+    <div className="space-y-5 md:space-y-6 px-1 md:px-0">
+      {/* Total Players and Season */}
+      <div className="flex items-center justify-between px-2 rounded-2xl">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-primary/10 rounded-md">
+            <Users className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs md:text-sm font-semibold text-foreground">
+              {squad.players.length}{" "}
+              {squad.players.length === 1 ? "player" : "players"}
+            </span>
+            <span className="text-[10px] md:text-xs text-muted-foreground">
+              Total squad members
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-primary/10 rounded-md">
+            <Calendar className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-xs md:text-sm font-semibold text-foreground">
+              Season {currentYear}
+            </span>
+            <span className="text-[10px] md:text-xs text-muted-foreground">
+              Current season
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Players by Position */}
       {Object.entries(playersByPosition).map(([position, players]) => (
-        <div key={position} className="">
-          <h3 className="text-sm md:text-base font-bold text-foreground mb-3 md:mb-4 flex items-center gap-2">
-            <span>{position}</span>
-            <span className="text-xs md:text-sm font-normal text-muted-foreground">
-              ({players.length})
-            </span>
-          </h3>
-          <div className="grid grid-cols-3 sm:grid-cols-5  md:grid-cols-6 lg:grid-cols-7  gap-2 md:gap-3">
+        <div key={position} className="space-y-3 md:space-y-4">
+          <div className="flex items-center gap-3 pb-2 border-b border-border/50">
+            <h3 className="text-sm md:text-base font-bold text-foreground flex items-center gap-2">
+              <span>{position}</span>
+              <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-xs md:text-sm font-semibold">
+                {players.length}
+              </span>
+            </h3>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3">
             {players.map((player) => (
               <Link
                 key={player.id}
                 href={`/stats/player/${player.id}?season=${season}`}
-                className="flex flex-col items-center gap-2 py-2 bg-card  rounded-2xl transition-all duration-300 group hover:shadow-lg hover:-translate-y-0 hover:border-primary/40 hover:bg-gradient-to-br hover:from-card hover:to-card/95"
+                className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-xl shadow-sm transition-all duration-300 group hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 hover:bg-gradient-to-br hover:from-card hover:via-card/98 hover:to-card/95"
               >
-                <PlayerImage
-                  src={player.photo}
-                  alt={player.name}
-                  playerName={player.name}
-                />
-                <div className="w-full text-center space-y-1">
+                <div className="transition-transform duration-300 group-hover:scale-105">
+                  <PlayerImage
+                    src={player.photo}
+                    alt={player.name}
+                    playerName={player.name}
+                  />
+                </div>
+                <div className="w-full text-center space-y-1.5">
                   <p className="text-[11px] md:text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors duration-300">
                     {player.name}
                   </p>
                   <div className="flex items-center justify-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground">
                     {player.number !== null && (
                       <>
-                        <span className="font-medium bg-muted/60 px-1.5 py-0.5 rounded group-hover:bg-primary/20 group-hover:text-primary transition-colors duration-300">
+                        <span className="font-medium bg-gradient-to-br from-muted/80 to-muted/60 px-2 py-0.5 rounded-md border border-border/30 group-hover:bg-primary/20 group-hover:text-primary group-hover:border-primary/30 transition-all duration-300">
                           #{player.number}
                         </span>
-                        <span>•</span>
+                        <span className="text-muted-foreground/50">•</span>
                       </>
                     )}
                     <span className="group-hover:text-foreground transition-colors duration-300">
