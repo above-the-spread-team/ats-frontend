@@ -17,6 +17,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        bar: {
+          green: "hsl(var(--bar-green))",
+          red: "hsl(var(--bar-red))",
+          yellow: "hsl(var(--bar-yellow))",
+        },
         icon: {
           hover: "hsl(var(--icon-hover))",
         },
