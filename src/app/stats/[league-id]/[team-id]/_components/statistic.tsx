@@ -473,7 +473,7 @@ export default function Statistic({
                   <div key={minute} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] md:text-xs font-medium text-foreground">
-                        {minute}'
+                        {minute}&apos;
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">
@@ -518,7 +518,7 @@ export default function Statistic({
                   <div key={minute} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] md:text-xs font-medium text-foreground">
-                        {minute}'
+                        {minute}&apos;
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] md:text-xs font-bold text-red-600 dark:text-red-400">
@@ -838,7 +838,7 @@ export default function Statistic({
                   <div key={minute} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] md:text-xs font-medium text-foreground">
-                        {minute}'
+                        {minute}&apos;
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] md:text-xs font-bold text-yellow-600 dark:text-yellow-400">
@@ -883,7 +883,7 @@ export default function Statistic({
                   <div key={minute} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] md:text-xs font-medium text-foreground">
-                        {minute}'
+                        {minute}&apos;
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] md:text-xs font-bold text-red-600 dark:text-red-400">

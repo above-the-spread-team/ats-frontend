@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import IconBg from "@/components/common/icon-bg";
 import FullPage from "@/components/common/full-page";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
 
