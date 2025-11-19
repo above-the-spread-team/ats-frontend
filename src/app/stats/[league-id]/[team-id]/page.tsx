@@ -6,8 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Building2, Armchair } from "lucide-react";
 import FullPage from "@/components/common/full-page";
-import Loading from "@/components/common/loading";
 import IconBg from "@/components/common/icon-bg";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { TeamResponseItem } from "@/type/teams-info";
 import SeasonSelect from "../_components/season-select";
 import TeamNav from "./_components/nav";
@@ -79,7 +79,59 @@ export default function TeamPage() {
   if (isLoadingTeam) {
     return (
       <FullPage>
-        <Loading />
+        <div className="container mx-auto max-w-6xl space-y-1 md:space-y-4 px-4 md:px-6 pb-4">
+          {/* Back Link Skeleton */}
+          <div className="flex items-center my-4 gap-2 w-fit">
+            <Skeleton className="w-4 h-4 rounded" />
+            <Skeleton className="h-4 w-24 rounded" />
+          </div>
+
+          {/* Header Skeleton */}
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Logo Skeleton */}
+              <Skeleton className="w-12 h-12 md:w-14 md:h-14 rounded-lg flex-shrink-0" />
+              <div className="flex flex-col gap-2">
+                {/* Title and badges skeleton */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Skeleton className="h-5 md:h-6 w-32 md:w-40 rounded" />
+                  <Skeleton className="h-5 w-12 rounded-md" />
+                  <Skeleton className="h-5 w-16 rounded-md" />
+                </div>
+                {/* Subtitle skeleton */}
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-20 rounded" />
+                  <Skeleton className="h-4 w-1 rounded" />
+                  <Skeleton className="h-4 w-24 rounded" />
+                </div>
+              </div>
+            </div>
+            {/* Season Select Skeleton */}
+            <div className="flex w-full justify-end md:justify-start md:w-auto">
+              <Skeleton className="h-9 w-32 rounded-md" />
+            </div>
+          </div>
+
+          {/* Venue Information Skeleton (hidden on mobile) */}
+          <div className="p-2 pt-4 px-4 hidden md:block">
+            <div className="flex flex-row flex-wrap items-center gap-1">
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-24 rounded" />
+              <Skeleton className="h-4 w-1 rounded" />
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-32 rounded" />
+              <Skeleton className="h-4 w-1 rounded" />
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-20 rounded" />
+            </div>
+          </div>
+
+          {/* Tab Navigation Skeleton */}
+          <div className="flex gap-2 border-b border-border">
+            <Skeleton className="h-8 w-24 rounded-t" />
+            <Skeleton className="h-8 w-24 rounded-t" />
+          </div>
+        </div>
       </FullPage>
     );
   }
