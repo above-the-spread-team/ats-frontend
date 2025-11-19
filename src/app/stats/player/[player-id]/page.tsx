@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowLeft, Flag } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +13,7 @@ import type { PlayerStatisticsApiResponse } from "@/type/player-statistics";
 export default function PlayerPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const playerId = params["player-id"] as string;
 
   const seasonParam = searchParams.get("season");
@@ -131,19 +131,19 @@ export default function PlayerPage() {
   const { player, statistics } = playerData;
 
   return (
-    <FullPage>
+    <FullPage minusHeight={100}>
       <div className="container mx-auto max-w-6xl space-y-4 md:space-y-2 px-4 md:px-6 py-4">
         {/* Back Link */}
-        <Link
-          href="/stats"
+        <button
+          onClick={() => router.back()}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Stats
-        </Link>
+          Back
+        </button>
 
         {/* Player Header */}
-        <div className="flex flex-row items-start md:items-center gap-4 p-2 md:p-4 ">
+        <div className="flex flex-row items-start md:items-center gap-4 p-2 md:p-4 pt-0 md:pt-2">
           {player.photo && (
             <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
               <Image
