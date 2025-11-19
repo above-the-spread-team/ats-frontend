@@ -4,7 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
+import IconBg from "@/components/common/icon-bg";
 import FullPage from "@/components/common/full-page";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
 
@@ -13,6 +14,47 @@ interface SquadProps {
 }
 
 const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"];
+
+// Component to handle player image errors gracefully
+function PlayerImage({
+  src,
+  alt,
+  playerName,
+}: {
+  src: string;
+  alt: string;
+  playerName: string;
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  if (imageError) {
+    return (
+      <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0 bg-muted rounded-full flex items-center justify-center border border-border/50">
+        <span className="text-[10px] md:text-xs font-bold text-foreground/70">
+          {playerName
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="rounded-full object-cover border border-border/50"
+        sizes="(max-width: 768px) 48px, 56px"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
 
 export default function Squad({ teamId }: SquadProps) {
   const searchParams = useSearchParams();
@@ -115,9 +157,31 @@ export default function Squad({ teamId }: SquadProps) {
 
   if (isLoading) {
     return (
-      <FullPage>
-        <Loading />
-      </FullPage>
+      <div className="space-y-4 md:space-y-6">
+        {/* Team Header Skeleton */}
+        <div className="flex items-center gap-4">
+          <Skeleton className="w-16 h-16 md:w-20 md:h-20 rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48 md:w-64" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </div>
+
+        {/* Position Sections Skeleton */}
+        {Array.from({ length: 4 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-lg md:rounded-xl p-3 md:p-4"
+          >
+            <Skeleton className="h-5 w-32 mb-4" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+              {Array.from({ length: 5 }).map((_, playerIdx) => (
+                <Skeleton key={playerIdx} className="h-16 md:h-20 rounded-lg" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 
@@ -134,67 +198,44 @@ export default function Squad({ teamId }: SquadProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Team Header */}
-      <div className="flex items-center gap-4">
-        {squad.team.logo && (
-          <div className="relative w-16 h-16 md:w-20 md:h-20">
-            <Image
-              src={squad.team.logo}
-              alt={squad.team.name}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 64px, 80px"
-            />
-          </div>
-        )}
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-foreground">
-            {squad.team.name}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {squad.players.length} players
-          </p>
-        </div>
-      </div>
-
+    <div className="space-y-4 md:space-y-6 px-1 md:px-0">
       {/* Players by Position */}
       {Object.entries(playersByPosition).map(([position, players]) => (
-        <div
-          key={position}
-          className="bg-card border border-border rounded-lg p-4"
-        >
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            {position} ({players.length})
+        <div key={position} className="">
+          <h3 className="text-sm md:text-base font-bold text-foreground mb-3 md:mb-4 flex items-center gap-2">
+            <span>{position}</span>
+            <span className="text-xs md:text-sm font-normal text-muted-foreground">
+              ({players.length})
+            </span>
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5  md:grid-cols-6 lg:grid-cols-7  gap-2 md:gap-3">
             {players.map((player) => (
               <Link
                 key={player.id}
                 href={`/stats/player/${player.id}?season=${season}`}
-                className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                className="flex flex-col items-center gap-2 py-2 bg-card  rounded-2xl transition-all duration-300 group hover:shadow-lg hover:-translate-y-0 hover:border-primary/40 hover:bg-gradient-to-br hover:from-card hover:to-card/95"
               >
-                {player.photo && (
-                  <div className="relative w-12 h-12 flex-shrink-0">
-                    <Image
-                      src={player.photo}
-                      alt={player.name}
-                      fill
-                      className="object-cover rounded-full"
-                      sizes="48px"
-                    />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground truncate">
+                <PlayerImage
+                  src={player.photo}
+                  alt={player.name}
+                  playerName={player.name}
+                />
+                <div className="w-full text-center space-y-1">
+                  <p className="text-[11px] md:text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors duration-300">
                     {player.name}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center justify-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground">
                     {player.number !== null && (
-                      <span className="font-medium">#{player.number}</span>
+                      <>
+                        <span className="font-medium bg-muted/60 px-1.5 py-0.5 rounded group-hover:bg-primary/20 group-hover:text-primary transition-colors duration-300">
+                          #{player.number}
+                        </span>
+                        <span>•</span>
+                      </>
                     )}
-                    <span>•</span>
-                    <span>{player.age} years</span>
+                    <span className="group-hover:text-foreground transition-colors duration-300">
+                      {player.age} yrs
+                    </span>
                   </div>
                 </div>
               </Link>

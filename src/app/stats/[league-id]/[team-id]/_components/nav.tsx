@@ -36,7 +36,7 @@ export default function TeamNav({
   };
 
   return (
-    <div className="flex gap-2 border-b border-border overflow-x-auto">
+    <div className="flex gap-2 border-b border-border  overflow-x-auto">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
