@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Building2, Armchair, Ticket } from "lucide-react";
+import { ArrowLeft, MapPin, Building2, Armchair } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import IconBg from "@/components/common/icon-bg";
