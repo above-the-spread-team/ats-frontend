@@ -79,38 +79,75 @@ export default function PlayerPage() {
 
   if (isLoading) {
     return (
-      <FullPage>
-        <div className="container mx-auto max-w-6xl space-y-4 md:space-y-6 px-4 md:px-6 py-4">
+      <FullPage minusHeight={100}>
+        <div className="container mx-auto max-w-6xl space-y-4 md:space-y-2 px-4 md:px-6 py-4">
           {/* Back Link Skeleton */}
           <Skeleton className="h-4 w-24" />
 
           {/* Player Header Skeleton */}
-          <div className="flex items-center gap-4">
-            <Skeleton className="w-20 h-20 md:w-24 md:h-24 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-7 md:h-9 w-48 md:w-64" />
-              <Skeleton className="h-4 w-32" />
+          <div className="flex flex-row items-start md:items-center gap-4 p-2 md:p-4 pt-0 md:pt-2">
+            <Skeleton className="w-16 h-16 md:w-20 md:h-20 rounded-full flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Skeleton className="h-5 md:h-6 w-32 md:w-40" />
+                <Skeleton className="h-5 w-16 rounded-md" />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-1" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-1" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-3 w-40" />
             </div>
           </div>
 
-          {/* Stats Cards Skeleton */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <Skeleton key={idx} className="h-20 md:h-24 rounded-lg" />
+          {/* Statistics by Team/League Skeleton */}
+          <div className="space-y-4 md:space-y-6">
+            {Array.from({ length: 1 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-lg md:rounded-xl p-3 md:p-4 shadow-md"
+              >
+                {/* Team/League Header Skeleton */}
+                <div className="flex items-center gap-2 md:gap-3 mb-3 pb-3 border-b border-border/50">
+                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex-shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+                    <Skeleton className="h-3 md:h-4 w-48 md:w-64" />
+                  </div>
+                </div>
+
+                {/* Key Stats Skeleton */}
+                <div className="grid grid-cols-4 gap-1.5 md:gap-2 mb-3">
+                  {Array.from({ length: 4 }).map((_, statIdx) => (
+                    <Skeleton
+                      key={statIdx}
+                      className="h-12 md:h-14 rounded-md"
+                    />
+                  ))}
+                </div>
+
+                {/* Statistics Table Skeleton */}
+                <div className="overflow-x-auto">
+                  <div className="space-y-0.5">
+                    {Array.from({ length: 12 }).map((_, rowIdx) => (
+                      <div
+                        key={rowIdx}
+                        className="flex border-b border-border/50 last:border-0"
+                      >
+                        <Skeleton className="h-8 md:h-10 w-1/4 px-2 md:px-4" />
+                        <Skeleton className="h-8 md:h-10 w-1/4 px-2 md:px-4" />
+                        <Skeleton className="h-8 md:h-10 w-1/4 px-2 md:px-4" />
+                        <Skeleton className="h-8 md:h-10 w-1/4 px-2 md:px-4" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-
-          {/* Sections Skeleton */}
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <div key={idx} className="space-y-2">
-              <Skeleton className="h-6 w-32" />
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-                {Array.from({ length: 6 }).map((_, cardIdx) => (
-                  <Skeleton key={cardIdx} className="h-16 md:h-20 rounded-lg" />
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
       </FullPage>
     );
