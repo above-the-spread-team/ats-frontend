@@ -98,7 +98,7 @@ export default function LeagueStatsPage() {
                       alt={league.league.name}
                       fill
                       className="object-contain dark:p-1"
-                      sizes="(max-width: 768px) 48px, 56px"
+                      sizes="(max-width: 768px) 80px, 96px"
                     />
                   </IconBg>
                 </div>

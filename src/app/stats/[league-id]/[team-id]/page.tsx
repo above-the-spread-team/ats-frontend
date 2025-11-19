@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin, Building2, Armchair, Ticket } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
+import IconBg from "@/components/common/icon-bg";
 import type { TeamResponseItem } from "@/type/teams-info";
 import SeasonSelect from "../_components/season-select";
 import TeamNav from "./_components/nav";
@@ -85,42 +86,49 @@ export default function TeamPage() {
 
   return (
     <FullPage>
-      <div className="container mx-auto space-y-6 px-4 md:px-6 pb-4">
+      <div className="container mx-auto max-w-6xl space-y-1 md:space-y-2  px-4 md:px-6 pb-4 ">
         {/* Header */}
-        <div className="flex flex-col gap-4">
-          <div className="flex pt-3 items-center justify-between">
-            <Link
-              href={`/stats/${leagueId}?season=${season}&tab=teams`}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Teams
-            </Link>
-            <SeasonSelect
-              leagueId={leagueId}
-              season={season}
-              activeTab="teams"
-            />
-          </div>
+        <Link
+          href={`/stats/${leagueId}?season=${season}&tab=teams`}
+          className="flex items-center my-4 gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Teams
+        </Link>
 
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="flex items-center gap-3">
             {teamInfo?.team.logo && (
-              <div className="relative w-16 h-16 md:w-20 md:h-20">
-                <Image
-                  src={teamInfo.team.logo}
-                  alt={teamInfo.team.name}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 64px, 80px"
-                />
+              <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+                <IconBg className="w-full h-full">
+                  <Image
+                    src={teamInfo.team.logo}
+                    alt={teamInfo.team.name}
+                    fill
+                    className="object-contain dark:p-1"
+                    sizes="(max-width: 768px) 80px, 96px"
+                  />
+                </IconBg>
               </div>
             )}
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                {teamInfo?.team.name || "Team"}
-              </h1>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base md:text-lg font-bold text-foreground">
+                  {teamInfo?.team.name || "Team"}
+                </h1>
+                {teamInfo?.team.code && (
+                  <span className="px-2.5 py-1 bg-muted/80 rounded-md text-xs font-semibold text-muted-foreground border border-border/50">
+                    {teamInfo.team.code}
+                  </span>
+                )}
+                {teamInfo?.team.national && (
+                  <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold border border-primary/20">
+                    National
+                  </span>
+                )}
+              </div>
               {teamInfo && (
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-sm text-muted-foreground">
                     {teamInfo.team.country}
                   </span>
@@ -136,7 +144,54 @@ export default function TeamPage() {
               )}
             </div>
           </div>
+          <div className="flex w-full justify-end md:justify-start md:w-auto">
+            <SeasonSelect
+              leagueId={leagueId}
+              season={season}
+              activeTab="teams"
+            />
+          </div>
         </div>
+
+        {teamInfo && (
+          <div className="p-2 pt-4 px-4 hidden md:block opacity-100">
+            {(teamInfo.venue.name ||
+              teamInfo.venue.city ||
+              teamInfo.venue.capacity ||
+              teamInfo.venue.surface ||
+              teamInfo.venue.address) && (
+              <div className="flex flex-row flex-wrap items-start md:items-center gap-1">
+                {teamInfo.venue.name && (
+                  <div className="flex items-center gap-1">
+                    <Building2 className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
+                    <span className="text-xs md:text-sm text-muted-foreground font-medium">
+                      {teamInfo.venue.name}
+                    </span>
+                  </div>
+                )}
+                <span className="text-muted-foreground text-lg">・</span>
+                {(teamInfo.venue.city || teamInfo.venue.address) && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      {teamInfo.venue.city}
+                      {teamInfo.venue.address && `, ${teamInfo.venue.address}`}
+                    </span>
+                  </div>
+                )}
+                <span className="text-muted-foreground text-lg">・</span>
+                {teamInfo.venue.capacity && (
+                  <div className="flex items-center gap-1">
+                    <Armchair className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
+                    <span className="text-xs md:text-sm text-muted-foreground font-medium">
+                      {teamInfo.venue.capacity.toLocaleString()} seats
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <TeamNav
