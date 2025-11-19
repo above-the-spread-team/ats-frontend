@@ -171,24 +171,24 @@ export default function Teams({ leagueId, season }: TeamsProps) {
 
                 <div className="relative flex flex-col items-center justify-between text-center space-y-2.5 md:space-y-3 flex-1 z-10">
                   {/* Team Logo */}
-                  <div className="relative w-8 h-8 md:w-10 md:h-10 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                    {item.team.logo ? (
-                      <TeamLogoImage
-                        src={item.team.logo}
-                        alt={item.team.name}
-                        teamName={item.team.name}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-muted to-muted/80 rounded-xl flex items-center justify-center shadow-inner">
-                        <span className="text-[10px] md:text-xs font-bold text-foreground/70">
-                          {item.team.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="relative w-8 h-8 md:w-10 md:h-10 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      {item.team.logo ? (
+                        <TeamLogoImage
+                          src={item.team.logo}
+                          alt={item.team.name}
+                          teamName={item.team.name}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-muted to-muted/80 rounded-xl flex items-center justify-center shadow-inner">
+                          <span className="text-[10px] md:text-xs font-bold text-foreground/70">
+                            {item.team.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Team Name */}
-                  <div className="w-full space-y-0.5">
+                    {/* Team Name */}
                     <h3 className="text-xs md:text-sm font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors duration-300">
                       {item.team.name}
                     </h3>
@@ -200,19 +200,11 @@ export default function Teams({ leagueId, season }: TeamsProps) {
                   </div>
 
                   {/* Team Info */}
-                  <div className="w-full space-y-1.5 text-xs">
-                    {item.team.founded && (
-                      <span className="font-medium text-xs text-muted-foreground">
-                        Founded {item.team.founded}
-                      </span>
-                    )}
-
-                    {item.team.national && (
-                      <div className="inline-flex items-center px-1.5 py-0.5 bg-gradient-to-r from-primary/20 to-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20">
-                        National Team
-                      </div>
-                    )}
-                  </div>
+                  {item.team.founded && (
+                    <span className="font-medium text-xs text-muted-foreground">
+                      Founded {item.team.founded}
+                    </span>
+                  )}
                 </div>
               </div>
             );
