@@ -156,26 +156,23 @@ export default function Squad({ teamId }: SquadProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        {/* Team Header Skeleton */}
-        <div className="flex items-center gap-4">
-          <Skeleton className="w-16 h-16 md:w-20 md:h-20 rounded-lg" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48 md:w-64" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        </div>
-
+      <div className="space-y-4 md:space-y-6 px-1 md:px-0">
         {/* Position Sections Skeleton */}
         {Array.from({ length: 4 }).map((_, idx) => (
-          <div
-            key={idx}
-            className="bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-lg md:rounded-xl p-3 md:p-4"
-          >
-            <Skeleton className="h-5 w-32 mb-4" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
-              {Array.from({ length: 5 }).map((_, playerIdx) => (
-                <Skeleton key={playerIdx} className="h-16 md:h-20 rounded-lg" />
+          <div key={idx} className="">
+            <Skeleton className="h-5 md:h-6 w-32 mb-3 md:mb-4" />
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3">
+              {Array.from({ length: 7 }).map((_, playerIdx) => (
+                <div
+                  key={playerIdx}
+                  className="flex flex-col items-center gap-2 py-2 bg-card rounded-2xl"
+                >
+                  <Skeleton className="w-12 h-12 md:w-14 md:h-14 rounded-full" />
+                  <div className="w-full text-center space-y-1">
+                    <Skeleton className="h-3.5 md:h-4 w-16 mx-auto" />
+                    <Skeleton className="h-3 md:h-3.5 w-12 mx-auto" />
+                  </div>
+                </div>
               ))}
             </div>
           </div>

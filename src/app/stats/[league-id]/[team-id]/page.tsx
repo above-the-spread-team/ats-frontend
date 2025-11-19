@@ -254,12 +254,14 @@ export default function TeamPage() {
           season={season}
         />
 
-        {/* Tab Content */}
-        {activeTab === "statistics" && (
-          <Statistic leagueId={leagueId} teamId={teamId} season={season} />
-        )}
+        <div className="pt-2 pb-10">
+          {/* Tab Content */}
+          {activeTab === "statistics" && (
+            <Statistic leagueId={leagueId} teamId={teamId} season={season} />
+          )}
 
-        {activeTab === "squad" && <Squad teamId={teamId} />}
+          {activeTab === "squad" && <Squad teamId={teamId} />}
+        </div>
       </div>
     </FullPage>
   );

@@ -157,7 +157,7 @@ export default function Statistic({
       )}
 
       {/* Fixtures Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <div className="bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-lg md:rounded-xl p-2 md:p-3 text-center shadow-sm">
           <div>
             <div className="flex items-center justify-center mb-0.5">
