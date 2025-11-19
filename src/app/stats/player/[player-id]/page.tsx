@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft, Flag } from "lucide-react";
 import FullPage from "@/components/common/full-page";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
+import IconBg from "@/components/common/icon-bg";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { PlayerStatisticsApiResponse } from "@/type/player-statistics";
 
 export default function PlayerPage() {
@@ -76,7 +80,38 @@ export default function PlayerPage() {
   if (isLoading) {
     return (
       <FullPage>
-        <Loading />
+        <div className="container mx-auto max-w-6xl space-y-4 md:space-y-6 px-4 md:px-6 py-4">
+          {/* Back Link Skeleton */}
+          <Skeleton className="h-4 w-24" />
+
+          {/* Player Header Skeleton */}
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-20 h-20 md:w-24 md:h-24 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 md:h-9 w-48 md:w-64" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+
+          {/* Stats Cards Skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <Skeleton key={idx} className="h-20 md:h-24 rounded-lg" />
+            ))}
+          </div>
+
+          {/* Sections Skeleton */}
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div key={idx} className="space-y-2">
+              <Skeleton className="h-6 w-32" />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                {Array.from({ length: 6 }).map((_, cardIdx) => (
+                  <Skeleton key={cardIdx} className="h-16 md:h-20 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </FullPage>
     );
   }
@@ -96,111 +131,521 @@ export default function PlayerPage() {
   const { player, statistics } = playerData;
 
   return (
-    <div className="container mx-auto space-y-6 px-4 md:px-6 py-4">
-      {/* Player Header */}
-      <div className="flex items-center gap-4">
-        {player.photo && (
-          <div className="relative w-20 h-20 md:w-24 md:h-24">
-            <Image
-              src={player.photo}
-              alt={player.name}
-              fill
-              className="object-cover rounded-full"
-              sizes="(max-width: 768px) 80px, 96px"
-            />
+    <FullPage>
+      <div className="container mx-auto max-w-6xl space-y-4 md:space-y-2 px-4 md:px-6 py-4">
+        {/* Back Link */}
+        <Link
+          href="/stats"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Stats
+        </Link>
+
+        {/* Player Header */}
+        <div className="flex flex-row items-start md:items-center gap-4 p-2 md:p-4 ">
+          {player.photo && (
+            <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+              <Image
+                src={player.photo}
+                alt={player.name}
+                fill
+                className="object-cover rounded-full border-2 border-border"
+                sizes="(max-width: 768px) 80px, 96px"
+              />
+            </div>
+          )}
+          <div className="flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg md:text-xl font-bold text-foreground">
+                {player.name}
+              </h1>
+              {statistics.length > 0 && statistics[0].games.captain && (
+                <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold border border-primary/20">
+                  Captain
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-muted-foreground">
+              {player.nationality && (
+                <span className="flex items-center gap-1">
+                  <Flag className="w-3 h-3" />
+                  {player.nationality}
+                </span>
+              )}
+              {player.age && (
+                <>
+                  <span>•</span>
+                  <span>{player.age} years old</span>
+                </>
+              )}
+              {statistics.length > 0 && statistics[0].games.position && (
+                <>
+                  <span>•</span>
+                  <span>{statistics[0].games.position}</span>
+                </>
+              )}
+              {player.height && (
+                <>
+                  <span>•</span>
+                  <span>{player.height} cm</span>
+                </>
+              )}
+              {player.weight && (
+                <>
+                  <span>•</span>
+                  <span>{player.weight} kg</span>
+                </>
+              )}
+            </div>
+            {player.birth && (
+              <p className="text-xs text-muted-foreground">
+                Born: {player.birth.date}{" "}
+                {player.birth.place && `in ${player.birth.place}`}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Statistics by Team/League */}
+        {statistics.length > 0 && (
+          <div className="space-y-4 md:space-y-6">
+            {statistics.map((stat, idx) => (
+              <div
+                key={idx}
+                className="bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-lg md:rounded-xl p-3 md:p-4 shadow-md"
+              >
+                {/* Team/League Header */}
+                <div className="flex items-center gap-2 md:gap-3 mb-3 pb-3 border-b border-border/50">
+                  {stat.team.logo && (
+                    <IconBg>
+                      <div className="relative w-8 h-8 md:w-10 md:h-10">
+                        <Image
+                          src={stat.team.logo}
+                          alt={stat.team.name}
+                          fill
+                          className="object-contain dark:p-1"
+                          sizes="(max-width: 768px) 32px, 40px"
+                        />
+                      </div>
+                    </IconBg>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm md:text-base font-bold text-foreground truncate">
+                      {stat.team.name}
+                    </h3>
+                    <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+                      {stat.league.name} • {stat.league.country} • Season{" "}
+                      {stat.league.season}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Key Stats - Compact */}
+                <div className="grid grid-cols-4 gap-1.5 md:gap-2 mb-3">
+                  <div className="text-center p-1.5 md:p-2 bg-muted/30 rounded-md">
+                    <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
+                      Apps
+                    </p>
+                    <p className="text-xs md:text-sm font-bold text-foreground">
+                      {stat.games.appearences !== null
+                        ? stat.games.appearences
+                        : "-"}
+                    </p>
+                  </div>
+                  <div className="text-center p-1.5 md:p-2 bg-green-500/10 rounded-md">
+                    <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
+                      Goals
+                    </p>
+                    <p className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400">
+                      {stat.goals.total !== null ? stat.goals.total : "-"}
+                    </p>
+                  </div>
+                  <div className="text-center p-1.5 md:p-2 bg-blue-500/10 rounded-md">
+                    <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
+                      Assists
+                    </p>
+                    <p className="text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400">
+                      {stat.goals.assists !== null ? stat.goals.assists : "-"}
+                    </p>
+                  </div>
+                  <div className="text-center p-1.5 md:p-2 bg-purple-500/10 rounded-md">
+                    <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
+                      Rating
+                    </p>
+                    <p className="text-xs md:text-sm font-bold text-purple-600 dark:text-purple-400">
+                      {stat.games.rating && stat.games.rating !== "0"
+                        ? parseFloat(stat.games.rating).toFixed(2)
+                        : "-"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Statistics Table */}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableBody>
+                      {/* Games */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground w-1/3">
+                          Lineups
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.games.lineups !== null
+                            ? stat.games.lineups
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground w-1/3">
+                          Minutes
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.games.minutes !== null
+                            ? stat.games.minutes.toLocaleString()
+                            : "-"}
+                        </TableCell>
+                      </TableRow>
+                      {stat.games.number && (
+                        <TableRow>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Number
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            #{stat.games.number}
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Position
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            {stat.games.position}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {!stat.games.number && (
+                        <TableRow>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Position
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            {stat.games.position}
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Substitutes */}
+                      {stat.substitutes && (
+                        <TableRow>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Subs In
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            {stat.substitutes.in !== null
+                              ? stat.substitutes.in
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Subs Out
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            {stat.substitutes.out !== null
+                              ? stat.substitutes.out
+                              : "-"}
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Goals & Shots */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Shots Total
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.shots.total !== null ? stat.shots.total : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Shots On Target
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.shots.on !== null ? stat.shots.on : "-"}
+                        </TableCell>
+                      </TableRow>
+                      {(stat.goals.conceded !== null ||
+                        (stat.goals.saves !== null &&
+                          stat.goals.saves > 0)) && (
+                        <TableRow>
+                          {stat.goals.conceded !== null && (
+                            <>
+                              <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                Goals Conceded
+                              </TableCell>
+                              <TableCell className="text-[10px] md:text-xs font-semibold text-red-600 dark:text-red-400">
+                                {stat.goals.conceded}
+                              </TableCell>
+                            </>
+                          )}
+                          {stat.goals.saves !== null &&
+                            stat.goals.saves > 0 && (
+                              <>
+                                <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                  Saves
+                                </TableCell>
+                                <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                                  {stat.goals.saves}
+                                </TableCell>
+                              </>
+                            )}
+                        </TableRow>
+                      )}
+
+                      {/* Passes */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Passes Total
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.passes.total !== null
+                            ? stat.passes.total.toLocaleString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Key Passes
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.passes.key !== null ? stat.passes.key : "-"}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Pass Accuracy
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.passes.accuracy !== null
+                            ? `${stat.passes.accuracy}%`
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                      </TableRow>
+
+                      {/* Defense */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Tackles
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.tackles.total !== null
+                            ? stat.tackles.total
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Blocks
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.tackles.blocks !== null
+                            ? stat.tackles.blocks
+                            : "-"}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Interceptions
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.tackles.interceptions !== null
+                            ? stat.tackles.interceptions
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                      </TableRow>
+
+                      {/* Duels */}
+                      {stat.duels.total !== null && (
+                        <TableRow>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Duels Total
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            {stat.duels.total}
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Duels Won
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-green-600 dark:text-green-400">
+                            {stat.duels.won !== null ? stat.duels.won : "-"}
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Dribbles */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Dribbles Attempts
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                          {stat.dribbles.attempts !== null
+                            ? stat.dribbles.attempts
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Dribbles Success
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-green-600 dark:text-green-400">
+                          {stat.dribbles.success !== null
+                            ? stat.dribbles.success
+                            : "-"}
+                        </TableCell>
+                      </TableRow>
+                      {stat.dribbles.past !== null && (
+                        <TableRow>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Dribbles Past
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                            {stat.dribbles.past}
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Fouls */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Fouls Drawn
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-green-600 dark:text-green-400">
+                          {stat.fouls.drawn !== null ? stat.fouls.drawn : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Fouls Committed
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-red-600 dark:text-red-400">
+                          {stat.fouls.committed !== null
+                            ? stat.fouls.committed
+                            : "-"}
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Cards */}
+                      <TableRow>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Yellow Cards
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+                          {stat.cards.yellow !== null ? stat.cards.yellow : "-"}
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                          Red Cards
+                        </TableCell>
+                        <TableCell className="text-[10px] md:text-xs font-semibold text-red-600 dark:text-red-400">
+                          {stat.cards.red !== null ? stat.cards.red : "-"}
+                        </TableCell>
+                      </TableRow>
+                      {stat.cards.yellowred > 0 && (
+                        <TableRow>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                            Yellow/Red Cards
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-orange-600 dark:text-orange-400">
+                            {stat.cards.yellowred}
+                          </TableCell>
+                          <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                          <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Penalties */}
+                      {(stat.penalty.scored > 0 ||
+                        stat.penalty.missed > 0 ||
+                        stat.penalty.won > 0) && (
+                        <>
+                          <TableRow>
+                            <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                              Penalties Scored
+                            </TableCell>
+                            <TableCell className="text-[10px] md:text-xs font-semibold text-green-600 dark:text-green-400">
+                              {stat.penalty.scored}
+                            </TableCell>
+                            <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                              Penalties Missed
+                            </TableCell>
+                            <TableCell className="text-[10px] md:text-xs font-semibold text-red-600 dark:text-red-400">
+                              {stat.penalty.missed}
+                            </TableCell>
+                          </TableRow>
+                          {stat.penalty.saved !== null &&
+                            stat.penalty.saved > 0 && (
+                              <TableRow>
+                                <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                  Penalties Saved
+                                </TableCell>
+                                <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                                  {stat.penalty.saved}
+                                </TableCell>
+                                <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                  Penalties Won
+                                </TableCell>
+                                <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                                  {stat.penalty.won}
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          {(!stat.penalty.saved ||
+                            stat.penalty.saved === 0) && (
+                            <TableRow>
+                              <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                Penalties Won
+                              </TableCell>
+                              <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
+                                {stat.penalty.won}
+                              </TableCell>
+                              {stat.penalty.commited !== null &&
+                                stat.penalty.commited > 0 && (
+                                  <>
+                                    <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                      Penalties Committed
+                                    </TableCell>
+                                    <TableCell className="text-[10px] md:text-xs font-semibold text-red-600 dark:text-red-400">
+                                      {stat.penalty.commited}
+                                    </TableCell>
+                                  </>
+                                )}
+                              {(!stat.penalty.commited ||
+                                stat.penalty.commited === 0) && (
+                                <>
+                                  <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                                </>
+                              )}
+                            </TableRow>
+                          )}
+                          {stat.penalty.commited !== null &&
+                            stat.penalty.commited > 0 &&
+                            stat.penalty.saved !== null &&
+                            stat.penalty.saved > 0 && (
+                              <TableRow>
+                                <TableCell className="text-[10px] md:text-xs text-muted-foreground">
+                                  Penalties Committed
+                                </TableCell>
+                                <TableCell className="text-[10px] md:text-xs font-semibold text-red-600 dark:text-red-400">
+                                  {stat.penalty.commited}
+                                </TableCell>
+                                <TableCell className="text-[10px] md:text-xs text-muted-foreground"></TableCell>
+                                <TableCell className="text-[10px] md:text-xs font-semibold text-foreground"></TableCell>
+                              </TableRow>
+                            )}
+                        </>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            {player.name}
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm text-muted-foreground">
-              {player.nationality}
-            </span>
-            {player.age && (
-              <>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-sm text-muted-foreground">
-                  {player.age} years old
-                </span>
-              </>
-            )}
-            {statistics.length > 0 && statistics[0].games.position && (
-              <>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-sm text-muted-foreground">
-                  {statistics[0].games.position}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
       </div>
-
-      {/* Statistics */}
-      {statistics.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Statistics ({season})
-          </h2>
-          {statistics.map((stat, idx) => (
-            <div
-              key={idx}
-              className="bg-card border border-border rounded-lg p-4 md:p-6"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                {stat.team.logo && (
-                  <div className="relative w-12 h-12">
-                    <Image
-                      src={stat.team.logo}
-                      alt={stat.team.name}
-                      fill
-                      className="object-contain"
-                      sizes="48px"
-                    />
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    {stat.team.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {stat.league.name} ({stat.league.country})
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Appearances</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {stat.games.appearences}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Goals</p>
-                  <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                    {stat.goals.total}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Assists</p>
-                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                    {stat.goals.assists}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Rating</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {parseFloat(stat.games.rating).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </FullPage>
   );
 }
