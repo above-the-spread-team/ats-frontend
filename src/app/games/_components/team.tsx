@@ -17,6 +17,7 @@ interface TeamInfoProps {
   orientation: "home" | "away";
   className?: string;
   nameClassName?: string;
+  logoClassName?: string;
 }
 
 export default function TeamInfo({
@@ -24,6 +25,7 @@ export default function TeamInfo({
   orientation,
   className = "",
   nameClassName = "text-xs md:text-base font-semibold",
+  logoClassName = "w-6 h-6 md:w-7 md:h-7 object-contain",
 }: TeamInfoProps) {
   const isHome = orientation === "home";
 
@@ -33,9 +35,7 @@ export default function TeamInfo({
       alt={team.name}
       width={100}
       height={100}
-      className={`w-6 h-6 md:w-7 md:h-7 object-contain ${
-        isHome ? "" : "rounded-md"
-      }`}
+      className={`${logoClassName} ${isHome ? "" : "rounded-md"}`}
     />
   ) : (
     <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">

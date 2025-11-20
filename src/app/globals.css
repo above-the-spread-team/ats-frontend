@@ -232,3 +232,18 @@
     transform: rotate(0.5turn);
   }
 }
+
+/* Lingering line animation */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

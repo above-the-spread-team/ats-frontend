@@ -27,6 +27,58 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Check if fetching by ID
+  const idParam = req.nextUrl.searchParams.get("id");
+  if (idParam) {
+    const fixtureId = parseInt(idParam, 10);
+    if (Number.isNaN(fixtureId)) {
+      return NextResponse.json(
+        {
+          error: "Invalid id parameter. Must be a number.",
+        },
+        { status: 400 }
+      );
+    }
+
+    try {
+      const params = new URLSearchParams({
+        id: fixtureId.toString(),
+      });
+
+      const response = await fetch(`${API_URL}?${params.toString()}`, {
+        headers: {
+          "x-apisports-key": API_KEY,
+        },
+        next: { revalidate: 60 }, // 1 minute revalidation for live fixtures
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Fetch failed with status ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = (await response.json()) as FixturesApiResponse;
+
+      if (!data || !Array.isArray(data.response)) {
+        throw new Error("Unexpected payload structure");
+      }
+
+      return NextResponse.json(data);
+    } catch (error) {
+      console.error("Fixture API Error:", error);
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unknown error occurred while fetching fixture",
+        },
+        { status: 500 }
+      );
+    }
+  }
+
   const searchDate = req.nextUrl.searchParams.get("date");
   const timezone = req.nextUrl.searchParams.get("timezone") ?? DEFAULT_TIMEZONE;
 

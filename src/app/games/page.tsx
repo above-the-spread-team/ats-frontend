@@ -245,9 +245,10 @@ export default function Fixtures() {
                       }`;
 
                   return (
-                    <div
+                    <Link
                       key={fixture.fixture.id}
-                      className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden`}
+                      href={`/games/detail?id=${fixture.fixture.id}`}
+                      className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden hover:bg-card/80 transition-colors cursor-pointer`}
                     >
                       {isInPlay && (
                         <>
@@ -310,7 +311,7 @@ export default function Fixtures() {
                           nameClassName="text-xs md:text-sm font-medium"
                         />
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
