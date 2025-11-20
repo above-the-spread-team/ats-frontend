@@ -12,9 +12,16 @@ import Lineups from "./_components/lineups";
 import FixtureStatistics from "./_components/fixture-statistics";
 import Events from "./_components/events";
 import FixturePlayers from "./_components/fixture-players";
+import Predictions from "./_components/predictions";
 import type { FixturesApiResponse } from "@/type/fixture";
 
-type TabType = "headtohead" | "lineups" | "statistics" | "events" | "players";
+type TabType =
+  | "headtohead"
+  | "lineups"
+  | "statistics"
+  | "events"
+  | "players"
+  | "predictions";
 
 export default function GameDetailPage() {
   const searchParams = useSearchParams();
@@ -25,9 +32,14 @@ export default function GameDetailPage() {
   const tabParam = searchParams.get("tab") as TabType;
   const [activeTab, setActiveTab] = useState<TabType>(
     tabParam &&
-      ["headtohead", "lineups", "statistics", "events", "players"].includes(
-        tabParam
-      )
+      [
+        "headtohead",
+        "lineups",
+        "statistics",
+        "events",
+        "players",
+        "predictions",
+      ].includes(tabParam)
       ? tabParam
       : "headtohead"
   );
@@ -43,7 +55,14 @@ export default function GameDetailPage() {
     const tab = searchParams.get("tab") as TabType;
     if (
       tab &&
-      ["headtohead", "lineups", "statistics", "events", "players"].includes(tab)
+      [
+        "headtohead",
+        "lineups",
+        "statistics",
+        "events",
+        "players",
+        "predictions",
+      ].includes(tab)
     ) {
       setActiveTab(tab);
     }
@@ -169,11 +188,28 @@ export default function GameDetailPage() {
             <Lineups fixtureId={fixture.fixture.id} />
           )}
           {activeTab === "statistics" && (
-            <FixtureStatistics fixtureId={fixture.fixture.id} />
+            <FixtureStatistics
+              fixtureId={fixture.fixture.id}
+              homeTeamId={fixture.teams.home.id}
+              awayTeamId={fixture.teams.away.id}
+            />
           )}
-          {activeTab === "events" && <Events fixtureId={fixture.fixture.id} />}
+          {activeTab === "events" && (
+            <Events
+              fixtureId={fixture.fixture.id}
+              homeTeamId={fixture.teams.home.id}
+              awayTeamId={fixture.teams.away.id}
+            />
+          )}
           {activeTab === "players" && (
-            <FixturePlayers fixtureId={fixture.fixture.id} />
+            <FixturePlayers
+              fixtureId={fixture.fixture.id}
+              homeTeamId={fixture.teams.home.id}
+              awayTeamId={fixture.teams.away.id}
+            />
+          )}
+          {activeTab === "predictions" && (
+            <Predictions fixtureId={fixture.fixture.id} />
           )}
         </div>
       </div>
