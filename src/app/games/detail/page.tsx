@@ -163,8 +163,6 @@ export default function GameDetailPage() {
             <HeadtoHead
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
-              leagueId={fixture.league.id}
-              season={fixture.league.season}
             />
           )}
           {activeTab === "lineups" && (
