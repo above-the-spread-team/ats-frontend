@@ -183,7 +183,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
               <Skeleton className="h-5 md:h-6 w-32" />
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3">
-              {Array.from({ length: 7 }).map((_, playerIdx) => (
+              {Array.from({ length: 6 }).map((_, playerIdx) => (
                 <div
                   key={playerIdx}
                   className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-card rounded-xl"
@@ -263,7 +263,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
               <Link
                 key={player.id}
                 href={`/stats/player/${player.id}?season=${season}&teamId=${teamId}&leagueId=${leagueId}`}
-                className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-xl shadow-sm transition-all duration-300 group hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 hover:bg-gradient-to-br hover:from-card hover:via-card/98 hover:to-card/95"
+                className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-gradient-to-br from-card to-card/90 border border-border/50 rounded-xl shadow-sm transition-all duration-300 group hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 hover:bg-gradient-to-br hover:from-card hover:via-card/98 hover:to-card/95"
               >
                 <div className="transition-transform duration-300 group-hover:scale-105">
                   <PlayerImage
