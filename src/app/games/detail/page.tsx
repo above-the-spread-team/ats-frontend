@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock8 } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import FixtureDetail from "./_components/fixture-detail";
@@ -50,6 +50,15 @@ export default function GameDetailPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const timezone = useMemo(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return tz && tz.trim().length > 0 ? tz : "UTC";
+    } catch {
+      return "UTC";
+    }
+  }, []);
 
   // Sync tab state with URL parameter
   useEffect(() => {
@@ -164,20 +173,26 @@ export default function GameDetailPage() {
   return (
     <FullPage>
       <div className="container mx-auto max-w-4xl px-4">
-        <button
-          onClick={() => {
-            // Preserve date parameter when going back
-            if (dateParam) {
-              router.push(`/games?date=${dateParam}`);
-            } else {
-              router.back();
-            }
-          }}
-          className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
+        <div className="flex items-center justify-between mb-2">
+          <button
+            onClick={() => {
+              // Preserve date parameter when going back
+              if (dateParam) {
+                router.push(`/games?date=${dateParam}`);
+              } else {
+                router.back();
+              }
+            }}
+            className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+          <div className="flex items-center gap-2 text-xs md:text-sm font-bold dark:text-mygray text-primary">
+            <Clock8 className="w-4 h-4" />
+            <p>{timezone}</p>
+          </div>
+        </div>
 
         {/* Fixture Detail - Always visible at top */}
         <FixtureDetail fixture={fixture} />
