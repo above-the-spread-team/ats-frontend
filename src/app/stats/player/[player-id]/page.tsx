@@ -20,6 +20,8 @@ export default function PlayerPage() {
   const season = seasonParam
     ? parseInt(seasonParam, 10)
     : new Date().getFullYear();
+  const teamId = searchParams.get("teamId");
+  const leagueId = searchParams.get("leagueId");
 
   const [playerData, setPlayerData] = useState<
     PlayerStatisticsApiResponse["response"][0] | null
@@ -172,7 +174,14 @@ export default function PlayerPage() {
       <div className="container mx-auto max-w-6xl space-y-4 md:space-y-2 px-4 md:px-6 py-4">
         {/* Back Link */}
         <button
-          onClick={() => router.back()}
+          onClick={() => {
+            // Navigate back to squad page if teamId and leagueId are present
+            if (teamId && leagueId) {
+              router.push(`/stats/${leagueId}/${teamId}?season=${season}&tab=squad`);
+            } else {
+              router.back();
+            }
+          }}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="w-4 h-4" />

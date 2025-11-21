@@ -264,7 +264,7 @@ export default function TeamPage() {
             <Statistic leagueId={leagueId} teamId={teamId} season={season} />
           )}
 
-          {activeTab === "squad" && <Squad teamId={teamId} />}
+          {activeTab === "squad" && <Squad teamId={teamId} leagueId={leagueId} />}
         </div>
       </div>
     </FullPage>

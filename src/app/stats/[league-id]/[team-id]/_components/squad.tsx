@@ -11,6 +11,7 @@ import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
 
 interface SquadProps {
   teamId: string;
+  leagueId: string;
 }
 
 const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"];
@@ -56,7 +57,7 @@ function PlayerImage({
   );
 }
 
-export default function Squad({ teamId }: SquadProps) {
+export default function Squad({ teamId, leagueId }: SquadProps) {
   const searchParams = useSearchParams();
   const seasonParam = searchParams.get("season");
   const currentYear = new Date().getFullYear();
@@ -261,7 +262,7 @@ export default function Squad({ teamId }: SquadProps) {
             {players.map((player) => (
               <Link
                 key={player.id}
-                href={`/stats/player/${player.id}?season=${season}`}
+                href={`/stats/player/${player.id}?season=${season}&teamId=${teamId}&leagueId=${leagueId}`}
                 className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-xl shadow-sm transition-all duration-300 group hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 hover:bg-gradient-to-br hover:from-card hover:via-card/98 hover:to-card/95"
               >
                 <div className="transition-transform duration-300 group-hover:scale-105">
