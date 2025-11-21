@@ -8,7 +8,8 @@ import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
 import NoGame from "./_components/no-game";
 import FixturesError from "./_components/error";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 import TeamInfo from "./_components/team";
@@ -30,6 +31,13 @@ function formatDateParam(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function parseDateParam(dateStr: string | null): Date | null {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return null;
+  return date;
 }
 
 function groupFixturesByLeague(fixtures: FixtureResponseItem[]): LeagueGroup[] {
@@ -72,8 +80,18 @@ function formatGoals(value: number | null): string {
 }
 
 export default function Fixtures() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const today = useMemo(() => new Date(), []);
-  const [selectedDate, setSelectedDate] = useState<Date>(today);
+
+  // Initialize date from URL or use today
+  const dateParam = searchParams.get("date");
+  const initialDate = useMemo(() => {
+    const parsed = parseDateParam(dateParam);
+    return parsed || today;
+  }, [dateParam, today]);
+
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
   const [fixtures, setFixtures] = useState<FixtureResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +114,37 @@ export default function Fixtures() {
       return "UTC";
     }
   }, []);
+
+  // Track if we're updating URL to prevent loops
+  const isUpdatingUrl = useRef(false);
+
+  // Sync date from URL params (only when URL changes externally)
+  useEffect(() => {
+    if (isUpdatingUrl.current) {
+      isUpdatingUrl.current = false;
+      return;
+    }
+
+    const dateParam = searchParams.get("date");
+    const parsed = parseDateParam(dateParam);
+    if (parsed && parsed.toDateString() !== selectedDate.toDateString()) {
+      setSelectedDate(parsed);
+    }
+  }, [searchParams]);
+
+  // Update URL when date changes (from user action)
+  useEffect(() => {
+    const dateStr = formatDateParam(selectedDate);
+    const currentDateParam = searchParams.get("date");
+
+    // Only update URL if it's different
+    if (currentDateParam !== dateStr) {
+      isUpdatingUrl.current = true;
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("date", dateStr);
+      router.replace(`/games?${params.toString()}`, { scroll: false });
+    }
+  }, [selectedDate, router, searchParams]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -244,10 +293,14 @@ export default function Fixtures() {
                           : "border-mygray dark:border-mygray/50"
                       }`;
 
+                  // Preserve date parameter when linking to detail page
+                  const currentDateStr = formatDateParam(selectedDate);
+                  const detailUrl = `/games/detail?id=${fixture.fixture.id}&date=${currentDateStr}`;
+
                   return (
                     <Link
                       key={fixture.fixture.id}
-                      href={`/games/detail?id=${fixture.fixture.id}`}
+                      href={detailUrl}
                       className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden hover:bg-card/80 transition-colors cursor-pointer`}
                     >
                       {isInPlay && (

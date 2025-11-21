@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Users,
   BarChart3,
@@ -31,6 +31,7 @@ export default function FixtureNav({
 }: FixtureNavProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const tabs = [
     { id: "headtohead" as TabType, label: "H2H", icon: TrendingUp },
@@ -43,10 +44,11 @@ export default function FixtureNav({
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    // Update URL with tab parameter
-    const params = new URLSearchParams();
+    // Update URL with tab parameter, preserving date if present
+    const params = new URLSearchParams(searchParams.toString());
     params.set("id", fixtureId);
     params.set("tab", tab);
+    // Date parameter is already preserved from searchParams.toString()
     router.push(`${pathname}?${params.toString()}`);
   };
 

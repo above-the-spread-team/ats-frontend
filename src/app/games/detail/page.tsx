@@ -27,6 +27,7 @@ export default function GameDetailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const fixtureId = searchParams.get("id");
+  const dateParam = searchParams.get("date");
 
   // Get tab from URL or default to headtohead
   const tabParam = searchParams.get("tab") as TabType;
@@ -140,7 +141,14 @@ export default function GameDetailPage() {
             {error || "No fixture data available"}
           </p>
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              // Preserve date parameter when going back
+              if (dateParam) {
+                router.push(`/games?date=${dateParam}`);
+              } else {
+                router.back();
+              }
+            }}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -157,7 +165,14 @@ export default function GameDetailPage() {
     <FullPage>
       <div className="container mx-auto max-w-4xl px-4">
         <button
-          onClick={() => router.back()}
+          onClick={() => {
+            // Preserve date parameter when going back
+            if (dateParam) {
+              router.push(`/games?date=${dateParam}`);
+            } else {
+              router.back();
+            }
+          }}
           className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="w-4 h-4" />

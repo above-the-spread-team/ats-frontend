@@ -541,7 +541,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
           </div>
 
           <div className="space-y-2">
-            {h2h.slice(0, 5).map((match) => (
+            {h2h.slice(0, 10).map((match) => (
               <div
                 key={match.fixture.id}
                 className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border"

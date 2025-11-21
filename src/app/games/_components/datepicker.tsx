@@ -42,11 +42,15 @@ export default function Datepicker({
     return dates;
   }, []);
 
-  const [dates, setDates] = useState(() => generateDateRange(today));
+  const [dates, setDates] = useState(() => generateDateRange(selectedDate));
 
   // Carousel ref to control scroll position
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [carouselApi, setCarouselApi] = useState<any>(null);
+
+  // Track previous selectedDate to detect external changes (e.g., from URL)
+  const prevSelectedDateRef = useRef<Date>(selectedDate);
+  const isInternalChangeRef = useRef(false);
 
   // Function to scroll to index 3 (center position)
   const scrollToCenter = useCallback(() => {
@@ -55,6 +59,40 @@ export default function Datepicker({
     // Always scroll to index 3
     carouselApi.scrollTo(3);
   }, [carouselApi]);
+
+  // Effect to scroll to center when carousel API is ready on initial mount
+  useEffect(() => {
+    if (carouselApi) {
+      // Scroll to center after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        scrollToCenter();
+      }, 100);
+    }
+  }, [carouselApi, scrollToCenter]);
+
+  // Effect to handle date changes from external sources (e.g., URL parameter)
+  useEffect(() => {
+    // Check if selectedDate changed from an external source
+    const prevDateString = prevSelectedDateRef.current.toDateString();
+    const currentDateString = selectedDate.toDateString();
+
+    if (prevDateString !== currentDateString && !isInternalChangeRef.current) {
+      // Always generate new date range centered on the selected date when coming from URL
+      const newDates = generateDateRange(selectedDate);
+      setDates(newDates);
+
+      // Scroll to center after a short delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToCenter();
+      }, 150);
+
+      // Update the ref
+      prevSelectedDateRef.current = selectedDate;
+    }
+
+    // Reset the internal change flag
+    isInternalChangeRef.current = false;
+  }, [selectedDate, generateDateRange, scrollToCenter]);
 
   // Function to select today and scroll to center
   const selectToday = useCallback(() => {
@@ -315,6 +353,7 @@ export default function Datepicker({
                   data-date-card
                   data-date-index={index}
                   onClick={() => {
+                    isInternalChangeRef.current = true;
                     setSelectedDate(date);
                   }}
                   className="cursor-pointer"
@@ -340,6 +379,7 @@ export default function Datepicker({
         <Calendar
           selectedDate={selectedDate}
           onDateSelect={(newDate) => {
+            isInternalChangeRef.current = true;
             setSelectedDate(newDate);
             const newDates = generateDateRange(newDate);
             setDates(newDates);
