@@ -204,7 +204,7 @@ export default function FixtureStatistics({
 
       return (
         <div key={statType} className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <span className="text-xs md:text-sm font-medium text-muted-foreground">
               {statType}
             </span>
@@ -212,8 +212,11 @@ export default function FixtureStatistics({
           <div className="grid grid-cols-2 gap-4">
             {/* Home Team */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-end mb-1">
                 <div className="flex  items-center gap-2">
+                  <span className="text-xs font-medium">
+                    {formatValue(homeValue)}
+                  </span>
                   {homeTeam.team.logo ? (
                     <Image
                       src={homeTeam.team.logo}
@@ -227,13 +230,10 @@ export default function FixtureStatistics({
                       {getInitials(homeTeam.team.name)}
                     </div>
                   )}
-                  <span className="text-xs font-medium">
-                    {formatValue(homeValue)}
-                  </span>
                 </div>
               </div>
               {homePercent !== null && (
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex justify-end">
                   <div
                     className="h-full bg-bar-green transition-all duration-500"
                     style={{ width: `${homePercent}%` }}
@@ -286,16 +286,19 @@ export default function FixtureStatistics({
 
       return (
         <div key={statType} className="space-y-2">
-          <div className="flex items-center  justify-center">
-            <span className="text-xs  md:text-sm font-medium text-muted-foreground">
+          <div className="flex items-center justify-center">
+            <span className="text-xs md:text-sm font-medium text-muted-foreground">
               {statType}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {/* Home Team */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-end mb-1">
                 <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold">
+                    {formatValue(homeValue)}
+                  </span>
                   {homeTeam.team.logo ? (
                     <Image
                       src={homeTeam.team.logo}
@@ -309,13 +312,10 @@ export default function FixtureStatistics({
                       {getInitials(homeTeam.team.name)}
                     </div>
                   )}
-                  <span className="text-xs font-bold">
-                    {formatValue(homeValue)}
-                  </span>
                 </div>
               </div>
               {homeNum > 0 && (
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex justify-end">
                   <div
                     className="h-full bg-bar-green transition-all duration-500"
                     style={{ width: `${homePercent}%` }}
@@ -358,48 +358,6 @@ export default function FixtureStatistics({
           </div>
         </div>
       );
-    } else {
-      // Display as simple values
-      return (
-        <div key={statType} className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2">
-            {homeTeam.team.logo ? (
-              <Image
-                src={homeTeam.team.logo}
-                alt={homeTeam.team.name}
-                width={20}
-                height={20}
-                className="w-5 h-5 object-contain"
-              />
-            ) : (
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground">
-                {getInitials(homeTeam.team.name)}
-              </div>
-            )}
-            <span className="text-xs font-medium">
-              {formatValue(homeValue)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {awayTeam.team.logo ? (
-              <Image
-                src={awayTeam.team.logo}
-                alt={awayTeam.team.name}
-                width={20}
-                height={20}
-                className="w-5 h-5 object-contain"
-              />
-            ) : (
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground">
-                {getInitials(awayTeam.team.name)}
-              </div>
-            )}
-            <span className="text-xs font-medium">
-              {formatValue(awayValue)}
-            </span>
-          </div>
-        </div>
-      );
     }
   }
 
@@ -408,7 +366,7 @@ export default function FixtureStatistics({
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-xl md:text-2xl font-bold">Match Statistics</h2>
-        <div className="flex items-center justify-evenly gap-4 flex-wrap">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             {homeTeam.team.logo ? (
               <Image
@@ -423,6 +381,9 @@ export default function FixtureStatistics({
                 {getInitials(homeTeam.team.name)}
               </div>
             )}
+            <span className="text-sm md:text-base font-semibold">
+              {homeTeam.team.name}
+            </span>
           </div>
           <span className="text-muted-foreground">vs</span>
           <div className="flex items-center gap-2">
@@ -439,12 +400,15 @@ export default function FixtureStatistics({
                 {getInitials(awayTeam.team.name)}
               </div>
             )}
+            <span className="text-sm md:text-base font-semibold">
+              {awayTeam.team.name}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Statistics */}
-      <div className="space-y-4">
+      <div className="space-y-4 ">
         {allStatTypes.map((statType) => renderStatistic(statType))}
       </div>
     </div>
