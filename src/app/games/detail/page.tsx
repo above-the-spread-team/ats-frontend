@@ -2,11 +2,19 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft, Clock8 } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock8,
+  Users,
+  BarChart3,
+  Activity,
+  User,
+  Brain,
+} from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
+import Nav, { NavTab } from "@/components/common/nav";
 import FixtureDetail from "./_components/fixture-detail";
-import FixtureNav from "./_components/nav";
 import Lineups from "./_components/lineups";
 import FixtureStatistics from "./_components/fixture-statistics";
 import Events from "./_components/events";
@@ -153,6 +161,14 @@ export default function GameDetailPage() {
 
   const fixture = fixtureData.response[0];
 
+  const tabs: NavTab<TabType>[] = [
+    { id: "lineups", label: "Lineups", icon: Users },
+    { id: "statistics", label: "Statistics", icon: BarChart3 },
+    { id: "events", label: "Events", icon: Activity },
+    { id: "players", label: "Players", icon: User },
+    { id: "predictions", label: "Predictions", icon: Brain },
+  ];
+
   return (
     <FullPage>
       <div className="container mx-auto max-w-4xl px-4 ">
@@ -182,10 +198,15 @@ export default function GameDetailPage() {
 
         {/* Tab Navigation */}
         {fixtureId && (
-          <FixtureNav
+          <Nav
+            tabs={tabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            fixtureId={fixtureId}
+            preserveParams={true}
+            additionalParams={{ id: fixtureId }}
+            containerClassName="mt-4 mb-2 justify-between md:px-2 gap-1"
+            hideIconOnMobile={true}
+            justify="between"
           />
         )}
 

@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Trophy, Award, Earth } from "lucide-react";
+import { Trophy, Award, Earth, BarChart3, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import IconBg from "@/components/common/icon-bg";
-import StatsNav from "./_components/nav";
+import Nav, { NavTab } from "@/components/common/nav";
 import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
 import Leader from "./_components/leader";
@@ -159,11 +159,18 @@ export default function LeagueStatsPage() {
         </div>
 
         {/* Tab Navigation */}
-        <StatsNav
+        <Nav
+          tabs={[
+            { id: "standings", label: "Standings", icon: BarChart3 },
+            { id: "leaders", label: "Leaders", icon: Trophy },
+            { id: "teams", label: "Teams", icon: Users },
+          ]}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          leagueId={leagueId}
-          season={selectedSeason}
+          basePath={`/stats/${leagueId}`}
+          additionalParams={{ season: selectedSeason.toString() }}
+          className="py-1.5 md:py-2"
+          showIconAlways={true}
         />
       </div>
       <div className=" container mx-auto max-w-6xl pb-10 pt-2 md:pt-4 ">

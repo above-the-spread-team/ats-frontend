@@ -52,6 +52,7 @@ export default function FixtureStatistics({
     useState<FixtureStatisticsApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -59,6 +60,7 @@ export default function FixtureStatistics({
     const fetchStatistics = async () => {
       setIsLoading(true);
       setError(null);
+      setShouldAnimate(false); // Reset animation state
 
       try {
         const params = new URLSearchParams({
@@ -92,6 +94,10 @@ export default function FixtureStatistics({
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false);
+          // Trigger animation after data is loaded with a slight delay
+          setTimeout(() => {
+            setShouldAnimate(true);
+          }, 200);
         }
       }
     };
@@ -209,7 +215,7 @@ export default function FixtureStatistics({
               {statType}
             </span>
           </div>
-          <div className="grid max-w-2xl justify-center mx-auto   grid-cols-2 gap-4">
+          <div className="grid  justify-center mx-auto   grid-cols-2 gap-4">
             {/* Home Team */}
             <div className="space-y-1">
               <div className="flex items-center justify-end mb-1">
@@ -235,8 +241,8 @@ export default function FixtureStatistics({
               {homePercent !== null && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex justify-end">
                   <div
-                    className="h-full  bg-bar-green transition-all duration-500"
-                    style={{ width: `${homePercent}%` }}
+                    className="h-full bg-bar-green transition-all duration-[3000ms] ease-in-out rounded-l-full"
+                    style={{ width: shouldAnimate ? `${homePercent}%` : "0%" }}
                   />
                 </div>
               )}
@@ -267,8 +273,8 @@ export default function FixtureStatistics({
               {awayPercent !== null && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-bar-red transition-all duration-500"
-                    style={{ width: `${awayPercent}%` }}
+                    className="h-full bg-bar-red transition-all duration-[3000ms] ease-in-out rounded-r-full"
+                    style={{ width: shouldAnimate ? `${awayPercent}%` : "0%" }}
                   />
                 </div>
               )}
@@ -291,7 +297,7 @@ export default function FixtureStatistics({
               {statType}
             </span>
           </div>
-          <div className="grid max-w-2xl justify-center mx-auto   grid-cols-2 gap-4">
+          <div className="grid max justify-center mx-auto   grid-cols-2 gap-4">
             {/* Home Team */}
             <div className="space-y-1">
               <div className="flex items-center justify-end mb-1">
@@ -317,8 +323,8 @@ export default function FixtureStatistics({
               {homeNum > 0 && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex justify-end">
                   <div
-                    className="h-full bg-bar-green transition-all duration-500"
-                    style={{ width: `${homePercent}%` }}
+                    className="h-full bg-bar-green transition-all duration-1000 ease-in-out rounded-l-full"
+                    style={{ width: shouldAnimate ? `${homePercent}%` : "0%" }}
                   />
                 </div>
               )}
@@ -349,8 +355,8 @@ export default function FixtureStatistics({
               {awayNum > 0 && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-bar-red transition-all duration-500"
-                    style={{ width: `${awayPercent}%` }}
+                    className="h-full bg-bar-red transition-all duration-1000 ease-in-out rounded-r-full"
+                    style={{ width: shouldAnimate ? `${awayPercent}%` : "0%" }}
                   />
                 </div>
               )}
@@ -362,7 +368,7 @@ export default function FixtureStatistics({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 md:max-w-2xl max-w-[80%] mx-auto">
       {/* Header */}
       <h2 className="text-lg md:text-xl text-center font-bold">
         Match Statistics

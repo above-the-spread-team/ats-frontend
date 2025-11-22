@@ -4,13 +4,20 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Building2, Armchair } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Building2,
+  Armchair,
+  Users,
+  BarChart3,
+} from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import IconBg from "@/components/common/icon-bg";
 import { Skeleton } from "@/components/ui/skeleton";
+import Nav, { NavTab } from "@/components/common/nav";
 import type { TeamResponseItem } from "@/type/teams-info";
 import SeasonSelect from "../_components/season-select";
-import TeamNav from "./_components/nav";
 import Statistic from "./_components/statistic";
 import Squad from "./_components/squad";
 
@@ -250,12 +257,16 @@ export default function TeamPage() {
         )}
 
         {/* Tab Navigation */}
-        <TeamNav
+        <Nav
+          tabs={[
+            { id: "statistics", label: "Statistics", icon: BarChart3 },
+            { id: "squad", label: "Squad", icon: Users },
+          ]}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          leagueId={leagueId}
-          teamId={teamId}
-          season={season}
+          additionalParams={{ season: season.toString() }}
+          className="px-4"
+          showIconAlways={true}
         />
 
         <div className="pt-2 pb-10">
@@ -264,7 +275,9 @@ export default function TeamPage() {
             <Statistic leagueId={leagueId} teamId={teamId} season={season} />
           )}
 
-          {activeTab === "squad" && <Squad teamId={teamId} leagueId={leagueId} />}
+          {activeTab === "squad" && (
+            <Squad teamId={teamId} leagueId={leagueId} />
+          )}
         </div>
       </div>
     </FullPage>

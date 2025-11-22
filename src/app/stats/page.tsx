@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
+import Nav from "@/components/common/nav";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
 import StatsSkeleton from "./_components/skeleton";
@@ -178,46 +179,32 @@ export default function Tables() {
         </div>
 
         {/* Type Filter Tabs */}
-        <div className="flex gap-2 border-b border-border overflow-x-auto">
-          {[
-            { id: "all" as LeagueType, label: "All", icon: null },
-            { id: "league" as LeagueType, label: "Leagues", icon: Award },
-            { id: "cup" as LeagueType, label: "Cups", icon: Trophy },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = selectedType === tab.id;
-            const count =
-              tab.id === "all"
-                ? totalAllCount
-                : tab.id === "league"
-                ? totalLeaguesCount
-                : totalCupsCount;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedType(tab.id)}
-                className={`flex  items-center gap-2 px-2 md:px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${
-                  isActive
-                    ? "border-primary text-primary-font font-semibold"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {Icon && <Icon className="w-4 h-4" />}
-                <span className="text-xs md:text-sm">{tab.label}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    isActive
-                      ? "bg-primary/20 text-primary-font"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <Nav
+          tabs={[
+            {
+              id: "all" as LeagueType,
+              label: "All",
+              icon: null,
+              count: totalAllCount,
+            },
+            {
+              id: "league" as LeagueType,
+              label: "Leagues",
+              icon: Award,
+              count: totalLeaguesCount,
+            },
+            {
+              id: "cup" as LeagueType,
+              label: "Cups",
+              icon: Trophy,
+              count: totalCupsCount,
+            },
+          ]}
+          activeTab={selectedType}
+          setActiveTab={setSelectedType}
+          className="py-2"
+          showIconAlways={true}
+        />
       </div>
 
       {/* Loading State */}
