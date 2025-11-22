@@ -7,7 +7,6 @@ import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import FixtureDetail from "./_components/fixture-detail";
 import FixtureNav from "./_components/nav";
-import HeadtoHead from "./_components/headtohead";
 import Lineups from "./_components/lineups";
 import FixtureStatistics from "./_components/fixture-statistics";
 import Events from "./_components/events";
@@ -15,13 +14,7 @@ import FixturePlayers from "./_components/fixture-players";
 import Predictions from "./_components/predictions";
 import type { FixturesApiResponse } from "@/type/fixture";
 
-type TabType =
-  | "headtohead"
-  | "lineups"
-  | "statistics"
-  | "events"
-  | "players"
-  | "predictions";
+type TabType = "lineups" | "statistics" | "events" | "players" | "predictions";
 
 export default function GameDetailPage() {
   const searchParams = useSearchParams();
@@ -29,20 +22,15 @@ export default function GameDetailPage() {
   const fixtureId = searchParams.get("id");
   const dateParam = searchParams.get("date");
 
-  // Get tab from URL or default to headtohead
+  // Get tab from URL or default to lineups
   const tabParam = searchParams.get("tab") as TabType;
   const [activeTab, setActiveTab] = useState<TabType>(
     tabParam &&
-      [
-        "headtohead",
-        "lineups",
-        "statistics",
-        "events",
-        "players",
-        "predictions",
-      ].includes(tabParam)
+      ["lineups", "statistics", "events", "players", "predictions"].includes(
+        tabParam
+      )
       ? tabParam
-      : "headtohead"
+      : "lineups"
   );
 
   const [fixtureData, setFixtureData] = useState<FixturesApiResponse | null>(
@@ -65,14 +53,9 @@ export default function GameDetailPage() {
     const tab = searchParams.get("tab") as TabType;
     if (
       tab &&
-      [
-        "headtohead",
-        "lineups",
-        "statistics",
-        "events",
-        "players",
-        "predictions",
-      ].includes(tab)
+      ["lineups", "statistics", "events", "players", "predictions"].includes(
+        tab
+      )
     ) {
       setActiveTab(tab);
     }
@@ -172,7 +155,7 @@ export default function GameDetailPage() {
 
   return (
     <FullPage>
-      <div className="container mx-auto max-w-4xl px-4">
+      <div className="container mx-auto max-w-4xl px-4 ">
         <div className="flex items-center justify-between mb-2">
           <button
             onClick={() => {
@@ -208,12 +191,6 @@ export default function GameDetailPage() {
 
         <div className="pt-2 pb-10">
           {/* Tab Content */}
-          {activeTab === "headtohead" && (
-            <HeadtoHead
-              homeTeamId={fixture.teams.home.id}
-              awayTeamId={fixture.teams.away.id}
-            />
-          )}
           {activeTab === "lineups" && (
             <Lineups fixtureId={fixture.fixture.id} />
           )}

@@ -1,22 +1,9 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {
-  Users,
-  BarChart3,
-  Activity,
-  User,
-  TrendingUp,
-  Brain,
-} from "lucide-react";
+import { Users, BarChart3, Activity, User, Brain } from "lucide-react";
 
-type TabType =
-  | "headtohead"
-  | "lineups"
-  | "statistics"
-  | "events"
-  | "players"
-  | "predictions";
+type TabType = "lineups" | "statistics" | "events" | "players" | "predictions";
 
 interface FixtureNavProps {
   activeTab: TabType;
@@ -34,7 +21,6 @@ export default function FixtureNav({
   const searchParams = useSearchParams();
 
   const tabs = [
-    { id: "headtohead" as TabType, label: "H2H", icon: TrendingUp },
     { id: "lineups" as TabType, label: "Lineups", icon: Users },
     { id: "statistics" as TabType, label: "Statistics", icon: BarChart3 },
     { id: "events" as TabType, label: "Events", icon: Activity },
@@ -53,7 +39,7 @@ export default function FixtureNav({
   };
 
   return (
-    <div className="flex justify-evenly gap-2 border-b border-border overflow-x-auto">
+    <div className="flex mt-4 mb-2 justify-between md:px-2 gap-1 border-b border-border overflow-x-auto">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -69,7 +55,7 @@ export default function FixtureNav({
             }`}
           >
             <Icon className="w-4 h-4 hidden md:block" />
-            <span className="text-sm md:text-base">{tab.label}</span>
+            <span className="text-xs md:text-base">{tab.label}</span>
           </button>
         );
       })}

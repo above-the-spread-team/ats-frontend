@@ -213,7 +213,7 @@ export default function FixtureStatistics({
             {/* Home Team */}
             <div className="space-y-1">
               <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
+                <div className="flex  items-center gap-2">
                   {homeTeam.team.logo ? (
                     <Image
                       src={homeTeam.team.logo}
@@ -286,8 +286,8 @@ export default function FixtureStatistics({
 
       return (
         <div key={statType} className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs md:text-sm font-medium text-muted-foreground">
+          <div className="flex items-center  justify-center">
+            <span className="text-xs  md:text-sm font-medium text-muted-foreground">
               {statType}
             </span>
           </div>
@@ -408,7 +408,7 @@ export default function FixtureStatistics({
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-xl md:text-2xl font-bold">Match Statistics</h2>
-        <div className="flex items-center justify-center gap-4 flex-wrap">
+        <div className="flex items-center justify-evenly gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             {homeTeam.team.logo ? (
               <Image
@@ -423,9 +423,6 @@ export default function FixtureStatistics({
                 {getInitials(homeTeam.team.name)}
               </div>
             )}
-            <span className="text-sm md:text-base font-semibold">
-              {homeTeam.team.name}
-            </span>
           </div>
           <span className="text-muted-foreground">vs</span>
           <div className="flex items-center gap-2">
@@ -442,9 +439,6 @@ export default function FixtureStatistics({
                 {getInitials(awayTeam.team.name)}
               </div>
             )}
-            <span className="text-sm md:text-base font-semibold">
-              {awayTeam.team.name}
-            </span>
           </div>
         </div>
       </div>

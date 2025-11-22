@@ -132,50 +132,6 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-xl md:text-2xl font-bold">Match Predictions</h2>
-        <div className="flex items-center justify-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            {teams.home.logo ? (
-              <Image
-                src={teams.home.logo}
-                alt={teams.home.name}
-                width={32}
-                height={32}
-                className="w-6 h-6 md:w-8 md:h-8 object-contain"
-              />
-            ) : (
-              <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                {getInitials(teams.home.name)}
-              </div>
-            )}
-            <span className="text-sm md:text-base font-semibold">
-              {teams.home.name}
-            </span>
-          </div>
-          <span className="text-muted-foreground">vs</span>
-          <div className="flex items-center gap-2">
-            {teams.away.logo ? (
-              <Image
-                src={teams.away.logo}
-                alt={teams.away.name}
-                width={32}
-                height={32}
-                className="w-6 h-6 md:w-8 md:h-8 object-contain"
-              />
-            ) : (
-              <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                {getInitials(teams.away.name)}
-              </div>
-            )}
-            <span className="text-sm md:text-base font-semibold">
-              {teams.away.name}
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Main Prediction */}
       <div className="bg-gradient-to-br from-card to-card/95 border border-border rounded-lg p-4 md:p-6 space-y-4">
         <div className="flex items-center gap-2 mb-4">
