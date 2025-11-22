@@ -209,7 +209,7 @@ export default function FixtureStatistics({
               {statType}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid max-w-2xl justify-center mx-auto   grid-cols-2 gap-4">
             {/* Home Team */}
             <div className="space-y-1">
               <div className="flex items-center justify-end mb-1">
@@ -235,7 +235,7 @@ export default function FixtureStatistics({
               {homePercent !== null && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex justify-end">
                   <div
-                    className="h-full bg-bar-green transition-all duration-500"
+                    className="h-full  bg-bar-green transition-all duration-500"
                     style={{ width: `${homePercent}%` }}
                   />
                 </div>
@@ -291,7 +291,7 @@ export default function FixtureStatistics({
               {statType}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid max-w-2xl justify-center mx-auto   grid-cols-2 gap-4">
             {/* Home Team */}
             <div className="space-y-1">
               <div className="flex items-center justify-end mb-1">
@@ -362,50 +362,11 @@ export default function FixtureStatistics({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-xl md:text-2xl font-bold">Match Statistics</h2>
-        <div className="flex items-center justify-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            {homeTeam.team.logo ? (
-              <Image
-                src={homeTeam.team.logo}
-                alt={homeTeam.team.name}
-                width={32}
-                height={32}
-                className="w-6 h-6 md:w-8 md:h-8 object-contain"
-              />
-            ) : (
-              <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                {getInitials(homeTeam.team.name)}
-              </div>
-            )}
-            <span className="text-sm md:text-base font-semibold">
-              {homeTeam.team.name}
-            </span>
-          </div>
-          <span className="text-muted-foreground">vs</span>
-          <div className="flex items-center gap-2">
-            {awayTeam.team.logo ? (
-              <Image
-                src={awayTeam.team.logo}
-                alt={awayTeam.team.name}
-                width={32}
-                height={32}
-                className="w-6 h-6 md:w-8 md:h-8 object-contain"
-              />
-            ) : (
-              <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-secondary/40 text-[10px] font-semibold uppercase text-muted-foreground">
-                {getInitials(awayTeam.team.name)}
-              </div>
-            )}
-            <span className="text-sm md:text-base font-semibold">
-              {awayTeam.team.name}
-            </span>
-          </div>
-        </div>
-      </div>
+      <h2 className="text-lg md:text-xl text-center font-bold">
+        Match Statistics
+      </h2>
 
       {/* Statistics */}
       <div className="space-y-4 ">
