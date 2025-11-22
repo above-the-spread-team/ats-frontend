@@ -286,7 +286,7 @@ export default function Fixtures() {
                   });
 
                   const borderClass = isInPlay
-                    ? ""
+                    ? "border-l-[6px] border-transparent"
                     : `border-l-[6px] ${
                         statusInfo.type === "Finished"
                           ? "border-primary/80"
@@ -301,13 +301,13 @@ export default function Fixtures() {
                     <Link
                       key={fixture.fixture.id}
                       href={detailUrl}
-                      className={`relative flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 overflow-hidden hover:bg-card/80 transition-colors cursor-pointer`}
+                      className={`relative  flex flex-col items-center rounded-sm ${borderClass} bg-card py-2 hover:bg-card/80 transition-colors cursor-pointer`}
                     >
                       {isInPlay && (
                         <>
-                          <span className="pointer-events-none absolute inset-y-0 left-0 w-[6px] animate-pulse bg-gradient-to-b from-primary via-primary/80 to-primary/30"></span>
+                          <span className="pointer-events-none rounded-l-sm absolute inset-y-0 -left-[6px] z-10 w-[6px] animate-pulse bg-gradient-to-b from-primary via-primary/80 to-primary/30"></span>
                           <span
-                            className="pointer-events-none absolute inset-y-0 left-0 w-[6px] bg-primary/50 blur-sm opacity-70 animate-pulse"
+                            className="pointer-events-none absolute inset-y-0 -left-[6px] z-10 w-[6px] bg-primary/50 blur-sm opacity-70 animate-pulse"
                             style={{ animationDelay: "0.4s" }}
                           ></span>
                         </>
