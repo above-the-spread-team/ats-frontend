@@ -223,7 +223,7 @@ export default function GameDetailPage() {
             />
           </div>
         )}
-        <div className="container mx-auto w-[95%]  max-w-4xl ">
+        <div className="container mx-auto w-[95%]  max-w-2xl ">
           {activeTab === "events" && (
             <Events
               fixtureId={fixture.fixture.id}

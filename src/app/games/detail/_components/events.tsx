@@ -204,8 +204,8 @@ export default function Events({
     eventsByTime.get(timeKey)!.push(event);
   });
 
-  // Sort by time
-  const sortedTimes = Array.from(eventsByTime.keys()).sort((a, b) => a - b);
+  // Sort by time (descending - latest first)
+  const sortedTimes = Array.from(eventsByTime.keys()).sort((a, b) => b - a);
 
   function renderEvent(event: FixtureEventsResponseItem) {
     const styles = getEventStyles(event.type, event.detail);
@@ -220,9 +220,7 @@ export default function Events({
         <div
           className={` rounded-xl border-2 ${styles.border} ${
             styles.bg
-          } p-2 md:p-3 shadow-inner ${
-            styles.shadow
-          } transition-all hover:shadow-md ${
+          } p-2 md:p-3 shadow-inner ${styles.shadow} ${
             isHomeTeam ? "text-left" : "text-right"
           }`}
         >
@@ -327,8 +325,8 @@ export default function Events({
                 <div className="flex  items-center justify-center mb-3 md:mb-6">
                   <div className="relative">
                     {/* Connection line to timeline */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 md:w-12 h-0.5 bg-border" />
-                    <div className="relative bg-card border-2 border-border rounded-full px-2.5 py-1 md:px-3 md:py-1.5 shadow-md z-10 backdrop-blur-sm">
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 md:w-12 h-0.5  bg-border" />
+                    <div className="relative bg-card border-2 border-border rounded-full md:px-3 md:py-1.5 shadow-md z-10 backdrop-blur-sm">
                       <span className="text-xs md:text-sm font-bold text-foreground">
                         {formatTime(
                           firstEvent.time.elapsed,
