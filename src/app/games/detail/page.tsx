@@ -223,13 +223,15 @@ export default function GameDetailPage() {
             />
           </div>
         )}
-        {activeTab === "events" && (
-          <Events
-            fixtureId={fixture.fixture.id}
-            homeTeamId={fixture.teams.home.id}
-            awayTeamId={fixture.teams.away.id}
-          />
-        )}
+        <div className="container mx-auto w-[95%]  max-w-4xl ">
+          {activeTab === "events" && (
+            <Events
+              fixtureId={fixture.fixture.id}
+              homeTeamId={fixture.teams.home.id}
+              awayTeamId={fixture.teams.away.id}
+            />
+          )}
+        </div>
         <div className="container mx-auto  max-w-5xl ">
           {activeTab === "players" && (
             <FixturePlayers

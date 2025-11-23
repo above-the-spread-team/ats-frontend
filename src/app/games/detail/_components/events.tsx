@@ -1,24 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import type {
   FixtureEventsApiResponse,
   FixtureEventsResponseItem,
 } from "@/type/fixture-events";
 import Loading from "@/components/common/loading";
-import { Target, Square, RefreshCw, Video, AlertCircle } from "lucide-react";
-
-function getInitials(text: string | null | undefined, fallback = "??") {
-  if (!text) return fallback;
-  const trimmed = text.trim();
-  if (!trimmed) return fallback;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
+import {
+  Target,
+  Square,
+  RefreshCw,
+  Video,
+  AlertCircle,
+  User,
+  ArrowRight,
+} from "lucide-react";
 
 function formatTime(elapsed: number, extra: number | null): string {
   if (extra !== null && extra > 0) {
@@ -33,9 +29,9 @@ function getEventIcon(type: string, detail: string) {
       return <Target className="w-4 h-4" />;
     case "Card":
       if (detail === "Red Card") {
-        return <Square className="w-4 h-4 text-red-500" />;
+        return <Square className="w-4 h-4 text-red-500 fill-red-500" />;
       }
-      return <Square className="w-4 h-4 text-yellow-500" />;
+      return <Square className="w-4 h-4 text-yellow-500 fill-yellow-500" />;
     case "subst":
       return <RefreshCw className="w-4 h-4" />;
     case "Var":
@@ -45,21 +41,61 @@ function getEventIcon(type: string, detail: string) {
   }
 }
 
-function getEventColor(type: string, detail: string): string {
+function getEventStyles(type: string, detail: string) {
+  // Same background and border for all event types
+  const commonBg = "bg-muted/50 dark:bg-muted/30";
+  const commonBorder = "border-border";
+
   switch (type) {
     case "Goal":
-      return "bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30";
+      return {
+        bg: commonBg,
+        border: commonBorder,
+        text: "text-green-700 dark:text-green-400",
+        iconBg: "bg-green-500",
+        shadow: "shadow-green-500/10",
+      };
     case "Card":
       if (detail === "Red Card") {
-        return "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30";
+        return {
+          bg: commonBg,
+          border: commonBorder,
+          text: "text-red-700 dark:text-red-400",
+          iconBg: "bg-red-500",
+          shadow: "shadow-red-500/10",
+        };
       }
-      return "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30";
+      return {
+        bg: commonBg,
+        border: commonBorder,
+        text: "text-yellow-700 dark:text-yellow-400",
+        iconBg: "bg-yellow-500",
+        shadow: "shadow-yellow-500/10",
+      };
     case "subst":
-      return "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30";
+      return {
+        bg: commonBg,
+        border: commonBorder,
+        text: "text-blue-700 dark:text-blue-400",
+        iconBg: "bg-blue-500",
+        shadow: "shadow-blue-500/10",
+      };
     case "Var":
-      return "bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30";
+      return {
+        bg: commonBg,
+        border: commonBorder,
+        text: "text-purple-700 dark:text-purple-400",
+        iconBg: "bg-purple-500",
+        shadow: "shadow-purple-500/10",
+      };
     default:
-      return "bg-muted text-muted-foreground border-border";
+      return {
+        bg: commonBg,
+        border: commonBorder,
+        text: "text-muted-foreground",
+        iconBg: "bg-muted-foreground",
+        shadow: "shadow-muted/10",
+      };
   }
 }
 
@@ -172,60 +208,82 @@ export default function Events({
   const sortedTimes = Array.from(eventsByTime.keys()).sort((a, b) => a - b);
 
   function renderEvent(event: FixtureEventsResponseItem) {
-    const eventColor = getEventColor(event.type, event.detail);
+    const styles = getEventStyles(event.type, event.detail);
     const isHomeTeam = homeTeamId ? event.team.id === homeTeamId : false;
 
     return (
       <div
         key={`${event.time.elapsed}-${event.team.id}-${event.player.id}-${event.type}-${event.detail}`}
-        className={`flex items-start gap-3 ${
-          isHomeTeam ? "flex-row" : "flex-row-reverse"
-        }`}
+        className="group  relative"
       >
-        {/* Team Logo */}
-        <div className="flex-shrink-0">
-          {event.team.logo ? (
-            <Image
-              src={event.team.logo}
-              alt={event.team.name}
-              width={32}
-              height={32}
-              className="w-6 h-6 md:w-8 md:h-8 object-contain"
-            />
-          ) : (
-            <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground">
-              {getInitials(event.team.name)}
-            </div>
-          )}
-        </div>
-
         {/* Event Content */}
         <div
-          className={`flex-1 rounded-lg border p-2 md:p-3 ${eventColor} ${
+          className={` rounded-xl border-2 ${styles.border} ${
+            styles.bg
+          } p-2 md:p-3 shadow-inner ${
+            styles.shadow
+          } transition-all hover:shadow-md ${
             isHomeTeam ? "text-left" : "text-right"
           }`}
         >
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex-shrink-0">
+          {/* Event Type Header */}
+          <div
+            className={`flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2 ${
+              isHomeTeam ? "flex-row" : "flex-row-reverse"
+            }`}
+          >
+            <div
+              className={`flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-lg ${styles.iconBg} text-white shadow-sm flex-shrink-0`}
+            >
               {getEventIcon(event.type, event.detail)}
             </div>
-            <span className="text-xs md:text-sm font-semibold">
+            <span
+              className={`text-xs md:text-sm font-bold ${styles.text} truncate`}
+            >
               {event.detail}
             </span>
           </div>
-          <div className="space-y-0.5">
-            <p className="text-xs md:text-sm font-medium">
-              {event.player.name}
-            </p>
+
+          {/* Player Info */}
+          <div
+            className={`space-y-1 md:space-y-1.5 ${
+              isHomeTeam ? "text-left" : "text-right"
+            }`}
+          >
+            <div
+              className={`flex items-center gap-1.5 md:gap-2 ${
+                isHomeTeam ? "flex-row" : "flex-row-reverse"
+              }`}
+            >
+              <User className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+              <p className="text-xs md:text-sm font-semibold text-foreground truncate">
+                {event.player.name}
+              </p>
+            </div>
+
+            {/* Assist */}
             {event.assist.name && (
-              <p className="text-[10px] md:text-xs text-muted-foreground">
-                Assist: {event.assist.name}
-              </p>
+              <div
+                className={`flex items-center gap-1.5 md:gap-2 ${
+                  isHomeTeam ? "flex-row" : "flex-row-reverse"
+                } text-xs text-muted-foreground`}
+              >
+                <ArrowRight className="w-2.5 h-2.5 flex-shrink-0" />
+                <span className="font-medium truncate">
+                  Assist: {event.assist.name}
+                </span>
+              </div>
             )}
+
+            {/* Comments */}
             {event.comments && (
-              <p className="text-[10px] md:text-xs text-muted-foreground italic">
-                {event.comments}
-              </p>
+              <div
+                className={`mt-1.5 md:mt-2 pt-1.5 md:pt-2 border-t ${styles.border} opacity-50`}
+              >
+                <p className="text-xs text-muted-foreground italic leading-relaxed break-words">
+                  {event.comments}
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -234,57 +292,80 @@ export default function Events({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 ">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-xl md:text-2xl font-bold">Match Events</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {eventsData.results} event{eventsData.results !== 1 ? "s" : ""}
+      <div className="text-center space-y-1">
+        <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Match Events
+        </h2>
+        <p className="text-xs md:text-sm text-muted-foreground">
+          {eventsData.results} event{eventsData.results !== 1 ? "s" : ""}{" "}
+          recorded
         </p>
       </div>
 
       {/* Timeline */}
       <div className="relative">
-        {/* Vertical line */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-border -translate-x-1/2 hidden md:block" />
+        {/* Vertical timeline line - visible on all screen sizes */}
+        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 md:w-1 bg-gradient-to-b from-border via-border to-border -translate-x-1/2" />
 
-        {/* Events */}
-        <div className="space-y-6">
+        {/* Events Container */}
+        <div className="space-y-1">
           {sortedTimes.map((time) => {
             const timeEvents = eventsByTime.get(time)!;
             const firstEvent = timeEvents[0];
+            const homeEvents = homeTeamId
+              ? timeEvents.filter((event) => event.team.id === homeTeamId)
+              : [];
+            const awayEvents = awayTeamId
+              ? timeEvents.filter((event) => event.team.id === awayTeamId)
+              : [];
 
             return (
               <div key={time} className="relative">
-                {/* Time Badge */}
-                <div className="flex items-center justify-center mb-3">
-                  <div className="bg-card border border-border rounded-full px-3 py-1 z-10">
-                    <span className="text-xs md:text-sm font-semibold">
-                      {formatTime(
-                        firstEvent.time.elapsed,
-                        firstEvent.time.extra
-                      )}
-                      &apos;
-                    </span>
+                {/* Time Badge with connection to timeline */}
+                <div className="flex  items-center justify-center mb-3 md:mb-6">
+                  <div className="relative">
+                    {/* Connection line to timeline */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 md:w-12 h-0.5 bg-border" />
+                    <div className="relative bg-card border-2 border-border rounded-full px-2.5 py-1 md:px-3 md:py-1.5 shadow-md z-10 backdrop-blur-sm">
+                      <span className="text-xs md:text-sm font-bold text-foreground">
+                        {formatTime(
+                          firstEvent.time.elapsed,
+                          firstEvent.time.extra
+                        )}
+                        &apos;
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Events at this time */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2 md:gap-6">
                   {/* Home Team Events */}
-                  <div className="space-y-2">
-                    {homeTeamId &&
-                      timeEvents
-                        .filter((event) => event.team.id === homeTeamId)
-                        .map((event) => renderEvent(event))}
+                  <div className="space-y-2 md:space-y-4 ">
+                    {homeEvents.length > 0 ? (
+                      homeEvents.map((event) => renderEvent(event))
+                    ) : (
+                      <div className="h-full min-h-[40px] md:min-h-[60px] flex items-center justify-center">
+                        <div className="text-xs text-muted-foreground/50 italic">
+                          No events
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Away Team Events */}
-                  <div className="space-y-2">
-                    {awayTeamId &&
-                      timeEvents
-                        .filter((event) => event.team.id === awayTeamId)
-                        .map((event) => renderEvent(event))}
+                  <div className="space-y-2 md:space-y-4">
+                    {awayEvents.length > 0 ? (
+                      awayEvents.map((event) => renderEvent(event))
+                    ) : (
+                      <div className="h-full min-h-[40px] md:min-h-[60px] flex items-center justify-center">
+                        <div className="text-xs text-muted-foreground/50 italic">
+                          No events
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
