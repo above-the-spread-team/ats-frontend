@@ -158,8 +158,8 @@ export default function FixturePlayers({
     return (
       <TableRow key={playerItem.player.id}>
         {/* Player */}
-        <TableCell className="min-w-[200px]">
-          <div className="flex items-center gap-2">
+        <TableCell className="min-w-[200px] ">
+          <div className="flex items-center gap-2 pl-1">
             {playerItem.player.photo ? (
               <Image
                 src={playerItem.player.photo}
@@ -309,7 +309,7 @@ export default function FixturePlayers({
         </TableCell>
 
         {/* Penalties - always render, show "–" if no penalties */}
-        <TableCell className="text-center text-xs md:text-sm">
+        <TableCell className="text-center text-xs md:text-sm pr-1">
           {stat.penalty.scored > 0 ||
           stat.penalty.missed > 0 ||
           stat.penalty.saved > 0
@@ -350,7 +350,7 @@ export default function FixturePlayers({
     });
 
     return (
-      <div className="space-y-0 px-1">
+      <div className="space-y-0 ">
         {/* Team Header */}
         <div className="flex items-center px-2 pb-2 gap-3  border-b border-border">
           {team.team.logo ? (
