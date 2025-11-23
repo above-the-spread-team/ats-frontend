@@ -171,64 +171,66 @@ export default function GameDetailPage() {
 
   return (
     <FullPage>
-      <div className="container mx-auto max-w-4xl px-4 ">
-        <div className="flex items-center justify-between mb-2">
-          <button
-            onClick={() => {
-              // Preserve date parameter when going back
-              if (dateParam) {
-                router.push(`/games?date=${dateParam}`);
-              } else {
-                router.back();
-              }
-            }}
-            className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <div className="flex items-center gap-2 text-xs md:text-sm font-bold dark:text-mygray text-primary">
-            <Clock8 className="w-4 h-4" />
-            <p>{timezone}</p>
-          </div>
+      <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
+        <button
+          onClick={() => {
+            // Preserve date parameter when going back
+            if (dateParam) {
+              router.push(`/games?date=${dateParam}`);
+            } else {
+              router.back();
+            }
+          }}
+          className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <div className="flex items-center gap-2 text-xs md:text-sm font-bold dark:text-mygray text-primary">
+          <Clock8 className="w-4 h-4" />
+          <p>{timezone}</p>
         </div>
+      </div>
 
-        {/* Fixture Detail - Always visible at top */}
+      {/* Fixture Detail - Always visible at top */}
+      <div className="container mx-auto max-w-5xl px-1">
         <FixtureDetail fixture={fixture} />
+      </div>
 
-        {/* Tab Navigation */}
-        {fixtureId && (
-          <Nav
-            tabs={tabs}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            preserveParams={true}
-            additionalParams={{ id: fixtureId }}
-            containerClassName="mt-4 mb-2 justify-between md:px-2 gap-1"
-            hideIconOnMobile={true}
-            justify="between"
-          />
-        )}
+      {/* Tab Navigation */}
+      {fixtureId && (
+        <Nav
+          tabs={tabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          preserveParams={true}
+          additionalParams={{ id: fixtureId }}
+          containerClassName="mt-2 mb-2 justify-between max-w-4xl  mx-auto  px-2 gap-1"
+          hideIconOnMobile={true}
+          justify="between"
+        />
+      )}
 
-        <div className="pt-2 pb-10">
-          {/* Tab Content */}
-          {activeTab === "lineups" && (
-            <Lineups fixtureId={fixture.fixture.id} />
-          )}
-          {activeTab === "statistics" && (
+      <div className="pt-2 pb-10">
+        {/* Tab Content */}
+        {activeTab === "lineups" && <Lineups fixtureId={fixture.fixture.id} />}
+        {activeTab === "statistics" && (
+          <div className="container mx-auto w-[80%] max-w-2xl px-1">
             <FixtureStatistics
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
             />
-          )}
-          {activeTab === "events" && (
-            <Events
-              fixtureId={fixture.fixture.id}
-              homeTeamId={fixture.teams.home.id}
-              awayTeamId={fixture.teams.away.id}
-            />
-          )}
+          </div>
+        )}
+        {activeTab === "events" && (
+          <Events
+            fixtureId={fixture.fixture.id}
+            homeTeamId={fixture.teams.home.id}
+            awayTeamId={fixture.teams.away.id}
+          />
+        )}
+        <div className="container mx-auto  max-w-5xl ">
           {activeTab === "players" && (
             <FixturePlayers
               fixtureId={fixture.fixture.id}
@@ -236,10 +238,10 @@ export default function GameDetailPage() {
               awayTeamId={fixture.teams.away.id}
             />
           )}
-          {activeTab === "predictions" && (
-            <Predictions fixtureId={fixture.fixture.id} />
-          )}
         </div>
+        {activeTab === "predictions" && (
+          <Predictions fixtureId={fixture.fixture.id} />
+        )}
       </div>
     </FullPage>
   );

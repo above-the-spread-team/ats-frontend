@@ -8,7 +8,14 @@ import type {
   FixturePlayersPlayerItem,
 } from "@/type/fixture-players";
 import Loading from "@/components/common/loading";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Crown } from "lucide-react";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
@@ -141,7 +148,7 @@ export default function FixturePlayers({
     awayTeam = teams[1] || null;
   }
 
-  function renderPlayerCard(
+  function renderPlayerRow(
     playerItem: FixturePlayersPlayerItem,
     team: FixturePlayersResponseItem
   ) {
@@ -149,243 +156,177 @@ export default function FixturePlayers({
     if (!stat) return null;
 
     return (
-      <div
-        key={playerItem.player.id}
-        className="bg-card border border-border rounded-lg p-3 md:p-4 space-y-3"
-      >
-        {/* Player Header */}
-        <div className="flex items-center gap-3">
-          {playerItem.player.photo ? (
-            <Image
-              src={playerItem.player.photo}
-              alt={playerItem.player.name}
-              width={48}
-              height={48}
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full bg-secondary/40 text-sm font-semibold uppercase text-muted-foreground">
-              {getInitials(playerItem.player.name)}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm md:text-base font-bold text-foreground truncate">
-                {playerItem.player.name}
-              </h3>
-              {stat.games.captain && (
-                <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-              )}
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs md:text-sm text-muted-foreground">
-                #{formatValue(stat.games.number)}
-              </span>
-              <span className="text-xs text-muted-foreground">•</span>
-              <span className="text-xs md:text-sm text-muted-foreground">
-                {stat.games.position}
-              </span>
-              {stat.games.substitute && (
-                <>
-                  <span className="text-xs text-muted-foreground">•</span>
-                  <span className="text-xs md:text-sm text-blue-500">Sub</span>
-                </>
-              )}
-            </div>
-          </div>
-          {stat.games.rating && stat.games.rating !== "0" && (
-            <div className="text-right">
-              <div className="bg-primary/10 text-primary rounded-full px-2 py-1">
-                <span className="text-xs md:text-sm font-bold">
-                  {parseFloat(stat.games.rating).toFixed(1)}
+      <TableRow key={playerItem.player.id}>
+        {/* Player */}
+        <TableCell className="min-w-[200px]">
+          <div className="flex items-center gap-2">
+            {playerItem.player.photo ? (
+              <Image
+                src={playerItem.player.photo}
+                alt={playerItem.player.name}
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/40 text-xs font-semibold uppercase text-muted-foreground flex-shrink-0">
+                {getInitials(playerItem.player.name)}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs md:text-sm font-medium text-foreground truncate">
+                  {playerItem.player.name}
                 </span>
+                {stat.games.captain && (
+                  <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>#{formatValue(stat.games.number)}</span>
+                <span>•</span>
+                <span>{stat.games.position}</span>
+                {stat.games.substitute && (
+                  <>
+                    <span>•</span>
+                    <span className="text-blue-500">Sub</span>
+                  </>
+                )}
               </div>
             </div>
+          </div>
+        </TableCell>
+
+        {/* Rating */}
+        <TableCell className="text-center">
+          {stat.games.rating && stat.games.rating !== "0" ? (
+            <span className="inline-block bg-primary/10 text-primary rounded px-2 py-0.5 text-xs font-bold">
+              {parseFloat(stat.games.rating).toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">–</span>
           )}
-        </div>
+        </TableCell>
 
-        {/* Key Stats Grid */}
-        <div className="grid grid-cols-4 gap-2">
-          <div className="text-center p-2 bg-muted/30 rounded-md">
-            <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
-              Minutes
-            </p>
-            <p className="text-xs md:text-sm font-bold text-foreground">
-              {formatValue(stat.games.minutes)}
-            </p>
-          </div>
-          <div className="text-center p-2 bg-green-500/10 rounded-md">
-            <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
-              Goals
-            </p>
-            <p className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400">
-              {formatValue(stat.goals.total)}
-            </p>
-          </div>
-          <div className="text-center p-2 bg-blue-500/10 rounded-md">
-            <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
-              Assists
-            </p>
-            <p className="text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400">
-              {formatValue(stat.goals.assists)}
-            </p>
-          </div>
-          <div className="text-center p-2 bg-purple-500/10 rounded-md">
-            <p className="text-[9px] md:text-[10px] text-muted-foreground mb-0.5">
-              Passes
-            </p>
-            <p className="text-xs md:text-sm font-bold text-purple-600 dark:text-purple-400">
-              {formatValue(stat.passes.total)}
-            </p>
-          </div>
-        </div>
+        {/* Minutes */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {formatValue(stat.games.minutes)}
+        </TableCell>
 
-        {/* Detailed Statistics Table */}
-        <div className="overflow-x-auto">
-          <Table>
-            <TableBody>
-              {/* Shots */}
-              <TableRow>
-                <TableCell className="text-[10px] md:text-xs text-muted-foreground w-1/3">
-                  Shots
-                </TableCell>
-                <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                  {formatValue(stat.shots.total)} ({formatValue(stat.shots.on)}{" "}
-                  on target)
-                </TableCell>
-                <TableCell className="text-[10px] md:text-xs text-muted-foreground w-1/3">
-                  Pass Accuracy
-                </TableCell>
-                <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                  {formatValue(stat.passes.accuracy)}
-                </TableCell>
-              </TableRow>
+        {/* Goals */}
+        <TableCell className="text-center text-xs md:text-sm font-semibold text-green-600 dark:text-green-400">
+          {formatValue(stat.goals.total)}
+        </TableCell>
 
-              {/* Tackles */}
-              {stat.tackles.total !== null && (
-                <TableRow>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Tackles
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    {formatValue(stat.tackles.total)} (Blocks:{" "}
-                    {formatValue(stat.tackles.blocks)}, Int:{" "}
-                    {formatValue(stat.tackles.interceptions)})
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Duels Won
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    {stat.duels.total !== null && stat.duels.won !== null
-                      ? `${formatValue(stat.duels.won)}/${formatValue(
-                          stat.duels.total
-                        )}`
-                      : "–"}
-                  </TableCell>
-                </TableRow>
+        {/* Assists */}
+        <TableCell className="text-center text-xs md:text-sm font-semibold text-blue-600 dark:text-blue-400">
+          {formatValue(stat.goals.assists)}
+        </TableCell>
+
+        {/* Shots */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {formatValue(stat.shots.total)}
+          {stat.shots.on !== null && stat.shots.on > 0 && (
+            <span className="text-muted-foreground text-[10px] block">
+              ({formatValue(stat.shots.on)} on)
+            </span>
+          )}
+        </TableCell>
+
+        {/* Passes */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {formatValue(stat.passes.total)}
+        </TableCell>
+
+        {/* Pass Accuracy */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {formatValue(stat.passes.accuracy)}
+        </TableCell>
+
+        {/* Key Passes */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {formatValue(stat.passes.key)}
+        </TableCell>
+
+        {/* Tackles */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.tackles.total !== null ? formatValue(stat.tackles.total) : "–"}
+        </TableCell>
+
+        {/* Duels Won */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.duels.total !== null && stat.duels.won !== null
+            ? `${formatValue(stat.duels.won)}/${formatValue(stat.duels.total)}`
+            : "–"}
+        </TableCell>
+
+        {/* Dribbles */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.dribbles.attempts > 0
+            ? `${formatValue(stat.dribbles.success)}/${formatValue(
+                stat.dribbles.attempts
+              )}`
+            : "–"}
+        </TableCell>
+
+        {/* Fouls */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.fouls.committed > 0 || stat.fouls.drawn > 0
+            ? `${formatValue(stat.fouls.committed)}/${formatValue(
+                stat.fouls.drawn
+              )}`
+            : "–"}
+        </TableCell>
+
+        {/* Cards */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.cards.yellow > 0 || stat.cards.red > 0 ? (
+            <div className="flex items-center justify-center gap-1">
+              {stat.cards.yellow > 0 && (
+                <span className="text-yellow-500">
+                  🟨 {formatValue(stat.cards.yellow)}
+                </span>
               )}
-
-              {/* Dribbles */}
-              {stat.dribbles.attempts > 0 && (
-                <TableRow>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Dribbles
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    {formatValue(stat.dribbles.success)}/
-                    {formatValue(stat.dribbles.attempts)}
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Key Passes
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    {formatValue(stat.passes.key)}
-                  </TableCell>
-                </TableRow>
+              {stat.cards.red > 0 && (
+                <span className="text-red-500">
+                  🟥 {formatValue(stat.cards.red)}
+                </span>
               )}
+            </div>
+          ) : (
+            "–"
+          )}
+        </TableCell>
 
-              {/* Fouls */}
-              {(stat.fouls.committed > 0 || stat.fouls.drawn > 0) && (
-                <TableRow>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Fouls
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    Committed: {formatValue(stat.fouls.committed)}, Drawn:{" "}
-                    {formatValue(stat.fouls.drawn)}
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Cards
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    {stat.cards.yellow > 0 && (
-                      <span className="text-yellow-500">
-                        🟨 {formatValue(stat.cards.yellow)}
-                      </span>
-                    )}
-                    {stat.cards.yellow > 0 && stat.cards.red > 0 && " "}
-                    {stat.cards.red > 0 && (
-                      <span className="text-red-500">
-                        🟥 {formatValue(stat.cards.red)}
-                      </span>
-                    )}
-                    {stat.cards.yellow === 0 && stat.cards.red === 0 && "–"}
-                  </TableCell>
-                </TableRow>
-              )}
+        {/* Goalkeeper Stats - always render, show "–" if not GK */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.games.position === "G" && stat.goals.conceded !== null
+            ? formatValue(stat.goals.conceded)
+            : "–"}
+        </TableCell>
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.games.position === "G" ? formatValue(stat.goals.saves) : "–"}
+        </TableCell>
 
-              {/* Goals for Goalkeepers */}
-              {stat.games.position === "G" && (
-                <>
-                  {stat.goals.conceded !== null && (
-                    <TableRow>
-                      <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                        Goals Conceded
-                      </TableCell>
-                      <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                        {formatValue(stat.goals.conceded)}
-                      </TableCell>
-                      <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                        Saves
-                      </TableCell>
-                      <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                        {formatValue(stat.goals.saves)}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </>
-              )}
-
-              {/* Penalties */}
-              {(stat.penalty.scored > 0 ||
-                stat.penalty.missed > 0 ||
-                stat.penalty.saved > 0) && (
-                <TableRow>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Penalties
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    Scored: {formatValue(stat.penalty.scored)}, Missed:{" "}
-                    {formatValue(stat.penalty.missed)}
-                    {stat.penalty.saved > 0 &&
-                      `, Saved: ${formatValue(stat.penalty.saved)}`}
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs text-muted-foreground">
-                    Offsides
-                  </TableCell>
-                  <TableCell className="text-[10px] md:text-xs font-semibold text-foreground">
-                    {formatValue(stat.offsides)}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+        {/* Penalties - always render, show "–" if no penalties */}
+        <TableCell className="text-center text-xs md:text-sm">
+          {stat.penalty.scored > 0 ||
+          stat.penalty.missed > 0 ||
+          stat.penalty.saved > 0
+            ? `${formatValue(stat.penalty.scored)}/${formatValue(
+                stat.penalty.missed
+              )}${
+                stat.penalty.saved > 0
+                  ? `/${formatValue(stat.penalty.saved)}`
+                  : ""
+              }`
+            : "–"}
+        </TableCell>
+      </TableRow>
     );
   }
 
-  function renderTeamSection(
+  function renderTeamTable(
     team: FixturePlayersResponseItem | null,
     title: string
   ) {
@@ -409,56 +350,71 @@ export default function FixturePlayers({
     });
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-0 px-1">
         {/* Team Header */}
-        <div className="flex items-center gap-3 pb-2 border-b border-border">
+        <div className="flex items-center px-2 pb-2 gap-3  border-b border-border">
           {team.team.logo ? (
             <Image
               src={team.team.logo}
               alt={team.team.name}
               width={40}
               height={40}
-              className="w-8 h-8 md:w-10 md:h-10 object-contain"
+              className="w-5 h-5 md:w-6 md:h-6 object-contain"
             />
           ) : (
-            <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-secondary/40 text-xs font-semibold uppercase text-muted-foreground">
+            <div className="flex h-5 w-5 md:h-6 md:w-6 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground">
               {getInitials(team.team.name)}
             </div>
           )}
-          <div>
-            <h2 className="text-lg md:text-xl font-bold">{team.team.name}</h2>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {sortedPlayers.length} player
-              {sortedPlayers.length !== 1 ? "s" : ""}
-            </p>
-          </div>
+          <h2 className="text-sm md:text-base font-bold">{team.team.name}</h2>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            {sortedPlayers.length} player
+            {sortedPlayers.length !== 1 ? "s" : ""}
+          </p>
         </div>
 
-        {/* Players Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          {sortedPlayers.map((playerItem) =>
-            renderPlayerCard(playerItem, team)
-          )}
+        {/* Players Table */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Player</TableHead>
+                <TableHead className="text-center">Rating</TableHead>
+                <TableHead className="text-center">Min</TableHead>
+                <TableHead className="text-center">G</TableHead>
+                <TableHead className="text-center">A</TableHead>
+                <TableHead className="text-center">Shots</TableHead>
+                <TableHead className="text-center">Passes</TableHead>
+                <TableHead className="text-center">Pass%</TableHead>
+                <TableHead className="text-center">KP</TableHead>
+                <TableHead className="text-center">Tkl</TableHead>
+                <TableHead className="text-center">Duels</TableHead>
+                <TableHead className="text-center">Drib</TableHead>
+                <TableHead className="text-center">Fouls</TableHead>
+                <TableHead className="text-center">Cards</TableHead>
+                <TableHead className="text-center">GC</TableHead>
+                <TableHead className="text-center">Saves</TableHead>
+                <TableHead className="text-center">Pen</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedPlayers.map((playerItem) =>
+                renderPlayerRow(playerItem, team)
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-xl md:text-2xl font-bold">Player Statistics</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {playersData.results} team{playersData.results !== 1 ? "s" : ""}
-        </p>
-      </div>
-
+    <>
       {/* Teams */}
       <div className="space-y-8">
-        {homeTeam && renderTeamSection(homeTeam, "Home Team")}
-        {awayTeam && renderTeamSection(awayTeam, "Away Team")}
+        {homeTeam && renderTeamTable(homeTeam, "Home Team")}
+        {awayTeam && renderTeamTable(awayTeam, "Away Team")}
       </div>
-    </div>
+    </>
   );
 }

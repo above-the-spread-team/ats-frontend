@@ -138,12 +138,12 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
       </div>
       {statusInfo.type === "In Play" && (
         <div className="flex flex-col -mt-8 md:-mt-4 items-center justify-center gap-0">
-          <p className="text-base md:text-lg font-semibold uppercase tracking-wide text-primary">
+          <p className="text-base md:text-lg font-semibold uppercase tracking-wide text-primary-font">
             {fixture.fixture.status.elapsed}&apos;
           </p>
           <div className="relative w-10 h-[2.5px] overflow-hidden">
-            <div className="absolute inset-0 bg-primary/30"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent  animate-shimmer"></div>
+            <div className="absolute inset-0 bg-primary-font/30"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-font to-transparent  animate-shimmer"></div>
           </div>
         </div>
       )}

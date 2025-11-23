@@ -368,7 +368,7 @@ export default function FixtureStatistics({
   }
 
   return (
-    <div className="space-y-4 md:max-w-2xl max-w-[80%] mx-auto">
+    <div className="space-y-4">
       {/* Header */}
       <h2 className="text-lg md:text-xl text-center font-bold">
         Match Statistics
