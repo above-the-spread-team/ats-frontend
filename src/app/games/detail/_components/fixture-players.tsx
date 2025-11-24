@@ -200,7 +200,7 @@ export default function FixturePlayers({
         {/* Rating */}
         <TableCell className="text-center">
           {stat.games.rating && stat.games.rating !== "0" ? (
-            <span className="inline-block bg-primary/10 text-primary rounded px-2 py-0.5 text-xs font-bold">
+            <span className="inline-block bg-primary-font/10 text-primary-font rounded px-2 py-0.5 text-xs font-bold">
               {parseFloat(stat.games.rating).toFixed(1)}
             </span>
           ) : (
@@ -335,19 +335,30 @@ export default function FixturePlayers({
     }
 
     // Sort players: starters first (by number), then substitutes
-    const sortedPlayers = [...team.players].sort((a, b) => {
-      const statA = a.statistics[0];
-      const statB = b.statistics[0];
-      if (!statA || !statB) return 0;
+    const sortedPlayers = [...team.players]
+      .filter((player) => {
+        const stat = player.statistics[0];
+        // Filter out players with 0 minutes or no minutes data
+        return (
+          stat &&
+          stat.games.minutes !== null &&
+          stat.games.minutes !== undefined &&
+          stat.games.minutes > 0
+        );
+      })
+      .sort((a, b) => {
+        const statA = a.statistics[0];
+        const statB = b.statistics[0];
+        if (!statA || !statB) return 0;
 
-      // Starters first
-      if (statA.games.substitute !== statB.games.substitute) {
-        return statA.games.substitute ? 1 : -1;
-      }
+        // Starters first
+        if (statA.games.substitute !== statB.games.substitute) {
+          return statA.games.substitute ? 1 : -1;
+        }
 
-      // Then by number
-      return (statA.games.number || 0) - (statB.games.number || 0);
-    });
+        // Then by number
+        return (statA.games.number || 0) - (statB.games.number || 0);
+      });
 
     return (
       <div className="space-y-0 ">

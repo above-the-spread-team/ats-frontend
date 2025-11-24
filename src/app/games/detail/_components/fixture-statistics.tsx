@@ -199,6 +199,27 @@ export default function FixtureStatistics({
     "Passes accurate",
   ]);
 
+  // Get reasonable maximum value for each statistic type
+  function getStatMaxValue(statType: string): number {
+    const maxValues: Record<string, number> = {
+      "Shots on Goal": 15,
+      "Shots off Goal": 20,
+      "Total Shots": 30,
+      "Blocked Shots": 10,
+      "Shots insidebox": 20,
+      "Shots outsidebox": 20,
+      Fouls: 20,
+      "Corner Kicks": 15,
+      Offsides: 10,
+      "Yellow Cards": 6,
+      "Red Cards": 2,
+      "Goalkeeper Saves": 15,
+      "Total passes": 800,
+      "Passes accurate": 800,
+    };
+    return maxValues[statType] || 20; // Default to 20 if not found
+  }
+
   function renderStatistic(statType: string) {
     const homeValue = getStatValue(homeStatsMap, statType);
     const awayValue = getStatValue(awayStatsMap, statType);
@@ -286,9 +307,9 @@ export default function FixtureStatistics({
       // Display as comparison bars
       const homeNum = typeof homeValue === "number" ? homeValue : 0;
       const awayNum = typeof awayValue === "number" ? awayValue : 0;
-      const maxValue = Math.max(homeNum, awayNum, 1); // Avoid division by zero
-      const homePercent = (homeNum / maxValue) * 100;
-      const awayPercent = (awayNum / maxValue) * 100;
+      const maxValue = getStatMaxValue(statType); // Use fixed maximum value
+      const homePercent = Math.min((homeNum / maxValue) * 100, 100); // Cap at 100%
+      const awayPercent = Math.min((awayNum / maxValue) * 100, 100); // Cap at 100%
 
       return (
         <div key={statType} className="space-y-2">
