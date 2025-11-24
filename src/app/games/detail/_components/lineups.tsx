@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Shirt } from "lucide-react";
 import type { LineupsApiResponse, LineupResponseItem } from "@/type/lineups";
 import Loading from "@/components/common/loading";
 
@@ -365,11 +366,11 @@ function CombinedFormationField({
         colRange > 0 ? (player.col - minCol) / colRange : 0.5; // If all same col, center
 
       // Adjust range based on number of players
-      // 2-3 players: closer to center (35% to 65% = 30% range)
+      // 2-3 players: wider spacing (25% to 75% = 50% range) for bigger margin
       // 4+ players: full range (15% to 85% = 70% range)
       if (totalInRow <= 3) {
-        // 2-3 players: use smaller range centered around 50%
-        topPercent = 35 + normalizedCol * 30 + verticalOffset; // 35% to 65%, shifted lower
+        // 2-3 players: use wider range for bigger margin between players
+        topPercent = 25 + normalizedCol * 50 + verticalOffset; // 25% to 75%, shifted lower
       } else {
         // 4+ players: use full range
         topPercent = 15 + normalizedCol * 70 + verticalOffset; // 15% to 85%, shifted lower
@@ -470,21 +471,26 @@ function CombinedFormationField({
                 top: `${100 - player.topPercent}%`, // Invert: row 0 at bottom, row 4 at top
               }}
             >
-              <div
-                className="flex flex-col items-center gap-0.5 cursor-pointer group"
-                title={player.name}
-              >
-                <div
-                  className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-[10px] md:text-xs lg:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
-                  style={{
-                    backgroundColor: teamColors.primary,
-                    color: teamColors.number,
-                    borderColor: teamColors.border,
-                  }}
-                >
-                  {player.number}
+              <div className="flex flex-col items-center gap-0.5 cursor-pointer group">
+                <div className="relative transition-transform group-hover:scale-110">
+                  <Shirt
+                    className="w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11"
+                    style={{
+                      fill: teamColors.primary,
+                      stroke: teamColors.border,
+                      strokeWidth: 1,
+                    }}
+                  />
+                  <span
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] md:text-xs lg:text-sm font-bold"
+                    style={{
+                      color: teamColors.number,
+                    }}
+                  >
+                    {player.number}
+                  </span>
                 </div>
-                <div className="bg-black/70 text-white text-[7px] md:text-[8px] lg:text-[10px] px-1 md:px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/70 text-white text-xs md:text-sm px-1  rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                   {player.name.split(" ").pop()}
                 </div>
               </div>
@@ -504,21 +510,26 @@ function CombinedFormationField({
                 top: `${100 - player.topPercent}%`, // Invert: row 0 at bottom, row 4 at top
               }}
             >
-              <div
-                className="flex flex-col items-center gap-0.5 cursor-pointer group"
-                title={player.name}
-              >
-                <div
-                  className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-[10px] md:text-xs lg:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
-                  style={{
-                    backgroundColor: teamColors.primary,
-                    color: teamColors.number,
-                    borderColor: teamColors.border,
-                  }}
-                >
-                  {player.number}
+              <div className="flex flex-col items-center gap-0.5 cursor-pointer group">
+                <div className="relative transition-transform group-hover:scale-110">
+                  <Shirt
+                    className="w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11"
+                    style={{
+                      fill: teamColors.primary,
+                      stroke: teamColors.border,
+                      strokeWidth: 1,
+                    }}
+                  />
+                  <span
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] md:text-xs lg:text-sm font-bold"
+                    style={{
+                      color: teamColors.number,
+                    }}
+                  >
+                    {player.number}
+                  </span>
                 </div>
-                <div className="bg-black/70 text-white text-[7px] md:text-[8px] lg:text-[10px] px-1 md:px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/70 text-white text-xs  md:text-sm  px-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                   {player.name.split(" ").pop()}
                 </div>
               </div>
