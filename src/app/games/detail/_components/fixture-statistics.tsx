@@ -232,7 +232,7 @@ export default function FixtureStatistics({
       return (
         <div key={statType} className="space-y-2">
           <div className="flex items-center justify-center">
-            <span className="text-xs md:text-sm font-medium text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {statType}
             </span>
           </div>
@@ -241,7 +241,7 @@ export default function FixtureStatistics({
             <div className="space-y-1">
               <div className="flex items-center justify-end mb-1">
                 <div className="flex  items-center gap-2">
-                  <span className="text-xs font-medium">
+                  <span className="text-xs md:text-sm font-medium">
                     {formatValue(homeValue)}
                   </span>
                   {homeTeam.team.logo ? (
@@ -286,7 +286,7 @@ export default function FixtureStatistics({
                       {getInitials(awayTeam.team.name)}
                     </div>
                   )}
-                  <span className="text-xs font-medium">
+                  <span className="text-xs md:text-sm font-medium">
                     {formatValue(awayValue)}
                   </span>
                 </div>
@@ -314,7 +314,7 @@ export default function FixtureStatistics({
       return (
         <div key={statType} className="space-y-2">
           <div className="flex items-center justify-center">
-            <span className="text-xs md:text-sm font-medium text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {statType}
             </span>
           </div>
@@ -323,7 +323,7 @@ export default function FixtureStatistics({
             <div className="space-y-1">
               <div className="flex items-center justify-end mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold">
+                  <span className="text-xs md:text-sm font-bold">
                     {formatValue(homeValue)}
                   </span>
                   {homeTeam.team.logo ? (
@@ -368,7 +368,7 @@ export default function FixtureStatistics({
                       {getInitials(awayTeam.team.name)}
                     </div>
                   )}
-                  <span className="text-xs font-bold">
+                  <span className="text-xs md:text-sm font-bold">
                     {formatValue(awayValue)}
                   </span>
                 </div>
@@ -391,7 +391,7 @@ export default function FixtureStatistics({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <h2 className="text-lg md:text-xl text-center font-bold">
+      <h2 className="text-base md:text-lg text-center font-bold">
         Match Statistics
       </h2>
 
