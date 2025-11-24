@@ -161,129 +161,302 @@ interface LineupCardProps {
 }
 
 function LineupCard({ lineup, isHome }: LineupCardProps) {
+  // Group players by position
+  const groupPlayersByPosition = (players: typeof lineup.startXI) => {
+    const groups: Record<string, typeof lineup.startXI> = {
+      GK: [],
+      DEF: [],
+      MID: [],
+      FWD: [],
+    };
+
+    players.forEach((item) => {
+      const posLabel = getPositionLabel(item.player.pos);
+      if (posLabel === "GK") {
+        groups.GK.push(item);
+      } else if (posLabel === "DEF") {
+        groups.DEF.push(item);
+      } else if (posLabel === "MID") {
+        groups.MID.push(item);
+      } else if (posLabel === "FWD") {
+        groups.FWD.push(item);
+      }
+    });
+
+    return groups;
+  };
+
+  const positionGroups = groupPlayersByPosition(lineup.startXI);
+
   return (
-    <div className="bg-card rounded-lg border border-border/50 p-2 md:p-4 lg:p-6 space-y-2 md:space-y-4">
+    <div className="space-y-2 border-b border-border pb-4  md:pb-6 last:border-b-0">
       {/* Team Header */}
-      <div className="flex items-center justify-between pb-2 md:pb-3 border-b border-border/50 gap-2">
-        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+      <div className="flex items-center justify-between   ">
+        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
           {lineup.team.logo && (
             <Image
               src={lineup.team.logo}
               alt={lineup.team.name}
-              width={40}
-              height={40}
-              className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 object-contain flex-shrink-0"
+              width={48}
+              height={48}
+              className="w-5 h-5 md:w-6 md:h-6  object-contain flex-shrink-0"
             />
           )}
-          <div className="min-w-0">
-            <h3 className="text-sm md:text-base lg:text-lg font-bold truncate">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm md:text-base   font-bold truncate">
               {lineup.team.name}
             </h3>
+            {lineup.formation && (
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">
+                Formation: {lineup.formation}
+              </p>
+            )}
           </div>
         </div>
         {lineup.coach && (
-          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             {lineup.coach.photo && (
               <Image
                 src={lineup.coach.photo}
                 alt={lineup.coach.name}
-                width={32}
-                height={32}
-                className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full object-cover flex-shrink-0"
+                width={40}
+                height={40}
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover flex-shrink-0 border-2 border-border"
               />
             )}
-            <div className="text-right hidden sm:block">
-              <p className="text-[10px] md:text-xs text-muted-foreground">
+            <div className="text-right ">
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">
                 Coach
               </p>
-              <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate max-w-[80px] md:max-w-none">
+              <p className="text-xs md:text-sm font-semibold truncate max-w-[140px] md:max-w-none">
                 {lineup.coach.name}
               </p>
             </div>
           </div>
         )}
       </div>
+      <div className="bg-card/90 p-4 md:p-6 rounded-2xl space-y-2">
+        {/* Start XI - Grouped by Position */}
+        <div className="space-y-4  md:space-y-5">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm md:text-base  font-bold text-foreground">
+              Starting XI
+            </h4>
+            <span className="text-xs md:text-sm text-muted-foreground">
+              ({lineup.startXI.length})
+            </span>
+          </div>
 
-      {/* Start XI */}
-      <div className="space-y-2 md:space-y-3">
-        <h4 className="text-xs md:text-sm lg:text-base font-semibold text-foreground">
-          Starting XI
-        </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2 lg:gap-3">
-          {lineup.startXI.map((item) => {
-            const player = item.player;
-            const teamColors = getTeamColors(player.pos, isHome);
-
-            return (
-              <div
-                key={player.id}
-                className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted/30 rounded-md border border-border/50"
-              >
-                <div
-                  className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full text-[10px] md:text-xs font-bold text-white flex-shrink-0"
-                  style={{
-                    backgroundColor: teamColors.primary,
-                    color: teamColors.number,
-                    border: `2px solid ${teamColors.border}`,
-                  }}
-                >
-                  {player.number}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate">
-                    {player.name}
-                  </p>
-                  <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
-                    {getPositionLabel(player.pos)}
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 pb-2">
+            {/* Goalkeeper */}
+            {positionGroups.GK.length > 0 && (
+              <div className="space-y-2 md:space-y-3">
+                <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Goalkeeper
+                </h5>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                  {positionGroups.GK.map((item) => {
+                    const player = item.player;
+                    const teamColors = getTeamColors(player.pos, isHome);
+                    return (
+                      <div
+                        key={player.id}
+                        className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                      >
+                        <div
+                          className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full text-xs md:text-sm font-bold text-white flex-shrink-0 shadow-md"
+                          style={{
+                            backgroundColor: teamColors.primary,
+                            color: teamColors.number,
+                            border: `2px solid ${teamColors.border}`,
+                          }}
+                        >
+                          {player.number}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs md:text-sm font-semibold truncate">
+                            {player.name}
+                          </p>
+                          <p className="text-[10px] md:text-xs text-muted-foreground">
+                            #{player.number}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            )}
 
-      {/* Substitutes */}
-      {lineup.substitutes && lineup.substitutes.length > 0 && (
-        <div className="space-y-2 md:space-y-3">
-          <h4 className="text-xs md:text-sm lg:text-base font-semibold text-foreground">
-            Substitutes ({lineup.substitutes.length})
-          </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2 lg:gap-3">
-            {lineup.substitutes.map((item) => {
-              const player = item.player;
-              const teamColors = getTeamColors(player.pos, isHome);
-
-              return (
-                <div
-                  key={player.id}
-                  className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted/20 rounded-md border border-border/30"
-                >
-                  <div
-                    className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full text-[10px] md:text-xs font-bold text-white flex-shrink-0"
-                    style={{
-                      backgroundColor: teamColors.primary,
-                      color: teamColors.number,
-                      border: `2px solid ${teamColors.border}`,
-                      opacity: 0.7,
-                    }}
-                  >
-                    {player.number}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] md:text-xs lg:text-sm font-medium truncate">
-                      {player.name}
-                    </p>
-                    <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
-                      {getPositionLabel(player.pos)}
-                    </p>
-                  </div>
+            {/* Defenders */}
+            {positionGroups.DEF.length > 0 && (
+              <div className="space-y-2 md:space-y-3">
+                <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Defenders ({positionGroups.DEF.length})
+                </h5>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                  {positionGroups.DEF.map((item) => {
+                    const player = item.player;
+                    const teamColors = getTeamColors(player.pos, isHome);
+                    return (
+                      <div
+                        key={player.id}
+                        className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                      >
+                        <div
+                          className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full text-xs md:text-sm font-bold text-white flex-shrink-0 shadow-md"
+                          style={{
+                            backgroundColor: teamColors.primary,
+                            color: teamColors.number,
+                            border: `2px solid ${teamColors.border}`,
+                          }}
+                        >
+                          {player.number}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs md:text-sm font-semibold truncate">
+                            {player.name}
+                          </p>
+                          <p className="text-[10px] md:text-xs text-muted-foreground">
+                            #{player.number}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            )}
+
+            {/* Midfielders */}
+            {positionGroups.MID.length > 0 && (
+              <div className="space-y-2 md:space-y-3">
+                <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Midfielders ({positionGroups.MID.length})
+                </h5>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                  {positionGroups.MID.map((item) => {
+                    const player = item.player;
+                    const teamColors = getTeamColors(player.pos, isHome);
+                    return (
+                      <div
+                        key={player.id}
+                        className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                      >
+                        <div
+                          className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full text-xs md:text-sm font-bold text-white flex-shrink-0 shadow-md"
+                          style={{
+                            backgroundColor: teamColors.primary,
+                            color: teamColors.number,
+                            border: `2px solid ${teamColors.border}`,
+                          }}
+                        >
+                          {player.number}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs md:text-sm font-semibold truncate">
+                            {player.name}
+                          </p>
+                          <p className="text-[10px] md:text-xs text-muted-foreground">
+                            #{player.number}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Forwards */}
+            {positionGroups.FWD.length > 0 && (
+              <div className="space-y-2 md:space-y-3">
+                <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Forwards ({positionGroups.FWD.length})
+                </h5>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                  {positionGroups.FWD.map((item) => {
+                    const player = item.player;
+                    const teamColors = getTeamColors(player.pos, isHome);
+                    return (
+                      <div
+                        key={player.id}
+                        className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                      >
+                        <div
+                          className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full text-xs md:text-sm font-bold text-white flex-shrink-0 shadow-md"
+                          style={{
+                            backgroundColor: teamColors.primary,
+                            color: teamColors.number,
+                            border: `2px solid ${teamColors.border}`,
+                          }}
+                        >
+                          {player.number}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs md:text-sm font-semibold truncate">
+                            {player.name}
+                          </p>
+                          <p className="text-[10px] md:text-xs text-muted-foreground">
+                            #{player.number}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Substitutes */}
+        {lineup.substitutes && lineup.substitutes.length > 0 && (
+          <div className="space-y-3 md:space-y-4 ">
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm md:text-base lg:text-lg font-bold text-foreground">
+                Substitutes
+              </h4>
+              <span className="text-xs md:text-sm text-muted-foreground">
+                ({lineup.substitutes.length})
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+              {lineup.substitutes.map((item) => {
+                const player = item.player;
+                const teamColors = getTeamColors(player.pos, isHome);
+
+                return (
+                  <div
+                    key={player.id}
+                    className="flex items-center gap-2 p-2 md:p-2.5 bg-muted/20 rounded-lg border border-border/30 hover:bg-muted/30 transition-colors"
+                  >
+                    <div
+                      className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs font-bold text-white flex-shrink-0 shadow-sm"
+                      style={{
+                        backgroundColor: teamColors.primary,
+                        color: teamColors.number,
+                        border: `2px solid ${teamColors.border}`,
+                        opacity: 0.7,
+                      }}
+                    >
+                      {player.number}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] md:text-xs lg:text-sm font-medium truncate">
+                        {player.name}
+                      </p>
+                      <p className="text-[9px] md:text-[10px] text-muted-foreground">
+                        {getPositionLabel(player.pos)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -393,7 +566,7 @@ function CombinedFormationField({
   );
 
   return (
-    <div className="bg-card rounded-xl p-2 md:p-4 lg:p-6 space-y-2 md:space-y-4">
+    <div className="px-2 md:px-12  space-y-2 ">
       <div className="flex items-center justify-between mb-2 md:mb-4 gap-2">
         <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0">
           {homeLineup.team.logo && (
@@ -440,7 +613,20 @@ function CombinedFormationField({
         </div>
       </div>
 
-      <div className="relative w-full  aspect-[2/1] bg-gradient-to-b from-green-600 to-green-700 rounded-sm overflow-hidden shadow-lg">
+      <div className="relative w-full  aspect-[2/1] bg-gradient-to-b from-green-700 to-green-800 rounded-sm overflow-hidden shadow-lg">
+        {/* Realistic grass pattern - alternating dark and normal vertical stripes */}
+        <div
+          className="absolute inset-0 opacity-100"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              90deg,
+              rgba(15, 60, 30, 0.4) 0px,
+              rgba(15, 60, 30, 0.4) 80px,
+              rgba(20, 100, 50, 0.2) 80px,
+              rgba(20, 100, 50, 0.2) 160px
+            )`,
+          }}
+        />
         {/* Field markings */}
         {/* Center circle */}
         <div className="absolute  top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/4 h-1/2 rounded-full border-2 border-white/30"></div>
@@ -471,7 +657,7 @@ function CombinedFormationField({
                 top: `${100 - player.topPercent}%`, // Invert: row 0 at bottom, row 4 at top
               }}
             >
-              <div className="flex flex-col items-center gap-0.5 cursor-pointer group">
+              <div className="flex flex-col items-center gap-0.5 group">
                 <div className="relative transition-transform group-hover:scale-110">
                   <Shirt
                     className="w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11"
@@ -510,7 +696,7 @@ function CombinedFormationField({
                 top: `${100 - player.topPercent}%`, // Invert: row 0 at bottom, row 4 at top
               }}
             >
-              <div className="flex flex-col items-center gap-0.5 cursor-pointer group">
+              <div className="flex flex-col items-center gap-0.5 group">
                 <div className="relative transition-transform group-hover:scale-110">
                   <Shirt
                     className="w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11"
@@ -529,7 +715,7 @@ function CombinedFormationField({
                     {player.number}
                   </span>
                 </div>
-                <div className="bg-black/70 text-white text-xs  md:text-sm  px-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/60 text-white text-xs  md:text-sm  px-1 md:px-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                   {player.name.split(" ").pop()}
                 </div>
               </div>
