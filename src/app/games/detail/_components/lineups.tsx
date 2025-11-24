@@ -5,15 +5,34 @@ import Image from "next/image";
 import type { LineupsApiResponse, LineupResponseItem } from "@/type/lineups";
 import Loading from "@/components/common/loading";
 
-function getInitials(text: string | null | undefined, fallback = "??") {
-  if (!text) return fallback;
-  const trimmed = text.trim();
-  if (!trimmed) return fallback;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
+// Fixed colors for home and away teams (mild/soft colors)
+const HOME_TEAM_BASE = {
+  primary: "#6b9bd4", // Mild blue background
+  number: "#ffffff", // White text
+  border: "#4a7fb8", // Darker mild blue border
+};
+
+const AWAY_TEAM_BASE = {
+  primary: "#d97777", // Mild red background
+  number: "#ffffff", // White text
+  border: "#c45a5a", // Darker mild red border
+};
+
+// Function to get team colors with goalkeeper having darker shade
+function getTeamColors(pos: string, isHome: boolean) {
+  const base = isHome ? HOME_TEAM_BASE : AWAY_TEAM_BASE;
+  const isGoalkeeper = pos === "G";
+
+  if (isGoalkeeper) {
+    // Goalkeeper gets a darker shade
+    return {
+      primary: isHome ? "#3b5f8f" : "#b91c1c", // Darker blue/red
+      number: base.number,
+      border: isHome ? "#2a4a6f" : "#991b1b", // Even darker border
+    };
   }
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+
+  return base;
 }
 
 function getPositionLabel(pos: string): string {
@@ -142,39 +161,41 @@ interface LineupCardProps {
 
 function LineupCard({ lineup, isHome }: LineupCardProps) {
   return (
-    <div className="bg-card rounded-lg border border-border/50 p-4 md:p-6 space-y-4">
+    <div className="bg-card rounded-lg border border-border/50 p-2 md:p-4 lg:p-6 space-y-2 md:space-y-4">
       {/* Team Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-border/50">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between pb-2 md:pb-3 border-b border-border/50 gap-2">
+        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
           {lineup.team.logo && (
             <Image
               src={lineup.team.logo}
               alt={lineup.team.name}
               width={40}
               height={40}
-              className="w-8 h-8 md:w-10 md:h-10 object-contain"
+              className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 object-contain flex-shrink-0"
             />
           )}
-          <div>
-            <h3 className="text-base md:text-lg font-bold">
+          <div className="min-w-0">
+            <h3 className="text-sm md:text-base lg:text-lg font-bold truncate">
               {lineup.team.name}
             </h3>
           </div>
         </div>
         {lineup.coach && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
             {lineup.coach.photo && (
               <Image
                 src={lineup.coach.photo}
                 alt={lineup.coach.name}
                 width={32}
                 height={32}
-                className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
+                className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full object-cover flex-shrink-0"
               />
             )}
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Coach</p>
-              <p className="text-xs md:text-sm font-semibold">
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] md:text-xs text-muted-foreground">
+                Coach
+              </p>
+              <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate max-w-[80px] md:max-w-none">
                 {lineup.coach.name}
               </p>
             </div>
@@ -183,43 +204,35 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
       </div>
 
       {/* Start XI */}
-      <div className="space-y-3">
-        <h4 className="text-sm md:text-base font-semibold text-foreground">
+      <div className="space-y-2 md:space-y-3">
+        <h4 className="text-xs md:text-sm lg:text-base font-semibold text-foreground">
           Starting XI
         </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2 lg:gap-3">
           {lineup.startXI.map((item) => {
             const player = item.player;
-            const isGoalkeeper = player.pos === "G";
+            const teamColors = getTeamColors(player.pos, isHome);
 
             return (
               <div
                 key={player.id}
-                className="flex items-center gap-2 p-2 bg-muted/30 rounded-md border border-border/50"
+                className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted/30 rounded-md border border-border/50"
               >
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white flex-shrink-0"
+                  className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full text-[10px] md:text-xs font-bold text-white flex-shrink-0"
                   style={{
-                    backgroundColor: isGoalkeeper
-                      ? `#${lineup.team.colors.goalkeeper.primary}`
-                      : `#${lineup.team.colors.player.primary}`,
-                    color: isGoalkeeper
-                      ? `#${lineup.team.colors.goalkeeper.number}`
-                      : `#${lineup.team.colors.player.number}`,
-                    border: `2px solid ${
-                      isGoalkeeper
-                        ? `#${lineup.team.colors.goalkeeper.border}`
-                        : `#${lineup.team.colors.player.border}`
-                    }`,
+                    backgroundColor: teamColors.primary,
+                    color: teamColors.number,
+                    border: `2px solid ${teamColors.border}`,
                   }}
                 >
                   {player.number}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs md:text-sm font-semibold truncate">
+                  <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate">
                     {player.name}
                   </p>
-                  <p className="text-[10px] md:text-xs text-muted-foreground">
+                  <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
                     {getPositionLabel(player.pos)}
                   </p>
                 </div>
@@ -231,44 +244,36 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
 
       {/* Substitutes */}
       {lineup.substitutes && lineup.substitutes.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="text-sm md:text-base font-semibold text-foreground">
+        <div className="space-y-2 md:space-y-3">
+          <h4 className="text-xs md:text-sm lg:text-base font-semibold text-foreground">
             Substitutes ({lineup.substitutes.length})
           </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2 lg:gap-3">
             {lineup.substitutes.map((item) => {
               const player = item.player;
-              const isGoalkeeper = player.pos === "G";
+              const teamColors = getTeamColors(player.pos, isHome);
 
               return (
                 <div
                   key={player.id}
-                  className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30"
+                  className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted/20 rounded-md border border-border/30"
                 >
                   <div
-                    className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white flex-shrink-0"
+                    className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full text-[10px] md:text-xs font-bold text-white flex-shrink-0"
                     style={{
-                      backgroundColor: isGoalkeeper
-                        ? `#${lineup.team.colors.goalkeeper.primary}`
-                        : `#${lineup.team.colors.player.primary}`,
-                      color: isGoalkeeper
-                        ? `#${lineup.team.colors.goalkeeper.number}`
-                        : `#${lineup.team.colors.player.number}`,
-                      border: `2px solid ${
-                        isGoalkeeper
-                          ? `#${lineup.team.colors.goalkeeper.border}`
-                          : `#${lineup.team.colors.player.border}`
-                      }`,
+                      backgroundColor: teamColors.primary,
+                      color: teamColors.number,
+                      border: `2px solid ${teamColors.border}`,
                       opacity: 0.7,
                     }}
                   >
                     {player.number}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium truncate">
+                    <p className="text-[10px] md:text-xs lg:text-sm font-medium truncate">
                       {player.name}
                     </p>
-                    <p className="text-[10px] md:text-xs text-muted-foreground">
+                    <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
                       {getPositionLabel(player.pos)}
                     </p>
                   </div>
@@ -312,20 +317,6 @@ function CombinedFormationField({
     return null;
   }
 
-  // Find max row and col for normalization
-  const allPlayers = [...homePlayers, ...awayPlayers];
-  const maxRow = Math.max(...allPlayers.map((p) => p.row));
-  const maxCol = Math.max(...allPlayers.map((p) => p.col));
-
-  // Parse formation string (e.g., "4-2-3-1" -> [4, 2, 3, 1])
-  const parseFormation = (formation: string | null): number[] => {
-    if (!formation) return [];
-    return formation
-      .split("-")
-      .map(Number)
-      .filter((n) => !isNaN(n));
-  };
-
   // Normalize positions based on formation pattern (horizontal layout)
   const normalizePlayer = (
     player: (typeof homePlayers)[0],
@@ -341,7 +332,6 @@ function CombinedFormationField({
 
     // Sort players in row by column to maintain order
     const sortedPlayersInRow = [...playersInRow].sort((a, b) => a.col - b.col);
-    const playerIndex = sortedPlayersInRow.findIndex((p) => p.id === player.id);
     const totalInRow = sortedPlayersInRow.length;
 
     // For horizontal formation layout:
@@ -361,10 +351,11 @@ function CombinedFormationField({
 
     // Vertical position: column determines top-bottom position
     // Distribute players vertically within their row based on column
+    const verticalOffset = -3; // Offset to move all players lower
     let topPercent: number;
     if (totalInRow === 1) {
-      // Single player - center vertically
-      topPercent = 50;
+      // Single player - center vertically, then shift lower
+      topPercent = 50 + verticalOffset;
     } else {
       // Multiple players - distribute vertically based on column position
       const minCol = Math.min(...sortedPlayersInRow.map((p) => p.col));
@@ -373,8 +364,16 @@ function CombinedFormationField({
       const normalizedCol =
         colRange > 0 ? (player.col - minCol) / colRange : 0.5; // If all same col, center
 
-      // Add padding: 15% to 85% range
-      topPercent = 15 + normalizedCol * 70;
+      // Adjust range based on number of players
+      // 2-3 players: closer to center (35% to 65% = 30% range)
+      // 4+ players: full range (15% to 85% = 70% range)
+      if (totalInRow <= 3) {
+        // 2-3 players: use smaller range centered around 50%
+        topPercent = 35 + normalizedCol * 30 + verticalOffset; // 35% to 65%, shifted lower
+      } else {
+        // 4+ players: use full range
+        topPercent = 15 + normalizedCol * 70 + verticalOffset; // 15% to 85%, shifted lower
+      }
     }
 
     return {
@@ -392,41 +391,39 @@ function CombinedFormationField({
     normalizePlayer(p, awayLineup, false)
   );
 
-  const isGoalkeeper = (pos: string) => pos === "G";
-
   return (
-    <div className="bg-card rounded-lg border border-border/50 p-4 md:p-6 space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+    <div className="bg-card rounded-xl p-2 md:p-4 lg:p-6 space-y-2 md:space-y-4">
+      <div className="flex items-center justify-between mb-2 md:mb-4 gap-2">
+        <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0">
           {homeLineup.team.logo && (
             <Image
               src={homeLineup.team.logo}
               alt={homeLineup.team.name}
               width={32}
               height={32}
-              className="w-6 h-6 md:w-8 md:h-8 object-contain"
+              className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 object-contain flex-shrink-0"
             />
           )}
-          <div>
-            <p className="text-xs md:text-sm font-semibold">
+          <div className="min-w-0">
+            <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate">
               {homeLineup.team.name}
             </p>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
+            <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
               {homeLineup.formation}
             </p>
           </div>
         </div>
-        <div className="text-center">
-          <p className="text-xs md:text-sm font-semibold text-muted-foreground">
+        <div className="text-center px-1 flex-shrink-0">
+          <p className="text-[10px] md:text-xs lg:text-sm font-semibold text-muted-foreground">
             VS
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-xs md:text-sm font-semibold">
+        <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0 justify-end">
+          <div className="text-right min-w-0">
+            <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate">
               {awayLineup.team.name}
             </p>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
+            <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
               {awayLineup.formation}
             </p>
           </div>
@@ -436,13 +433,13 @@ function CombinedFormationField({
               alt={awayLineup.team.name}
               width={32}
               height={32}
-              className="w-6 h-6 md:w-8 md:h-8 object-contain"
+              className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 object-contain flex-shrink-0"
             />
           )}
         </div>
       </div>
 
-      <div className="relative w-full  aspect-[2/1] bg-gradient-to-b from-green-600 to-green-700 rounded-lg overflow-hidden border-2 border-green-800 shadow-lg">
+      <div className="relative w-full  aspect-[2/1] bg-gradient-to-b from-green-600 to-green-700 rounded-sm overflow-hidden shadow-lg">
         {/* Field markings */}
         {/* Center circle */}
         <div className="absolute  top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/4 h-1/2 rounded-full border-2 border-white/30"></div>
@@ -459,12 +456,11 @@ function CombinedFormationField({
         {/* Goal areas - left */}
         <div className="absolute  top-[35%] bottom-[35%] left-0 w-1/6 border-r-2 border-white/30"></div>
         {/* Goal areas - right */}
-        <div className="absolute top-[35%] bottom-[35%] right-0 w-1/6 border-l-2 border-white/30"></div>
+        <div className="absolute  top-[35%] bottom-[35%] right-0 w-1/6 border-l-2 border-white/30"></div>
 
         {/* Home team players (left side) */}
         {normalizedHomePlayers.map((player) => {
-          const isGK = isGoalkeeper(player.pos);
-
+          const teamColors = getTeamColors(player.pos, true);
           return (
             <div
               key={`home-${player.id}`}
@@ -479,22 +475,16 @@ function CombinedFormationField({
                 title={player.name}
               >
                 <div
-                  className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
+                  className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-[10px] md:text-xs lg:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
                   style={{
-                    backgroundColor: isGK
-                      ? `#${homeLineup.team.colors.goalkeeper.primary}`
-                      : `#${homeLineup.team.colors.player.primary}`,
-                    color: isGK
-                      ? `#${homeLineup.team.colors.goalkeeper.number}`
-                      : `#${homeLineup.team.colors.player.number}`,
-                    borderColor: isGK
-                      ? `#${homeLineup.team.colors.goalkeeper.border}`
-                      : `#${homeLineup.team.colors.player.border}`,
+                    backgroundColor: teamColors.primary,
+                    color: teamColors.number,
+                    borderColor: teamColors.border,
                   }}
                 >
                   {player.number}
                 </div>
-                <div className="bg-black/70 text-white text-[8px] md:text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/70 text-white text-[7px] md:text-[8px] lg:text-[10px] px-1 md:px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                   {player.name.split(" ").pop()}
                 </div>
               </div>
@@ -504,8 +494,7 @@ function CombinedFormationField({
 
         {/* Away team players (right side, mirrored) */}
         {normalizedAwayPlayers.map((player) => {
-          const isGK = isGoalkeeper(player.pos);
-
+          const teamColors = getTeamColors(player.pos, false);
           return (
             <div
               key={`away-${player.id}`}
@@ -520,136 +509,16 @@ function CombinedFormationField({
                 title={player.name}
               >
                 <div
-                  className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
+                  className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-[10px] md:text-xs lg:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
                   style={{
-                    backgroundColor: isGK
-                      ? `#${awayLineup.team.colors.goalkeeper.primary}`
-                      : `#${awayLineup.team.colors.player.primary}`,
-                    color: isGK
-                      ? `#${awayLineup.team.colors.goalkeeper.number}`
-                      : `#${awayLineup.team.colors.player.number}`,
-                    borderColor: isGK
-                      ? `#${awayLineup.team.colors.goalkeeper.border}`
-                      : `#${awayLineup.team.colors.player.border}`,
+                    backgroundColor: teamColors.primary,
+                    color: teamColors.number,
+                    borderColor: teamColors.border,
                   }}
                 >
                   {player.number}
                 </div>
-                <div className="bg-black/70 text-white text-[8px] md:text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                  {player.name.split(" ").pop()}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-interface FormationFieldProps {
-  lineup: LineupResponseItem;
-}
-
-function FormationField({ lineup }: FormationFieldProps) {
-  // Parse grid coordinates and create player positions
-  const playersWithGrid = lineup.startXI
-    .filter((item) => item.player.grid !== null)
-    .map((item) => {
-      const grid = item.player.grid!.split(":").map(Number);
-      return {
-        ...item.player,
-        row: grid[0],
-        col: grid[1],
-      };
-    });
-
-  if (playersWithGrid.length === 0) {
-    return null;
-  }
-
-  // Find max row and col to determine field dimensions
-  const maxRow = Math.max(...playersWithGrid.map((p) => p.row));
-  const maxCol = Math.max(...playersWithGrid.map((p) => p.col));
-
-  // Normalize positions to fit in a 5-row field (GK, DEF, MID, FWD, ST)
-  // Map rows: 1 -> 0 (GK), 2 -> 1 (DEF), 3 -> 2 (MID), 4 -> 3 (FWD), 5 -> 4 (ST)
-  const normalizedPlayers = playersWithGrid.map((player) => {
-    // Normalize row (1-5 scale to 0-4 for 5 rows)
-    const normalizedRow = Math.min(player.row - 1, 4);
-    // Normalize col (1-maxCol scale to 0-10 for 11 columns)
-    const normalizedCol = Math.round(((player.col - 1) / (maxCol - 1)) * 10);
-    return {
-      ...player,
-      normalizedRow,
-      normalizedCol,
-    };
-  });
-
-  const isGoalkeeper = (pos: string) => pos === "G";
-
-  return (
-    <div className="space-y-3">
-      <h4 className="text-sm md:text-base font-semibold text-foreground">
-        Formation: {lineup.formation}
-      </h4>
-      <div className="relative w-full aspect-[3/2] bg-gradient-to-b from-green-600 to-green-700 rounded-lg overflow-hidden border-2 border-green-800 shadow-lg">
-        {/* Field markings */}
-        {/* Center circle */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/3 rounded-full border-2 border-white/30"></div>
-        {/* Center line */}
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/30"></div>
-        {/* Penalty boxes */}
-        <div className="absolute top-0 left-0 right-0 h-1/4 border-b-2 border-white/30">
-          <div className="absolute bottom-0 left-1/4 right-1/4 h-1/2 border-2 border-white/30 rounded-t-lg"></div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-1/4 border-t-2 border-white/30">
-          <div className="absolute top-0 left-1/4 right-1/4 h-1/2 border-2 border-white/30 rounded-b-lg"></div>
-        </div>
-        {/* Goal areas */}
-        <div className="absolute top-0 left-[35%] right-[35%] h-1/6 border-b-2 border-white/30"></div>
-        <div className="absolute bottom-0 left-[35%] right-[35%] h-1/6 border-t-2 border-white/30"></div>
-
-        {/* Players positioned on field */}
-        {normalizedPlayers.map((player) => {
-          const isGK = isGoalkeeper(player.pos);
-          // Position: left is 0%, right is 100%
-          // For home team (isHome), we show from bottom to top
-          // For away team, we show from top to bottom
-          const leftPercent = (player.normalizedCol / 10) * 100;
-          // Invert rows: row 0 (GK) at bottom, row 4 (ST) at top
-          const bottomPercent = (player.normalizedRow / 4) * 100;
-
-          return (
-            <div
-              key={player.id}
-              className="absolute transform -translate-x-1/2 translate-y-1/2"
-              style={{
-                left: `${leftPercent}%`,
-                bottom: `${bottomPercent}%`,
-              }}
-            >
-              <div
-                className="flex flex-col items-center gap-0.5 cursor-pointer group"
-                title={player.name}
-              >
-                <div
-                  className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-lg border-2 transition-transform group-hover:scale-110"
-                  style={{
-                    backgroundColor: isGK
-                      ? `#${lineup.team.colors.goalkeeper.primary}`
-                      : `#${lineup.team.colors.player.primary}`,
-                    color: isGK
-                      ? `#${lineup.team.colors.goalkeeper.number}`
-                      : `#${lineup.team.colors.player.number}`,
-                    borderColor: isGK
-                      ? `#${lineup.team.colors.goalkeeper.border}`
-                      : `#${lineup.team.colors.player.border}`,
-                  }}
-                >
-                  {player.number}
-                </div>
-                <div className="bg-black/70 text-white text-[8px] md:text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-black/70 text-white text-[7px] md:text-[8px] lg:text-[10px] px-1 md:px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                   {player.name.split(" ").pop()}
                 </div>
               </div>

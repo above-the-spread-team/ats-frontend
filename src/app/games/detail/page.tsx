@@ -213,7 +213,11 @@ export default function GameDetailPage() {
 
       <div className="pt-2 pb-10">
         {/* Tab Content */}
-        {activeTab === "lineups" && <Lineups fixtureId={fixture.fixture.id} />}
+        {activeTab === "lineups" && (
+          <div className="container mx-auto w-[95%]  max-w-4xl ">
+            <Lineups fixtureId={fixture.fixture.id} />
+          </div>
+        )}
         {activeTab === "statistics" && (
           <div className="container mx-auto w-[90%] max-w-3xl px-1">
             <FixtureStatistics
@@ -223,29 +227,32 @@ export default function GameDetailPage() {
             />
           </div>
         )}
-        <div className="container mx-auto w-[95%]  max-w-2xl ">
-          {activeTab === "events" && (
+
+        {activeTab === "events" && (
+          <div className="container mx-auto w-[95%]  max-w-2xl ">
             <Events
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
             />
-          )}
-        </div>
-        <div className="container mx-auto  max-w-5xl ">
-          {activeTab === "players" && (
+          </div>
+        )}
+
+        {activeTab === "players" && (
+          <div className="container mx-auto  max-w-5xl ">
             <FixturePlayers
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
             />
-          )}
-        </div>
-        <div className="container mx-auto w-[95%]  max-w-4xl ">
-          {activeTab === "predictions" && (
+          </div>
+        )}
+
+        {activeTab === "predictions" && (
+          <div className="container mx-auto w-[95%]  max-w-4xl ">
             <Predictions fixtureId={fixture.fixture.id} />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </FullPage>
   );
