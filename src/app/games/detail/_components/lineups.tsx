@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Shirt } from "lucide-react";
 import type { LineupsApiResponse, LineupResponseItem } from "@/type/lineups";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Fixed colors for home and away teams (mild/soft colors)
 const HOME_TEAM_BASE = {
@@ -100,8 +100,167 @@ export default function Lineups({ fixtureId }: LineupsProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loading />
+      <div className="space-y-6">
+        {/* Combined Formation Field Skeleton */}
+        <div className="px-2 pb-4 md:px-12 space-y-2">
+          {/* Team Header Skeleton */}
+          <div className="flex items-center justify-between mb-2 md:mb-4 gap-2">
+            <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0">
+              <Skeleton className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-md" />
+              <div className="min-w-0 space-y-1">
+                <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                <Skeleton className="h-2 md:h-3 w-16 md:w-20" />
+              </div>
+            </div>
+            <Skeleton className="h-3 md:h-4 w-8 md:w-12" />
+            <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0 justify-end">
+              <div className="text-right min-w-0 space-y-1">
+                <Skeleton className="h-3 md:h-4 w-24 md:w-32 ml-auto" />
+                <Skeleton className="h-2 md:h-3 w-16 md:w-20 ml-auto" />
+              </div>
+              <Skeleton className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-md" />
+            </div>
+          </div>
+
+          {/* Field Skeleton */}
+          <Skeleton className="w-full aspect-[2/1] rounded-sm" />
+        </div>
+
+        {/* Team Cards Skeleton */}
+        {Array.from({ length: 2 }).map((_, teamIdx) => (
+          <div
+            key={teamIdx}
+            className="space-y-2 border-b border-border pb-4 md:pb-6 last:border-b-0"
+          >
+            {/* Team Header Skeleton */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-md" />
+                <div className="min-w-0 space-y-1">
+                  <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+                  <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full" />
+                <div className="text-right space-y-1">
+                  <Skeleton className="h-3 md:h-4 w-12 md:w-16 ml-auto" />
+                  <Skeleton className="h-3 md:h-4 w-20 md:w-24 ml-auto" />
+                </div>
+              </div>
+            </div>
+
+            {/* Starting XI Skeleton */}
+            <div className="bg-card/90 p-4 md:p-6 rounded-2xl space-y-2">
+              <div className="space-y-4 md:space-y-5">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 md:h-5 w-20 md:w-24" />
+                  <Skeleton className="h-3 md:h-4 w-8" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 pb-2">
+                  {/* Goalkeeper Skeleton */}
+                  <div className="space-y-2 md:space-y-3">
+                    <Skeleton className="h-3 md:h-4 w-24 md:w-28" />
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                      {Array.from({ length: 1 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50"
+                        >
+                          <Skeleton className="w-6 h-6 md:w-8 md:h-8 rounded-full" />
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+                            <Skeleton className="h-2 md:h-3 w-12 md:w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Defenders Skeleton */}
+                  <div className="space-y-2 md:space-y-3">
+                    <Skeleton className="h-3 md:h-4 w-28 md:w-32" />
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                      {Array.from({ length: 4 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50"
+                        >
+                          <Skeleton className="w-6 h-6 md:w-8 md:h-8 rounded-full" />
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+                            <Skeleton className="h-2 md:h-3 w-12 md:w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Midfielders Skeleton */}
+                  <div className="space-y-2 md:space-y-3">
+                    <Skeleton className="h-3 md:h-4 w-28 md:w-32" />
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                      {Array.from({ length: 3 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50"
+                        >
+                          <Skeleton className="w-6 h-6 md:w-8 md:h-8 rounded-full" />
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+                            <Skeleton className="h-2 md:h-3 w-12 md:w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Forwards Skeleton */}
+                  <div className="space-y-2 md:space-y-3">
+                    <Skeleton className="h-3 md:h-4 w-24 md:w-28" />
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                      {Array.from({ length: 2 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-muted/40 rounded-lg border border-border/50"
+                        >
+                          <Skeleton className="w-6 h-6 md:w-8 md:h-8 rounded-full" />
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+                            <Skeleton className="h-2 md:h-3 w-12 md:w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Substitutes Skeleton */}
+              <div className="space-y-3 md:space-y-4 mt-4">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 md:h-5 w-24 md:w-32" />
+                  <Skeleton className="h-3 md:h-4 w-8" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+                  {Array.from({ length: 7 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 p-2 md:p-2.5 bg-muted/20 rounded-lg border border-border/30"
+                    >
+                      <Skeleton className="w-7 h-7 md:w-8 md:h-8 rounded-full" />
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <Skeleton className="h-3 md:h-4 w-16 md:w-20" />
+                        <Skeleton className="h-2 md:h-3 w-12 md:w-14" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -566,7 +725,7 @@ function CombinedFormationField({
   );
 
   return (
-    <div className="px-2 md:px-12  space-y-2 ">
+    <div className="px-2 pb-4 md:px-12  space-y-2 ">
       <div className="flex items-center justify-between mb-2 md:mb-4 gap-2">
         <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0">
           {homeLineup.team.logo && (

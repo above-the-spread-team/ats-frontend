@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { FixtureStatisticsApiResponse } from "@/type/fixture-statistics";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;
@@ -111,8 +111,46 @@ export default function FixtureStatistics({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loading />
+      <div className="space-y-4">
+        {/* Header Skeleton */}
+        <Skeleton className="h-5 md:h-6 w-36 mx-auto" />
+
+        {/* Statistics Skeleton */}
+        <div className="space-y-4">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div key={idx} className="space-y-2">
+              {/* Stat Type Label Skeleton */}
+              <div className="flex items-center justify-center">
+                <Skeleton className="h-3 md:h-4 w-32 md:w-40" />
+              </div>
+
+              {/* Home and Away Teams Skeleton */}
+              <div className="grid grid-cols-2 gap-4 justify-center mx-auto">
+                {/* Home Team */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-end mb-1">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-3 md:h-4 w-8 md:w-10" />
+                      <Skeleton className="w-5 h-5 rounded-full" />
+                    </div>
+                  </div>
+                  <Skeleton className="w-full h-2 rounded-full" />
+                </div>
+
+                {/* Away Team */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="w-5 h-5 rounded-full" />
+                      <Skeleton className="h-3 md:h-4 w-8 md:w-10" />
+                    </div>
+                  </div>
+                  <Skeleton className="w-full h-2 rounded-full" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
