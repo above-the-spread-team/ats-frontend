@@ -58,6 +58,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
     useState<PredictionsApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,6 +105,19 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
     };
   }, [fixtureId]);
 
+  // Trigger animation after data is loaded
+  useEffect(() => {
+    if (!isLoading && predictionsData?.response) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        setShouldAnimate(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setShouldAnimate(false);
+    }
+  }, [isLoading, predictionsData]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -139,10 +153,10 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
   const awayPercent = parsePercentage(predictions.percent.away);
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-3 md:space-y-4">
       <div>
         <div className="flex items-center gap-2 justify-center ">
-          <Trophy className="w-5 h-5 text-bar-yellow" />
+          <Trophy className="w-4 h-4 md:w-5 md:h-5 text-bar-yellow" />
           <h3 className="text-base md:text-lg font-bold">Match Prediction</h3>
         </div>
         {/* Winner Prediction */}
@@ -189,7 +203,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
         </div>
       </div>
       {/* Win probability */}
-      <div className="space-y-3 border-b border-border pb-4 ">
+      <div className="space-y-3 border-b border-border pb-4  md:pb-6">
         <div className="flex items-center gap-2 justify-start pl-2">
           <Percent className="w-4 h-4 text-primary-font" />
           <h3 className="text-sm md:text-base font-bold">Win Probability</h3>
@@ -206,7 +220,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-bar-green rounded-full transition-all duration-700"
-                  style={{ width: `${homePercent}%` }}
+                  style={{ width: shouldAnimate ? `${homePercent}%` : "0%" }}
                 />
               </div>
             </div>
@@ -218,7 +232,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-bar-yellow rounded-full transition-all duration-700"
-                  style={{ width: `${drawPercent}%` }}
+                  style={{ width: shouldAnimate ? `${drawPercent}%` : "0%" }}
                 />
               </div>
             </div>
@@ -230,7 +244,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-bar-red rounded-full transition-all duration-700"
-                  style={{ width: `${awayPercent}%` }}
+                  style={{ width: shouldAnimate ? `${awayPercent}%` : "0%" }}
                 />
               </div>
             </div>
@@ -280,12 +294,12 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       </div>
 
       {/* Comparison Statistics */}
-      <div className="space-y-3 border-b border-border pb-4">
+      <div className="space-y-3 border-b border-border pb-4 md:pb-6">
         <div className="flex items-center gap-2 justify-start pl-2">
           <BarChart3 className="w-4 h-4 text-primary-font" />
           <h3 className="text-sm md:text-base font-bold">Team Comparison</h3>
         </div>
-        <div className=" space-y-6 md:space-y-8 max-w-xl mx-auto">
+        <div className=" space-y-6 md:space-y-8 max-w-xl px-4 mx-auto">
           {Object.entries(comparison).map(([key, value]) => {
             if (typeof value !== "object" || !("home" in value)) return null;
             const homeVal = parsePercentage(value.home);
@@ -341,13 +355,17 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                   {homePercent > 0 && (
                     <div
                       className="h-full bg-bar-green transition-all duration-700"
-                      style={{ width: `${homePercent}%` }}
+                      style={{
+                        width: shouldAnimate ? `${homePercent}%` : "0%",
+                      }}
                     />
                   )}
                   {awayPercent > 0 && (
                     <div
                       className="h-full bg-bar-red transition-all duration-700"
-                      style={{ width: `${awayPercent}%` }}
+                      style={{
+                        width: shouldAnimate ? `${awayPercent}%` : "0%",
+                      }}
                     />
                   )}
                 </div>
@@ -358,7 +376,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       </div>
 
       {/* Team Statistics */}
-      <div className="space-y-3 border-b border-border pb-4">
+      <div className="space-y-3 border-b border-border pb-4 md:pb-6">
         <div className="flex items-center gap-2 justify-start pl-2">
           <Activity className="w-4 h-4 text-primary" />
           <h3 className="text-sm md:text-base font-bold">Team Statistics</h3>

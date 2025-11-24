@@ -72,7 +72,6 @@ export async function GET(req: NextRequest) {
     }
 
     const data = (await response.json()) as PredictionsApiResponse;
-
     return NextResponse.json(data);
   } catch (error) {
     console.error("Predictions API Error:", error);

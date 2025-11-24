@@ -206,8 +206,8 @@ export default function FixtureStatistics({
       "Shots off Goal": 20,
       "Total Shots": 30,
       "Blocked Shots": 10,
-      "Shots insidebox": 20,
-      "Shots outsidebox": 20,
+      "Shots insidebox": 17,
+      "Shots outsidebox": 17,
       Fouls: 20,
       "Corner Kicks": 15,
       Offsides: 10,
@@ -262,7 +262,7 @@ export default function FixtureStatistics({
               {homePercent !== null && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex justify-end">
                   <div
-                    className="h-full bg-bar-green transition-all duration-[3000ms] ease-in-out rounded-l-full"
+                    className="h-full bg-bar-green transition-all duration-1000 ease-in-out rounded-l-full"
                     style={{ width: shouldAnimate ? `${homePercent}%` : "0%" }}
                   />
                 </div>
@@ -294,7 +294,7 @@ export default function FixtureStatistics({
               {awayPercent !== null && (
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-bar-red transition-all duration-[3000ms] ease-in-out rounded-r-full"
+                    className="h-full bg-bar-red transition-all duration-1000 ease-in-out rounded-r-full"
                     style={{ width: shouldAnimate ? `${awayPercent}%` : "0%" }}
                   />
                 </div>

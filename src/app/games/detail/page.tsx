@@ -215,7 +215,7 @@ export default function GameDetailPage() {
         {/* Tab Content */}
         {activeTab === "lineups" && <Lineups fixtureId={fixture.fixture.id} />}
         {activeTab === "statistics" && (
-          <div className="container mx-auto w-[80%] max-w-3xl px-1">
+          <div className="container mx-auto w-[90%] max-w-3xl px-1">
             <FixtureStatistics
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
