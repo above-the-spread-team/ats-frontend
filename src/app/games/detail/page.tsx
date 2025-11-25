@@ -176,10 +176,9 @@ export default function GameDetailPage() {
           </div>
         </div>
         {/* Tab Content Skeleton */}
-        <div className="pt-2 pb-10">
+        {/* <div className="pt-2 pb-10">
           <div className="container mx-auto w-[90%] max-w-4xl">
             <div className="space-y-4">
-              {/* Main Content Skeleton */}
               <Skeleton className="h-64 w-full rounded-lg" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Skeleton className="h-48 w-full rounded-lg" />
@@ -188,7 +187,7 @@ export default function GameDetailPage() {
               <Skeleton className="h-32 w-full rounded-lg" />
             </div>
           </div>
-        </div>
+        </div> */}
       </FullPage>
     );
   }

@@ -7,7 +7,7 @@ import type {
   FixturePlayersResponseItem,
   FixturePlayersPlayerItem,
 } from "@/type/fixture-players";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -107,9 +107,282 @@ export default function FixturePlayers({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loading />
-      </div>
+      <>
+        {/* Teams Skeleton */}
+        <div className="space-y-8">
+          {/* Home Team Skeleton */}
+          <div className="space-y-0">
+            {/* Team Header Skeleton */}
+            <div className="flex items-center px-2 pb-2 gap-3 border-b border-border">
+              <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full" />
+              <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+              <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+            </div>
+
+            {/* Players Table Skeleton */}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[200px]">Player</TableHead>
+                    <TableHead className="text-center">Rating</TableHead>
+                    <TableHead className="text-center">Min</TableHead>
+                    <TableHead className="text-center">G</TableHead>
+                    <TableHead className="text-center">A</TableHead>
+                    <TableHead className="text-center">Shots</TableHead>
+                    <TableHead className="text-center">Passes</TableHead>
+                    <TableHead className="text-center">Pass%</TableHead>
+                    <TableHead className="text-center">KP</TableHead>
+                    <TableHead className="text-center">Tkl</TableHead>
+                    <TableHead className="text-center">Duels</TableHead>
+                    <TableHead className="text-center">Drib</TableHead>
+                    <TableHead className="text-center">Fouls</TableHead>
+                    <TableHead className="text-center">Cards</TableHead>
+                    <TableHead className="text-center">GC</TableHead>
+                    <TableHead className="text-center">Saves</TableHead>
+                    <TableHead className="text-center">Pen</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 11 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      {/* Player */}
+                      <TableCell className="min-w-[200px]">
+                        <div className="flex items-center gap-2 pl-1">
+                          <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                              {idx % 3 === 0 && (
+                                <Skeleton className="w-3 h-3 rounded-full flex-shrink-0" />
+                              )}
+                            </div>
+                            <Skeleton className="h-3 w-20 md:w-28 mt-1" />
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Rating */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-5 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Minutes */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-8 mx-auto" />
+                      </TableCell>
+
+                      {/* Goals */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Assists */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Shots */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-8 mx-auto" />
+                      </TableCell>
+
+                      {/* Passes */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Pass Accuracy */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Key Passes */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Tackles */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Duels Won */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-12 mx-auto" />
+                      </TableCell>
+
+                      {/* Dribbles */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-12 mx-auto" />
+                      </TableCell>
+
+                      {/* Fouls */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-12 mx-auto" />
+                      </TableCell>
+
+                      {/* Cards */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Goalkeeper Stats */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-8 mx-auto" />
+                      </TableCell>
+
+                      {/* Penalties */}
+                      <TableCell className="text-center pr-1">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          {/* Away Team Skeleton */}
+          <div className="space-y-0">
+            {/* Team Header Skeleton */}
+            <div className="flex items-center px-2 pb-2 gap-3 border-b border-border">
+              <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full" />
+              <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+              <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+            </div>
+
+            {/* Players Table Skeleton */}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[200px]">Player</TableHead>
+                    <TableHead className="text-center">Rating</TableHead>
+                    <TableHead className="text-center">Min</TableHead>
+                    <TableHead className="text-center">G</TableHead>
+                    <TableHead className="text-center">A</TableHead>
+                    <TableHead className="text-center">Shots</TableHead>
+                    <TableHead className="text-center">Passes</TableHead>
+                    <TableHead className="text-center">Pass%</TableHead>
+                    <TableHead className="text-center">KP</TableHead>
+                    <TableHead className="text-center">Tkl</TableHead>
+                    <TableHead className="text-center">Duels</TableHead>
+                    <TableHead className="text-center">Drib</TableHead>
+                    <TableHead className="text-center">Fouls</TableHead>
+                    <TableHead className="text-center">Cards</TableHead>
+                    <TableHead className="text-center">GC</TableHead>
+                    <TableHead className="text-center">Saves</TableHead>
+                    <TableHead className="text-center">Pen</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 8 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      {/* Player */}
+                      <TableCell className="min-w-[200px]">
+                        <div className="flex items-center gap-2 pl-1">
+                          <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                              {idx % 4 === 0 && (
+                                <Skeleton className="w-3 h-3 rounded-full flex-shrink-0" />
+                              )}
+                            </div>
+                            <Skeleton className="h-3 w-20 md:w-28 mt-1" />
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Rating */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-5 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Minutes */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-8 mx-auto" />
+                      </TableCell>
+
+                      {/* Goals */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Assists */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Shots */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-8 mx-auto" />
+                      </TableCell>
+
+                      {/* Passes */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Pass Accuracy */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Key Passes */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Tackles */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+
+                      {/* Duels Won */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-12 mx-auto" />
+                      </TableCell>
+
+                      {/* Dribbles */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-12 mx-auto" />
+                      </TableCell>
+
+                      {/* Fouls */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-12 mx-auto" />
+                      </TableCell>
+
+                      {/* Cards */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+
+                      {/* Goalkeeper Stats */}
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-6 mx-auto" />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Skeleton className="h-3 md:h-4 w-8 mx-auto" />
+                      </TableCell>
+
+                      {/* Penalties */}
+                      <TableCell className="text-center pr-1">
+                        <Skeleton className="h-3 md:h-4 w-10 mx-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 

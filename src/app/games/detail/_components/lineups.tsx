@@ -394,7 +394,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
           </div>
         )}
       </div>
-      <div className="bg-card/90 p-4 md:p-6 rounded-2xl space-y-2">
+      <div className="bg-card/90 shadow-inner p-3 md:p-4 rounded-2xl space-y-2">
         {/* Start XI - Grouped by Position */}
         <div className="space-y-4  md:space-y-5">
           <div className="flex items-center gap-2">
@@ -725,7 +725,7 @@ function CombinedFormationField({
   );
 
   return (
-    <div className="px-2 pb-4 md:px-12  space-y-2 ">
+    <div className="px-2 pb-0 md:px-8 lg:px-16  space-y-2 ">
       <div className="flex items-center justify-between mb-2 md:mb-4 gap-2">
         <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0">
           {homeLineup.team.logo && (

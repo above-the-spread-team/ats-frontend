@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { PredictionsApiResponse } from "@/type/predictions";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Trophy,
   Target,
@@ -120,8 +120,219 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loading />
+      <div className="space-y-3 md:space-y-4">
+        {/* Match Prediction Section Skeleton */}
+        <div>
+          <div className="flex items-center gap-2 justify-center">
+            <Skeleton className="w-4 h-4 md:w-5 md:h-5" />
+            <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+          </div>
+          <div className="flex items-center justify-end gap-4 mt-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3 md:h-4 w-28 md:w-36" />
+              <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full" />
+            </div>
+            <Skeleton className="h-5 w-20 md:w-24 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Win Probability Section Skeleton */}
+        <div className="space-y-3 border-b border-border pb-4 md:pb-6">
+          <div className="flex items-center gap-2 justify-start pl-2">
+            <Skeleton className="w-4 h-4" />
+            <Skeleton className="h-4 md:h-5 w-28 md:w-36" />
+          </div>
+          <div className="bg-card rounded-xl p-4 md:p-6 space-y-4 shadow-sm">
+            {/* Win Probability Bars */}
+            <div className="grid grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <div key={idx} className="text-center space-y-2">
+                  <Skeleton className="h-3 w-12 mx-auto" />
+                  <Skeleton className="h-4 md:h-5 w-16 mx-auto" />
+                  <Skeleton className="w-full h-2 rounded-full" />
+                </div>
+              ))}
+            </div>
+
+            {/* Under/Over, Expected Goals, Recommendation */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-border">
+              <div>
+                <Skeleton className="h-3 w-20 mb-1" />
+                <Skeleton className="h-4 md:h-5 w-12" />
+              </div>
+              <div>
+                <Skeleton className="h-3 w-24 mb-1" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 md:h-5 w-8" />
+                  <Skeleton className="h-4 w-2" />
+                  <Skeleton className="h-4 md:h-5 w-8" />
+                </div>
+              </div>
+              <div className="col-span-2 md:col-span-1">
+                <div className="flex items-start gap-2">
+                  <Skeleton className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <Skeleton className="h-3 w-24 mb-1" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4 mt-1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Team Comparison Section Skeleton */}
+        <div className="space-y-3 border-b border-border pb-4 md:pb-6">
+          <div className="flex items-center gap-2 justify-start pl-2">
+            <Skeleton className="w-4 h-4" />
+            <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+          </div>
+          <div className="space-y-6 md:space-y-8 max-w-xl px-4 mx-auto">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="space-y-2">
+                {/* Team info and values */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-5 h-5 rounded-full" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                  <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-12" />
+                    <Skeleton className="w-5 h-5 rounded-full" />
+                  </div>
+                </div>
+                {/* Combined bar */}
+                <Skeleton className="w-full h-2 md:h-2.5 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Team Statistics Section Skeleton */}
+        <div className="space-y-3 border-b border-border pb-4 md:pb-6">
+          <div className="flex items-center gap-2 justify-start pl-2">
+            <Skeleton className="w-4 h-4" />
+            <Skeleton className="h-4 md:h-5 w-28 md:w-36" />
+          </div>
+          <div className="bg-card border-2 border-border rounded-xl p-3 md:p-4 space-y-6 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Home Team Skeleton */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-3 pb-3 border-b border-border">
+                  <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full" />
+                  <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                </div>
+
+                {/* Last 5 Matches */}
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-24" />
+                  <div className="grid grid-cols-2 gap-2">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between"
+                      >
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* League Stats */}
+                <div className="space-y-2 pt-3 border-t border-border">
+                  <Skeleton className="h-3 w-20" />
+                  <div className="space-y-1.5">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between"
+                      >
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Away Team Skeleton */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-3 pb-3 border-b border-border">
+                  <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full" />
+                  <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                </div>
+
+                {/* Last 5 Matches */}
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-24" />
+                  <div className="grid grid-cols-2 gap-2">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between"
+                      >
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* League Stats */}
+                <div className="space-y-2 pt-3 border-t border-border">
+                  <Skeleton className="h-3 w-20" />
+                  <div className="space-y-1.5">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between"
+                      >
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Head-to-Head History Section Skeleton */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 justify-start pl-2">
+            <Skeleton className="w-4 h-4" />
+            <Skeleton className="h-4 md:h-5 w-40 md:w-48" />
+          </div>
+          <div className="max-w-xl mx-auto">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 p-2 border-b border-border last:border-0"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full flex-shrink-0" />
+                  <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                </div>
+                <div className="flex flex-col gap-2 items-center justify-center">
+                  <div className="flex items-center justify-center gap-4">
+                    <Skeleton className="h-3 md:h-4 w-6" />
+                    <Skeleton className="h-6 w-[2px]" />
+                    <Skeleton className="h-3 md:h-4 w-6" />
+                  </div>
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                  <Skeleton className="h-3 md:h-4 w-24 md:w-32 ml-auto" />
+                  <Skeleton className="w-5 h-5 md:w-6 md:h-6 rounded-full flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

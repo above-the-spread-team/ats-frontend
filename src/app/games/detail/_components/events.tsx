@@ -5,7 +5,7 @@ import type {
   FixtureEventsApiResponse,
   FixtureEventsResponseItem,
 } from "@/type/fixture-events";
-import Loading from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Target,
   Square,
@@ -166,8 +166,123 @@ export default function Events({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loading />
+      <div className="space-y-4">
+        {/* Header Skeleton */}
+        <div className="text-center space-y-1">
+          <Skeleton className="h-5 md:h-6 w-32 mx-auto" />
+          <Skeleton className="h-3 md:h-4 w-40 mx-auto" />
+        </div>
+
+        {/* Timeline Skeleton */}
+        <div className="relative">
+          {/* Vertical timeline line */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-0.5 md:w-1 bg-gradient-to-b from-border via-border to-border -translate-x-1/2" />
+
+          {/* Events Container Skeleton */}
+          <div className="space-y-1">
+            {Array.from({ length: 5 }).map((_, timeIdx) => (
+              <div key={timeIdx} className="relative">
+                {/* Time Badge Skeleton */}
+                <div className="flex items-center justify-center mb-3 md:mb-6">
+                  <div className="relative">
+                    {/* Connection line to timeline */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 md:w-12 h-0.5 bg-border" />
+                    <div className="relative z-10">
+                      <Skeleton className="h-6 md:h-8 w-12 md:w-16 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Events at this time - Two columns */}
+                <div className="grid grid-cols-2 gap-2 md:gap-6">
+                  {/* Home Team Events Skeleton */}
+                  <div className="space-y-2 md:space-y-4">
+                    {Array.from({ length: timeIdx % 2 === 0 ? 1 : 2 }).map(
+                      (_, eventIdx) => (
+                        <div
+                          key={eventIdx}
+                          className="rounded-xl border-2 border-border bg-muted/50 dark:bg-muted/30 p-2 md:p-3 shadow-inner"
+                        >
+                          {/* Event Type Header Skeleton */}
+                          <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+                            <Skeleton className="w-6 h-6 md:w-7 md:h-7 rounded-lg flex-shrink-0" />
+                            <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+                          </div>
+
+                          {/* Player Info Skeleton */}
+                          <div className="space-y-1 md:space-y-1.5">
+                            <div className="flex items-center gap-1.5 md:gap-2">
+                              <Skeleton className="w-3 h-3 rounded-full flex-shrink-0" />
+                              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                            </div>
+
+                            {/* Optional Assist Skeleton (random) */}
+                            {timeIdx % 3 === 0 && (
+                              <div className="flex items-center gap-1.5 md:gap-2">
+                                <Skeleton className="w-2.5 h-2.5 rounded-full flex-shrink-0" />
+                                <Skeleton className="h-3 w-28 md:w-36" />
+                              </div>
+                            )}
+
+                            {/* Optional Comments Skeleton (random) */}
+                            {timeIdx % 4 === 0 && (
+                              <div className="mt-1.5 md:mt-2 pt-1.5 md:pt-2 border-t border-border">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-3/4 mt-1" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {/* Away Team Events Skeleton */}
+                  <div className="space-y-2 md:space-y-4">
+                    {Array.from({ length: timeIdx % 2 === 1 ? 1 : 2 }).map(
+                      (_, eventIdx) => (
+                        <div
+                          key={eventIdx}
+                          className="rounded-xl border-2 border-border bg-muted/50 dark:bg-muted/30 p-2 md:p-3 shadow-inner"
+                        >
+                          {/* Event Type Header Skeleton */}
+                          <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2 flex-row-reverse">
+                            <Skeleton className="w-6 h-6 md:w-7 md:h-7 rounded-lg flex-shrink-0" />
+                            <Skeleton className="h-3 md:h-4 w-20 md:w-24" />
+                          </div>
+
+                          {/* Player Info Skeleton */}
+                          <div className="space-y-1 md:space-y-1.5 text-right">
+                            <div className="flex items-center gap-1.5 md:gap-2 flex-row-reverse">
+                              <Skeleton className="w-3 h-3 rounded-full flex-shrink-0" />
+                              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+                            </div>
+
+                            {/* Optional Assist Skeleton (random) */}
+                            {timeIdx % 3 === 1 && (
+                              <div className="flex items-center gap-1.5 md:gap-2 flex-row-reverse">
+                                <Skeleton className="w-2.5 h-2.5 rounded-full flex-shrink-0" />
+                                <Skeleton className="h-3 w-28 md:w-36" />
+                              </div>
+                            )}
+
+                            {/* Optional Comments Skeleton (random) */}
+                            {timeIdx % 4 === 1 && (
+                              <div className="mt-1.5 md:mt-2 pt-1.5 md:pt-2 border-t border-border">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-3/4 mt-1 ml-auto" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
