@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { PredictionsApiResponse } from "@/type/predictions";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoDataYet from "./no-data-yet";
 import {
   Trophy,
   Target,
@@ -339,22 +340,20 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
 
   if (error || !predictionsData || !predictionsData.response) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          {error || "No predictions data available"}
-        </p>
-      </div>
+      <NoDataYet
+        message={error || "No predictions data available"}
+        helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
+      />
     );
   }
 
   const prediction = predictionsData.response[0];
   if (!prediction) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          No predictions available for this fixture.
-        </p>
-      </div>
+      <NoDataYet
+        message="No predictions available for this fixture."
+        helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
+      />
     );
   }
 

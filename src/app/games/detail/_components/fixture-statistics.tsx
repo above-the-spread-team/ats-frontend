@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { FixtureStatisticsApiResponse } from "@/type/fixture-statistics";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoDataYet from "./no-data-yet";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;
@@ -157,22 +158,20 @@ export default function FixtureStatistics({
 
   if (error || !statisticsData || !statisticsData.response) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          {error || "No statistics data available"}
-        </p>
-      </div>
+      <NoDataYet
+        message={error || "No statistics data available"}
+        helpText="Match statistics are usually available during or after the match."
+      />
     );
   }
 
   const teams = statisticsData.response;
   if (teams.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          No statistics available for this fixture.
-        </p>
-      </div>
+      <NoDataYet
+        message="No statistics available for this fixture."
+        helpText="Match statistics are usually available during or after the match."
+      />
     );
   }
 

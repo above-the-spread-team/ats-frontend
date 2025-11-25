@@ -6,6 +6,7 @@ import type {
   FixtureEventsResponseItem,
 } from "@/type/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoDataYet from "./no-data-yet";
 import {
   Target,
   Square,
@@ -289,11 +290,10 @@ export default function Events({
 
   if (error || !eventsData || !eventsData.response) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          {error || "No events data available"}
-        </p>
-      </div>
+      <NoDataYet
+        message={error || "No events data available"}
+        helpText="Events are usually available once the match starts or shortly after."
+      />
     );
   }
 
@@ -301,11 +301,10 @@ export default function Events({
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          No events available for this fixture.
-        </p>
-      </div>
+      <NoDataYet
+        message="No events available for this fixture."
+        helpText="Events are usually available once the match starts or shortly after."
+      />
     );
   }
 

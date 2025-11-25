@@ -9,6 +9,7 @@ import type {
   FixturePlayersPlayerItem,
 } from "@/type/fixture-players";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoDataYet from "./no-data-yet";
 import {
   Table,
   TableBody,
@@ -390,11 +391,10 @@ export default function FixturePlayers({
 
   if (error || !playersData || !playersData.response) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          {error || "No players data available"}
-        </p>
-      </div>
+      <NoDataYet
+        message={error || "No players data available"}
+        helpText="Player statistics are usually available during or after the match."
+      />
     );
   }
 
@@ -402,11 +402,10 @@ export default function FixturePlayers({
 
   if (teams.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          No players data available for this fixture.
-        </p>
-      </div>
+      <NoDataYet
+        message="No players data available for this fixture."
+        helpText="Player statistics are usually available during or after the match."
+      />
     );
   }
 
