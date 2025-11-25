@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type {
   FixturePlayersApiResponse,
   FixturePlayersResponseItem,
@@ -50,6 +51,7 @@ export default function FixturePlayers({
   homeTeamId,
   awayTeamId,
 }: FixturePlayersProps) {
+  const router = useRouter();
   const [playersData, setPlayersData] =
     useState<FixturePlayersApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -428,8 +430,16 @@ export default function FixturePlayers({
     const stat = playerItem.statistics[0]; // Usually one statistics object per player
     if (!stat) return null;
 
+    const handlePlayerClick = () => {
+      router.push(`/stats/player/${playerItem.player.id}`);
+    };
+
     return (
-      <TableRow key={playerItem.player.id}>
+      <TableRow
+        key={playerItem.player.id}
+        onClick={handlePlayerClick}
+        className="group cursor-pointer dark:hover:bg-mygray/10 hover:bg-mygray/50 transition-colors"
+      >
         {/* Player */}
         <TableCell className="min-w-[200px] ">
           <div className="flex items-center gap-2 pl-1">
@@ -448,7 +458,7 @@ export default function FixturePlayers({
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs md:text-sm font-medium text-foreground truncate">
+                <span className="text-xs md:text-sm font-medium text-foreground truncate group-hover:underline group-hover:text-primary-font">
                   {playerItem.player.name}
                 </span>
                 {stat.games.captain && (
