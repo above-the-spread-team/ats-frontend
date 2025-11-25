@@ -67,6 +67,11 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      flexBasis: {
+        "1/7": "14.2857%",
+        "1/8": "12.5%",
+        "1/9": "11.1111%",
+      },
       keyframes: {
         shimmer: {
           "0%": {

@@ -36,7 +36,7 @@ export default function News() {
   const [featuredArticle, ...regularNews] = mockNews;
 
   return (
-    <div className="min-h-screen bg-background p-2 md:p-6 pb-20 md:pb-6">
+    <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
       <h1 className="text-lg md:text-2xl font-bold mb-3 md:mb-6 px-1 md:px-0">
         Latest Football News
       </h1>
