@@ -89,7 +89,7 @@ function GameDetailContent() {
   const fixtureId = searchParams.get("id");
   const dateParam = searchParams.get("date");
 
-  // Get tab from URL or default to lineups
+  // Get tab from URL or default to predictions
   const tabParam = searchParams.get("tab") as TabType;
   const [activeTab, setActiveTab] = useState<TabType>(
     tabParam &&
@@ -97,7 +97,7 @@ function GameDetailContent() {
         tabParam
       )
       ? tabParam
-      : "lineups"
+      : "predictions"
   );
 
   const [fixtureData, setFixtureData] = useState<FixturesApiResponse | null>(
@@ -217,11 +217,13 @@ function GameDetailContent() {
   const fixture = fixtureData.response[0];
 
   const tabs: NavTab<TabType>[] = [
-    { id: "lineups", label: "Lineups", icon: Users },
-    { id: "statistics", label: "Statistics", icon: BarChart3 },
-    { id: "events", label: "Events", icon: Activity },
-    { id: "players", label: "Players", icon: User },
     { id: "predictions", label: "Predictions", icon: Brain },
+
+    { id: "statistics", label: "Statistics", icon: BarChart3 },
+
+    { id: "players", label: "Players", icon: User },
+    { id: "events", label: "Events", icon: Activity },
+    { id: "lineups", label: "Lineups", icon: Users },
   ];
 
   return (
