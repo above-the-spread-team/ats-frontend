@@ -11,7 +11,7 @@ import FixturesError from "./_components/error";
 import { useEffect, useMemo, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getFixtureStatus } from "@/data/fixture-status";
-import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
+import type { FixtureResponseItem } from "@/type/fixture";
 import TeamInfo from "./_components/team";
 import { Switch } from "@/components/ui/switch";
 import { useFixtures } from "@/services/fixtures";
