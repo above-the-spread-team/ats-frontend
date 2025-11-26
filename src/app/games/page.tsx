@@ -305,7 +305,7 @@ function FixturesContent() {
                     >
                       {isInPlay && (
                         <>
-                          <span className="pointer-events-none rounded-l-sm absolute inset-y-0 -left-[6px] z-10 w-[6px] animate-pulse bg-gradient-to-b from-primary via-primary/80 to-primary/30"></span>
+                          <span className="pointer-events-none rounded-l-sm absolute inset-y-0 -left-[6px] z-10 w-[6px] animate-pulse bg-gradient-to-b from-primary-font via-primary-font/80 to-primary-font/30"></span>
                           <span
                             className="pointer-events-none absolute inset-y-0 -left-[6px] z-10 w-[6px] bg-primary/50 blur-sm opacity-70 animate-pulse"
                             style={{ animationDelay: "0.4s" }}
