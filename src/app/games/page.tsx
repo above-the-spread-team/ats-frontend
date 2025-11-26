@@ -14,6 +14,7 @@ import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 import TeamInfo from "./_components/team";
 import { Switch } from "@/components/ui/switch";
+import { useFixtures } from "@/services/fixtures";
 
 interface LeagueGroup {
   leagueId: number;
@@ -92,9 +93,6 @@ function FixturesContent() {
   }, [dateParam, today]);
 
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
-  const [fixtures, setFixtures] = useState<FixtureResponseItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [hideScores, setHideScores] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("hideScores");
@@ -102,10 +100,6 @@ function FixturesContent() {
     }
     return false;
   });
-  const [meta, setMeta] = useState<{
-    parameters?: FixturesApiResponse["parameters"];
-    results?: number;
-  }>({});
   const timezone = useMemo(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -114,6 +108,27 @@ function FixturesContent() {
       return "UTC";
     }
   }, []);
+
+  // Use React Query to fetch fixtures
+  const {
+    data: fixturesData,
+    isLoading,
+    error: queryError,
+  } = useFixtures(selectedDate, timezone);
+
+  const fixtures = fixturesData?.response ?? [];
+  const meta = fixturesData
+    ? {
+        parameters: fixturesData.parameters,
+        results: fixturesData.results,
+      }
+    : {};
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : fixturesData?.errors && fixturesData.errors.length > 0
+      ? fixturesData.errors.join("\n")
+      : null;
 
   // Track if we're updating URL to prevent loops
   const isUpdatingUrl = useRef(false);
@@ -145,52 +160,6 @@ function FixturesContent() {
       router.replace(`/games?${params.toString()}`, { scroll: false });
     }
   }, [selectedDate, router, searchParams]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchFixtures = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      const dateStr = formatDateParam(selectedDate);
-
-      try {
-        const response = await fetch(
-          `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(
-            timezone
-          )}`,
-          { signal: controller.signal }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load fixtures (${response.status})`);
-        }
-
-        const data = (await response.json()) as FixturesApiResponse;
-
-        setFixtures(data.response ?? []);
-        setMeta({ parameters: data.parameters, results: data.results });
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setFixtures([]);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchFixtures();
-
-    return () => {
-      controller.abort();
-    };
-  }, [selectedDate, timezone]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
