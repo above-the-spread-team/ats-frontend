@@ -138,7 +138,7 @@ export default function Fixtures() {
           className="w-full"
         >
           <CarouselContent className="px-4">
-            {Array.from({ length: 5 }).map((_, idx) => (
+            {Array.from({ length: 8 }).map((_, idx) => (
               <CarouselItem
                 key={idx}
                 className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-1/7 2xl:basis-1/8 px-0"
@@ -150,28 +150,28 @@ export default function Fixtures() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <Skeleton className="w-6 h-6 rounded-full flex-shrink-0" />
-                        <Skeleton className="h-4 flex-1 max-w-[100px]" />
+                        <Skeleton className="h-[14px] flex-1 max-w-[100px]" />
                       </div>
-                      <Skeleton className="h-5 w-6 ml-2" />
+                      <Skeleton className="h-[18px] w-6 ml-2" />
                     </div>
 
                     {/* Score Separator */}
-                    <Skeleton className="h-px w-full" />
+                    <Skeleton className="h-px w-full bg-border" />
 
                     {/* Away Team */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <Skeleton className="w-6 h-6 rounded-full flex-shrink-0" />
-                        <Skeleton className="h-4 flex-1 max-w-[100px]" />
+                        <Skeleton className="h-[14px] flex-1 max-w-[100px]" />
                       </div>
-                      <Skeleton className="h-5 w-6 ml-2" />
+                      <Skeleton className="h-[18px] w-6 ml-2" />
                     </div>
                   </div>
 
                   {/* Status */}
                   <div className="mt-3 pt-3 border-t border-border">
                     <div className="flex items-center justify-between">
-                      <Skeleton className="h-5 w-12 rounded" />
+                      <Skeleton className="h-5 w-12 rounded px-2 py-0.5" />
                       <Skeleton className="h-4 w-8" />
                     </div>
                   </div>

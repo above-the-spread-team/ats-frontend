@@ -235,45 +235,45 @@ export default function GameDetailPage() {
 
   return (
     <FullPage>
-      <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
-        <button
-          onClick={() => {
-            // Preserve date parameter when going back
-            if (dateParam) {
-              router.push(`/games?date=${dateParam}`);
-            } else {
-              router.back();
-            }
-          }}
-          className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-        <div className="flex items-center gap-2 text-xs md:text-sm font-bold dark:text-mygray text-primary">
-          <Clock8 className="w-4 h-4" />
-          <p>{timezone}</p>
-        </div>
-      </div>
-
       {/* Fixture Detail - Always visible at top */}
-      <div className="container mx-auto max-w-5xl px-1">
-        <FixtureDetail fixture={fixture} />
+      <div className="bg-gradient-to-br from-white/50 dark:from-black/80 to-card/90 ">
+        <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
+          <button
+            onClick={() => {
+              // Preserve date parameter when going back
+              if (dateParam) {
+                router.push(`/games?date=${dateParam}`);
+              } else {
+                router.back();
+              }
+            }}
+            className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+          <div className="flex items-center gap-2 text-xs md:text-sm font-bold dark:text-mygray text-primary">
+            <Clock8 className="w-4 h-4" />
+            <p>{timezone}</p>
+          </div>
+        </div>
+        <div className="container mx-auto max-w-5xl px-1">
+          <FixtureDetail fixture={fixture} />
+        </div>
+        {/* Tab Navigation */}
+        {fixtureId && (
+          <Nav
+            tabs={tabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            preserveParams={true}
+            additionalParams={{ id: fixtureId }}
+            containerClassName="mt-2 mb-2 justify-between max-w-4xl  mx-auto  px-2 gap-1"
+            hideIconOnMobile={true}
+            justify="between"
+          />
+        )}
       </div>
-
-      {/* Tab Navigation */}
-      {fixtureId && (
-        <Nav
-          tabs={tabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          preserveParams={true}
-          additionalParams={{ id: fixtureId }}
-          containerClassName="mt-2 mb-2 justify-between max-w-4xl  mx-auto  px-2 gap-1"
-          hideIconOnMobile={true}
-          justify="between"
-        />
-      )}
 
       <div className="pt-2 pb-10">
         {/* Tab Content */}
