@@ -54,7 +54,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
 
   return (
     <div className="space-y-0 flex flex-col items-center justify-center gap-1 md:gap-2">
-      <div>
+      <div className="space-y-1 mb-1 -mt-2 md:-mt-4">
         {/* League Header */}
         {fixture.league && (
           <div className="flex items-start justify-center gap-3">

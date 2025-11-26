@@ -358,11 +358,6 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             <h3 className="text-sm md:text-base   font-bold truncate">
               {lineup.team.name}
             </h3>
-            {lineup.formation && (
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">
-                Formation: {lineup.formation}
-              </p>
-            )}
           </div>
         </div>
         {lineup.coach && (
@@ -380,7 +375,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
               <p className="text-xs md:text-sm text-muted-foreground font-medium">
                 Coach
               </p>
-              <p className="text-xs md:text-sm font-semibold truncate max-w-[140px] md:max-w-none">
+              <p className="text-[10px] md:text-xs font-semibold truncate max-w-[140px] md:max-w-none">
                 {lineup.coach.name}
               </p>
             </div>
@@ -731,10 +726,10 @@ function CombinedFormationField({
             />
           )}
           <div className="min-w-0">
-            <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate">
+            <p className="text-xs lg:text-sm font-semibold truncate">
               {homeLineup.team.name}
             </p>
-            <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {homeLineup.formation}
             </p>
           </div>
@@ -746,10 +741,10 @@ function CombinedFormationField({
         </div>
         <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0 justify-end">
           <div className="text-right min-w-0">
-            <p className="text-[10px] md:text-xs lg:text-sm font-semibold truncate">
+            <p className="text-xs lg:text-sm font-semibold truncate">
               {awayLineup.team.name}
             </p>
-            <p className="text-[9px] md:text-[10px] lg:text-xs text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {awayLineup.formation}
             </p>
           </div>
