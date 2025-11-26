@@ -15,7 +15,7 @@ import {
 import FullPage from "@/components/common/full-page";
 import IconBg from "@/components/common/icon-bg";
 import { Skeleton } from "@/components/ui/skeleton";
-import Nav, { NavTab } from "@/components/common/nav";
+import Nav from "@/components/common/nav";
 import type { TeamResponseItem } from "@/type/teams-info";
 import SeasonSelect from "../_components/season-select";
 import Statistic from "./_components/statistic";

@@ -5,17 +5,6 @@ import type { FixtureResponseItem } from "@/type/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 import TeamInfo from "../../_components/team";
 
-function getInitials(text: string | null | undefined, fallback = "??") {
-  if (!text) return fallback;
-  const trimmed = text.trim();
-  if (!trimmed) return fallback;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
 function formatGoals(value: number | null): string {
   if (value === null || Number.isNaN(value)) {
     return "–";

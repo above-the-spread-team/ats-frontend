@@ -12,7 +12,6 @@ import {
   Percent,
   Activity,
   Swords,
-  Calendar,
 } from "lucide-react";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
@@ -24,16 +23,6 @@ function getInitials(text: string | null | undefined, fallback = "??") {
     return parts[0].slice(0, 2).toUpperCase();
   }
   return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function formatValue(value: number | string | null | undefined): string {
-  if (value === null || value === undefined) {
-    return "–";
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-  return value.toString();
 }
 
 function parsePercentage(value: string): number {

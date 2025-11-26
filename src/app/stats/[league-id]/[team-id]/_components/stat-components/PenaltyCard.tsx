@@ -13,9 +13,6 @@ export default function PenaltyCard({
   missed,
   total,
 }: PenaltyCardProps) {
-  const scoredPercent = total > 0 ? (scored.total / total) * 100 : 0;
-  const missedPercent = total > 0 ? (missed.total / total) * 100 : 0;
-
   return (
     <div className="bg-card border border-border/50 rounded-lg md:rounded-xl p-2.5 md:p-4 shadow-md">
       <div className="flex items-center gap-1 mb-3">

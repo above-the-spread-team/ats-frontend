@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -24,7 +24,66 @@ import type { FixturesApiResponse } from "@/type/fixture";
 
 type TabType = "lineups" | "statistics" | "events" | "players" | "predictions";
 
-export default function GameDetailPage() {
+function GameDetailSkeleton() {
+  return (
+    <FullPage minusHeight={0}>
+      {/* Header Skeleton */}
+      <div className="flex items-center justify-between my-2 container mx-auto max-w-4xl px-4">
+        <Skeleton className="h-8 w-20" />
+        <Skeleton className="h-6 w-32" />
+      </div>
+
+      {/* Fixture Detail Skeleton */}
+      <div className="container mx-auto max-w-5xl px-1">
+        <div className="space-y-0 flex flex-col items-center justify-center gap-1 md:gap-2">
+          {/* League Header Skeleton */}
+          <div className="flex items-center justify-center gap-3">
+            <Skeleton className="w-6 h-6 rounded-md" />
+            <Skeleton className="h-5 w-48 md:w-56" />
+          </div>
+
+          {/* Date & Time Skeleton */}
+          <div className="space-y-1 text-center">
+            <Skeleton className="h-3 md:h-4 w-40 md:w-48 mx-auto" />
+            <Skeleton className="h-4 md:h-5 w-20 md:w-24 mx-auto" />
+          </div>
+
+          {/* Teams & Score Skeleton */}
+          <div className="w-[270px] md:w-full max-w-lg grid grid-cols-7  ">
+            {/* Home Team */}
+            <div className="col-span-3 flex flex-col-reverse md:flex-row items-center gap-3 md:gap-4">
+              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+              <Skeleton className="w-10 h-10 md:w-16 md:h-16 rounded-md" />
+            </div>
+
+            {/* Score/VS */}
+            <div className="col-span-1 flex flex-col items-center justify-center gap-2">
+              <Skeleton className="h-8 md:h-9 w-16 md:w-20" />
+              <Skeleton className="h-3 w-12 md:w-16" />
+            </div>
+
+            {/* Away Team */}
+            <div className="col-span-3 flex flex-col md:flex-row items-center gap-3 md:gap-4 justify-end">
+              <Skeleton className="w-10 h-10 md:w-16 md:h-16 rounded-md" />
+              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Navigation Skeleton */}
+      <div className="mt-6 mb-6 max-w-4xl mx-auto px-2">
+        <div className="flex items-center justify-between gap-1">
+          {Array.from({ length: 5 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-10 flex-1 rounded-md" />
+          ))}
+        </div>
+      </div>
+    </FullPage>
+  );
+}
+
+function GameDetailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const fixtureId = searchParams.get("id");
@@ -121,75 +180,7 @@ export default function GameDetailPage() {
   }, [fixtureId]);
 
   if (isLoading) {
-    return (
-      <FullPage minusHeight={0}>
-        {/* Header Skeleton */}
-        <div className="flex items-center justify-between my-2 container mx-auto max-w-4xl px-4">
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-
-        {/* Fixture Detail Skeleton */}
-        <div className="container mx-auto max-w-5xl px-1">
-          <div className="space-y-0 flex flex-col items-center justify-center gap-1 md:gap-2">
-            {/* League Header Skeleton */}
-            <div className="flex items-center justify-center gap-3">
-              <Skeleton className="w-6 h-6 rounded-md" />
-              <Skeleton className="h-5 w-48 md:w-56" />
-            </div>
-
-            {/* Date & Time Skeleton */}
-            <div className="space-y-1 text-center">
-              <Skeleton className="h-3 md:h-4 w-40 md:w-48 mx-auto" />
-              <Skeleton className="h-4 md:h-5 w-20 md:w-24 mx-auto" />
-            </div>
-
-            {/* Teams & Score Skeleton */}
-            <div className="w-[270px] md:w-full max-w-lg grid grid-cols-7  ">
-              {/* Home Team */}
-              <div className="col-span-3 flex flex-col-reverse md:flex-row items-center gap-3 md:gap-4">
-                <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
-                <Skeleton className="w-10 h-10 md:w-16 md:h-16 rounded-md" />
-              </div>
-
-              {/* Score/VS */}
-              <div className="col-span-1 flex flex-col items-center justify-center gap-2">
-                <Skeleton className="h-8 md:h-9 w-16 md:w-20" />
-                <Skeleton className="h-3 w-12 md:w-16" />
-              </div>
-
-              {/* Away Team */}
-              <div className="col-span-3 flex flex-col md:flex-row items-center gap-3 md:gap-4 justify-end">
-                <Skeleton className="w-10 h-10 md:w-16 md:h-16 rounded-md" />
-                <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Navigation Skeleton */}
-        <div className="mt-6 mb-6 max-w-4xl mx-auto px-2">
-          <div className="flex items-center justify-between gap-1">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <Skeleton key={idx} className="h-10 flex-1 rounded-md" />
-            ))}
-          </div>
-        </div>
-        {/* Tab Content Skeleton */}
-        {/* <div className="pt-2 pb-10">
-          <div className="container mx-auto w-[90%] max-w-4xl">
-            <div className="space-y-4">
-              <Skeleton className="h-64 w-full rounded-lg" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-48 w-full rounded-lg" />
-              </div>
-              <Skeleton className="h-32 w-full rounded-lg" />
-            </div>
-          </div>
-        </div> */}
-      </FullPage>
-    );
+    return <GameDetailSkeleton />;
   }
 
   if (
@@ -319,5 +310,13 @@ export default function GameDetailPage() {
         )}
       </div>
     </FullPage>
+  );
+}
+
+export default function GameDetailPage() {
+  return (
+    <Suspense fallback={<GameDetailSkeleton />}>
+      <GameDetailContent />
+    </Suspense>
   );
 }

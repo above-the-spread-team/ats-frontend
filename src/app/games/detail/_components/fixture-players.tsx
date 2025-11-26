@@ -422,10 +422,7 @@ export default function FixturePlayers({
     awayTeam = teams[1] || null;
   }
 
-  function renderPlayerRow(
-    playerItem: FixturePlayersPlayerItem,
-    team: FixturePlayersResponseItem
-  ) {
+  function renderPlayerRow(playerItem: FixturePlayersPlayerItem) {
     const stat = playerItem.statistics[0]; // Usually one statistics object per player
     if (!stat) return null;
 
@@ -608,10 +605,7 @@ export default function FixturePlayers({
     );
   }
 
-  function renderTeamTable(
-    team: FixturePlayersResponseItem | null,
-    title: string
-  ) {
+  function renderTeamTable(team: FixturePlayersResponseItem | null) {
     if (!team || !team.players || team.players.length === 0) {
       return null;
     }
@@ -691,9 +685,7 @@ export default function FixturePlayers({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedPlayers.map((playerItem) =>
-                renderPlayerRow(playerItem, team)
-              )}
+              {sortedPlayers.map((playerItem) => renderPlayerRow(playerItem))}
             </TableBody>
           </Table>
         </div>
@@ -705,8 +697,8 @@ export default function FixturePlayers({
     <>
       {/* Teams */}
       <div className="space-y-8">
-        {homeTeam && renderTeamTable(homeTeam, "Home Team")}
-        {awayTeam && renderTeamTable(awayTeam, "Away Team")}
+        {homeTeam && renderTeamTable(homeTeam)}
+        {awayTeam && renderTeamTable(awayTeam)}
       </div>
     </>
   );

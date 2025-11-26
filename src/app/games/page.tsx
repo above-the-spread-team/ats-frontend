@@ -8,7 +8,7 @@ import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
 import NoGame from "./_components/no-game";
 import FixturesError from "./_components/error";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
@@ -79,7 +79,7 @@ function formatGoals(value: number | null): string {
   return value.toString();
 }
 
-export default function Fixtures() {
+function FixturesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const today = useMemo(() => new Date(), []);
@@ -373,5 +373,19 @@ export default function Fixtures() {
         </FullPage>
       )}
     </div>
+  );
+}
+
+export default function Fixtures() {
+  return (
+    <Suspense
+      fallback={
+        <FullPage center minusHeight={0}>
+          <Loading />
+        </FullPage>
+      }
+    >
+      <FixturesContent />
+    </Suspense>
   );
 }

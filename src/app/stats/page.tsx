@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Nav from "@/components/common/nav";
@@ -11,7 +11,7 @@ import type { LeaguesApiResponse, LeagueResponseItem } from "@/type/league";
 
 type LeagueType = "all" | "league" | "cup";
 
-export default function Tables() {
+function TablesContent() {
   const [leagues, setLeagues] = useState<LeagueResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -285,5 +285,21 @@ export default function Tables() {
         </FullPage>
       )}
     </div>
+  );
+}
+
+export default function Tables() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 max-w-6xl py-3 md:py-4">
+          <FullPage minusHeight={250}>
+            <StatsSkeleton />
+          </FullPage>
+        </div>
+      }
+    >
+      <TablesContent />
+    </Suspense>
   );
 }

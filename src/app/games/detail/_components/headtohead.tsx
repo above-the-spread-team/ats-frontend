@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import type {
-  HeadToHeadApiResponse,
-  HeadToHeadResponseItem,
-} from "@/type/headtohead";
+import type { HeadToHeadApiResponse } from "@/type/headtohead";
 import { getFixtureStatus } from "@/data/fixture-status";
 import Loading from "@/components/common/loading";
 

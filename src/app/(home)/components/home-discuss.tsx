@@ -1,6 +1,6 @@
 "use client";
 
-import { mockDiscussions, type DiscussionPost } from "@/data/discuss-mock";
+import { mockDiscussions } from "@/data/discuss-mock";
 import Image from "next/image";
 import Link from "next/link";
 import { MessageSquare, ThumbsUp, Eye, Pin, Flame } from "lucide-react";
@@ -46,7 +46,7 @@ export default function HomeDiscuss() {
       </div>
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <div className="divide-y divide-border">
-          {topDiscussions.map((post, index) => (
+          {topDiscussions.map((post) => (
             <Link
               key={post.id}
               href={`/discuss#${post.id}`}

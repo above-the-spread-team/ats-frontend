@@ -1,7 +1,6 @@
 "use client";
 
-import { mockNews, type NewsArticle } from "@/data/news-mock";
-import Image from "next/image";
+import { mockNews } from "@/data/news-mock";
 import Link from "next/link";
 
 export default function HomeNews() {
@@ -50,7 +49,7 @@ export default function HomeNews() {
       </div>
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <div className="divide-y divide-border">
-          {topNews.map((article, index) => (
+          {topNews.map((article) => (
             <Link
               key={article.id}
               href={article.url}

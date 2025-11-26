@@ -1,5 +1,3 @@
-import type { FixtureStatusShort } from "./fixture";
-
 export interface HeadToHeadQueryParameters {
   h2h?: string; // Format: "teamId1-teamId2"
   date?: string; // YYYY-MM-DD

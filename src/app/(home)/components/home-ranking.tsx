@@ -114,7 +114,7 @@ export default function HomeRanking() {
         </div>
         {/* Standings List */}
         <div className="divide-y divide-border">
-          {standings.map((standing, index) => {
+          {standings.map((standing) => {
             const isTopThree = standing.rank <= 3;
             const rankColor =
               standing.rank === 1
