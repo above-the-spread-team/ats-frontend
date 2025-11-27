@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type {
-  FixtureEventsApiResponse,
-  FixtureEventsResponseItem,
-} from "@/type/fixture-events";
+import type { FixtureEventsResponseItem } from "@/type/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDataYet from "./no-data-yet";
+import { useFixtureEvents } from "@/services/fixture-events";
 import {
   Target,
   Square,
@@ -100,70 +97,44 @@ function getEventStyles(type: string, detail: string) {
   }
 }
 
+type FixtureStatusType =
+  | "Scheduled"
+  | "In Play"
+  | "Finished"
+  | "Postponed"
+  | "Cancelled"
+  | "Abandoned"
+  | "Not Played"
+  | "Unknown";
+
 interface EventsProps {
   fixtureId: number;
   homeTeamId?: number;
   awayTeamId?: number;
+  statusType?: FixtureStatusType | null;
 }
 
 export default function Events({
   fixtureId,
   homeTeamId,
   awayTeamId,
+  statusType,
 }: EventsProps) {
-  const [eventsData, setEventsData] = useState<FixtureEventsApiResponse | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use React Query to fetch events
+  // Pass status type from parent to determine refetch intervals
+  const {
+    data: eventsData,
+    isLoading,
+    error: queryError,
+  } = useFixtureEvents(fixtureId, statusType);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchEvents = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const params = new URLSearchParams({
-          fixture: fixtureId.toString(),
-        });
-
-        const response = await fetch(
-          `/api/fixture-events?${params.toString()}`,
-          {
-            signal: controller.signal,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load fixture events (${response.status})`);
-        }
-
-        const data = (await response.json()) as FixtureEventsApiResponse;
-
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-
-        setEventsData(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setEventsData(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchEvents();
-
-    return () => {
-      controller.abort();
-    };
-  }, [fixtureId]);
+  // Handle error state
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : eventsData?.errors && eventsData.errors.length > 0
+      ? eventsData.errors.join("\n")
+      : null;
 
   if (isLoading) {
     return (

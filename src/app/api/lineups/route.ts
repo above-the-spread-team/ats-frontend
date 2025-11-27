@@ -65,8 +65,8 @@ export async function GET(req: NextRequest) {
       headers: {
         "x-apisports-key": API_KEY,
       },
-      // Recommended: 1 call every 15 minutes for fixtures in progress, 1 call per day otherwise
-      next: { revalidate: 900 }, // 15 minutes
+      // Recommended: 1 call every 20 minutes for fixtures in progress, 1 call per day otherwise
+      next: { revalidate: 1200 }, // 20 minutes
     });
 
     if (!response.ok) {

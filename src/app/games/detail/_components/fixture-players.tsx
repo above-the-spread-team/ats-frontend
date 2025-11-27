@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type {
-  FixturePlayersApiResponse,
   FixturePlayersResponseItem,
   FixturePlayersPlayerItem,
 } from "@/type/fixture-players";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDataYet from "./no-data-yet";
+import { useFixturePlayers } from "@/services/fixture-players-statistics";
 import {
   Table,
   TableBody,
@@ -41,72 +40,46 @@ function formatValue(value: number | string | null | undefined): string {
   return value.toString();
 }
 
+type FixtureStatusType =
+  | "Scheduled"
+  | "In Play"
+  | "Finished"
+  | "Postponed"
+  | "Cancelled"
+  | "Abandoned"
+  | "Not Played"
+  | "Unknown";
+
 interface FixturePlayersProps {
   fixtureId: number;
   homeTeamId?: number;
   awayTeamId?: number;
+  statusType?: FixtureStatusType | null;
 }
 
 export default function FixturePlayers({
   fixtureId,
   homeTeamId,
   awayTeamId,
+  statusType,
 }: FixturePlayersProps) {
   const router = useRouter();
-  const [playersData, setPlayersData] =
-    useState<FixturePlayersApiResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  // Use React Query to fetch players
+  // Pass status type from parent to determine refetch intervals
+  const {
+    data: playersData,
+    isLoading,
+    error: queryError,
+  } = useFixturePlayers(fixtureId, statusType);
 
-    const fetchPlayers = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const params = new URLSearchParams({
-          fixture: fixtureId.toString(),
-        });
-
-        const response = await fetch(
-          `/api/fixture-players?${params.toString()}`,
-          {
-            signal: controller.signal,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load fixture players (${response.status})`
-          );
-        }
-
-        const data = (await response.json()) as FixturePlayersApiResponse;
-
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-
-        setPlayersData(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setPlayersData(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchPlayers();
-
-    return () => {
-      controller.abort();
-    };
-  }, [fixtureId]);
+  // Handle error state
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : playersData?.errors && playersData.errors.length > 0
+      ? playersData.errors.join("\n")
+      : null;
 
   if (isLoading) {
     return (

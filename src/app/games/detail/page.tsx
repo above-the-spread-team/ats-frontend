@@ -20,7 +20,8 @@ import FixtureStatistics from "./_components/fixture-statistics";
 import Events from "./_components/events";
 import FixturePlayers from "./_components/fixture-players";
 import Predictions from "./_components/predictions";
-import type { FixturesApiResponse } from "@/type/fixture";
+import { useFixture } from "@/services/fixtures";
+import { getFixtureStatus } from "@/data/fixture-status";
 
 type TabType = "lineups" | "statistics" | "events" | "players" | "predictions";
 
@@ -86,8 +87,11 @@ function GameDetailSkeleton() {
 function GameDetailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const fixtureId = searchParams.get("id");
+  const fixtureIdParam = searchParams.get("id");
   const dateParam = searchParams.get("date");
+
+  // Parse fixture ID
+  const fixtureId = fixtureIdParam ? parseInt(fixtureIdParam, 10) : null;
 
   // Get tab from URL or default to predictions
   const tabParam = searchParams.get("tab") as TabType;
@@ -100,12 +104,6 @@ function GameDetailContent() {
       : "predictions"
   );
 
-  const [fixtureData, setFixtureData] = useState<FixturesApiResponse | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const timezone = useMemo(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -114,6 +112,13 @@ function GameDetailContent() {
       return "UTC";
     }
   }, []);
+
+  // Use React Query to fetch fixture
+  const {
+    data: fixtureData,
+    isLoading,
+    error: queryError,
+  } = useFixture(fixtureId);
 
   // Sync tab state with URL parameter
   useEffect(() => {
@@ -128,60 +133,20 @@ function GameDetailContent() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchFixture = async () => {
-      if (!fixtureId) {
-        setError("Missing required parameter: id");
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`/api/fixtures?id=${fixtureId}`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load fixture data (${response.status})`);
-        }
-
-        const data = (await response.json()) as FixturesApiResponse;
-
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-
-        if (!data.response || data.response.length === 0) {
-          setError("Fixture not found");
-        }
-
-        setFixtureData(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setFixtureData(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchFixture();
-
-    return () => {
-      controller.abort();
-    };
-  }, [fixtureId]);
-
+  // Handle loading state
   if (isLoading) {
     return <GameDetailSkeleton />;
   }
+
+  // Handle error state
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : fixtureData?.errors && fixtureData.errors.length > 0
+      ? fixtureData.errors.join("\n")
+      : !fixtureId
+      ? "Missing required parameter: id"
+      : null;
 
   if (
     error ||
@@ -260,7 +225,7 @@ function GameDetailContent() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             preserveParams={true}
-            additionalParams={{ id: fixtureId }}
+            additionalParams={{ id: fixtureId.toString() }}
             containerClassName="mt-2 mb-2 justify-between max-w-4xl  mx-auto  px-2 gap-1"
             hideIconOnMobile={true}
             justify="between"
@@ -272,7 +237,10 @@ function GameDetailContent() {
         {/* Tab Content */}
         {activeTab === "lineups" && (
           <div className="container mx-auto w-[95%]  max-w-4xl ">
-            <Lineups fixtureId={fixture.fixture.id} />
+            <Lineups
+              fixtureId={fixture.fixture.id}
+              statusType={getFixtureStatus(fixture.fixture.status.short).type}
+            />
           </div>
         )}
         {activeTab === "statistics" && (
@@ -281,6 +249,7 @@ function GameDetailContent() {
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
+              statusType={getFixtureStatus(fixture.fixture.status.short).type}
             />
           </div>
         )}
@@ -291,6 +260,7 @@ function GameDetailContent() {
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
+              statusType={getFixtureStatus(fixture.fixture.status.short).type}
             />
           </div>
         )}
@@ -301,6 +271,7 @@ function GameDetailContent() {
               fixtureId={fixture.fixture.id}
               homeTeamId={fixture.teams.home.id}
               awayTeamId={fixture.teams.away.id}
+              statusType={getFixtureStatus(fixture.fixture.status.short).type}
             />
           </div>
         )}

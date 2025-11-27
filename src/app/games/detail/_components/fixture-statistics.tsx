@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import type { FixtureStatisticsApiResponse } from "@/type/fixture-statistics";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDataYet from "./no-data-yet";
+import { useFixtureStatistics } from "@/services/fixture-statistics";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;
@@ -38,77 +38,57 @@ function parsePercentage(value: number | string | null): number | null {
   return value;
 }
 
+type FixtureStatusType =
+  | "Scheduled"
+  | "In Play"
+  | "Finished"
+  | "Postponed"
+  | "Cancelled"
+  | "Abandoned"
+  | "Not Played"
+  | "Unknown";
+
 interface FixtureStatisticsProps {
   fixtureId: number;
   homeTeamId?: number;
   awayTeamId?: number;
+  statusType?: FixtureStatusType | null;
 }
 
 export default function FixtureStatistics({
   fixtureId,
   homeTeamId,
   awayTeamId,
+  statusType,
 }: FixtureStatisticsProps) {
-  const [statisticsData, setStatisticsData] =
-    useState<FixtureStatisticsApiResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
 
+  // Use React Query to fetch statistics
+  // Pass only status type from parent to determine refetch intervals
+  const {
+    data: statisticsData,
+    isLoading,
+    error: queryError,
+  } = useFixtureStatistics(fixtureId, statusType);
+
+  // Handle error state
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : statisticsData?.errors && statisticsData.errors.length > 0
+      ? statisticsData.errors.join("\n")
+      : null;
+
+  // Trigger animation after data is loaded
   useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchStatistics = async () => {
-      setIsLoading(true);
-      setError(null);
-      setShouldAnimate(false); // Reset animation state
-
-      try {
-        const params = new URLSearchParams({
-          fixture: fixtureId.toString(),
-        });
-
-        const response = await fetch(
-          `/api/fixture-statistics?${params.toString()}`,
-          {
-            signal: controller.signal,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load fixture statistics (${response.status})`
-          );
-        }
-
-        const data = (await response.json()) as FixtureStatisticsApiResponse;
-
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-
-        setStatisticsData(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setStatisticsData(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-          // Trigger animation after data is loaded with a slight delay
-          setTimeout(() => {
-            setShouldAnimate(true);
-          }, 200);
-        }
-      }
-    };
-
-    fetchStatistics();
-
-    return () => {
-      controller.abort();
-    };
-  }, [fixtureId]);
+    if (statisticsData && !isLoading) {
+      setTimeout(() => {
+        setShouldAnimate(true);
+      }, 200);
+    } else {
+      setShouldAnimate(false);
+    }
+  }, [statisticsData, isLoading]);
 
   if (isLoading) {
     return (

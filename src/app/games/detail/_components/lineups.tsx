@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Shirt } from "lucide-react";
-import type { LineupsApiResponse, LineupResponseItem } from "@/type/lineups";
+import type { LineupResponseItem } from "@/type/lineups";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDataYet from "./no-data-yet";
+import { useFixtureLineups } from "@/services/fixture-lineups";
 
 // Fixed colors for home and away teams (mild/soft colors)
 const HOME_TEAM_BASE = {
@@ -47,57 +47,37 @@ function getPositionLabel(pos: string): string {
   return positionMap[pos] || pos;
 }
 
+type FixtureStatusType =
+  | "Scheduled"
+  | "In Play"
+  | "Finished"
+  | "Postponed"
+  | "Cancelled"
+  | "Abandoned"
+  | "Not Played"
+  | "Unknown";
+
 interface LineupsProps {
   fixtureId: number;
+  statusType?: FixtureStatusType | null;
 }
 
-export default function Lineups({ fixtureId }: LineupsProps) {
-  const [lineupsData, setLineupsData] = useState<LineupsApiResponse | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function Lineups({ fixtureId, statusType }: LineupsProps) {
+  // Use React Query to fetch lineups
+  // Pass status type from parent to determine refetch intervals
+  const {
+    data: lineupsData,
+    isLoading,
+    error: queryError,
+  } = useFixtureLineups(fixtureId, statusType);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchLineups = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`/api/lineups?fixture=${fixtureId}`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load lineups data (${response.status})`);
-        }
-
-        const data = (await response.json()) as LineupsApiResponse;
-
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-
-        setLineupsData(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setLineupsData(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchLineups();
-
-    return () => {
-      controller.abort();
-    };
-  }, [fixtureId]);
+  // Handle error state
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : lineupsData?.errors && lineupsData.errors.length > 0
+      ? lineupsData.errors.join("\n")
+      : null;
 
   if (isLoading) {
     return (

@@ -16,6 +16,41 @@ const API_KEY =
   process.env.NEXT_PUBLIC_FOOTBALL_API_KEY ||
   "";
 
+// Timeout duration in milliseconds (30 seconds)
+const FETCH_TIMEOUT = 30000;
+
+// Helper function to add timeout to fetch requests
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeout: number = FETCH_TIMEOUT
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    // Check for timeout/abort errors (can be AbortError or DOMException)
+    if (
+      error instanceof Error &&
+      (error.name === "AbortError" ||
+        error.name === "TimeoutError" ||
+        error.message.includes("aborted") ||
+        error.message.includes("timeout"))
+    ) {
+      throw new Error(`Request timeout after ${timeout}ms`);
+    }
+    throw error;
+  }
+}
+
 export async function GET(req: NextRequest) {
   if (!API_KEY) {
     return NextResponse.json(
@@ -45,12 +80,15 @@ export async function GET(req: NextRequest) {
         id: fixtureId.toString(),
       });
 
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
-        headers: {
-          "x-apisports-key": API_KEY,
-        },
-        next: { revalidate: 60 }, // 1 minute revalidation for live fixtures
-      });
+      const response = await fetchWithTimeout(
+        `${API_URL}?${params.toString()}`,
+        {
+          headers: {
+            "x-apisports-key": API_KEY,
+          },
+          next: { revalidate: 60 }, // 1 minute revalidation for live fixtures
+        }
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -109,12 +147,15 @@ export async function GET(req: NextRequest) {
     });
 
     try {
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
-        headers: {
-          "x-apisports-key": API_KEY,
-        },
-        next: { revalidate: revalidateTime },
-      });
+      const response = await fetchWithTimeout(
+        `${API_URL}?${params.toString()}`,
+        {
+          headers: {
+            "x-apisports-key": API_KEY,
+          },
+          next: { revalidate: revalidateTime },
+        }
+      );
       if (!response.ok) {
         throw new Error(
           `Fetch failed with status ${response.status} ${response.statusText}`
