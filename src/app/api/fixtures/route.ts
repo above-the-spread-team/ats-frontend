@@ -102,7 +102,16 @@ export async function GET(req: NextRequest) {
         throw new Error("Unexpected payload structure");
       }
 
-      return NextResponse.json(data);
+      // Prevent caching for single fixture requests (usually live fixtures)
+      const headers = new Headers();
+      headers.set(
+        "Cache-Control",
+        "no-store, no-cache, must-revalidate, proxy-revalidate"
+      );
+      headers.set("Pragma", "no-cache");
+      headers.set("Expires", "0");
+
+      return NextResponse.json(data, { headers });
     } catch (error) {
       console.error("Fixture API Error:", error);
       return NextResponse.json(
@@ -130,8 +139,10 @@ export async function GET(req: NextRequest) {
   const todayISO = new Date().toISOString().split("T")[0];
   const isToday = dateISO === todayISO;
 
-  // Use shorter revalidation for today (300s), longer for other dates (1 hour)
-  const revalidateTime = isToday ? 300 : 7200;
+  // For today's fixtures, use short cache (60s) to reduce API calls while keeping data fresh
+  // This allows multiple users to share cached responses within 1 minute
+  // For other dates, use longer revalidation (2 hours)
+  const revalidateTime = isToday ? 60 : 7200;
 
   const season = new Date(dateISO).getFullYear();
 
@@ -147,14 +158,19 @@ export async function GET(req: NextRequest) {
     });
 
     try {
+      // Use revalidation for both today and historical dates
+      // Today: 60s cache (reduces API calls while keeping data fresh)
+      // Historical: 2 hour cache
+      const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
+        headers: {
+          "x-apisports-key": API_KEY,
+        },
+        next: { revalidate: revalidateTime },
+      };
+
       const response = await fetchWithTimeout(
         `${API_URL}?${params.toString()}`,
-        {
-          headers: {
-            "x-apisports-key": API_KEY,
-          },
-          next: { revalidate: revalidateTime },
-        }
+        fetchOptions
       );
       if (!response.ok) {
         throw new Error(
@@ -185,20 +201,44 @@ export async function GET(req: NextRequest) {
     ([leagueId, message]) => `League ${leagueId}: ${message}`
   );
 
-  return NextResponse.json({
-    get: "fixtures",
-    parameters: {
-      date: dateISO,
-      season,
-      timezone,
-      leagues: LEAGUE_IDS,
+  // For today's fixtures, prevent browser and CDN caching to ensure fresh data
+  // For historical dates, allow caching
+  const headers = new Headers();
+  if (isToday) {
+    headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    headers.set("Pragma", "no-cache");
+    headers.set("Expires", "0");
+    // Add a timestamp to help with cache invalidation
+    headers.set("X-Data-Date", dateISO);
+  } else {
+    headers.set(
+      "Cache-Control",
+      `public, s-maxage=${revalidateTime}, stale-while-revalidate=${
+        revalidateTime * 2
+      }`
+    );
+  }
+
+  return NextResponse.json(
+    {
+      get: "fixtures",
+      parameters: {
+        date: dateISO,
+        season,
+        timezone,
+        leagues: LEAGUE_IDS,
+      },
+      results: uniqueFixtures.length,
+      errors: errorMessages,
+      paging: {
+        current: 1,
+        total: 1,
+      },
+      response: uniqueFixtures,
     },
-    results: uniqueFixtures.length,
-    errors: errorMessages,
-    paging: {
-      current: 1,
-      total: 1,
-    },
-    response: uniqueFixtures,
-  });
+    { headers }
+  );
 }

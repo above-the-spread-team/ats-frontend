@@ -14,8 +14,18 @@ async function fetchFixtures(
   timezone: string
 ): Promise<FixturesApiResponse> {
   const dateStr = formatDateParam(date);
+  // Check if requesting today's data
+  const todayISO = new Date().toISOString().split("T")[0];
+  const isToday = dateStr === todayISO;
+
+  // For today's fixtures, use cache: "no-store" to bypass browser cache
+  // but allow Next.js route cache (60s) to reduce API calls
+  // The route cache ensures multiple users share the same response within 60s
   const response = await fetch(
-    `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`
+    `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`,
+    {
+      cache: isToday ? "no-store" : "default",
+    }
   );
 
   if (!response.ok) {
@@ -59,26 +69,33 @@ export function useFixtures(date: Date, timezone: string) {
   const isToday = dateISO === todayISO;
 
   // Stale time: how long data is considered fresh
-  // - Today: 5 minutes (data changes frequently)
+  // - Today: 1 minute (matches API cache) - data changes frequently but we cache for cost efficiency
   // - Other dates: 1 hour (historical data doesn't change)
-  const staleTime = isToday ? 5 * 60 * 1000 : 60 * 60 * 1000;
+  const staleTime = isToday ? 60 * 1000 : 60 * 60 * 1000;
 
   // Refetch interval: how often to refetch in the background
-  // - Today: every 5 minutes (300s) - matches API revalidation
+  // - Today: every 2 minutes (120s) - balances freshness with API cost
   // - Other dates: every 2 hours (7200s) - matches API revalidation
-  const refetchInterval = isToday ? 5 * 60 * 1000 : 2 * 60 * 60 * 1000;
+  const refetchInterval = isToday ? 2 * 60 * 1000 : 2 * 60 * 60 * 1000;
 
   return useQuery({
     queryKey: ["fixtures", dateISO, timezone],
     queryFn: () => fetchFixtures(date, timezone),
     staleTime,
     refetchInterval,
-    // Keep previous data while refetching
-    placeholderData: (previousData) => previousData,
+    // Keep previous data while refetching, but only if it's for the same date
+    placeholderData: (previousData) => {
+      // Only use placeholder data if it's for the same date
+      if (previousData && previousData.parameters?.date === dateISO) {
+        return previousData;
+      }
+      return undefined;
+    },
     // Refetch on window focus for today's fixtures
     refetchOnWindowFocus: isToday,
-    // Don't refetch on mount if data is fresh
-    refetchOnMount: false,
+    // For today's fixtures, always refetch on mount to ensure fresh data
+    // For other dates, don't refetch if data is fresh
+    refetchOnMount: isToday,
   });
 }
 

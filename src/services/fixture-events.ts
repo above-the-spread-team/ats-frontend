@@ -43,7 +43,7 @@ export function useFixtureEvents(
     enabled: !!fixtureId,
     // Stale time: 60 seconds - matches backend revalidation
     staleTime: 60 * 1000,
-    refetchInterval: (query) => {
+    refetchInterval: (_query) => {
       // Refetch intervals based on fixture status:
       // - In Play: every 60 seconds (1 minute) - matches API recommendation
       // - Finished: every 24 hours (1 day) - matches API recommendation

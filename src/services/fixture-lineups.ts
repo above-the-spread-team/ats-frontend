@@ -43,7 +43,7 @@ export function useFixtureLineups(
     enabled: !!fixtureId,
     // Stale time: 20 minutes - matches In Play refetch interval
     staleTime: 20 * 60 * 1000,
-    refetchInterval: (query) => {
+    refetchInterval: (_query) => {
       // Refetch intervals based on fixture status:
       // - In Play: every 20 minutes - matches API recommendation
       // - Finished: every 24 hours (1 day) - matches API recommendation

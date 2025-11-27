@@ -43,7 +43,7 @@ export function useFixtureStatistics(
     enabled: !!fixtureId,
     // Stale time: 60 seconds - matches backend revalidation
     staleTime: 60 * 1000,
-    refetchInterval: (query) => {
+    refetchInterval: (_query) => {
       // Refetch intervals based on fixture status:
       // - In Play: every 60 seconds (live matches need frequent updates)
       // - Finished: every 10 minutes (data rarely changes after match ends)
