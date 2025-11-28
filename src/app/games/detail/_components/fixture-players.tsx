@@ -7,7 +7,8 @@ import type {
   FixturePlayersPlayerItem,
 } from "@/type/fixture-players";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDataYet from "./no-data-yet";
+import NoDate from "@/components/common/no-date";
+import FullPage from "@/components/common/full-page";
 import { useFixturePlayers } from "@/services/fixture-players-statistics";
 import {
   Table,
@@ -364,10 +365,12 @@ export default function FixturePlayers({
 
   if (error || !playersData || !playersData.response) {
     return (
-      <NoDataYet
-        message={error || "No players data available"}
-        helpText="Player statistics are usually available during or after the match."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error || "No players data available"}
+          helpText="Player statistics are usually available during or after the match."
+        />
+      </FullPage>
     );
   }
 
@@ -375,10 +378,12 @@ export default function FixturePlayers({
 
   if (teams.length === 0) {
     return (
-      <NoDataYet
-        message="No players data available for this fixture."
-        helpText="Player statistics are usually available during or after the match."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No players data available for this fixture."
+          helpText="Player statistics are usually available during or after the match."
+        />
+      </FullPage>
     );
   }
 

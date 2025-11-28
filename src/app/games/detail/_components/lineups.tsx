@@ -4,7 +4,8 @@ import Image from "next/image";
 import { Shirt } from "lucide-react";
 import type { LineupResponseItem } from "@/type/lineups";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDataYet from "./no-data-yet";
+import NoDate from "@/components/common/no-date";
+import FullPage from "@/components/common/full-page";
 import { useFixtureLineups } from "@/services/fixture-lineups";
 
 // Fixed colors for home and away teams (mild/soft colors)
@@ -248,10 +249,12 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
 
   if (error || !lineupsData || !lineupsData.response) {
     return (
-      <NoDataYet
-        message={error || "No lineups data available"}
-        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error || "No lineups data available"}
+          helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+        />
+      </FullPage>
     );
   }
 
@@ -259,10 +262,12 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
 
   if (lineups.length === 0) {
     return (
-      <NoDataYet
-        message="No lineups available."
-        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No lineups available."
+          helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+        />
+      </FullPage>
     );
   }
 

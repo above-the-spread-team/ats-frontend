@@ -2,7 +2,8 @@
 
 import type { FixtureEventsResponseItem } from "@/type/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDataYet from "./no-data-yet";
+import NoDate from "@/components/common/no-date";
+import FullPage from "@/components/common/full-page";
 import { useFixtureEvents } from "@/services/fixture-events";
 import {
   Target,
@@ -261,10 +262,12 @@ export default function Events({
 
   if (error || !eventsData || !eventsData.response) {
     return (
-      <NoDataYet
-        message={error || "No events data available"}
-        helpText="Events are usually available once the match starts or shortly after."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error || "No events data available"}
+          helpText="Events are usually available once the match starts or shortly after."
+        />
+      </FullPage>
     );
   }
 
@@ -272,10 +275,12 @@ export default function Events({
 
   if (events.length === 0) {
     return (
-      <NoDataYet
-        message="No events available for this fixture."
-        helpText="Events are usually available once the match starts or shortly after."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No events available for this fixture."
+          helpText="Events are usually available once the match starts or shortly after."
+        />
+      </FullPage>
     );
   }
 

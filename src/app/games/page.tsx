@@ -6,7 +6,7 @@ import Link from "next/link";
 import FullPage from "@/components/common/full-page";
 import Loading from "@/components/common/loading";
 import Datepicker from "./_components/datepicker";
-import NoGame from "./_components/no-game";
+import NoDate from "@/components/common/no-date";
 import FixturesError from "./_components/error";
 import { useEffect, useMemo, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -218,7 +218,7 @@ function FixturesContent() {
 
       {!isLoading && !error && groupedFixtures.length === 0 && (
         <FullPage center>
-          <NoGame date={formatDateParam(selectedDate)} />
+          <NoDate date={formatDateParam(selectedDate)} icon="football" />
         </FullPage>
       )}
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import FullPage from "@/components/common/full-page";
+import NoDate from "@/components/common/no-date";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   TrendingUp,
@@ -117,12 +118,11 @@ export default function Statistic({
 
   if (error || !statistics) {
     return (
-      <FullPage>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">
-            {error || "No statistics data available"}
-          </p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error || "No statistics data available"}
+          helpText="Team statistics may not be available for this league, team, or season."
+        />
       </FullPage>
     );
   }

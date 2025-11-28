@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Flag } from "lucide-react";
 import FullPage from "@/components/common/full-page";
+import NoDate from "@/components/common/no-date";
 import { Skeleton } from "@/components/ui/skeleton";
 import IconBg from "@/components/common/icon-bg";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -172,12 +173,11 @@ export default function PlayerPage() {
 
   if (error || !playerData) {
     return (
-      <FullPage>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">
-            {error || "No player data available"}
-          </p>
-        </div>
+      <FullPage center minusHeight={70}>
+        <NoDate
+          message={error || "No player data available"}
+          helpText="Player statistics may not be available for this player or season."
+        />
       </FullPage>
     );
   }

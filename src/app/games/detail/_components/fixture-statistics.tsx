@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDataYet from "./no-data-yet";
+import NoDate from "@/components/common/no-date";
+import FullPage from "@/components/common/full-page";
 import { useFixtureStatistics } from "@/services/fixture-statistics";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
@@ -138,20 +139,24 @@ export default function FixtureStatistics({
 
   if (error || !statisticsData || !statisticsData.response) {
     return (
-      <NoDataYet
-        message={error || "No statistics data available"}
-        helpText="Match statistics are usually available during or after the match."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error || "No statistics data available"}
+          helpText="Match statistics are usually available during or after the match."
+        />
+      </FullPage>
     );
   }
 
   const teams = statisticsData.response;
   if (teams.length === 0) {
     return (
-      <NoDataYet
-        message="No statistics available for this fixture."
-        helpText="Match statistics are usually available during or after the match."
-      />
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No statistics available for this fixture."
+          helpText="Match statistics are usually available during or after the match."
+        />
+      </FullPage>
     );
   }
 

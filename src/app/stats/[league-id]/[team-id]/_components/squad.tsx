@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
+import NoDate from "@/components/common/no-date";
 import { Users, Calendar } from "lucide-react";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
 
@@ -204,12 +205,11 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
 
   if (error || !squad) {
     return (
-      <FullPage>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">
-            {error || "No squad data available"}
-          </p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error || "No squad data available"}
+          helpText="Squad information may not be available for this team or season."
+        />
       </FullPage>
     );
   }
