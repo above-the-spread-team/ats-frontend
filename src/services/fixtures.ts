@@ -2,20 +2,46 @@ import { useQuery } from "@tanstack/react-query";
 import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 
-function formatDateParam(date: Date): string {
+// Format date in a specific timezone (ensures consistency)
+function formatDateParam(date: Date, timezone?: string): string {
+  if (timezone) {
+    // Use timezone-aware formatting
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    return formatter.format(date);
+  }
+  // Fallback to local timezone
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
+// Get today's date in a specific timezone
+function getTodayInTimezone(timezone: string): string {
+  const now = new Date();
+  // Format date in the specified timezone
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(now);
+}
+
 async function fetchFixtures(
   date: Date,
   timezone: string
 ): Promise<FixturesApiResponse> {
-  const dateStr = formatDateParam(date);
-  // Check if requesting today's data
-  const todayISO = new Date().toISOString().split("T")[0];
+  // Format date in the user's timezone for consistency
+  const dateStr = formatDateParam(date, timezone);
+  // Check if requesting today's data using the user's timezone
+  const todayISO = getTodayInTimezone(timezone);
   const isToday = dateStr === todayISO;
 
   if (isToday) {
@@ -142,9 +168,9 @@ async function fetchFixture(fixtureId: number): Promise<FixturesApiResponse> {
 }
 
 export function useFixtures(date: Date, timezone: string) {
-  // Check if the requested date is today
-  const todayISO = new Date().toISOString().split("T")[0];
-  const dateISO = formatDateParam(date);
+  // Check if the requested date is today using the user's timezone
+  const todayISO = getTodayInTimezone(timezone);
+  const dateISO = formatDateParam(date, timezone);
   const isToday = dateISO === todayISO;
 
   // Stale time: how long data is considered fresh

@@ -65,11 +65,24 @@ export async function GET(req: NextRequest) {
   const searchDate = req.nextUrl.searchParams.get("date");
   const timezone = req.nextUrl.searchParams.get("timezone") ?? DEFAULT_TIMEZONE;
 
-  const parsedDate = searchDate ? new Date(searchDate) : new Date();
-  const isValidDate = !Number.isNaN(parsedDate.getTime());
-  const dateISO = isValidDate
-    ? parsedDate.toISOString().split("T")[0]
-    : new Date().toISOString().split("T")[0];
+  // Get today's date in the specified timezone
+  const getTodayInTimezone = (tz: string): string => {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    return formatter.format(now);
+  };
+
+  // If date is provided, use it directly (already in YYYY-MM-DD format)
+  // If not provided, get today's date in the specified timezone
+  const dateISO =
+    searchDate && /^\d{4}-\d{2}-\d{2}$/.test(searchDate)
+      ? searchDate
+      : getTodayInTimezone(timezone);
 
   // Use 2 hours cache for both today and historical dates
   // For today, this endpoint is used to get fixture IDs only (which don't change frequently)
