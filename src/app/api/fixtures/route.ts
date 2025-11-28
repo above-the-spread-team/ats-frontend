@@ -62,70 +62,6 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Check if fetching by ID
-  const idParam = req.nextUrl.searchParams.get("id");
-  if (idParam) {
-    const fixtureId = parseInt(idParam, 10);
-    if (Number.isNaN(fixtureId)) {
-      return NextResponse.json(
-        {
-          error: "Invalid id parameter. Must be a number.",
-        },
-        { status: 400 }
-      );
-    }
-
-    try {
-      const params = new URLSearchParams({
-        id: fixtureId.toString(),
-      });
-
-      const response = await fetchWithTimeout(
-        `${API_URL}?${params.toString()}`,
-        {
-          headers: {
-            "x-apisports-key": API_KEY,
-          },
-          next: { revalidate: 60 }, // 1 minute revalidation for live fixtures
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Fetch failed with status ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = (await response.json()) as FixturesApiResponse;
-
-      if (!data || !Array.isArray(data.response)) {
-        throw new Error("Unexpected payload structure");
-      }
-
-      // Prevent caching for single fixture requests (usually live fixtures)
-      const headers = new Headers();
-      headers.set(
-        "Cache-Control",
-        "no-store, no-cache, must-revalidate, proxy-revalidate"
-      );
-      headers.set("Pragma", "no-cache");
-      headers.set("Expires", "0");
-
-      return NextResponse.json(data, { headers });
-    } catch (error) {
-      console.error("Fixture API Error:", error);
-      return NextResponse.json(
-        {
-          error:
-            error instanceof Error
-              ? error.message
-              : "Unknown error occurred while fetching fixture",
-        },
-        { status: 500 }
-      );
-    }
-  }
-
   const searchDate = req.nextUrl.searchParams.get("date");
   const timezone = req.nextUrl.searchParams.get("timezone") ?? DEFAULT_TIMEZONE;
 
@@ -135,14 +71,10 @@ export async function GET(req: NextRequest) {
     ? parsedDate.toISOString().split("T")[0]
     : new Date().toISOString().split("T")[0];
 
-  // Check if the requested date is today
-  const todayISO = new Date().toISOString().split("T")[0];
-  const isToday = dateISO === todayISO;
-
-  // For today's fixtures, use short cache (60s) to reduce API calls while keeping data fresh
-  // This allows multiple users to share cached responses within 1 minute
-  // For other dates, use longer revalidation (2 hours)
-  const revalidateTime = isToday ? 60 : 7200;
+  // Use 2 hours cache for both today and historical dates
+  // For today, this endpoint is used to get fixture IDs only (which don't change frequently)
+  // Real-time data is fetched separately via fixtures-by-ids endpoint
+  const revalidateTime = 7200; // 2 hours
 
   const season = new Date(dateISO).getFullYear();
 
@@ -158,9 +90,7 @@ export async function GET(req: NextRequest) {
     });
 
     try {
-      // Use revalidation for both today and historical dates
-      // Today: 60s cache (reduces API calls while keeping data fresh)
-      // Historical: 2 hour cache
+      // Use 2 hours cache for all dates
       const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
         headers: {
           "x-apisports-key": API_KEY,
@@ -201,26 +131,15 @@ export async function GET(req: NextRequest) {
     ([leagueId, message]) => `League ${leagueId}: ${message}`
   );
 
-  // For today's fixtures, prevent browser and CDN caching to ensure fresh data
-  // For historical dates, allow caching
+  // Allow caching for all dates (2 hours)
+  // For today, this endpoint returns fixture IDs which don't change frequently
   const headers = new Headers();
-  if (isToday) {
-    headers.set(
-      "Cache-Control",
-      "no-store, no-cache, must-revalidate, proxy-revalidate"
-    );
-    headers.set("Pragma", "no-cache");
-    headers.set("Expires", "0");
-    // Add a timestamp to help with cache invalidation
-    headers.set("X-Data-Date", dateISO);
-  } else {
-    headers.set(
-      "Cache-Control",
-      `public, s-maxage=${revalidateTime}, stale-while-revalidate=${
-        revalidateTime * 2
-      }`
-    );
-  }
+  headers.set(
+    "Cache-Control",
+    `public, s-maxage=${revalidateTime}, stale-while-revalidate=${
+      revalidateTime * 2
+    }`
+  );
 
   return NextResponse.json(
     {

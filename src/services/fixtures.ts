@@ -9,6 +9,15 @@ function formatDateParam(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+// Helper function to split array into chunks
+function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize));
+  }
+  return chunks;
+}
+
 async function fetchFixtures(
   date: Date,
   timezone: string
@@ -18,32 +27,150 @@ async function fetchFixtures(
   const todayISO = new Date().toISOString().split("T")[0];
   const isToday = dateStr === todayISO;
 
-  // For today's fixtures, use cache: "no-store" to bypass browser cache
-  // but allow Next.js route cache (60s) to reduce API calls
-  // The route cache ensures multiple users share the same response within 60s
-  const response = await fetch(
-    `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`,
-    {
-      cache: isToday ? "no-store" : "default",
+  if (isToday) {
+    // For today: Two-step process to save costs
+    // Step 1: Get fixture IDs (cached 2 hours - IDs don't change frequently)
+    const idsResponse = await fetch(
+      `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`,
+      {
+        cache: "default", // Use cached fixture IDs
+      }
+    );
+
+    if (!idsResponse.ok) {
+      throw new Error(`Failed to load fixture IDs (${idsResponse.status})`);
     }
-  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to load fixtures (${response.status})`);
+    const idsData = (await idsResponse.json()) as FixturesApiResponse;
+
+    if (idsData.errors && idsData.errors.length > 0) {
+      console.warn("Fixture IDs API errors:", idsData.errors);
+    }
+
+    // Extract fixture IDs
+    const fixtureIds =
+      idsData.response?.map((fixture) => fixture.fixture.id) || [];
+
+    if (fixtureIds.length === 0) {
+      // No fixtures today, return empty response
+      return {
+        get: "fixtures",
+        parameters: {
+          date: dateStr,
+          timezone,
+        },
+        results: 0,
+        errors: idsData.errors || [],
+        paging: {
+          current: 1,
+          total: 1,
+        },
+        response: [],
+      };
+    }
+
+    // Step 2: Get real-time data for these IDs (60s cache - always fresh)
+    // If more than 20 IDs, split into batches and fetch in parallel
+    const MAX_IDS_PER_REQUEST = 20;
+    const idChunks = chunkArray(fixtureIds, MAX_IDS_PER_REQUEST);
+    const allFixtures: FixtureResponseItem[] = [];
+    const allErrors: string[] = [];
+
+    // Fetch all batches in parallel
+    const batchPromises = idChunks.map(async (chunk, index) => {
+      const idsString = chunk.join("-");
+      try {
+        const realTimeResponse = await fetch(
+          `/api/fixtures-by-ids?ids=${idsString}&timezone=${encodeURIComponent(
+            timezone
+          )}`,
+          {
+            cache: "default", // Use 60s cache from route
+          }
+        );
+
+        if (!realTimeResponse.ok) {
+          throw new Error(
+            `Failed to load real-time fixtures batch ${index + 1} (${
+              realTimeResponse.status
+            })`
+          );
+        }
+
+        const realTimeData =
+          (await realTimeResponse.json()) as FixturesApiResponse;
+
+        if (realTimeData.errors && realTimeData.errors.length > 0) {
+          allErrors.push(...realTimeData.errors);
+        }
+
+        return realTimeData.response || [];
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : `Unknown error in batch ${index + 1}`;
+        allErrors.push(`Batch ${index + 1}: ${errorMessage}`);
+        return [];
+      }
+    });
+
+    // Wait for all batches to complete
+    const batchResults = await Promise.all(batchPromises);
+    batchResults.forEach((fixtures) => {
+      allFixtures.push(...fixtures);
+    });
+
+    // Remove duplicates (in case same ID appears in multiple batches)
+    const uniqueFixtures = Array.from(
+      new Map(
+        allFixtures.map((fixture) => [fixture.fixture.id, fixture])
+      ).values()
+    );
+
+    // Merge errors from both requests
+    const allErrorsCombined = [...(idsData.errors || []), ...allErrors];
+
+    return {
+      get: "fixtures",
+      parameters: {
+        date: dateStr,
+        timezone,
+        ids: fixtureIds.join("-"),
+      },
+      results: uniqueFixtures.length,
+      errors: allErrorsCombined,
+      paging: {
+        current: 1,
+        total: 1,
+      },
+      response: uniqueFixtures,
+    };
+  } else {
+    // For historical dates: Use regular endpoint (cached 2 hours)
+    const response = await fetch(
+      `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`,
+      {
+        cache: "default",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to load fixtures (${response.status})`);
+    }
+
+    const data = (await response.json()) as FixturesApiResponse;
+
+    if (data.errors && data.errors.length > 0) {
+      console.warn("Fixture API errors:", data.errors);
+    }
+
+    return data;
   }
-
-  const data = (await response.json()) as FixturesApiResponse;
-
-  if (data.errors && data.errors.length > 0) {
-    // Still return data even if there are errors, but we can handle them in the component
-    console.warn("Fixture API errors:", data.errors);
-  }
-
-  return data;
 }
 
 async function fetchFixture(fixtureId: number): Promise<FixturesApiResponse> {
-  const response = await fetch(`/api/fixtures?id=${fixtureId}`);
+  const response = await fetch(`/api/fixture-by-id?id=${fixtureId}`);
 
   if (!response.ok) {
     throw new Error(`Failed to load fixture (${response.status})`);
@@ -69,14 +196,14 @@ export function useFixtures(date: Date, timezone: string) {
   const isToday = dateISO === todayISO;
 
   // Stale time: how long data is considered fresh
-  // - Today: 1 minute (matches API cache) - data changes frequently but we cache for cost efficiency
-  // - Other dates: 1 hour (historical data doesn't change)
-  const staleTime = isToday ? 60 * 1000 : 60 * 60 * 1000;
+  // - Today: 30 seconds (real-time data changes frequently)
+  // - Other dates: 2 hours (matches API cache, historical data doesn't change)
+  const staleTime = isToday ? 30 * 1000 : 2 * 60 * 60 * 1000;
 
   // Refetch interval: how often to refetch in the background
-  // - Today: every 2 minutes (120s) - balances freshness with API cost
+  // - Today: every 1 minute (60s) - real-time data needs frequent updates
   // - Other dates: every 2 hours (7200s) - matches API revalidation
-  const refetchInterval = isToday ? 2 * 60 * 1000 : 2 * 60 * 60 * 1000;
+  const refetchInterval = isToday ? 60 * 1000 : 2 * 60 * 60 * 1000;
 
   return useQuery({
     queryKey: ["fixtures", dateISO, timezone],
