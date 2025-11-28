@@ -9,15 +9,6 @@ function formatDateParam(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-// Helper function to split array into chunks
-function chunkArray<T>(array: T[], chunkSize: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, i + chunkSize));
-  }
-  return chunks;
-}
-
 async function fetchFixtures(
   date: Date,
   timezone: string
@@ -69,82 +60,43 @@ async function fetchFixtures(
       };
     }
 
-    // Step 2: Get real-time data for these IDs (60s cache - always fresh)
-    // If more than 20 IDs, split into batches and fetch in parallel
-    const MAX_IDS_PER_REQUEST = 20;
-    const idChunks = chunkArray(fixtureIds, MAX_IDS_PER_REQUEST);
-    const allFixtures: FixtureResponseItem[] = [];
-    const allErrors: string[] = [];
-
-    // Fetch all batches in parallel
-    const batchPromises = idChunks.map(async (chunk, index) => {
-      const idsString = chunk.join("-");
-      try {
-        const realTimeResponse = await fetch(
-          `/api/fixtures-by-ids?ids=${idsString}&timezone=${encodeURIComponent(
-            timezone
-          )}`,
-          {
-            cache: "default", // Use 60s cache from route
-          }
-        );
-
-        if (!realTimeResponse.ok) {
-          throw new Error(
-            `Failed to load real-time fixtures batch ${index + 1} (${
-              realTimeResponse.status
-            })`
-          );
-        }
-
-        const realTimeData =
-          (await realTimeResponse.json()) as FixturesApiResponse;
-
-        if (realTimeData.errors && realTimeData.errors.length > 0) {
-          allErrors.push(...realTimeData.errors);
-        }
-
-        return realTimeData.response || [];
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : `Unknown error in batch ${index + 1}`;
-        allErrors.push(`Batch ${index + 1}: ${errorMessage}`);
-        return [];
+    // Step 2: Get real-time data for these IDs
+    // The API route handles batching automatically if more than 20 IDs
+    const idsString = fixtureIds.join("-");
+    const realTimeResponse = await fetch(
+      `/api/fixtures-by-ids?ids=${idsString}&timezone=${encodeURIComponent(
+        timezone
+      )}`,
+      {
+        cache: "default", // Use 60s cache from route
       }
-    });
-
-    // Wait for all batches to complete
-    const batchResults = await Promise.all(batchPromises);
-    batchResults.forEach((fixtures) => {
-      allFixtures.push(...fixtures);
-    });
-
-    // Remove duplicates (in case same ID appears in multiple batches)
-    const uniqueFixtures = Array.from(
-      new Map(
-        allFixtures.map((fixture) => [fixture.fixture.id, fixture])
-      ).values()
     );
 
+    if (!realTimeResponse.ok) {
+      throw new Error(
+        `Failed to load real-time fixtures (${realTimeResponse.status})`
+      );
+    }
+
+    const realTimeData = (await realTimeResponse.json()) as FixturesApiResponse;
+
+    if (realTimeData.errors && realTimeData.errors.length > 0) {
+      console.warn("Real-time fixtures API errors:", realTimeData.errors);
+    }
+
     // Merge errors from both requests
-    const allErrorsCombined = [...(idsData.errors || []), ...allErrors];
+    const allErrorsCombined = [
+      ...(idsData.errors || []),
+      ...(realTimeData.errors || []),
+    ];
 
     return {
-      get: "fixtures",
+      ...realTimeData,
       parameters: {
+        ...realTimeData.parameters,
         date: dateStr,
-        timezone,
-        ids: fixtureIds.join("-"),
       },
-      results: uniqueFixtures.length,
       errors: allErrorsCombined,
-      paging: {
-        current: 1,
-        total: 1,
-      },
-      response: uniqueFixtures,
     };
   } else {
     // For historical dates: Use regular endpoint (cached 2 hours)
