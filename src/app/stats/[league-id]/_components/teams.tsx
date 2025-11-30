@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
+import NoDate from "@/components/common/no-date";
 import type { TeamsApiResponse, TeamResponseItem } from "@/type/teams-info";
 
 // Component to handle image errors gracefully
@@ -139,22 +140,22 @@ export default function Teams({ leagueId, season }: TeamsProps) {
 
   if (error) {
     return (
-      <FullPage>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">{error}</p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error}
+          helpText="Unable to load teams. Please try again later."
+        />
       </FullPage>
     );
   }
 
   if (sortedTeams.length === 0) {
     return (
-      <FullPage>
-        <div className="text-center">
-          <p className="text-lg font-semibold text-muted-foreground">
-            No teams found for this league and season
-          </p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No teams found"
+          helpText="No teams available for this league and season."
+        />
       </FullPage>
     );
   }

@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import FullPage from "@/components/common/full-page";
+import NoDate from "@/components/common/no-date";
 import type { StandingsApiResponse, StandingEntry } from "@/type/standing";
 
 function getFormColor(result: string | null): string {
@@ -121,12 +122,11 @@ export default function Standings({ leagueId, season }: StandingsProps) {
 
   if (!leagueId) {
     return (
-      <FullPage>
-        <div className="text-center">
-          <p className="text-lg font-semibold text-destructive">
-            Invalid league ID
-          </p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="Invalid league ID"
+          helpText="The league ID provided is not valid."
+        />
       </FullPage>
     );
   }
@@ -212,22 +212,22 @@ export default function Standings({ leagueId, season }: StandingsProps) {
 
   if (error) {
     return (
-      <FullPage>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">{error}</p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error}
+          helpText="Unable to load standings. Please try again later."
+        />
       </FullPage>
     );
   }
 
   if (sortedStandings.length === 0) {
     return (
-      <FullPage>
-        <div className="text-center">
-          <p className="text-lg font-semibold text-muted-foreground">
-            No standings available for this league and season
-          </p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No standings available"
+          helpText="No standings data available for this league and season."
+        />
       </FullPage>
     );
   }

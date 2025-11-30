@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import FullPage from "@/components/common/full-page";
+import NoDate from "@/components/common/no-date";
 import type { LeadersApiResponse, LeaderResponseItem } from "@/type/leader";
 
 // Component to handle player image errors gracefully
@@ -285,10 +286,11 @@ export default function Leader({ leagueId, season }: LeaderProps) {
 
   if (error) {
     return (
-      <FullPage>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">{error}</p>
-        </div>
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message={error}
+          helpText="Unable to load leader statistics. Please try again later."
+        />
       </FullPage>
     );
   }
@@ -407,12 +409,11 @@ export default function Leader({ leagueId, season }: LeaderProps) {
       </div>
 
       {leaders.length === 0 && !isLoading && (
-        <FullPage>
-          <div className="text-center">
-            <p className="text-lg font-semibold text-muted-foreground">
-              No leaders found for this league and season
-            </p>
-          </div>
+        <FullPage center minusHeight={300}>
+          <NoDate
+            message="No leaders found"
+            helpText="No leader statistics available for this league and season."
+          />
         </FullPage>
       )}
 
