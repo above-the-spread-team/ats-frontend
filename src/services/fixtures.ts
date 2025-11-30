@@ -50,7 +50,7 @@ async function fetchFixtures(
     const idsResponse = await fetch(
       `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`,
       {
-        cache: "default", // Use cached fixture IDs
+        cache: "reload", // Use reload to get fresh fixture IDs to make sure get all ids
       }
     );
 
