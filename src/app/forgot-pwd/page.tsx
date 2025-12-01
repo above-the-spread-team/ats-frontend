@@ -87,7 +87,11 @@ export default function ForgotPwdPage() {
 
   if (isSuccess) {
     return (
-      <FullPage center minusHeight={110} className="py-10">
+      <FullPage
+        center
+        minusHeight={110}
+        className="py-10 min-h-[calc(100vh-100px)]"
+      >
         <div className="w-full max-w-md px-4">
           <Card className="shadow-lg">
             <CardHeader className="text-center">

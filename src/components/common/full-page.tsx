@@ -23,14 +23,16 @@ export default function FullPage({
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            @media (min-width: 768px) {
               .${uniqueClass} {
                 min-height: calc(100vh - ${minusHeight}px) !important;
               }
+            }
           `,
         }}
       />
       <div
-        className={`min-h-[60vh] w-full ${uniqueClass} ${
+        className={`min-h-[60vh]  w-full ${uniqueClass} ${
           center ? "flex items-center justify-center" : ""
         } ${className}`}
       >
