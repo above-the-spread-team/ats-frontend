@@ -14,7 +14,7 @@ import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixtureResponseItem } from "@/type/fixture";
 import TeamInfo from "./_components/team";
 import { Switch } from "@/components/ui/switch";
-import { useFixtures } from "@/services/fixtures";
+import { useFixtures } from "@/app/services/football-api/fixtures";
 
 interface LeagueGroup {
   leagueId: number;

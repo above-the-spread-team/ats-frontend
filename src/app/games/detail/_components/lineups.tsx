@@ -6,7 +6,7 @@ import type { LineupResponseItem } from "@/type/lineups";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";
-import { useFixtureLineups } from "@/services/fixture-lineups";
+import { useFixtureLineups } from "@/app/services/football-api/fixture-lineups";
 
 // Fixed colors for home and away teams (mild/soft colors)
 const HOME_TEAM_BASE = {

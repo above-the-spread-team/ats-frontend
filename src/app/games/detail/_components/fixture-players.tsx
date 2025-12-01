@@ -9,7 +9,7 @@ import type {
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";
-import { useFixturePlayers } from "@/services/fixture-players-statistics";
+import { useFixturePlayers } from "@/app/services/football-api/fixture-players-statistics";
 import {
   Table,
   TableBody,
