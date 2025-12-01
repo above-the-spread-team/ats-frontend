@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        next: { revalidate: revalidateTime },
+        next: { revalidate: 0 },
       };
 
       const response = await fetchWithTimeout(
