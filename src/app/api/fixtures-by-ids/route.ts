@@ -132,7 +132,8 @@ export async function GET(req: NextRequest) {
       }
 
       // Use 60 second revalidation for real-time fixture data
-      // This endpoint is used to get live/real-time data for today's fixtures
+      // This endpoint is used to get live/real-time data for today's and yesterday's fixtures
+      // Today's games will be in play, yesterday's games may also be in play (e.g., games starting at 11:30 PM)
       // 60s cache reduces API calls while keeping data fresh
       const response = await fetchWithTimeout(
         `${API_URL}?${params.toString()}`,
@@ -182,6 +183,8 @@ export async function GET(req: NextRequest) {
 
   // Use 60 second cache for real-time fixture data
   // This allows multiple users to share cached responses within 60s
+  // Used for both today's and yesterday's fixtures
+  // Today's games will be in play, yesterday's games may also be in play
   const headers = new Headers();
   headers.set(
     "Cache-Control",

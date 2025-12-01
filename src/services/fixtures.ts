@@ -34,18 +34,36 @@ function getTodayInTimezone(timezone: string): string {
   return formatter.format(now);
 }
 
+// Get yesterday's date in a specific timezone
+function getYesterdayInTimezone(timezone: string): string {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(yesterday);
+}
+
 async function fetchFixtures(
   date: Date,
   timezone: string
 ): Promise<FixturesApiResponse> {
   // Format date in the user's timezone for consistency
   const dateStr = formatDateParam(date, timezone);
-  // Check if requesting today's data using the user's timezone
+  // Check if requesting today's or yesterday's data using the user's timezone
+  // Yesterday games might still be in play (e.g., games starting at 11:30 PM)
   const todayISO = getTodayInTimezone(timezone);
+  const yesterdayISO = getYesterdayInTimezone(timezone);
   const isToday = dateStr === todayISO;
+  const isYesterday = dateStr === yesterdayISO;
 
-  if (isToday) {
-    // For today: Two-step process to save costs
+  if (isToday || isYesterday) {
+    // For today and yesterday: Two-step process to save costs
+    // Yesterday games might still be in play (e.g., games starting at 11:30 PM)
     // Step 1: Get fixture IDs (cached 2 hours - IDs don't change frequently)
     const idsResponse = await fetch(
       `/api/fixtures?date=${dateStr}&timezone=${encodeURIComponent(timezone)}`,
@@ -69,7 +87,7 @@ async function fetchFixtures(
       idsData.response?.map((fixture) => fixture.fixture.id) || [];
 
     if (fixtureIds.length === 0) {
-      // No fixtures today, return empty response
+      // No fixtures, return empty response
       return {
         get: "fixtures",
         parameters: {
@@ -88,13 +106,14 @@ async function fetchFixtures(
 
     // Step 2: Get real-time data for these IDs
     // The API route handles batching automatically if more than 20 IDs
+    // Use 60s cache - games might still be in play for yesterday
     const idsString = fixtureIds.join("-");
     const realTimeResponse = await fetch(
       `/api/fixtures-by-ids?ids=${idsString}&timezone=${encodeURIComponent(
         timezone
       )}`,
       {
-        cache: "default", // Use 60s cache from route
+        cache: "default", // Use 60s cache from route (games might still be in play)
       }
     );
 
@@ -168,20 +187,27 @@ async function fetchFixture(fixtureId: number): Promise<FixturesApiResponse> {
 }
 
 export function useFixtures(date: Date, timezone: string) {
-  // Check if the requested date is today using the user's timezone
+  // Check if the requested date is today or yesterday using the user's timezone
+  // Yesterday games might still be in play (e.g., games starting at 11:30 PM)
   const todayISO = getTodayInTimezone(timezone);
+  const yesterdayISO = getYesterdayInTimezone(timezone);
   const dateISO = formatDateParam(date, timezone);
   const isToday = dateISO === todayISO;
+  const isYesterday = dateISO === yesterdayISO;
 
   // Stale time: how long data is considered fresh
   // - Today: 30 seconds (real-time data changes frequently)
+  // - Yesterday: 30 seconds (games might still be in play, need real-time data)
   // - Other dates: 2 hours (matches API cache, historical data doesn't change)
-  const staleTime = isToday ? 30 * 1000 : 2 * 60 * 60 * 1000;
+  const staleTime =
+    isToday || isYesterday ? 30 * 1000 : 2 * 60 * 60 * 1000;
 
   // Refetch interval: how often to refetch in the background
   // - Today: every 1 minute (60s) - real-time data needs frequent updates
+  // - Yesterday: every 1 minute (60s) - games might still be in play
   // - Other dates: every 2 hours (7200s) - matches API revalidation
-  const refetchInterval = isToday ? 60 * 1000 : 2 * 60 * 60 * 1000;
+  const refetchInterval =
+    isToday || isYesterday ? 60 * 1000 : 2 * 60 * 60 * 1000;
 
   return useQuery({
     queryKey: ["fixtures", dateISO, timezone],
@@ -196,11 +222,12 @@ export function useFixtures(date: Date, timezone: string) {
       }
       return undefined;
     },
-    // Refetch on window focus for today's fixtures
-    refetchOnWindowFocus: isToday,
-    // For today's fixtures, always refetch on mount to ensure fresh data
+    // Refetch on window focus for today's and yesterday's fixtures
+    // Yesterday games might still be in play
+    refetchOnWindowFocus: isToday || isYesterday,
+    // For today's and yesterday's fixtures, always refetch on mount to ensure fresh data
     // For other dates, don't refetch if data is fresh
-    refetchOnMount: isToday,
+    refetchOnMount: isToday || isYesterday,
   });
 }
 

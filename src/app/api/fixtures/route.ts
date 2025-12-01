@@ -84,10 +84,11 @@ export async function GET(req: NextRequest) {
       ? searchDate
       : getTodayInTimezone(timezone);
 
-  // Use 2 hours cache for both today and historical dates
-  // For today, this endpoint is used to get fixture IDs only (which don't change frequently)
-  // Real-time data is fetched separately via fixtures-by-ids endpoint
-  const revalidateTime = 7200; // 2 hours
+  // Use 2 hours cache for all dates
+  // For today and yesterday, this endpoint is used to get fixture IDs only (which don't change frequently)
+  // Real-time data (scores, status, etc.) is fetched separately via fixtures-by-ids endpoint (60s cache)
+  // This saves API costs by caching fixture IDs longer while still getting fresh real-time data
+  const revalidateTime = 7200; // 2 hours for all dates
 
   const season = new Date(dateISO).getFullYear();
 
@@ -103,7 +104,7 @@ export async function GET(req: NextRequest) {
     });
 
     try {
-      // Use 2 hours cache for all dates
+      // Use 2 hours cache for all dates (fixture IDs don't change frequently)
       const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
         headers: {
           "x-apisports-key": API_KEY,
@@ -145,7 +146,8 @@ export async function GET(req: NextRequest) {
   );
 
   // Allow caching for all dates (2 hours)
-  // For today, this endpoint returns fixture IDs which don't change frequently
+  // For today and yesterday, this endpoint returns fixture IDs which don't change frequently
+  // Real-time data is fetched separately via fixtures-by-ids endpoint
   const headers = new Headers();
   headers.set(
     "Cache-Control",
