@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -306,7 +305,7 @@ export default function LoginPage() {
                 </Button>
               </div>
               <div className="text-center  text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
                   className="text-primary-font hover:underline font-medium"

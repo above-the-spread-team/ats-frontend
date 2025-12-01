@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 interface TestResult {
   endpoint: string;
   status: "idle" | "loading" | "success" | "error";
-  data?: any;
+  data?: Record<string, unknown>;
   error?: string;
   responseTime?: number;
 }
@@ -215,7 +215,7 @@ export default function TestBackendPage() {
                   <p className="text-sm text-red-600 dark:text-red-400">
                     {results.root.error}
                   </p>
-                  {results.root.data && (
+                  {results.root.data !== undefined && (
                     <pre className="text-xs bg-muted p-2 rounded overflow-auto">
                       {JSON.stringify(results.root.data, null, 2)}
                     </pre>
@@ -285,7 +285,7 @@ export default function TestBackendPage() {
                   <p className="text-sm text-red-600 dark:text-red-400">
                     {results.health.error}
                   </p>
-                  {results.health.data && (
+                  {results.health.data !== undefined && (
                     <pre className="text-xs bg-muted p-2 rounded overflow-auto">
                       {JSON.stringify(results.health.data, null, 2)}
                     </pre>
@@ -355,7 +355,7 @@ export default function TestBackendPage() {
                   <p className="text-sm text-red-600 dark:text-red-400">
                     {results.dbTest.error}
                   </p>
-                  {results.dbTest.data && (
+                  {results.dbTest.data !== undefined && (
                     <pre className="text-xs bg-muted p-2 rounded overflow-auto">
                       {JSON.stringify(results.dbTest.data, null, 2)}
                     </pre>
@@ -410,8 +410,8 @@ export default function TestBackendPage() {
             <div>
               <p className="font-semibold mb-1">3. Test endpoints:</p>
               <p className="text-muted-foreground">
-                Click individual "Test Endpoint" buttons or use "Test All" to
-                test all endpoints at once.
+                Click individual &quot;Test Endpoint&quot; buttons or use
+                &quot;Test All&quot; to test all endpoints at once.
               </p>
             </div>
           </CardContent>

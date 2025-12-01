@@ -96,7 +96,7 @@ export default function ForgotPwdPage() {
                 Check your email
               </CardTitle>
               <CardDescription className="text-base mt-2">
-                We've sent a password reset link to
+                We&apos;ve sent a password reset link to
               </CardDescription>
               <CardDescription className="text-base pb-1 font-semibold text-primary">
                 {formData.email}
