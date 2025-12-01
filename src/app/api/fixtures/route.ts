@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
   // Use shorter cache for today and yesterday (5 minutes) to ensure fresh fixture IDs
   // For other dates, use 2 hours cache (fixture IDs don't change frequently)
   // Real-time data (scores, status, etc.) is fetched separately via fixtures-by-ids endpoint (60s cache)
-  const revalidateTime = isTodayOrYesterday ? 600 : 7200; // 10 minutes for today/yesterday, 2 hours for others
+  const revalidateTime = isTodayOrYesterday ? 7200 : 7200; // 2 hours for today/yesterday, 2 hours for others
 
   const season = new Date(dateISO).getFullYear();
 
@@ -122,12 +122,15 @@ export async function GET(req: NextRequest) {
     });
 
     try {
-      // Use 2 hours cache for all dates (fixture IDs don't change frequently)
-      const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
+      // Always fetch fresh data from external API (don't cache external API responses)
+      // The third-party API may return incomplete data initially, so we need fresh data each time
+      // We only cache our aggregated response (via Cache-Control headers below)
+      const fetchOptions: RequestInit = {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        next: { revalidate: 0 },
+        // Disable caching of external API fetch to ensure we always get fresh data
+        cache: "no-store",
       };
 
       const response = await fetchWithTimeout(
