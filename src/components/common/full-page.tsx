@@ -23,11 +23,9 @@ export default function FullPage({
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            @media (min-width: 768px) {
               .${uniqueClass} {
                 min-height: calc(100vh - ${minusHeight}px) !important;
               }
-            }
           `,
         }}
       />

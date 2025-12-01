@@ -161,8 +161,8 @@ export default function LoginPage() {
   };
 
   return (
-    <FullPage center minusHeight={110} className="py-10">
-      <div className="w-full max-w-md px-4">
+    <FullPage center minusHeight={110} className="py-10 ">
+      <div className="w-full max-w-md px-4 ">
         <Card className="shadow-lg ">
           <CardHeader className=" text-center">
             <CardTitle className="font-bold">Login</CardTitle>
@@ -194,7 +194,7 @@ export default function LoginPage() {
               </div>
 
               {/* Password Input */}
-              <div className="space-y-2">
+              <div className="space-y-1 ">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -245,17 +245,17 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col space-y-3">
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full "
                 disabled={isLoading || socialLoading !== null}
               >
                 {isLoading ? (
                   <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span className=" h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Signing in...
                   </>
                 ) : (
                   <>
-                    <LogIn className="mr-2 h-4 w-4" />
+                    <LogIn className=" h-4 w-4" />
                     Sign In
                   </>
                 )}
@@ -292,7 +292,7 @@ export default function LoginPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
+                  className="w-full "
                   onClick={() => handleSocialLogin("google")}
                   disabled={isLoading || socialLoading !== null}
                 >
@@ -308,7 +308,7 @@ export default function LoginPage() {
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
-                  className="text-primary-font hover:underline font-medium"
+                  className="text-primary-font  hover:underline font-medium"
                 >
                   Sign up
                 </Link>
