@@ -94,8 +94,10 @@ export async function GET(req: NextRequest) {
 
   const fixtures: FixtureResponseItem[] = [];
   const errors: Record<string, string> = {};
+  const leagueResults: Record<string, number> = {}; // Track fixtures per league for debugging
 
-  for (const leagueId of LEAGUE_IDS) {
+  // Fetch all leagues in parallel with better error handling
+  const fetchPromises = LEAGUE_IDS.map(async (leagueId) => {
     const params = new URLSearchParams({
       date: dateISO,
       league: leagueId.toString(),
@@ -105,36 +107,63 @@ export async function GET(req: NextRequest) {
 
     try {
       // Use 2 hours cache for all dates (fixture IDs don't change frequently)
-      const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
+      // But disable cache for the external API fetch to ensure fresh data
+      const fetchOptions: RequestInit = {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        next: { revalidate: revalidateTime },
+        // Don't cache the external API request itself - only cache our response
+        cache: "no-store",
       };
 
       const response = await fetchWithTimeout(
         `${API_URL}?${params.toString()}`,
         fetchOptions
       );
+
       if (!response.ok) {
+        const errorText = await response.text().catch(() => "Unknown error");
         throw new Error(
-          `Fetch failed with status ${response.status} ${response.statusText}`
+          `Fetch failed with status ${response.status} ${response.statusText}: ${errorText}`
         );
       }
 
       const data = (await response.json()) as FixturesApiResponse;
 
+      // Check for API-level errors in the response
+      if (data.errors && data.errors.length > 0) {
+        throw new Error(`API errors: ${data.errors.join(", ")}`);
+      }
+
       if (!data || !Array.isArray(data.response)) {
         throw new Error("Unexpected payload structure");
       }
 
-      for (const fixture of data.response) {
-        fixtures.push(fixture);
-      }
+      // Track how many fixtures we got from this league
+      leagueResults[leagueId.toString()] = data.response.length;
+
+      return data.response;
     } catch (error) {
-      errors[leagueId.toString()] =
+      const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
+      errors[leagueId.toString()] = errorMessage;
+      // Log error for debugging (only in development or with proper logging)
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          `Failed to fetch fixtures for league ${leagueId} on ${dateISO}:`,
+          errorMessage
+        );
+      }
+      return [];
     }
+  });
+
+  // Wait for all requests to complete
+  const allResults = await Promise.all(fetchPromises);
+
+  // Flatten all fixtures into a single array
+  for (const leagueFixtures of allResults) {
+    fixtures.push(...leagueFixtures);
   }
 
   const uniqueFixtures = Array.from(
@@ -144,6 +173,21 @@ export async function GET(req: NextRequest) {
   const errorMessages = Object.entries(errors).map(
     ([leagueId, message]) => `League ${leagueId}: ${message}`
   );
+
+  // Log summary for debugging (only in development)
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      `Fixtures fetch summary for ${dateISO}:`,
+      `Total: ${uniqueFixtures.length},`,
+      `Leagues with fixtures: ${Object.keys(leagueResults).length}/${
+        LEAGUE_IDS.length
+      },`,
+      `Errors: ${errorMessages.length}`
+    );
+    if (Object.keys(leagueResults).length > 0) {
+      console.log("Fixtures per league:", leagueResults);
+    }
+  }
 
   // Allow caching for all dates (2 hours)
   // For today and yesterday, this endpoint returns fixture IDs which don't change frequently
@@ -167,6 +211,14 @@ export async function GET(req: NextRequest) {
       },
       results: uniqueFixtures.length,
       errors: errorMessages,
+      // Include debug info in development
+      ...(process.env.NODE_ENV === "development" && {
+        _debug: {
+          leaguesWithFixtures: Object.keys(leagueResults).length,
+          totalLeagues: LEAGUE_IDS.length,
+          fixturesPerLeague: leagueResults,
+        },
+      }),
       paging: {
         current: 1,
         total: 1,
