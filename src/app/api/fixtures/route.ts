@@ -77,6 +77,20 @@ export async function GET(req: NextRequest) {
     return formatter.format(now);
   };
 
+  // Get yesterday's date in the specified timezone
+  const getYesterdayInTimezone = (tz: string): string => {
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    return formatter.format(yesterday);
+  };
+
   // If date is provided, use it directly (already in YYYY-MM-DD format)
   // If not provided, get today's date in the specified timezone
   const dateISO =
@@ -84,20 +98,22 @@ export async function GET(req: NextRequest) {
       ? searchDate
       : getTodayInTimezone(timezone);
 
-  // Use 2 hours cache for all dates
-  // For today and yesterday, this endpoint is used to get fixture IDs only (which don't change frequently)
+  // Determine if the date is today or yesterday
+  const todayISO = getTodayInTimezone(timezone);
+  const yesterdayISO = getYesterdayInTimezone(timezone);
+  const isTodayOrYesterday = dateISO === todayISO || dateISO === yesterdayISO;
+
+  // Use shorter cache for today and yesterday (5 minutes) to ensure fresh fixture IDs
+  // For other dates, use 2 hours cache (fixture IDs don't change frequently)
   // Real-time data (scores, status, etc.) is fetched separately via fixtures-by-ids endpoint (60s cache)
-  // This saves API costs by caching fixture IDs longer while still getting fresh real-time data
-  const revalidateTime = 7200; // 2 hours for all dates
+  const revalidateTime = isTodayOrYesterday ? 600 : 7200; // 10 minutes for today/yesterday, 2 hours for others
 
   const season = new Date(dateISO).getFullYear();
 
   const fixtures: FixtureResponseItem[] = [];
   const errors: Record<string, string> = {};
-  const leagueResults: Record<string, number> = {}; // Track fixtures per league for debugging
 
-  // Fetch all leagues in parallel with better error handling
-  const fetchPromises = LEAGUE_IDS.map(async (leagueId) => {
+  for (const leagueId of LEAGUE_IDS) {
     const params = new URLSearchParams({
       date: dateISO,
       league: leagueId.toString(),
@@ -107,63 +123,36 @@ export async function GET(req: NextRequest) {
 
     try {
       // Use 2 hours cache for all dates (fixture IDs don't change frequently)
-      // But disable cache for the external API fetch to ensure fresh data
-      const fetchOptions: RequestInit = {
+      const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        // Don't cache the external API request itself - only cache our response
-        cache: "no-store",
+        next: { revalidate: revalidateTime },
       };
 
       const response = await fetchWithTimeout(
         `${API_URL}?${params.toString()}`,
         fetchOptions
       );
-
       if (!response.ok) {
-        const errorText = await response.text().catch(() => "Unknown error");
         throw new Error(
-          `Fetch failed with status ${response.status} ${response.statusText}: ${errorText}`
+          `Fetch failed with status ${response.status} ${response.statusText}`
         );
       }
 
       const data = (await response.json()) as FixturesApiResponse;
 
-      // Check for API-level errors in the response
-      if (data.errors && data.errors.length > 0) {
-        throw new Error(`API errors: ${data.errors.join(", ")}`);
-      }
-
       if (!data || !Array.isArray(data.response)) {
         throw new Error("Unexpected payload structure");
       }
 
-      // Track how many fixtures we got from this league
-      leagueResults[leagueId.toString()] = data.response.length;
-
-      return data.response;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      errors[leagueId.toString()] = errorMessage;
-      // Log error for debugging (only in development or with proper logging)
-      if (process.env.NODE_ENV === "development") {
-        console.error(
-          `Failed to fetch fixtures for league ${leagueId} on ${dateISO}:`,
-          errorMessage
-        );
+      for (const fixture of data.response) {
+        fixtures.push(fixture);
       }
-      return [];
+    } catch (error) {
+      errors[leagueId.toString()] =
+        error instanceof Error ? error.message : "Unknown error";
     }
-  });
-
-  // Wait for all requests to complete
-  const allResults = await Promise.all(fetchPromises);
-
-  // Flatten all fixtures into a single array
-  for (const leagueFixtures of allResults) {
-    fixtures.push(...leagueFixtures);
   }
 
   const uniqueFixtures = Array.from(
@@ -173,21 +162,6 @@ export async function GET(req: NextRequest) {
   const errorMessages = Object.entries(errors).map(
     ([leagueId, message]) => `League ${leagueId}: ${message}`
   );
-
-  // Log summary for debugging (only in development)
-  if (process.env.NODE_ENV === "development") {
-    console.log(
-      `Fixtures fetch summary for ${dateISO}:`,
-      `Total: ${uniqueFixtures.length},`,
-      `Leagues with fixtures: ${Object.keys(leagueResults).length}/${
-        LEAGUE_IDS.length
-      },`,
-      `Errors: ${errorMessages.length}`
-    );
-    if (Object.keys(leagueResults).length > 0) {
-      console.log("Fixtures per league:", leagueResults);
-    }
-  }
 
   // Allow caching for all dates (2 hours)
   // For today and yesterday, this endpoint returns fixture IDs which don't change frequently
@@ -211,14 +185,6 @@ export async function GET(req: NextRequest) {
       },
       results: uniqueFixtures.length,
       errors: errorMessages,
-      // Include debug info in development
-      ...(process.env.NODE_ENV === "development" && {
-        _debug: {
-          leaguesWithFixtures: Object.keys(leagueResults).length,
-          totalLeagues: LEAGUE_IDS.length,
-          fixturesPerLeague: leagueResults,
-        },
-      }),
       paging: {
         current: 1,
         total: 1,
