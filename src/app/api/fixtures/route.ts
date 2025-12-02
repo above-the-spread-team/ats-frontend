@@ -122,15 +122,17 @@ export async function GET(req: NextRequest) {
     });
 
     try {
-      // Always fetch fresh data from external API (don't cache external API responses)
-      // The third-party API may return incomplete data initially, so we need fresh data each time
-      // We only cache our aggregated response (via Cache-Control headers below)
+      // Use Next.js revalidate to cache external API responses
+      // This reduces API calls and saves costs by reusing cached responses
       const fetchOptions: RequestInit = {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        // Disable caching of external API fetch to ensure we always get fresh data
-        cache: "no-store",
+        // Cache external API responses using revalidateTime
+        // Next.js will cache the response and reuse it for the specified duration
+        next: {
+          revalidate: revalidateTime,
+        },
       };
 
       const response = await fetchWithTimeout(
