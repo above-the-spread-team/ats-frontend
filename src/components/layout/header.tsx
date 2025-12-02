@@ -36,12 +36,18 @@ export default function Header() {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all">
+        {/* <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all">
           <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
           <AvatarFallback className="bg-primary-active text-white text-sm font-semibold">
             ATS
           </AvatarFallback>
-        </Avatar>
+        </Avatar> */}
+        <Link
+          href="/login"
+          className="text-mygray font-bold text-sm hover:underline"
+        >
+          Login
+        </Link>
       </div>
     </div>
   );

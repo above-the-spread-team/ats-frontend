@@ -164,10 +164,11 @@ export default function LoginPage() {
     <FullPage
       center
       minusHeight={110}
-      className="py-10 min-h-[calc(100vh-100px)]"
+      className="relative pb-20 py-10 bg-[url('/images/auth.jpg')] bg-cover bg-center bg-no-repeat   min-h-[calc(100vh-84px)]"
     >
-      <div className="w-full max-w-md px-4 ">
-        <Card className="shadow-lg ">
+      <div className="absolute inset-0 bg-black/40"></div>
+      <div className="w-full max-w-md px-4 z-10">
+        <Card className="shadow-lg bg-card/80">
           <CardHeader className=" text-center">
             <CardTitle className="font-bold">Login</CardTitle>
           </CardHeader>

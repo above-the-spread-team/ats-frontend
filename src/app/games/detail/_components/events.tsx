@@ -4,7 +4,7 @@ import type { FixtureEventsResponseItem } from "@/type/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";
-import { useFixtureEvents } from "@/app/services/football-api/fixture-events";
+import { useFixtureEvents } from "@/services/football-api/fixture-events";
 import {
   Target,
   Square,

@@ -20,7 +20,7 @@ import FixtureStatistics from "./_components/fixture-statistics";
 import Events from "./_components/events";
 import FixturePlayers from "./_components/fixture-players";
 import Predictions from "./_components/predictions";
-import { useFixture } from "@/app/services/football-api/fixtures";
+import { useFixture } from "@/services/football-api/fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
 
 type TabType = "lineups" | "statistics" | "events" | "players" | "predictions";

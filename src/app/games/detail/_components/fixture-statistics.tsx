@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";
-import { useFixtureStatistics } from "@/app/services/football-api/fixture-statistics";
+import { useFixtureStatistics } from "@/services/football-api/fixture-statistics";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;
