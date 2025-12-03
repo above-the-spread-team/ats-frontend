@@ -87,12 +87,7 @@ export default function ForgotPwdPage() {
 
   if (isSuccess) {
     return (
-      <FullPage
-        center
-        minusHeight={110}
-        className="relative pb-20 py-10 bg-[url('/images/auth.jpg')] bg-cover bg-center bg-no-repeat    min-h-[calc(100vh-42px)]"
-      >
-        <div className="absolute inset-0 bg-black/40"></div>
+      <>
         <div className="w-full max-w-md px-4 z-10">
           <Card className="shadow-lg bg-card/80">
             <CardHeader className="text-center">
@@ -140,17 +135,12 @@ export default function ForgotPwdPage() {
             </CardFooter>
           </Card>
         </div>
-      </FullPage>
+      </>
     );
   }
 
   return (
-    <FullPage
-      center
-      minusHeight={110}
-      className="relative pb-20 py-10 bg-[url('/images/auth.jpg')] bg-cover bg-center bg-no-repeat   min-h-[calc(100vh-42px)]"
-    >
-      <div className="absolute inset-0 bg-black/40"></div>
+    <>
       <div className="w-full max-w-md px-4 z-10">
         <Card className="shadow-lg bg-card/80">
           <CardHeader className="text-center">
@@ -205,6 +195,6 @@ export default function ForgotPwdPage() {
           </form>
         </Card>
       </div>
-    </FullPage>
+    </>
   );
 }

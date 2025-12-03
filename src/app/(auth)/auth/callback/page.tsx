@@ -43,7 +43,7 @@ export default function AuthCallbackPage() {
   }, [user, isLoading, error, router]);
 
   return (
-    <FullPage center minusHeight={110} className="py-10">
+    <>
       <div className="w-full max-w-md px-4">
         <Card className="shadow-lg">
           <CardHeader className="text-center">
@@ -87,6 +87,6 @@ export default function AuthCallbackPage() {
           </CardContent>
         </Card>
       </div>
-    </FullPage>
+    </>
   );
 }

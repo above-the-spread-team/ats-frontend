@@ -28,13 +28,7 @@ export default function RootLayout({
           enableSystem
           // disableTransitionOnChange
         >
-          <MyQueryClientProvider>
-            <Header />
-            <Nav />
-            {children}
-            <Footer />
-            <MobileNav />
-          </MyQueryClientProvider>
+          <MyQueryClientProvider>{children}</MyQueryClientProvider>
         </ThemeProvider>
       </body>
     </html>

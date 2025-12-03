@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { Eye, EyeClosed, Mail, Lock, User, UserPlus } from "lucide-react";
+import { Eye, EyeClosed, Mail, Lock, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
+import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { ZodError } from "zod";
 import { initiateGoogleLogin } from "@/services/fastapi/oauth";
 import FullPage from "@/components/common/full-page";
@@ -59,39 +59,34 @@ const GoogleIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<
     "facebook" | "google" | null
   >(null);
-  const [formData, setFormData] = useState<RegisterFormData>({
-    name: "",
+  const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [errors, setErrors] = useState<
-    Partial<Record<keyof RegisterFormData, string>>
+    Partial<Record<keyof LoginFormData, string>>
   >({
-    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
 
   const validateForm = () => {
     try {
-      registerSchema.parse(formData);
+      loginSchema.parse(formData);
       setErrors({});
       return true;
     } catch (error) {
       if (error instanceof ZodError) {
-        const newErrors: Partial<Record<keyof RegisterFormData, string>> = {};
+        const newErrors: Partial<Record<keyof LoginFormData, string>> = {};
         error.issues.forEach((issue) => {
-          const field = issue.path[0] as keyof RegisterFormData;
+          const field = issue.path[0] as keyof LoginFormData;
           if (field) {
             newErrors[field] = issue.message;
           }
@@ -112,30 +107,24 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual registration API call
-      // const response = await fetch("/api/auth/register", {
+      // TODO: Replace with actual authentication API call
+      // const response = await fetch("/api/auth/login", {
       //   method: "POST",
       //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     name: formData.name,
-      //     email: formData.email,
-      //     password: formData.password,
-      //   }),
+      //   body: JSON.stringify(formData),
       // });
-      // if (!response.ok) throw new Error("Registration failed");
+      // if (!response.ok) throw new Error("Login failed");
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Redirect to home page after successful registration
+      // Redirect to home page after successful login
       router.push("/");
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Login error:", error);
       setErrors({
-        name: "",
         email: "",
-        password: "",
-        confirmPassword: "Registration failed. Please try again.",
+        password: "Invalid email or password. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -157,7 +146,6 @@ export default function RegisterPage() {
     try {
       if (provider === "google") {
         // Redirect to backend which handles Google OAuth flow
-        // The backend will create a new user if they don't exist
         initiateGoogleLogin();
         // Note: We don't set loading back to null because we're redirecting
         return;
@@ -165,52 +153,23 @@ export default function RegisterPage() {
 
       // Facebook login (not implemented yet)
       // TODO: Implement Facebook OAuth when backend is ready
-      console.log("Facebook registration not yet implemented");
+      console.log("Facebook login not yet implemented");
       setSocialLoading(null);
     } catch (error) {
-      console.error(`${provider} registration error:`, error);
+      console.error(`${provider} login error:`, error);
       setSocialLoading(null);
     }
   };
 
   return (
-    <FullPage
-      center
-      minusHeight={110}
-      className="relative pb-20 py-10 bg-[url('/images/auth.jpg')] bg-cover bg-center bg-no-repeat   min-h-[calc(100vh-92px)]"
-    >
-      <div className="absolute inset-0 bg-black/40"></div>
+    <>
       <div className="w-full max-w-md px-4 z-10">
         <Card className="shadow-lg bg-card/80">
-          <CardHeader className="text-center">
-            <CardTitle className="font-bold">Create Account</CardTitle>
+          <CardHeader className=" text-center">
+            <CardTitle className="font-bold">Login</CardTitle>
           </CardHeader>
           <form onSubmit={handleSubmit} noValidate>
             <CardContent className="space-y-2">
-              {/* Name Input */}
-              <div className="space-y-1">
-                <Label htmlFor="name">Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className={`pl-9 ${
-                      errors.name ? "border-destructive" : ""
-                    }`}
-                    disabled={isLoading || socialLoading !== null}
-                    autoComplete="name"
-                  />
-                </div>
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
-                )}
-              </div>
-
               {/* Email Input */}
               <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
@@ -236,7 +195,7 @@ export default function RegisterPage() {
               </div>
 
               {/* Password Input */}
-              <div className="space-y-1">
+              <div className="space-y-1 ">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -251,7 +210,7 @@ export default function RegisterPage() {
                       errors.password ? "border-destructive" : ""
                     }`}
                     disabled={isLoading || socialLoading !== null}
-                    autoComplete="new-password"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -274,70 +233,37 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Confirm Password Input */}
-              <div className="space-y-1">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className={`pl-9 pr-9 ${
-                      errors.confirmPassword ? "border-destructive" : ""
-                    }`}
-                    disabled={isLoading || socialLoading !== null}
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    disabled={isLoading || socialLoading !== null}
-                    aria-label={
-                      showConfirmPassword
-                        ? "Hide confirm password"
-                        : "Show confirm password"
-                    }
-                  >
-                    {showConfirmPassword ? (
-                      <EyeClosed className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
-                    {errors.confirmPassword}
-                  </p>
-                )}
+              {/* Forgot Password Link */}
+              <div className="flex  items-center justify-end">
+                <Link
+                  href="/forgot-pwd"
+                  className="text-sm text-primary-font hover:underline"
+                >
+                  Forgot password?
+                </Link>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-2">
+            <CardFooter className="flex flex-col space-y-3">
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full "
                 disabled={isLoading || socialLoading !== null}
               >
                 {isLoading ? (
                   <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Creating account...
+                    <span className=" h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Signing in...
                   </>
                 ) : (
                   <>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Sign Up
+                    <LogIn className=" h-4 w-4" />
+                    Sign In
                   </>
                 )}
               </Button>
 
               {/* Divider */}
-              <div className="relative w-full">
+              <div className="relative  w-full">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
@@ -367,7 +293,7 @@ export default function RegisterPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
+                  className="w-full "
                   onClick={() => handleSocialLogin("google")}
                   disabled={isLoading || socialLoading !== null}
                 >
@@ -379,19 +305,19 @@ export default function RegisterPage() {
                   Google
                 </Button>
               </div>
-              <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
+              <div className="text-center  text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
                 <Link
-                  href="/login"
-                  className="text-primary-font hover:underline font-medium"
+                  href="/register"
+                  className="text-primary-font  hover:underline font-medium"
                 >
-                  Sign in
+                  Sign up
                 </Link>
               </div>
             </CardFooter>
           </form>
         </Card>
       </div>
-    </FullPage>
+    </>
   );
 }
