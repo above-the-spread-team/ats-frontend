@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { ZodError } from "zod";
 import { initiateGoogleLogin } from "@/services/fastapi/oauth";
-import FullPage from "@/components/common/full-page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -1,11 +1,7 @@
 import { Arimo } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/header";
 import { ThemeProvider } from "@/providers/theme-provider";
-import Nav from "@/components/layout/nav";
-import MobileNav from "@/components/layout/mobile-nax";
 import { MyQueryClientProvider } from "@/providers/query-client";
-import Footer from "@/components/layout/footer";
 const ff = Arimo({
   weight: ["400", "500", "600", "700"],
   variable: "--font-alan-sans",

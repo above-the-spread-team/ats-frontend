@@ -2,14 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  User,
-  Mail,
-  CheckCircle2,
-  XCircle,
-  LogOut,
-  Loader2,
-} from "lucide-react";
+import { User, Mail, CheckCircle2, XCircle, LogOut } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/services/fastapi/oauth";
 import FullPage from "@/components/common/full-page";
 import { Button } from "@/components/ui/button";
