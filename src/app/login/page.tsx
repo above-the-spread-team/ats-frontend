@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { ZodError } from "zod";
+import { initiateGoogleLogin } from "@/services/fastapi/oauth";
 import FullPage from "@/components/common/full-page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -143,19 +144,19 @@ export default function LoginPage() {
     setSocialLoading(provider);
 
     try {
-      // TODO: Replace with actual social authentication
-      // For Facebook: window.location.href = "/api/auth/facebook";
-      // For Google: window.location.href = "/api/auth/google";
+      if (provider === "google") {
+        // Redirect to backend which handles Google OAuth flow
+        initiateGoogleLogin();
+        // Note: We don't set loading back to null because we're redirecting
+        return;
+      }
 
-      // Simulate redirect
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      console.log(`Redirecting to ${provider} login...`);
-
-      // In a real app, you would redirect to the OAuth provider
-      // Example: window.location.href = `/api/auth/${provider}`;
+      // Facebook login (not implemented yet)
+      // TODO: Implement Facebook OAuth when backend is ready
+      console.log("Facebook login not yet implemented");
+      setSocialLoading(null);
     } catch (error) {
       console.error(`${provider} login error:`, error);
-    } finally {
       setSocialLoading(null);
     }
   };
