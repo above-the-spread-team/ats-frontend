@@ -254,7 +254,9 @@ export default function RegisterPage() {
                   />
                 </div>
                 {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
+                  <p className="text-sm text-destructive-foreground">
+                    {errors.name}
+                  </p>
                 )}
               </div>
 
@@ -280,7 +282,9 @@ export default function RegisterPage() {
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
+                  <p className="text-sm text-destructive-foreground">
+                    {errors.email}
+                  </p>
                 )}
               </div>
 
@@ -323,7 +327,9 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
+                  <p className="text-sm text-destructive-foreground ">
+                    {errors.password}
+                  </p>
                 )}
               </div>
 
@@ -368,7 +374,7 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm text-destructive-foreground">
                     {errors.confirmPassword}
                   </p>
                 )}

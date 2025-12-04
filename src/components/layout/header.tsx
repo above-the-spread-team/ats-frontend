@@ -1,15 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import LogoutDialog from "@/components/common/popup";
 import Image from "next/image";
 import Link from "next/link";
-import { User } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCurrentUser } from "@/services/fastapi/oauth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCurrentUser, useLogout } from "@/services/fastapi/oauth";
 
 export default function Header() {
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   // Use React Query to check authentication status
@@ -18,6 +28,27 @@ export default function Header() {
   // User is authenticated if we have user data and no 401 error
   const authenticated =
     !!user && !(error instanceof Error && error.message.includes("401"));
+
+  // Use logout mutation hook from service
+  const logoutMutation = useLogout();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      // Wait a bit to ensure cache is cleared before redirect
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still redirect even if logout API call fails
+      router.push("/login");
+    }
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
 
   // Listen for logout event to clear user data immediately
   useEffect(() => {
@@ -91,23 +122,43 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <ThemeToggle />
         {authenticated ? (
-          <Link href="/profile">
-            <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all">
-              {user?.avatar_url ? (
-                <AvatarImage
-                  src={user.avatar_url}
-                  alt={user.username || "User"}
-                />
-              ) : null}
-              <AvatarFallback className="bg-primary-active text-white text-sm font-semibold">
-                {user?.username ? (
-                  getInitials(user.username)
-                ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="outline-none">
+                <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all">
+                  {user?.avatar_url ? (
+                    <AvatarImage
+                      src={user.avatar_url}
+                      alt={user.username || "User"}
+                    />
+                  ) : null}
+                  <AvatarFallback className="bg-primary-active text-white text-sm font-semibold">
+                    {user?.username ? (
+                      getInitials(user.username)
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer">
                   <User className="h-4 w-4" />
-                )}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogoutClick}
+                className="cursor-pointer text-destructive-foreground hover:text-destructive focus:text-destructive"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <Link
             href="/login"
@@ -117,6 +168,14 @@ export default function Header() {
           </Link>
         )}
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <LogoutDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onConfirm={handleLogout}
+        isPending={logoutMutation.isPending}
+      />
     </div>
   );
 }

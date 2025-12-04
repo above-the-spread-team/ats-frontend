@@ -286,3 +286,151 @@ export function useResendVerification() {
     mutationFn: resendVerification,
   });
 }
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+/**
+ * Request password reset - sends reset link to email
+ * Backend always returns success message for security (doesn't reveal if email exists)
+ */
+export async function forgotPassword(
+  email: string
+): Promise<ForgotPasswordResponse> {
+  const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    // Handle specific error cases
+    if (response.status === 422) {
+      // FastAPI validation errors can be arrays or strings
+      const validationErrors = errorData.detail || [];
+      if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+        const firstError = validationErrors[0];
+        const message = firstError.msg || "Invalid email format";
+        throw new Error(message);
+      }
+      throw new Error(
+        typeof errorData.detail === "string"
+          ? errorData.detail
+          : "Invalid email format"
+      );
+    }
+
+    const error: AuthError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to send password reset email" };
+
+    if (response.status === 500) {
+      throw new Error(error.detail || "Failed to send password reset email");
+    }
+
+    throw new Error(
+      error.detail || "Failed to send password reset email. Please try again."
+    );
+  }
+
+  const result: ForgotPasswordResponse = await response.json();
+  return result;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+/**
+ * Reset password with token
+ */
+export async function resetPassword(
+  data: ResetPasswordRequest
+): Promise<ResetPasswordResponse> {
+  const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    // Handle specific error cases
+    if (response.status === 422) {
+      // FastAPI validation errors can be arrays or strings
+      const validationErrors = errorData.detail || [];
+      if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+        const firstError = validationErrors[0];
+        const field = firstError.loc?.[firstError.loc.length - 1] || "field";
+        const message = firstError.msg || "Validation error";
+        // Map backend field names to frontend field names
+        const fieldMap: Record<string, string> = {
+          new_password: "password",
+          token: "token",
+        };
+        const frontendField = fieldMap[field] || field;
+        throw new Error(`${frontendField}: ${message}`);
+      }
+      throw new Error(
+        typeof errorData.detail === "string"
+          ? errorData.detail
+          : "Invalid reset data"
+      );
+    }
+
+    const error: AuthError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to reset password" };
+
+    if (response.status === 400) {
+      throw new Error(
+        error.detail ||
+          "Invalid or expired reset token. Please request a new one."
+      );
+    }
+
+    throw new Error(
+      error.detail || "Failed to reset password. Please try again."
+    );
+  }
+
+  const result: ResetPasswordResponse = await response.json();
+  return result;
+}
+
+/**
+ * React Query mutation hook for forgot password
+ */
+export function useForgotPassword() {
+  return useMutation<ForgotPasswordResponse, Error, string>({
+    mutationFn: forgotPassword,
+  });
+}
+
+/**
+ * React Query mutation hook for reset password
+ */
+export function useResetPassword() {
+  return useMutation<ResetPasswordResponse, Error, ResetPasswordRequest>({
+    mutationFn: resetPassword,
+  });
+}

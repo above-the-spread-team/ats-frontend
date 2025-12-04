@@ -291,7 +291,7 @@ export default function EmailVerifyPage() {
             (status === "error" || status === "expired") &&
             !isRedirecting && (
               <div className="flex flex-col items-center justify-center pt-4 gap-2">
-                <XCircle className="h-8 w-8 md:h-10 md:w-10 text-destructive" />
+                <XCircle className="h-8 w-8 md:h-10 md:w-10 text-destructive-foreground" />
                 <h3 className="text-base md:text-lg font-semibold text-center">
                   {status === "expired"
                     ? "Verification Link Expired"
@@ -354,7 +354,7 @@ export default function EmailVerifyPage() {
             <div className="space-y-2 pt-4">
               {/* Only show error message here if it's not a verification error (status !== "error") */}
               {errorMessage && !resendSuccess && status !== "error" && (
-                <div className="text-sm text-destructive text-center px-2">
+                <div className="text-sm text-destructive-foreground text-center px-2">
                   {errorMessage}
                 </div>
               )}
@@ -378,7 +378,9 @@ export default function EmailVerifyPage() {
                     className={emailError ? "border-destructive" : ""}
                   />
                   {emailError && (
-                    <p className="text-sm text-destructive">{emailError}</p>
+                    <p className="text-sm text-destructive-foreground">
+                      {emailError}
+                    </p>
                   )}
                 </div>
                 <Button

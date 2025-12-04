@@ -20,14 +20,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useForgotPassword } from "@/services/fastapi/user-email";
 
 export default function ForgotPwdPage() {
   const [formData, setFormData] = useState<ForgotPasswordFormData>({
     email: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  const forgotPasswordMutation = useForgotPassword();
 
   const validateForm = () => {
     try {
@@ -52,27 +54,18 @@ export default function ForgotPwdPage() {
       return;
     }
 
-    setIsLoading(true);
+    setError("");
 
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch("/api/auth/forgot-password", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email }),
-      // });
-      // if (!response.ok) throw new Error("Failed to send reset email");
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setIsSuccess(true);
-    } catch (error) {
-      console.error("Forgot password error:", error);
-      setError("Failed to send reset email. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
+    forgotPasswordMutation.mutate(formData.email, {
+      onSuccess: () => {
+        setIsSuccess(true);
+      },
+      onError: (error) => {
+        setError(
+          error.message || "Failed to send reset email. Please try again later."
+        );
+      },
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,26 +94,51 @@ export default function ForgotPwdPage() {
                 {formData.email}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+            <CardContent className="">
+              <div className="rounded-lg bg-muted py-2 px-4 shadow-inner text-sm text-muted-foreground">
                 <p>
                   If an account exists with this email, you will receive a
                   password reset link shortly.
                 </p>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-3">
+            <CardFooter className="flex flex-col gap-2">
               <Button
                 type="button"
-                // variant="outline"
                 className="w-full"
                 onClick={() => {
-                  setIsSuccess(false);
-                  setFormData({ email: "" });
+                  if (formData.email) {
+                    setError("");
+                    forgotPasswordMutation.mutate(formData.email, {
+                      onSuccess: () => {
+                        setIsSuccess(true);
+                      },
+                      onError: (error) => {
+                        setError(
+                          error.message ||
+                            "Failed to send reset email. Please try again later."
+                        );
+                      },
+                    });
+                  } else {
+                    setIsSuccess(false);
+                    setFormData({ email: "" });
+                    setError("");
+                  }
                 }}
+                disabled={forgotPasswordMutation.isPending}
               >
-                <Send className="mr-2 h-4 w-4" />
-                Resend email
+                {forgotPasswordMutation.isPending ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Resend email
+                  </>
+                )}
               </Button>
               <div className="text-center text-sm text-muted-foreground">
                 <Link
@@ -160,7 +178,7 @@ export default function ForgotPwdPage() {
                     value={formData.email}
                     onChange={handleChange}
                     className={`pl-9 ${error ? "border-destructive" : ""}`}
-                    disabled={isLoading}
+                    disabled={forgotPasswordMutation.isPending}
                     autoComplete="email"
                   />
                 </div>
@@ -168,8 +186,12 @@ export default function ForgotPwdPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-3">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={forgotPasswordMutation.isPending}
+              >
+                {forgotPasswordMutation.isPending ? (
                   <>
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Sending...

@@ -246,7 +246,9 @@ export default function LoginPage() {
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
+                  <p className="text-sm text-destructive-foreground">
+                    {errors.email}
+                  </p>
                 )}
               </div>
 
@@ -285,7 +287,9 @@ export default function LoginPage() {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
+                  <p className="text-sm text-destructive-foreground">
+                    {errors.password}
+                  </p>
                 )}
               </div>
 

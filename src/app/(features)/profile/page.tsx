@@ -86,8 +86,8 @@ export default function MePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col items-center space-y-4">
-                <XCircle className="h-12 w-12 text-destructive" />
-                <p className="text-destructive text-center">
+                <XCircle className="h-12 w-12 text-destructive-foreground" />
+                <p className="text-destructive-foreground text-center">
                   {error instanceof Error
                     ? error.message
                     : "An unexpected error occurred"}
@@ -192,7 +192,7 @@ export default function MePage() {
                     {user.email}
                   </p>
                   {!user.email_verified && (
-                    <p className="text-xs text-destructive mt-1">
+                    <p className="text-xs text-destructive-foreground mt-1">
                       Email not verified
                     </p>
                   )}
@@ -217,7 +217,7 @@ export default function MePage() {
                 {user.is_active ? (
                   <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
                 ) : (
-                  <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                  <XCircle className="h-5 w-5 text-destructive-foreground mt-0.5 shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-muted-foreground">
@@ -254,7 +254,7 @@ export default function MePage() {
               <Button
                 variant="destructive"
                 onClick={handleLogout}
-                className="w-full"
+                className="w-full text-white"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout

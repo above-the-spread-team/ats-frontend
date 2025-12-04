@@ -54,6 +54,18 @@ export const resendVerificationSchema = z.object({
   email: emailSchema,
 });
 
+// Reset password schema
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, "Reset token is required"),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 // Type exports
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
@@ -61,3 +73,4 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResendVerificationFormData = z.infer<
   typeof resendVerificationSchema
 >;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
