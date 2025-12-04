@@ -434,3 +434,73 @@ export function useResetPassword() {
     mutationFn: resetPassword,
   });
 }
+
+export interface UploadIconResponse extends User {}
+
+/**
+ * Upload user profile icon/avatar
+ * Backend uploads to Cloudinary and updates user's avatar_url
+ */
+export async function uploadUserIcon(file: File): Promise<UploadIconResponse> {
+  // Validate file type
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File must be an image");
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("File size must be less than 5MB");
+  }
+
+  // Create FormData
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${BACKEND_URL}/api/auth/upload-icon`, {
+    method: "POST",
+    credentials: "include", // Include HttpOnly cookie
+    body: formData, // Don't set Content-Type header - browser will set it with boundary
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    const error: AuthError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to upload image" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 400) {
+      throw new Error(error.detail || "Invalid file");
+    }
+    if (response.status === 403) {
+      throw new Error(error.detail || "User account is inactive");
+    }
+
+    throw new Error(
+      error.detail || "Failed to upload image. Please try again."
+    );
+  }
+
+  const user: UploadIconResponse = await response.json();
+  return user;
+}
+
+/**
+ * React Query mutation hook for uploading user icon
+ * After successful upload, invalidates currentUser query to refetch user data
+ */
+export function useUploadUserIcon() {
+  const queryClient = useQueryClient();
+
+  return useMutation<UploadIconResponse, Error, File>({
+    mutationFn: uploadUserIcon,
+    onSuccess: () => {
+      // Invalidate and refetch current user to update avatar_url
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+    },
+  });
+}
