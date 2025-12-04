@@ -29,7 +29,12 @@ export const registerSchema = z
     name: z
       .string()
       .min(1, "Name is required")
-      .min(2, "Name must be at least 2 characters"),
+      .min(3, "Name must be at least 3 characters")
+      .max(50, "Name must be at most 50 characters")
+      .regex(
+        /^[a-zA-Z0-9_-]+$/,
+        "Name can only contain letters, numbers, underscores, and hyphens"
+      ),
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Please confirm your password"),

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
 import { ZodError } from "zod";
 import { initiateGoogleLogin } from "@/services/fastapi/oauth";
+import { useRegister } from "@/services/fastapi/user-email";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,9 +61,9 @@ const GoogleIcon = ({ className }: { className?: string }) => (
 
 export default function RegisterPage() {
   const router = useRouter();
+  const registerMutation = useRegister();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<
     "facebook" | "google" | null
   >(null);
@@ -108,37 +109,87 @@ export default function RegisterPage() {
       return;
     }
 
-    setIsLoading(true);
+    registerMutation.mutate(
+      {
+        username: formData.name,
+        email: formData.email,
+        password: formData.password,
+      },
+      {
+        onSuccess: (user) => {
+          // Redirect to email verification page with user's email
+          // User needs to verify email before logging in
+          router.push(
+            `/email-verify?registered=true&email=${encodeURIComponent(
+              user.email
+            )}`
+          );
+        },
+        onError: (error) => {
+          console.error("Registration error:", error);
 
-    try {
-      // TODO: Replace with actual registration API call
-      // const response = await fetch("/api/auth/register", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     name: formData.name,
-      //     email: formData.email,
-      //     password: formData.password,
-      //   }),
-      // });
-      // if (!response.ok) throw new Error("Registration failed");
+          // Handle specific error messages
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Registration failed. Please try again.";
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+          // Parse error message format: "field: message" or just "message"
+          const errorMatch = errorMessage.match(
+            /^(name|email|password|username):\s*(.+)$/i
+          );
 
-      // Redirect to home page after successful registration
-      router.push("/");
-    } catch (error) {
-      console.error("Registration error:", error);
-      setErrors({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "Registration failed. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+          if (errorMatch) {
+            const [, field, message] = errorMatch;
+            // Map username to name field
+            const targetField =
+              field.toLowerCase() === "username" ? "name" : field.toLowerCase();
+
+            setErrors({
+              name: targetField === "name" ? message : "",
+              email: targetField === "email" ? message : "",
+              password: targetField === "password" ? message : "",
+              confirmPassword: "",
+            });
+          } else {
+            // Check if error mentions specific fields
+            if (errorMessage.toLowerCase().includes("email")) {
+              setErrors({
+                name: "",
+                email: errorMessage,
+                password: "",
+                confirmPassword: "",
+              });
+            } else if (
+              errorMessage.toLowerCase().includes("username") ||
+              errorMessage.toLowerCase().includes("name")
+            ) {
+              setErrors({
+                name: errorMessage,
+                email: "",
+                password: "",
+                confirmPassword: "",
+              });
+            } else if (errorMessage.toLowerCase().includes("password")) {
+              setErrors({
+                name: "",
+                email: "",
+                password: errorMessage,
+                confirmPassword: "",
+              });
+            } else {
+              // Generic error - show on confirmPassword field
+              setErrors({
+                name: "",
+                email: "",
+                password: "",
+                confirmPassword: errorMessage,
+              });
+            }
+          }
+        },
+      }
+    );
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,7 +247,9 @@ export default function RegisterPage() {
                     className={`pl-9 ${
                       errors.name ? "border-destructive" : ""
                     }`}
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={
+                      registerMutation.isPending || socialLoading !== null
+                    }
                     autoComplete="name"
                   />
                 </div>
@@ -220,7 +273,9 @@ export default function RegisterPage() {
                     className={`pl-9 ${
                       errors.email ? "border-destructive" : ""
                     }`}
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={
+                      registerMutation.isPending || socialLoading !== null
+                    }
                     autoComplete="email"
                   />
                 </div>
@@ -244,14 +299,18 @@ export default function RegisterPage() {
                     className={`pl-9 pr-9 ${
                       errors.password ? "border-destructive" : ""
                     }`}
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={
+                      registerMutation.isPending || socialLoading !== null
+                    }
                     autoComplete="new-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={
+                      registerMutation.isPending || socialLoading !== null
+                    }
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -283,14 +342,18 @@ export default function RegisterPage() {
                     className={`pl-9 pr-9 ${
                       errors.confirmPassword ? "border-destructive" : ""
                     }`}
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={
+                      registerMutation.isPending || socialLoading !== null
+                    }
                     autoComplete="new-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={
+                      registerMutation.isPending || socialLoading !== null
+                    }
                     aria-label={
                       showConfirmPassword
                         ? "Hide confirm password"
@@ -315,9 +378,9 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || socialLoading !== null}
+                disabled={registerMutation.isPending || socialLoading !== null}
               >
-                {isLoading ? (
+                {registerMutation.isPending ? (
                   <>
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Creating account...
@@ -349,7 +412,9 @@ export default function RegisterPage() {
                   variant="outline"
                   className="w-full"
                   onClick={() => handleSocialLogin("facebook")}
-                  disabled={isLoading || socialLoading !== null}
+                  disabled={
+                    registerMutation.isPending || socialLoading !== null
+                  }
                 >
                   {socialLoading === "facebook" ? (
                     <span className=" h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -363,7 +428,9 @@ export default function RegisterPage() {
                   variant="outline"
                   className="w-full"
                   onClick={() => handleSocialLogin("google")}
-                  disabled={isLoading || socialLoading !== null}
+                  disabled={
+                    registerMutation.isPending || socialLoading !== null
+                  }
                 >
                   {socialLoading === "google" ? (
                     <span className=" h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

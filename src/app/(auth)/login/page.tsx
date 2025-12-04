@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
-import { Eye, EyeClosed, Mail, Lock, LogIn } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, EyeClosed, Mail, Lock, LogIn, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { ZodError } from "zod";
 import { initiateGoogleLogin } from "@/services/fastapi/oauth";
+import { useLogin } from "@/services/fastapi/user-email";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,11 +61,13 @@ const GoogleIcon = ({ className }: { className?: string }) => (
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const loginMutation = useLogin();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<
     "facebook" | "google" | null
   >(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -75,6 +78,20 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+
+  // Check for registration success message
+  useEffect(() => {
+    if (searchParams.get("registered") === "true") {
+      setShowSuccessMessage(true);
+      // Clear the query parameter from URL
+      router.replace("/login", { scroll: false });
+      // Hide message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, router]);
 
   const validateForm = () => {
     try {
@@ -103,31 +120,56 @@ export default function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
+    loginMutation.mutate(
+      {
+        email: formData.email,
+        password: formData.password,
+      },
+      {
+        onSuccess: (data) => {
+          // Check if email is not verified - redirect immediately without showing message
+          if (data.warning || !data.user.email_verified) {
+            // Use router.replace for Next.js client-side navigation
+            router.replace(
+              `/email-verify?login=true&email=${encodeURIComponent(
+                data.user.email
+              )}`
+            );
+            return;
+          }
+          // Redirect to home page after successful login
+          // The useLogin hook already invalidates currentUser query
+          router.replace("/");
+        },
+        onError: (error) => {
+          console.error("Login error:", error);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Invalid email or password. Please try again.";
 
-    try {
-      // TODO: Replace with actual authentication API call
-      // const response = await fetch("/api/auth/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(formData),
-      // });
-      // if (!response.ok) throw new Error("Login failed");
+          // Check if error is about unverified email - redirect to verify page
+          if (
+            errorMessage.toLowerCase().includes("email not verified") ||
+            errorMessage.toLowerCase().includes("verify your account")
+          ) {
+            // Use router.replace for Next.js client-side navigation
+            router.replace(
+              `/email-verify?login=true&email=${encodeURIComponent(
+                formData.email
+              )}`
+            );
+            return;
+          }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Redirect to home page after successful login
-      router.push("/");
-    } catch (error) {
-      console.error("Login error:", error);
-      setErrors({
-        email: "",
-        password: "Invalid email or password. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+          // Show error on password field for other errors
+          setErrors({
+            email: "",
+            password: errorMessage,
+          });
+        },
+      }
+    );
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +211,21 @@ export default function LoginPage() {
           </CardHeader>
           <form onSubmit={handleSubmit} noValidate>
             <CardContent className="space-y-2">
+              {/* Success Message */}
+              {showSuccessMessage && (
+                <div className="rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                      Registration successful!
+                    </p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                      Please check your email to verify your account before
+                      logging in.
+                    </p>
+                  </div>
+                </div>
+              )}
               {/* Email Input */}
               <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
@@ -184,7 +241,7 @@ export default function LoginPage() {
                     className={`pl-9 ${
                       errors.email ? "border-destructive" : ""
                     }`}
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={loginMutation.isPending || socialLoading !== null}
                     autoComplete="email"
                   />
                 </div>
@@ -208,14 +265,14 @@ export default function LoginPage() {
                     className={`pl-9 pr-9 ${
                       errors.password ? "border-destructive" : ""
                     }`}
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={loginMutation.isPending || socialLoading !== null}
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    disabled={isLoading || socialLoading !== null}
+                    disabled={loginMutation.isPending || socialLoading !== null}
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -246,9 +303,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full "
-                disabled={isLoading || socialLoading !== null}
+                disabled={loginMutation.isPending || socialLoading !== null}
               >
-                {isLoading ? (
+                {loginMutation.isPending ? (
                   <>
                     <span className=" h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Signing in...
@@ -280,7 +337,7 @@ export default function LoginPage() {
                   variant="outline"
                   className="w-full"
                   onClick={() => handleSocialLogin("facebook")}
-                  disabled={isLoading || socialLoading !== null}
+                  disabled={loginMutation.isPending || socialLoading !== null}
                 >
                   {socialLoading === "facebook" ? (
                     <span className=" h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -294,7 +351,7 @@ export default function LoginPage() {
                   variant="outline"
                   className="w-full "
                   onClick={() => handleSocialLogin("google")}
-                  disabled={isLoading || socialLoading !== null}
+                  disabled={loginMutation.isPending || socialLoading !== null}
                 >
                   {socialLoading === "google" ? (
                     <span className=" h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
