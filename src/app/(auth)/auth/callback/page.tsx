@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
+import Loading from "@/components/common/loading";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -55,7 +56,9 @@ export default function AuthCallbackPage() {
           <CardContent className="flex flex-col items-center justify-center py-8">
             {status === "loading" && (
               <>
-                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <div className="mb-4">
+                  <Loading />
+                </div>
                 <p className="text-muted-foreground">
                   Please wait while we complete your login...
                 </p>
@@ -63,7 +66,7 @@ export default function AuthCallbackPage() {
             )}
             {status === "success" && (
               <>
-                <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400 mb-4" />
+                <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400 mb-4" />
                 <p className="text-muted-foreground">
                   Redirecting you to the home page...
                 </p>
@@ -71,7 +74,7 @@ export default function AuthCallbackPage() {
             )}
             {status === "error" && (
               <>
-                <XCircle className="h-12 w-12 text-destructive mb-4" />
+                <XCircle className="h-8 w-8 md:h-10 md:w-10 text-destructive mb-4" />
                 <p className="text-destructive text-center mb-4">
                   {errorMessage}
                 </p>

@@ -3,16 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, XCircle } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, XCircle, Mail, Loader2 } from "lucide-react";
+import { ZodError } from "zod";
+import Loading from "@/components/common/loading";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   useResendVerification,
   useVerifyEmail,
 } from "@/services/fastapi/user-email";
-import StatusMessage from "./_components/status-message";
-import ResendVerificationForm from "./_components/resend-verification-form";
-import VerificationCard, {
-  VerificationCardFooter,
-} from "./_components/verification-card";
+import { resendVerificationSchema } from "@/lib/validations/auth";
 
 export default function EmailVerifyPage() {
   const router = useRouter();
@@ -32,17 +35,13 @@ export default function EmailVerifyPage() {
     | "registered"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [showResendForm, setShowResendForm] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [showRegistrationMessage, setShowRegistrationMessage] = useState(false);
   const [hasVerified, setHasVerified] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-
-  useEffect(() => {
-    console.log("status", status);
-  }, [status]);
-
-  // No longer needed - backend returns 200 JSON instead of redirect
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Check for verification token in URL
   useEffect(() => {
@@ -61,6 +60,7 @@ export default function EmailVerifyPage() {
         setEmail(decodeURIComponent(emailParam));
       }
       setStatus("registered"); // Use same status to show "check your email" message
+      setIsInitializing(false);
       // Clear the query parameters
       router.replace("/email-verify", { scroll: false });
       return;
@@ -74,6 +74,7 @@ export default function EmailVerifyPage() {
         setEmail(decodeURIComponent(emailParam));
       }
       setStatus("registered");
+      setIsInitializing(false);
       // Clear the query parameters
       router.replace("/email-verify", { scroll: false });
       return;
@@ -89,6 +90,7 @@ export default function EmailVerifyPage() {
       status !== "success"
     ) {
       setHasVerified(true);
+      setIsInitializing(false);
       setStatus("verifying");
       verifyMutation.mutate(token, {
         onSuccess: (data) => {
@@ -125,9 +127,14 @@ export default function EmailVerifyPage() {
           }
         },
       });
-    } else if (!token && status === "idle" && !isRedirecting) {
+    } else if (!token && !isRedirecting) {
       // No token, show idle state (user can enter email to resend)
-      setStatus("idle");
+      setIsInitializing(false);
+      if (status === "idle") {
+        // Status already set, just mark as initialized
+      } else {
+        setStatus("idle");
+      }
     }
   }, [
     searchParams,
@@ -142,8 +149,22 @@ export default function EmailVerifyPage() {
   const handleResend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!email) {
-      setErrorMessage("Please enter your email address");
+    // Clear previous errors
+    setEmailError("");
+    setErrorMessage("");
+
+    // Validate email with Zod
+    try {
+      resendVerificationSchema.parse({ email });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const emailError = error.issues.find((err) => err.path[0] === "email");
+        if (emailError) {
+          setEmailError(emailError.message);
+          return;
+        }
+      }
+      setEmailError("Please enter a valid email address");
       return;
     }
 
@@ -151,7 +172,8 @@ export default function EmailVerifyPage() {
       onSuccess: () => {
         setResendSuccess(true);
         setErrorMessage("");
-        // Hide form after 3 seconds
+        setEmailError("");
+        // Hide form after 6 seconds
         setTimeout(() => {
           setShowResendForm(false);
           setResendSuccess(false);
@@ -171,115 +193,227 @@ export default function EmailVerifyPage() {
   // Early return if redirecting - prevent any error UI from showing
   if (isRedirecting) {
     return (
-      <VerificationCard title="Email Verification">
-        <StatusMessage
-          variant="loading"
-          title=""
-          message="Email verified! Logging you in..."
-        />
-      </VerificationCard>
+      <div className="w-full py-14 max-w-md px-4 z-10">
+        <Card className="shadow-lg bg-card/80">
+          <CardContent className="">
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <Loading />
+              <h3 className="text-base md:text-lg font-semibold text-center"></h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Email verified! Logging you in...
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <VerificationCard
-      title="Email Verification"
-      footer={<VerificationCardFooter />}
-    >
-      {/* Verifying State */}
-      {status === "verifying" && !isRedirecting && (
-        <StatusMessage
-          variant="loading"
-          title=""
-          message="Verifying your email address..."
-        />
-      )}
+    <div className="w-full py-14 max-w-md px-4 z-10">
+      <Card className="shadow-lg bg-card/80">
+        <CardContent className="">
+          {/* Initial Loading State - Show while checking token/params */}
+          {isInitializing && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <Loading />
+              <h3 className="text-base md:text-lg font-semibold text-center"></h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Checking verification status...
+              </div>
+            </div>
+          )}
 
-      {/* Success State */}
-      {status === "success" && (
-        <StatusMessage
-          variant="success"
-          icon={CheckCircle2}
-          title="Email Verified Successfully!"
-          message="Your email address has been verified. Redirecting you to the home page..."
-          actionButton={{
-            label: "Go to Home",
-            onClick: () => router.push("/"),
-          }}
-        />
-      )}
+          {/* Verifying State */}
+          {!isInitializing && status === "verifying" && !isRedirecting && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <Loading />
+              <h3 className="text-base md:text-lg font-semibold text-center"></h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Verifying your email address...
+              </div>
+            </div>
+          )}
 
-      {/* Already Verified State */}
-      {status === "already-verified" && (
-        <StatusMessage
-          variant="success"
-          icon={CheckCircle2}
-          title="Email Already Verified"
-          message="Your email address has already been verified. You can log in to your account."
-          actionButton={{
-            label: "Go to Login",
-            onClick: () => router.push("/login"),
-          }}
-        />
-      )}
+          {/* Resend Success State - Show when email is sent successfully */}
+          {!isInitializing && resendSuccess && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400" />
+              <h3 className="text-base md:text-lg font-semibold text-center">
+                Verification Email Sent!
+              </h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Please check your inbox at{" "}
+                <span className="font-medium">
+                  {email || "your email address"}
+                </span>{" "}
+                and click the verification link to activate your account.
+              </div>
+            </div>
+          )}
 
-      {/* Error/Expired State - Only show if not redirecting */}
-      {(status === "error" || status === "expired") && !isRedirecting && (
-        <StatusMessage
-          variant="error"
-          icon={XCircle}
-          title={
-            status === "expired"
-              ? "Verification Link Expired"
-              : "Verification Failed"
-          }
-          message={
-            status === "expired"
-              ? "This verification link has expired. Please request a new one."
-              : errorMessage || "Invalid or expired verification token."
-          }
-        />
-      )}
+          {/* Success State */}
+          {!isInitializing && status === "success" && !resendSuccess && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400" />
+              <h3 className="text-base md:text-lg font-semibold text-center">
+                Email Verified Successfully!
+              </h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Your email address has been verified. Redirecting you to the
+                home page...
+              </div>
+              <Button onClick={() => router.push("/")} className="w-full">
+                Go to Home
+              </Button>
+            </div>
+          )}
 
-      {/* Registered State - Just registered */}
-      {status === "registered" && (
-        <StatusMessage
-          variant="info"
-          title="Check Your Email"
-          message={
-            <>
-              We&apos;ve sent a verification email to{" "}
-              <span className="font-medium">
-                {email || "your email address"}
-              </span>
-              . Please click the verification link in the email to activate your
-              account.
-            </>
-          }
-        />
-      )}
+          {/* Already Verified State */}
+          {!isInitializing && status === "already-verified" && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400" />
+              <h3 className="text-base md:text-lg font-semibold text-center">
+                Email Already Verified
+              </h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Your email address has already been verified. You can log in to
+                your account.
+              </div>
+              <Button onClick={() => router.push("/login")} className="w-full">
+                Go to Login
+              </Button>
+            </div>
+          )}
 
-      {/* Idle State - No token provided */}
-      {status === "idle" && (
-        <StatusMessage
-          variant="info"
-          title="Verify Your Email"
-          message="Please check your email and click the verification link. If you didn't receive the email, you can request a new one below."
-        />
-      )}
+          {/* Error/Expired State - Only show if not redirecting */}
+          {!isInitializing &&
+            (status === "error" || status === "expired") &&
+            !isRedirecting && (
+              <div className="flex flex-col items-center justify-center pt-4 gap-2">
+                <XCircle className="h-8 w-8 md:h-10 md:w-10 text-destructive" />
+                <h3 className="text-base md:text-lg font-semibold text-center">
+                  {status === "expired"
+                    ? "Verification Link Expired"
+                    : "Verification Failed"}
+                </h3>
+                <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                  {status === "expired"
+                    ? "This verification link has expired. Please request a new one."
+                    : errorMessage || "Invalid or expired verification token."}
+                </div>
+              </div>
+            )}
 
-      {/* Resend Form */}
-      {(showResendForm || status === "idle" || status === "registered") && (
-        <ResendVerificationForm
-          email={email}
-          onEmailChange={setEmail}
-          onSubmit={handleResend}
-          isPending={resendMutation.isPending}
-          showRegistrationMessage={showRegistrationMessage}
-          resendSuccess={resendSuccess}
-          errorMessage={errorMessage}
-        />
-      )}
-    </VerificationCard>
+          {/* Registered State - Just registered */}
+          {!isInitializing && status === "registered" && !resendSuccess && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <h3 className="text-base md:text-lg font-semibold text-center">
+                Check Your Email
+              </h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                {showRegistrationMessage ? (
+                  <>
+                    Registration successful! A verification email has been sent
+                    to{" "}
+                    <span className="font-medium">
+                      {email || "your email address"}
+                    </span>
+                    . Please click the verification link in the email to
+                    activate your account.
+                  </>
+                ) : (
+                  <>
+                    We&apos;ve sent a verification email to{" "}
+                    <span className="font-medium">
+                      {email || "your email address"}
+                    </span>
+                    . Please click the verification link in the email to
+                    activate your account.
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Idle State - No token provided */}
+          {!isInitializing && status === "idle" && !resendSuccess && (
+            <div className="flex flex-col items-center justify-center pt-4 gap-2">
+              <h3 className="text-base md:text-lg font-semibold text-center">
+                Verify Your Email
+              </h3>
+              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                Please check your email and click the verification link. If you
+                didn&apos;t receive the email, you can request a new one below.
+              </div>
+            </div>
+          )}
+
+          {/* Resend Form */}
+          {(showResendForm || status === "idle" || status === "registered") && (
+            <div className="space-y-2 pt-4">
+              {/* Only show error message here if it's not a verification error (status !== "error") */}
+              {errorMessage && !resendSuccess && status !== "error" && (
+                <div className="text-sm text-destructive text-center px-2">
+                  {errorMessage}
+                </div>
+              )}
+
+              <form onSubmit={handleResend} className="space-y-3" noValidate>
+                <div className="space-y-1">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="text"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // Clear error when user starts typing
+                      if (emailError) {
+                        setEmailError("");
+                      }
+                    }}
+                    disabled={resendMutation.isPending}
+                    className={emailError ? "border-destructive" : ""}
+                  />
+                  {emailError && (
+                    <p className="text-sm text-destructive">{emailError}</p>
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={resendMutation.isPending}
+                >
+                  {resendMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Resend Verification Email
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col">
+          <div className="text-center text-sm text-muted-foreground">
+            Already verified?{" "}
+            <Link
+              href="/login"
+              className="text-primary-font hover:underline font-medium"
+            >
+              Sign in
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

@@ -49,7 +49,15 @@ export const forgotPasswordSchema = z.object({
   email: emailSchema,
 });
 
+// Resend verification schema
+export const resendVerificationSchema = z.object({
+  email: emailSchema,
+});
+
 // Type exports
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ResendVerificationFormData = z.infer<
+  typeof resendVerificationSchema
+>;
