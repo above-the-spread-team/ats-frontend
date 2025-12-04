@@ -53,7 +53,7 @@ export default function AuthCallbackPage() {
               {status === "error" && "Authentication failed"}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-8">
+          <CardContent className="flex flex-col items-center justify-center py-4">
             {status === "loading" && (
               <>
                 <div className="mb-4">
