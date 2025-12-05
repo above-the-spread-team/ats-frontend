@@ -6,7 +6,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className=" min-h-screen flex flex-col relative ">
+    <div className=" min-h-screen py-14 flex flex-col relative ">
       {/* Background Image */}
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"

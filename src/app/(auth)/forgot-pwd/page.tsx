@@ -77,94 +77,37 @@ export default function ForgotPwdPage() {
     }
   };
 
-  if (isSuccess) {
-    return (
-      <>
-        <div className="w-full max-w-md px-4 z-10">
-          <Card className="shadow-lg bg-card/80">
-            <CardHeader className="text-center">
-              <CheckCircle2 className="h-8 w-8 mx-auto text-primary-font" />
-              <CardTitle className="font-bold text-xl">
-                Check your email
-              </CardTitle>
-              <CardDescription className="text-base mt-2">
-                We&apos;ve sent a password reset link to
-              </CardDescription>
-              <CardDescription className="text-base pb-1 font-semibold text-primary">
-                {formData.email}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="">
-              <div className="rounded-lg bg-muted py-2 px-4 shadow-inner text-sm text-muted-foreground">
-                <p>
-                  If an account exists with this email, you will receive a
-                  password reset link shortly.
-                </p>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-2">
-              <Button
-                type="button"
-                className="w-full"
-                onClick={() => {
-                  if (formData.email) {
-                    setError("");
-                    forgotPasswordMutation.mutate(formData.email, {
-                      onSuccess: () => {
-                        setIsSuccess(true);
-                      },
-                      onError: (error) => {
-                        setError(
-                          error.message ||
-                            "Failed to send reset email. Please try again later."
-                        );
-                      },
-                    });
-                  } else {
-                    setIsSuccess(false);
-                    setFormData({ email: "" });
-                    setError("");
-                  }
-                }}
-                disabled={forgotPasswordMutation.isPending}
-              >
-                {forgotPasswordMutation.isPending ? (
-                  <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Resend email
-                  </>
-                )}
-              </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                <Link
-                  href="/login"
-                  className="text-primary-font hover:underline font-medium inline-flex items-center gap-1"
-                >
-                  <ArrowLeft className="h-3 w-3" />
-                  Back to login
-                </Link>
-              </div>
-            </CardFooter>
-          </Card>
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <div className="w-full max-w-md px-4 z-10">
         <Card className="shadow-lg bg-card/80">
           <CardHeader className="text-center">
-            <CardTitle className="font-bold">Reset Password</CardTitle>
+            {isSuccess ? (
+              <>
+                <CheckCircle2 className="h-8 w-8 mx-auto text-bar-green" />
+                <CardTitle className="font-bold text-xl">
+                  Check your email
+                </CardTitle>
+                <CardDescription className="text-base pb-1 font-semibold text-primary-font">
+                  {formData.email}
+                </CardDescription>
+              </>
+            ) : (
+              <CardTitle className="font-bold">Reset Password</CardTitle>
+            )}
           </CardHeader>
+          {isSuccess && (
+            <div className="mx-4 my-1">
+              <div className="rounded-lg bg-muted py-2 px-4 shadow-inner text-xs md:text-sm text-muted-foreground">
+                <p>
+                  If an account exists with this email, you will receive a
+                  password reset link shortly.
+                </p>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSubmit} noValidate>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 ">
               {/* Email Input */}
               <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
@@ -182,7 +125,9 @@ export default function ForgotPwdPage() {
                     autoComplete="email"
                   />
                 </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && (
+                  <p className="text-sm text-destructive-foreground">{error}</p>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-3">
@@ -199,7 +144,7 @@ export default function ForgotPwdPage() {
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
-                    Send reset link
+                    {isSuccess ? "Resend email" : "Send reset link"}
                   </>
                 )}
               </Button>

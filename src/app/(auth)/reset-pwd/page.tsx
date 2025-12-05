@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Loading from "@/components/common/loading";
 
 export default function ResetPwdPage() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function ResetPwdPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isCheckingToken, setIsCheckingToken] = useState(true);
   const [token, setToken] = useState<string>("");
   const [formData, setFormData] = useState<ResetPasswordFormData>({
     token: "",
@@ -56,6 +58,8 @@ export default function ResetPwdPage() {
         token: "Reset token is missing. Please use the link from your email.",
       }));
     }
+    // Mark token check as complete
+    setIsCheckingToken(false);
   }, [searchParams]);
 
   const validateForm = () => {
@@ -156,22 +160,43 @@ export default function ResetPwdPage() {
     }
   };
 
+  // Show loading state while checking token
+  if (isCheckingToken) {
+    return (
+      <>
+        <div className="w-full max-w-md px-4 z-10">
+          <Card className="shadow-lg bg-card/80">
+            <CardContent className="">
+              <div className="flex flex-col items-center justify-center pt-4 gap-2">
+                <Loading />
+                <h3 className="text-base md:text-lg font-semibold text-center"></h3>
+                <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                  Checking reset token...
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    );
+  }
+
   if (isSuccess) {
     return (
       <>
         <div className="w-full max-w-md px-4 z-10">
           <Card className="shadow-lg bg-card/80">
             <CardHeader className="text-center">
-              <CheckCircle2 className="h-8 w-8 mx-auto text-primary-font" />
-              <CardTitle className="font-bold text-xl">
+              <CheckCircle2 className="h-8 w-8 mx-auto text-bar-green" />
+              <CardTitle className="font-bold ">
                 Password reset successful
               </CardTitle>
-              <CardDescription className="text-base mt-2">
+              <CardDescription className="text-xs md:text-sm mx-2  px-2">
                 Your password has been reset successfully. You will be
                 redirected to the login page shortly.
               </CardDescription>
             </CardHeader>
-            <CardFooter className="flex flex-col gap-2">
+            <CardFooter className="flex flex-col mt-2 gap-2">
               <Button
                 type="button"
                 className="w-full"
@@ -191,14 +216,14 @@ export default function ResetPwdPage() {
       <>
         <div className="w-full max-w-md px-4 z-10">
           <Card className="shadow-lg bg-card/80">
-            <CardHeader className="text-center">
+            <CardHeader className="text-center ">
               <CardTitle className="font-bold">Invalid Reset Link</CardTitle>
-              <CardDescription className="text-base mt-2">
+              <CardDescription className="text-xs md:text-sm  px-2">
                 The reset link is invalid or missing. Please request a new
                 password reset link.
               </CardDescription>
             </CardHeader>
-            <CardFooter className="flex flex-col gap-2">
+            <CardFooter className="flex flex-col mt-2 gap-2">
               <Button
                 type="button"
                 className="w-full"
@@ -228,12 +253,12 @@ export default function ResetPwdPage() {
         <Card className="shadow-lg bg-card/80">
           <CardHeader className="text-center">
             <CardTitle className="font-bold">Reset Password</CardTitle>
-            <CardDescription className="text-base mt-2">
+            <CardDescription className="text-xs md:text-sm mx-2  px-2">
               Enter your new password below
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit} noValidate>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 mt-1">
               {/* Password Input */}
               <div className="space-y-1">
                 <Label htmlFor="password">New Password</Label>
@@ -266,7 +291,9 @@ export default function ResetPwdPage() {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
+                  <p className="text-sm text-destructive-foreground">
+                    {errors.password}
+                  </p>
                 )}
               </div>
 
@@ -302,7 +329,7 @@ export default function ResetPwdPage() {
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm text-destructive-foreground">
                     {errors.confirmPassword}
                   </p>
                 )}

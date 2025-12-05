@@ -26,13 +26,7 @@ export default function EmailVerifyPage() {
 
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
-    | "idle"
-    | "verifying"
-    | "success"
-    | "error"
-    | "expired"
-    | "already-verified"
-    | "registered"
+    "idle" | "verifying" | "success" | "error" | "expired" | "registered"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -116,7 +110,12 @@ export default function EmailVerifyPage() {
 
           // Handle specific error cases
           if (errorDetail.toLowerCase().includes("already verified")) {
-            setStatus("already-verified");
+            // If email is already verified, show resend form
+            // When user resends, backend will show message: "if email exists and not verified, we will send you an email"
+            setStatus("idle");
+            setShowResendForm(true);
+            // Clear any error messages
+            setErrorMessage("");
           } else if (errorDetail.toLowerCase().includes("expired")) {
             setStatus("expired");
             setShowResendForm(true);
@@ -173,11 +172,11 @@ export default function EmailVerifyPage() {
         setResendSuccess(true);
         setErrorMessage("");
         setEmailError("");
-        // Hide form after 6 seconds
-        setTimeout(() => {
-          setShowResendForm(false);
-          setResendSuccess(false);
-        }, 6000);
+        // Clear error status when resend succeeds
+        if (status === "error" || status === "expired") {
+          setStatus("idle");
+        }
+        // Keep form visible - don't hide it
       },
       onError: (error) => {
         setResendSuccess(false);
@@ -193,7 +192,7 @@ export default function EmailVerifyPage() {
   // Early return if redirecting - prevent any error UI from showing
   if (isRedirecting) {
     return (
-      <div className="w-full py-14 max-w-md px-4 z-10">
+      <div className="w-full  max-w-md px-4 z-10">
         <Card className="shadow-lg bg-card/80">
           <CardContent className="">
             <div className="flex flex-col items-center justify-center pt-4 gap-2">
@@ -210,7 +209,7 @@ export default function EmailVerifyPage() {
   }
 
   return (
-    <div className="w-full py-14 max-w-md px-4 z-10">
+    <div className="w-full  max-w-md px-4 z-10">
       <Card className="shadow-lg bg-card/80">
         <CardContent className="">
           {/* Initial Loading State - Show while checking token/params */}
@@ -219,7 +218,7 @@ export default function EmailVerifyPage() {
               <Loading />
               <h3 className="text-base md:text-lg font-semibold text-center"></h3>
               <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
-                Checking verification status...
+                Checking status...
               </div>
             </div>
           )}
@@ -235,10 +234,10 @@ export default function EmailVerifyPage() {
             </div>
           )}
 
-          {/* Resend Success State - Show when email is sent successfully */}
+          {/* Resend Success State - Show when email is sent successfully (highest priority) */}
           {!isInitializing && resendSuccess && (
             <div className="flex flex-col items-center justify-center pt-4 gap-2">
-              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-bar-green" />
               <h3 className="text-base md:text-lg font-semibold text-center">
                 Verification Email Sent!
               </h3>
@@ -252,10 +251,10 @@ export default function EmailVerifyPage() {
             </div>
           )}
 
-          {/* Success State */}
+          {/* Success State - Only show if resendSuccess is false */}
           {!isInitializing && status === "success" && !resendSuccess && (
             <div className="flex flex-col items-center justify-center pt-4 gap-2">
-              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-bar-green" />
               <h3 className="text-base md:text-lg font-semibold text-center">
                 Email Verified Successfully!
               </h3>
@@ -269,29 +268,13 @@ export default function EmailVerifyPage() {
             </div>
           )}
 
-          {/* Already Verified State */}
-          {!isInitializing && status === "already-verified" && (
-            <div className="flex flex-col items-center justify-center pt-4 gap-2">
-              <CheckCircle2 className="h-8 w-8 md:h-10 md:w-10 text-green-600 dark:text-green-400" />
-              <h3 className="text-base md:text-lg font-semibold text-center">
-                Email Already Verified
-              </h3>
-              <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
-                Your email address has already been verified. You can log in to
-                your account.
-              </div>
-              <Button onClick={() => router.push("/login")} className="w-full">
-                Go to Login
-              </Button>
-            </div>
-          )}
-
-          {/* Error/Expired State - Only show if not redirecting */}
+          {/* Error/Expired State - Only show if not redirecting and resendSuccess is false */}
           {!isInitializing &&
             (status === "error" || status === "expired") &&
-            !isRedirecting && (
+            !isRedirecting &&
+            !resendSuccess && (
               <div className="flex flex-col items-center justify-center pt-4 gap-2">
-                <XCircle className="h-8 w-8 md:h-10 md:w-10 text-destructive-foreground" />
+                <XCircle className="h-8 w-8 md:h-10 md:w-10 text-bar-red" />
                 <h3 className="text-base md:text-lg font-semibold text-center">
                   {status === "expired"
                     ? "Verification Link Expired"
@@ -305,7 +288,7 @@ export default function EmailVerifyPage() {
               </div>
             )}
 
-          {/* Registered State - Just registered */}
+          {/* Registered State - Just registered - Only show if resendSuccess is false */}
           {!isInitializing && status === "registered" && !resendSuccess && (
             <div className="flex flex-col items-center justify-center pt-4 gap-2">
               <h3 className="text-base md:text-lg font-semibold text-center">
@@ -336,7 +319,7 @@ export default function EmailVerifyPage() {
             </div>
           )}
 
-          {/* Idle State - No token provided */}
+          {/* Idle State - No token provided - Only show if resendSuccess is false */}
           {!isInitializing && status === "idle" && !resendSuccess && (
             <div className="flex flex-col items-center justify-center pt-4 gap-2">
               <h3 className="text-base md:text-lg font-semibold text-center">
@@ -349,15 +332,18 @@ export default function EmailVerifyPage() {
             </div>
           )}
 
-          {/* Resend Form */}
+          {/* Resend Form - Keep visible even after resend success */}
           {(showResendForm || status === "idle" || status === "registered") && (
             <div className="space-y-2 pt-4">
-              {/* Only show error message here if it's not a verification error (status !== "error") */}
-              {errorMessage && !resendSuccess && status !== "error" && (
-                <div className="text-sm text-destructive-foreground text-center px-2">
-                  {errorMessage}
-                </div>
-              )}
+              {/* Only show error message here if it's not a verification error and resendSuccess is false */}
+              {errorMessage &&
+                !resendSuccess &&
+                status !== "error" &&
+                status !== "expired" && (
+                  <div className="text-sm text-destructive-foreground text-center px-2">
+                    {errorMessage}
+                  </div>
+                )}
 
               <form onSubmit={handleResend} className="space-y-3" noValidate>
                 <div className="space-y-1">
