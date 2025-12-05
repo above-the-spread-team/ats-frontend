@@ -230,7 +230,7 @@ export default function MePage() {
         {/* Avatar and Username */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative group">
-            <Avatar className="h-18 w-18 md:h-24 md:w-24 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
+            <Avatar className="h-20 w-20 md:h-28 md:w-28 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
               {previewUrl ? (
                 <AvatarImage
                   src={previewUrl}
