@@ -10,6 +10,7 @@ import {
   LogOut,
   Upload,
   Loader2,
+  Calendar,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/services/fastapi/oauth";
 import { useUploadUserIcon } from "@/services/fastapi/user-email";
@@ -24,6 +25,8 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import UserDetailItem from "@/app/(features)/profile/_components/user-detail-item";
+import UserDetailItemSkeleton from "@/app/(features)/profile/_components/user-detail-item-skeleton";
 
 export default function MePage() {
   const router = useRouter();
@@ -119,26 +122,30 @@ export default function MePage() {
   // Show loading state
   if (isLoading) {
     return (
-      <FullPage center minusHeight={110} className="py-10">
-        <div className="w-full max-w-2xl px-4">
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <Skeleton className="h-8 w-32 mx-auto mb-4" />
-              <Skeleton className="h-4 w-48 mx-auto" />
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex flex-col items-center space-y-4">
-                <Skeleton className="h-24 w-24 rounded-full" />
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-48" />
-              </div>
-              <div className="space-y-3">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            </CardContent>
-          </Card>
+      <FullPage minusHeight={80}>
+        <div className="w-full mx-auto max-w-5xl px-4 py-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-7 md:h-8 w-24" />
+            <Skeleton className="h-9 w-20" />
+          </div>
+          {/* Avatar and Username Skeleton */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              <Skeleton className="h-20 w-20 md:h-24 md:w-24 rounded-full" />
+              <Skeleton className="absolute -bottom-1 -right-2 h-8 w-8 rounded-full" />
+            </div>
+            <div className="text-center space-y-2">
+              <Skeleton className="h-6 md:h-7 w-32 mx-auto" />
+              <Skeleton className="h-4 w-20 mx-auto" />
+            </div>
+          </div>
+          {/* User Details Skeleton */}
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <UserDetailItemSkeleton />
+            <UserDetailItemSkeleton />
+            <UserDetailItemSkeleton />
+            <UserDetailItemSkeleton />
+          </div>
         </div>
       </FullPage>
     );
@@ -212,188 +219,125 @@ export default function MePage() {
   };
 
   return (
-    <FullPage center minusHeight={110} className="py-10">
-      <div className="w-full max-w-2xl px-4">
-        <Card className="shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl md:text-2xl font-bold">
-              Profile
-            </CardTitle>
-            <CardDescription>Your account information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Avatar and Username */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative group">
-                <Avatar className="h-24 w-24 md:h-32 md:w-32 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-                  {previewUrl ? (
-                    <AvatarImage
-                      src={previewUrl}
-                      alt={user.username}
-                      className="object-cover"
-                    />
-                  ) : user.avatar_url ? (
-                    <AvatarImage
-                      src={user.avatar_url}
-                      alt={user.username}
-                      className="object-cover"
-                    />
-                  ) : null}
-                  <AvatarFallback className="text-2xl md:text-3xl font-bold bg-primary/10 text-primary">
-                    {getInitials(user.username)}
-                  </AvatarFallback>
-                </Avatar>
-                <button
-                  onClick={handleAvatarClick}
-                  disabled={uploadIconMutation.isPending}
-                  className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Change avatar"
-                >
-                  {uploadIconMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                  className="hidden"
+    <FullPage minusHeight={80}>
+      <div className="w-full mx-auto max-w-5xl px-4 py-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold text-primary-title">
+            Profile
+          </h1>
+          {/* make the logout button here */}
+        </div>
+        {/* Avatar and Username */}
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative group">
+            <Avatar className="h-18 w-18 md:h-24 md:w-24 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
+              {previewUrl ? (
+                <AvatarImage
+                  src={previewUrl}
+                  alt={user.username}
+                  className="object-cover"
                 />
-              </div>
-              {previewUrl && (
-                <div className="flex gap-2 w-full max-w-xs">
-                  <Button
-                    onClick={handleUpload}
-                    disabled={uploadIconMutation.isPending}
-                    className="flex-1"
-                    size="sm"
-                  >
-                    {uploadIconMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      "Upload"
-                    )}
-                  </Button>
-                  <Button
-                    onClick={handleCancelUpload}
-                    disabled={uploadIconMutation.isPending}
-                    variant="outline"
-                    className="flex-1"
-                    size="sm"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+              ) : user.avatar_url ? (
+                <AvatarImage
+                  src={user.avatar_url}
+                  alt={user.username}
+                  className="object-cover"
+                />
+              ) : null}
+              <AvatarFallback className="text-2xl md:text-3xl font-bold bg-primary/10 text-primary">
+                {getInitials(user.username)}
+              </AvatarFallback>
+            </Avatar>
+            <button
+              onClick={handleAvatarClick}
+              disabled={uploadIconMutation.isPending}
+              className="absolute -bottom-1 -right-2 p-2 bg-bar-green text-white rounded-full shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Change avatar"
+            >
+              {uploadIconMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
               )}
-              {uploadIconMutation.error && (
-                <p className="text-sm text-destructive text-center">
-                  {uploadIconMutation.error instanceof Error
-                    ? uploadIconMutation.error.message
-                    : "Failed to upload image"}
-                </p>
-              )}
-              <div className="text-center">
-                <h2 className="text-xl md:text-2xl font-bold">
-                  {user.username}
-                </h2>
-                {user.email_verified && (
-                  <div className="flex items-center justify-center gap-1 mt-1 text-sm text-muted-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span>Verified</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* User Details */}
-            <div className="space-y-3">
-              {/* Email */}
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <Mail className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Email
-                  </p>
-                  <p className="text-base font-semibold break-words">
-                    {user.email}
-                  </p>
-                  {!user.email_verified && (
-                    <p className="text-xs text-destructive-foreground mt-1">
-                      Email not verified
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Username */}
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <User className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Username
-                  </p>
-                  <p className="text-base font-semibold break-words">
-                    {user.username}
-                  </p>
-                </div>
-              </div>
-
-              {/* Account Status */}
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                {user.is_active ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-destructive-foreground mt-0.5 shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Account Status
-                  </p>
-                  <p
-                    className={`text-base font-semibold ${
-                      user.is_active
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-destructive"
-                    }`}
-                  >
-                    {user.is_active ? "Active" : "Inactive"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Member Since */}
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <User className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Member Since
-                  </p>
-                  <p className="text-base font-semibold">
-                    {formatDate(user.created_at)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Logout Button */}
-            <div className="pt-4 border-t">
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+          {previewUrl && (
+            <div className="flex gap-2 w-full max-w-xs">
               <Button
-                variant="destructive"
-                onClick={handleLogout}
-                className="w-full text-white"
+                onClick={handleUpload}
+                disabled={uploadIconMutation.isPending}
+                className="flex-1"
+                size="sm"
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
+                {uploadIconMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  "Upload"
+                )}
+              </Button>
+              <Button
+                onClick={handleCancelUpload}
+                disabled={uploadIconMutation.isPending}
+                variant="outline"
+                className="flex-1"
+                size="sm"
+              >
+                Cancel
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          )}
+          {uploadIconMutation.error && (
+            <p className="text-sm text-destructive text-center">
+              {uploadIconMutation.error instanceof Error
+                ? uploadIconMutation.error.message
+                : "Failed to upload image"}
+            </p>
+          )}
+          <div className="text-center">
+            <h2 className="text-lg md:text-xl font-bold">{user.username}</h2>
+            {user.email_verified && (
+              <div className="flex items-center justify-center gap-1 mt-1 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-primary-font" />
+                <span>Verified</span>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* User Details */}
+        <div className=" p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <UserDetailItem
+            icon={Mail}
+            label="Email"
+            value={user.email}
+            warning={!user.email_verified ? "Email not verified" : undefined}
+          />
+
+          <UserDetailItem icon={User} label="Username" value={user.username} />
+
+          <UserDetailItem
+            icon={user.is_active ? CheckCircle2 : XCircle}
+            label="Account Status"
+            value={user.is_active ? "Active" : "Inactive"}
+            valueClassName={user.is_active ? "text-bar-green" : "text-bar-red"}
+            iconClassName={user.is_active ? "text-bar-green" : "text-bar-red"}
+          />
+
+          <UserDetailItem
+            icon={Calendar}
+            label="Member Since"
+            value={formatDate(user.created_at)}
+          />
+        </div>
       </div>
     </FullPage>
   );
