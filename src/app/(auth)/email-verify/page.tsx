@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -17,7 +17,7 @@ import {
 } from "@/services/fastapi/user-email";
 import { resendVerificationSchema } from "@/lib/validations/auth";
 
-export default function EmailVerifyPage() {
+function EmailVerifyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -403,5 +403,28 @@ export default function EmailVerifyPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function EmailVerifyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md px-4 z-10">
+          <Card className="shadow-lg bg-card/80">
+            <CardContent>
+              <div className="flex flex-col items-center justify-center pt-4 gap-2">
+                <Loading />
+                <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                  Loading...
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <EmailVerifyForm />
+    </Suspense>
   );
 }

@@ -104,7 +104,7 @@ export default function Datepicker({
     setTimeout(() => {
       scrollToCenter();
     }, 100);
-  }, [today, generateDateRange, scrollToCenter]);
+  }, [today, generateDateRange, scrollToCenter, setSelectedDate]);
 
   const todayString = today.toDateString();
 
@@ -136,7 +136,7 @@ export default function Datepicker({
   );
 
   // Add debouncing to prevent rapid updates
-  const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const lastUpdateTimeRef = useRef(0);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to find the most visible date based on scroll position
@@ -190,10 +190,10 @@ export default function Datepicker({
         const newMonthYear = getMonthYear(date);
         // Debounce updates to prevent flickering
         const now = Date.now();
-        if (now - lastUpdateTime > 150) {
+        if (now - lastUpdateTimeRef.current > 150) {
           // Only update if 150ms have passed
           setCurrentMonthYear(newMonthYear);
-          setLastUpdateTime(now);
+          lastUpdateTimeRef.current = now;
         } else {
           // Clear existing timeout and set a new one
           if (updateTimeoutRef.current) {
@@ -201,12 +201,12 @@ export default function Datepicker({
           }
           updateTimeoutRef.current = setTimeout(() => {
             setCurrentMonthYear(newMonthYear);
-            setLastUpdateTime(Date.now());
+            lastUpdateTimeRef.current = Date.now();
           }, 150);
         }
       }
     }
-  }, [dates, lastUpdateTime]);
+  }, [dates]);
 
   // Set up automatic updates using multiple approaches
   useEffect(() => {
@@ -245,10 +245,10 @@ export default function Datepicker({
 
               // Debounce intersection observer updates too
               const now = Date.now();
-              if (now - lastUpdateTime > 200) {
+              if (now - lastUpdateTimeRef.current > 200) {
                 // Longer debounce for intersection observer
                 setCurrentMonthYear(newMonthYear);
-                setLastUpdateTime(now);
+                lastUpdateTimeRef.current = now;
               }
             }
           }

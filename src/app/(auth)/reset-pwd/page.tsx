@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Eye, EyeClosed, Lock, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/card";
 import Loading from "@/components/common/loading";
 
-export default function ResetPwdPage() {
+function ResetPwdForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resetPasswordMutation = useResetPassword();
@@ -367,5 +367,28 @@ export default function ResetPwdPage() {
         </Card>
       </div>
     </>
+  );
+}
+
+export default function ResetPwdPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md px-4 z-10">
+          <Card className="shadow-lg bg-card/80">
+            <CardContent>
+              <div className="flex flex-col items-center justify-center pt-4 gap-2">
+                <Loading />
+                <div className="text-muted-foreground text-xs md:text-sm text-center px-2">
+                  Loading...
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <ResetPwdForm />
+    </Suspense>
   );
 }

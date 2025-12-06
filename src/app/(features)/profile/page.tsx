@@ -7,12 +7,11 @@ import {
   Mail,
   CheckCircle2,
   XCircle,
-  LogOut,
   Upload,
   Loader2,
   Calendar,
 } from "lucide-react";
-import { useCurrentUser, useLogout } from "@/services/fastapi/oauth";
+import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useUploadUserIcon } from "@/services/fastapi/user-email";
 import FullPage from "@/components/common/full-page";
 import { Button } from "@/components/ui/button";
@@ -45,24 +44,8 @@ export default function MePage() {
     }
   }, [error, router]);
 
-  // Use logout mutation hook from service
-  const logoutMutation = useLogout();
-
   // Use upload icon mutation hook
   const uploadIconMutation = useUploadUserIcon();
-
-  const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
-      // Wait a bit to ensure cache is cleared before redirect
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Still redirect even if logout API call fails
-      router.push("/login");
-    }
-  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

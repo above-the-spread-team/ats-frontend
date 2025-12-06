@@ -10,7 +10,7 @@ export interface RegisterRequest {
   password: string;
 }
 
-export interface RegisterResponse extends User {}
+export type RegisterResponse = User;
 
 export interface LoginRequest {
   email: string;
@@ -270,7 +270,7 @@ export function useVerifyEmail() {
     string
   >({
     mutationFn: verifyEmail,
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate and refetch current user to update auth state
       // Backend sets HttpOnly cookie in response, so refetching will get the user
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
@@ -435,7 +435,7 @@ export function useResetPassword() {
   });
 }
 
-export interface UploadIconResponse extends User {}
+export type UploadIconResponse = User;
 
 /**
  * Upload user profile icon/avatar
