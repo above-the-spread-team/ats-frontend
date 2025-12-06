@@ -3,7 +3,7 @@
 import * as React from "react";
 import DateCard from "./date";
 import Calendar from "./calendar";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -23,7 +23,7 @@ export default function Datepicker({
   selectedDate,
   setSelectedDate,
 }: DatepickerProps) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
 
   // State for showing calendar
   const [showCalendar, setShowCalendar] = useState(false);

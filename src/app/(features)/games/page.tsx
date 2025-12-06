@@ -116,7 +116,10 @@ function FixturesContent() {
     error: queryError,
   } = useFixtures(selectedDate, timezone);
 
-  const fixtures = fixturesData?.response ?? [];
+  const fixtures = useMemo(
+    () => fixturesData?.response ?? [],
+    [fixturesData?.response]
+  );
   const meta = fixturesData
     ? {
         parameters: fixturesData.parameters,
@@ -145,7 +148,7 @@ function FixturesContent() {
     if (parsed && parsed.toDateString() !== selectedDate.toDateString()) {
       setSelectedDate(parsed);
     }
-  }, [searchParams]);
+  }, [searchParams, selectedDate]);
 
   // Update URL when date changes (from user action)
   useEffect(() => {

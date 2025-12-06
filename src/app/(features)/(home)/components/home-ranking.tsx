@@ -64,7 +64,7 @@ export default function HomeRanking() {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [leagueId, season]);
 
   if (isLoading) {
     return (
