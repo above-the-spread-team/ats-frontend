@@ -145,10 +145,16 @@ function FixturesContent() {
 
     const dateParam = searchParams.get("date");
     const parsed = parseDateParam(dateParam);
-    if (parsed && parsed.toDateString() !== selectedDate.toDateString()) {
-      setSelectedDate(parsed);
+    if (parsed) {
+      // Use a ref to track the current selectedDate to avoid dependency
+      const currentDateStr = selectedDate.toDateString();
+      const parsedDateStr = parsed.toDateString();
+      if (parsedDateStr !== currentDateStr) {
+        setSelectedDate(parsed);
+      }
     }
-  }, [searchParams, selectedDate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Update URL when date changes (from user action)
   useEffect(() => {
