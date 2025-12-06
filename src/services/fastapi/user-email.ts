@@ -117,9 +117,9 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   const result: LoginResponse = await response.json();
 
   // Safari compatibility: Store token from response body if available
-  // Backend includes token in response when X-Auth-Token-Available header is set
-  const tokenAvailable = response.headers.get("X-Auth-Token-Available");
-  if (tokenAvailable === "true" && result.token) {
+  // Backend always includes token in response body for Safari compatibility
+  // Store it in localStorage so it persists across browser sessions
+  if (result.token) {
     storeToken(result.token);
   }
 
