@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/user";
+import { getAuthHeader, clearStoredToken } from "./token-storage";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -17,12 +18,19 @@ const BACKEND_URL =
  */
 export async function checkAuthStatus(): Promise<boolean> {
   try {
+    // Get auth header for Safari compatibility (falls back to cookies if not available)
+    const authHeader = getAuthHeader();
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    if (authHeader) {
+      headers["Authorization"] = authHeader;
+    }
+
     const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
       method: "GET",
-      credentials: "include", // Include HttpOnly cookies
-      headers: {
-        "Content-Type": "application/json",
-      },
+      credentials: "include", // Include HttpOnly cookies (for non-Safari browsers)
+      headers,
     });
     return response.ok;
   } catch {
@@ -54,16 +62,24 @@ export function initiateGoogleLogin(): void {
 
 /**
  * Get current authenticated user
- * Backend reads token from HttpOnly cookie automatically via credentials: "include"
- * No token needs to be passed - backend reads from secure HttpOnly cookie
+ * Backend reads token from HttpOnly cookie or Authorization header
+ * For Safari compatibility, we send token in Authorization header if available
+ * Backend falls back to cookies if no Authorization header is present
  */
 export async function getCurrentUser(): Promise<User> {
+  // Get auth header for Safari compatibility (falls back to cookies if not available)
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // Sends HttpOnly cookie automatically
+    headers,
+    credentials: "include", // Sends HttpOnly cookie automatically (for non-Safari browsers)
   });
 
   if (!response.ok) {
@@ -102,9 +118,13 @@ export async function logout(): Promise<void> {
 
     // Verify cookie was cleared by checking /me endpoint
     // This helps debug if cookie deletion worked
+    // Note: We don't include Authorization header here since we're testing logout
     const verifyResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
       method: "GET",
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (verifyResponse.ok) {
@@ -120,6 +140,9 @@ export async function logout(): Promise<void> {
   } catch (error) {
     console.error("Logout error:", error);
   } finally {
+    // Clear stored token (for Safari compatibility)
+    clearStoredToken();
+
     // Dispatch custom event to notify components of logout
     // Backend clears the HttpOnly cookie, so no localStorage cleanup needed
     window.dispatchEvent(new Event("logout"));
