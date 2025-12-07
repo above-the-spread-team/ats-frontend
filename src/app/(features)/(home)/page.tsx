@@ -7,7 +7,7 @@ import HomeDiscuss from "./components/home-discuss";
 
 export default function Home() {
   return (
-    <FullPage minusHeight={40} className="space-y-4 pb-10">
+    <FullPage minusHeight={40} className="space-y-4 bg-red-500 pb-10">
       <Fixtures />
       <div className="container mx-auto px-2 max-w-6xl space-y-6 lg:space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
