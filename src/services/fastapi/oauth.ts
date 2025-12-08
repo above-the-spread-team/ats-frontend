@@ -118,9 +118,13 @@ export async function logout(): Promise<void> {
 
     // Verify cookie was cleared by checking /me endpoint
     // This helps debug if cookie deletion worked
+    // Note: We don't include Authorization header here since we're testing logout
     const verifyResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
       method: "GET",
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (verifyResponse.ok) {
