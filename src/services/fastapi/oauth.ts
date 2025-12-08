@@ -154,10 +154,11 @@ export async function logout(): Promise<void> {
  * Since we use HttpOnly cookies, we always attempt to fetch
  * The backend will return 401 if not authenticated
  */
-export function useCurrentUser() {
+export function useCurrentUser(options?: { enabled?: boolean }) {
   return useQuery<User>({
     queryKey: ["currentUser"],
     queryFn: getCurrentUser,
+    enabled: options?.enabled !== false, // Default to true, but can be disabled
     retry: (failureCount, error) => {
       // Don't retry on 401 (unauthorized) - user is not authenticated
       if (

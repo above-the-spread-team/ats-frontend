@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/services/fastapi/oauth";
+import { storeToken } from "@/services/fastapi/token-storage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from "lucide-react";
 import Loading from "@/components/common/loading";
@@ -13,9 +14,54 @@ export default function AuthCallbackPage() {
     "loading"
   );
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [tokenExtracted, setTokenExtracted] = useState(false);
 
-  // Backend sets HttpOnly cookie during redirect, so we verify by fetching user
-  const { data: user, isLoading, error } = useCurrentUser();
+  // Extract token from URL hash for Safari compatibility
+  // Backend redirects with token in hash: #token=eyJhbGc...
+  // This MUST happen before useCurrentUser() tries to fetch
+  useEffect(() => {
+    // Extract token synchronously on mount
+    const hash = window.location.hash.substring(1); // Remove the #
+    console.log("Callback page - URL hash:", hash);
+    console.log("Callback page - Full URL:", window.location.href);
+
+    if (hash) {
+      const params = new URLSearchParams(hash);
+      const token = params.get("token");
+
+      console.log(
+        "Callback page - Token from hash:",
+        token ? "Found" : "Not found"
+      );
+
+      if (token) {
+        // Store token in localStorage for Safari compatibility
+        storeToken(token);
+        console.log("Token extracted from URL hash and stored in localStorage");
+
+        // Clean up URL - remove hash fragment
+        window.history.replaceState({}, "", window.location.pathname);
+      } else {
+        console.warn("No token found in URL hash. Hash content:", hash);
+      }
+    } else {
+      console.warn("No hash found in URL");
+    }
+
+    // Mark as extracted (even if no token found) - this allows query to run
+    setTokenExtracted(true);
+  }, []);
+
+  // Backend sets HttpOnly cookie during redirect, but Safari blocks it
+  // So we use the token from localStorage (extracted from hash) for Safari
+  // Only fetch user after token extraction is complete
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useCurrentUser({
+    enabled: tokenExtracted, // Only run query after token is extracted
+  });
 
   useEffect(() => {
     if (isLoading) {
