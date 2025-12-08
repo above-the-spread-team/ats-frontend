@@ -477,8 +477,8 @@ export async function uploadUserIcon(file: File): Promise<UploadIconResponse> {
   // Get auth header for Safari compatibility (falls back to cookies if not available)
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {};
-  if (authHeader) {
-    headers["Authorization"] = authHeader;
+  if (Object.keys(authHeader).length > 0) {
+    Object.assign(headers, authHeader);
   }
 
   const response = await fetch(`${BACKEND_URL}/api/auth/upload-icon`, {

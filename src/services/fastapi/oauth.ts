@@ -7,8 +7,8 @@ const BACKEND_URL =
 
 /**
  * Note: We use HttpOnly cookies set by the backend for security.
- * HttpOnly cookies cannot be read by JavaScript, so we don't store tokens
- * in localStorage. Authentication is checked via API calls.
+ * For Safari compatibility, we also store tokens in localStorage and send them
+ * in the Authorization header. The backend accepts tokens from both sources.
  */
 
 /**
@@ -23,8 +23,8 @@ export async function checkAuthStatus(): Promise<boolean> {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
-    if (authHeader) {
-      headers["Authorization"] = authHeader;
+    if (Object.keys(authHeader).length > 0) {
+      Object.assign(headers, authHeader);
     }
 
     const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
@@ -72,8 +72,8 @@ export async function getCurrentUser(): Promise<User> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  if (authHeader) {
-    headers["Authorization"] = authHeader;
+  if (Object.keys(authHeader).length > 0) {
+    Object.assign(headers, authHeader);
   }
 
   const response = await fetch(`${BACKEND_URL}/api/auth/me`, {

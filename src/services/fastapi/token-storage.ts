@@ -2,7 +2,7 @@
  * Token storage utility for Safari compatibility
  * Safari blocks SameSite=None cookies, so we store the token in localStorage
  * as a fallback when cookies don't work.
- * localStorage persists across browser sessions, unlike sessionStorage.
+ * localStorage persists across browser sessions, so login status is maintained
  */
 
 const TOKEN_STORAGE_KEY = "auth_token";
@@ -56,8 +56,8 @@ export function clearStoredToken(): void {
  * Returns Bearer token if available in storage, otherwise null
  * The backend will fall back to cookies if no Authorization header is present
  */
-export function getAuthHeader(): string | null {
+export function getAuthHeader(): HeadersInit {
   const token = getStoredToken();
-  return token ? `Bearer ${token}` : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

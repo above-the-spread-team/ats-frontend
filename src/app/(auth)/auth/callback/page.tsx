@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/services/fastapi/oauth";
+import { storeToken } from "@/services/fastapi/token-storage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from "lucide-react";
 import Loading from "@/components/common/loading";
@@ -13,8 +14,32 @@ export default function AuthCallbackPage() {
     "loading"
   );
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const tokenExtractedRef = useRef(false);
 
-  // Backend sets HttpOnly cookie during redirect, so we verify by fetching user
+  // Extract token from URL hash for Safari compatibility
+  // Backend redirects with token in hash: #token=eyJhbGc...
+  // This must happen before useCurrentUser hook makes the API call
+  useEffect(() => {
+    if (tokenExtractedRef.current) return;
+    tokenExtractedRef.current = true;
+
+    const hash = window.location.hash.substring(1); // Remove the #
+    if (hash) {
+      const params = new URLSearchParams(hash);
+      const token = params.get("token");
+
+      if (token) {
+        // Store token in localStorage for Safari compatibility
+        storeToken(token);
+
+        // Clean up URL - remove hash fragment
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, []);
+
+  // Backend sets HttpOnly cookie during redirect, but Safari blocks it
+  // So we use the token from localStorage (extracted from hash) for Safari
   const { data: user, isLoading, error } = useCurrentUser();
 
   useEffect(() => {
