@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/user";
+import { storeToken, getAuthHeader } from "./token-storage";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -20,6 +21,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   message: string;
   user: User;
+  token?: string; // Token in response body for Safari compatibility
   warning?: string; // Warning message if email is not verified
 }
 
@@ -113,6 +115,14 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   }
 
   const result: LoginResponse = await response.json();
+
+  // Safari compatibility: Store token from response body if available
+  // Backend always includes token in response body for Safari compatibility
+  // Store it in localStorage so it persists across browser sessions
+  if (result.token) {
+    storeToken(result.token);
+  }
+
   return result;
 }
 
@@ -136,6 +146,7 @@ export interface ResendVerificationResponse {
 export interface VerifyEmailResponse {
   message: string;
   user: User;
+  token?: string; // Token in response body for Safari compatibility
   auto_login: boolean; // Signal to frontend to redirect to home
 }
 
@@ -184,6 +195,13 @@ export async function verifyEmail(token: string): Promise<VerifyEmailResponse> {
 
   // Backend returns 200 with JSON response containing user data
   const result: VerifyEmailResponse = await response.json();
+
+  // Safari compatibility: Store token from response body if available
+  // Backend includes token in response for Safari compatibility
+  if (result.token) {
+    storeToken(result.token);
+  }
+
   return result;
 }
 
@@ -456,9 +474,17 @@ export async function uploadUserIcon(file: File): Promise<UploadIconResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
+  // Get auth header for Safari compatibility (falls back to cookies if not available)
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {};
+  if (Object.keys(authHeader).length > 0) {
+    Object.assign(headers, authHeader);
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/auth/upload-icon`, {
     method: "POST",
-    credentials: "include", // Include HttpOnly cookie
+    credentials: "include", // Include HttpOnly cookie (for non-Safari browsers)
+    headers,
     body: formData, // Don't set Content-Type header - browser will set it with boundary
   });
 
