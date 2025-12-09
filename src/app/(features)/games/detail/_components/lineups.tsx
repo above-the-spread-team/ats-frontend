@@ -271,6 +271,26 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
     );
   }
 
+  // Check if any lineup has actual player data (startXI exists and has players)
+  const hasLineupData = lineups.some(
+    (lineup) =>
+      lineup.startXI &&
+      Array.isArray(lineup.startXI) &&
+      lineup.startXI.length > 0
+  );
+
+  // If no lineup has player data, show no data message
+  if (!hasLineupData) {
+    return (
+      <FullPage center minusHeight={300}>
+        <NoDate
+          message="No lineup data available."
+          helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+        />
+      </FullPage>
+    );
+  }
+
   const homeLineup = lineups[0];
   const awayLineup = lineups[1] || null;
 
