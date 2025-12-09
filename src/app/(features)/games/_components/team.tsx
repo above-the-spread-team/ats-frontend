@@ -18,6 +18,7 @@ interface TeamInfoProps {
   className?: string;
   nameClassName?: string;
   logoClassName?: string;
+  isDetail?: boolean;
 }
 
 export default function TeamInfo({
@@ -26,6 +27,7 @@ export default function TeamInfo({
   className = "",
   nameClassName = "text-xs md:text-base font-semibold",
   logoClassName = "w-6 h-6 md:w-7 md:h-7 object-contain",
+  isDetail = false,
 }: TeamInfoProps) {
   const isHome = orientation === "home";
 
@@ -33,8 +35,8 @@ export default function TeamInfo({
     <Image
       src={team.logo}
       alt={team.name}
-      width={100}
-      height={100}
+      width={isDetail ? 80 : 30}
+      height={isDetail ? 80 : 30}
       className={`${logoClassName} ${isHome ? "" : "rounded-md"}`}
     />
   ) : (

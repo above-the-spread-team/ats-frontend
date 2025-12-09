@@ -62,8 +62,8 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
               <Image
                 src={fixture.league.logo}
                 alt={fixture.league.name}
-                width={32}
-                height={32}
+                width={20}
+                height={20}
                 className="w-6 md:w-6 h-6 md:h-6 object-contain"
               />
             )}
@@ -89,6 +89,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
       {/* Teams & Score */}
       <div className="w-full max-w-2xl grid grid-cols-7 gap-4 mb-4">
         <TeamInfo
+          isDetail={true}
           team={fixture.teams.home}
           orientation="home"
           className="col-span-3 md:gap-4"
@@ -118,6 +119,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           )}
         </div>
         <TeamInfo
+          isDetail={true}
           team={fixture.teams.away}
           orientation="away"
           className="col-span-3  md:gap-4"
