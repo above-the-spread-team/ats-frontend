@@ -77,25 +77,25 @@ export default function ForgotPwdPage() {
     }
   };
 
-  return (
-    <>
-      <div className="w-full max-w-md px-4 z-10">
-        <Card className="shadow-lg bg-card/80">
-          <CardHeader className="text-center">
+    return (
+      <>
+        <div className="w-full max-w-md px-4 z-10">
+          <Card className="shadow-lg bg-card/80">
+            <CardHeader className="text-center">
             {isSuccess ? (
               <>
                 <CheckCircle2 className="h-8 w-8 mx-auto text-bar-green" />
-                <CardTitle className="font-bold text-xl">
-                  Check your email
-                </CardTitle>
+              <CardTitle className="font-bold text-xl">
+                Check your email
+              </CardTitle>
                 <CardDescription className="text-base pb-1 font-semibold text-primary-font">
-                  {formData.email}
-                </CardDescription>
+                {formData.email}
+              </CardDescription>
               </>
             ) : (
               <CardTitle className="font-bold">Reset Password</CardTitle>
             )}
-          </CardHeader>
+            </CardHeader>
           {isSuccess && (
             <div className="mx-4 my-1">
               <div className="rounded-lg bg-muted py-2 px-4 shadow-inner text-xs md:text-sm text-muted-foreground">

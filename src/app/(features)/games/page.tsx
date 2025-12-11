@@ -150,7 +150,7 @@ function FixturesContent() {
       const currentDateStr = selectedDate.toDateString();
       const parsedDateStr = parsed.toDateString();
       if (parsedDateStr !== currentDateStr) {
-        setSelectedDate(parsed);
+      setSelectedDate(parsed);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
