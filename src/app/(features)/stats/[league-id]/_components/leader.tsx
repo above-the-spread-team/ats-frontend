@@ -57,7 +57,7 @@ function PlayerImage({
         alt={alt}
         fill
         className="rounded-full object-cover"
-        sizes="(max-width: 768px) 20px, 32px"
+        sizes="(max-width: 768px) 16px, 20px"
         onError={() => setImageError(true)}
       />
     </div>
