@@ -170,7 +170,7 @@ const mockComments: Comment[] = [
       {
         id: "r6",
         author: mockUsers[0],
-        content: "I'm optimistic! The team has been in good form.",
+        content: "I'm optimistic! The team has been in good form!!",
         createdAt: "2024-01-15T18:30:00Z",
         likeCount: 7,
         dislikeCount: 0,
