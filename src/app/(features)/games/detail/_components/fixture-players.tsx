@@ -421,8 +421,8 @@ export default function FixturePlayers({
               <Image
                 src={playerItem.player.photo}
                 alt={playerItem.player.name}
-                width={32}
-                height={32}
+                width={20}
+                height={20}
                 className="w-8 h-8 rounded-full object-cover flex-shrink-0"
               />
             ) : (
@@ -622,8 +622,8 @@ export default function FixturePlayers({
             <Image
               src={team.team.logo}
               alt={team.team.name}
-              width={40}
-              height={40}
+              width={20}
+              height={20}
               className="w-5 h-5 md:w-6 md:h-6 object-contain"
             />
           ) : (

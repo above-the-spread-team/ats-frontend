@@ -62,8 +62,8 @@ export default function LeagueCard({
               <Image
                 src={league.country.flag}
                 alt={league.country.name}
-                width={32}
-                height={32}
+                width={20}
+                height={20}
                 className="object-contain w-4 md:w-6"
               />
             ) : (

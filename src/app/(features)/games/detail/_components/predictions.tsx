@@ -375,8 +375,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                   <Image
                     src={teams.home.logo}
                     alt={teams.home.name}
-                    width={48}
-                    height={48}
+                    width={20}
+                    height={20}
                     className="w-5 h-5 md:w-6 md:h-6 object-contain"
                   />
                 ) : (
@@ -388,8 +388,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                 <Image
                   src={teams.away.logo}
                   alt={teams.away.name}
-                  width={48}
-                  height={48}
+                  width={20}
+                  height={20}
                   className="w-5 h-5 md:w-6 md:h-6 object-contain"
                 />
               ) : (
@@ -594,8 +594,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                   <Image
                     src={teams.home.logo}
                     alt={teams.home.name}
-                    width={32}
-                    height={32}
+                    width={20}
+                    height={20}
                     className="w-5 h-5 md:w-6 md:h-6 object-contain"
                   />
                 ) : (
@@ -675,8 +675,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                   <Image
                     src={teams.away.logo}
                     alt={teams.away.name}
-                    width={32}
-                    height={32}
+                    width={20}
+                    height={20}
                     className="w-5 h-5 md:w-6 md:h-6 object-contain"
                   />
                 ) : (
@@ -762,7 +762,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
             </h3>
           </div>
           <div className=" max-w-xl mx-auto">
-            {h2h.slice(0, 10).map((match) => (
+            {h2h.slice(0, 12).map((match) => (
               <div
                 key={match.fixture.id}
                 className="flex items-center gap-3 p-2 hover:bg-muted/50 transition-colors border-b border-border last:border-0"
@@ -772,8 +772,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                     <Image
                       src={match.teams.home.logo}
                       alt={match.teams.home.name}
-                      width={28}
-                      height={28}
+                      width={20}
+                      height={20}
                       className="w-5 h-5 md:w-6 md:h-6 object-contain flex-shrink-0"
                     />
                   ) : (
@@ -811,8 +811,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                     <Image
                       src={match.teams.away.logo}
                       alt={match.teams.away.name}
-                      width={28}
-                      height={28}
+                      width={20}
+                      height={20}
                       className="w-5 h-5 md:w-6 md:h-6 object-contain flex-shrink-0"
                     />
                   ) : (

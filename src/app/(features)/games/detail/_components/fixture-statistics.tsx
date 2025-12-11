@@ -270,8 +270,8 @@ export default function FixtureStatistics({
                     <Image
                       src={homeTeam.team.logo}
                       alt={homeTeam.team.name}
-                      width={20}
-                      height={20}
+                      width={10}
+                      height={10}
                       className="w-5 h-5 object-contain"
                     />
                   ) : (
@@ -299,8 +299,8 @@ export default function FixtureStatistics({
                     <Image
                       src={awayTeam.team.logo}
                       alt={awayTeam.team.name}
-                      width={20}
-                      height={20}
+                      width={10}
+                      height={10}
                       className="w-5 h-5 object-contain"
                     />
                   ) : (
@@ -352,8 +352,8 @@ export default function FixtureStatistics({
                     <Image
                       src={homeTeam.team.logo}
                       alt={homeTeam.team.name}
-                      width={20}
-                      height={20}
+                      width={10}
+                      height={10}
                       className="w-5 h-5 object-contain"
                     />
                   ) : (
@@ -381,8 +381,8 @@ export default function FixtureStatistics({
                     <Image
                       src={awayTeam.team.logo}
                       alt={awayTeam.team.name}
-                      width={20}
-                      height={20}
+                      width={10}
+                      height={10}
                       className="w-5 h-5 object-contain"
                     />
                   ) : (

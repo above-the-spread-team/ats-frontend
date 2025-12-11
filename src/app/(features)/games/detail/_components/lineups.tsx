@@ -354,8 +354,8 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             <Image
               src={lineup.team.logo}
               alt={lineup.team.name}
-              width={48}
-              height={48}
+              width={20}
+              height={20}
               className="w-5 h-5 md:w-6 md:h-6  object-contain flex-shrink-0"
             />
           )}
@@ -371,8 +371,8 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
               <Image
                 src={lineup.coach.photo}
                 alt={lineup.coach.name}
-                width={40}
-                height={40}
+                width={32}
+                height={32}
                 className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover flex-shrink-0 border-2 border-border"
               />
             )}
@@ -725,8 +725,8 @@ function CombinedFormationField({
             <Image
               src={homeLineup.team.logo}
               alt={homeLineup.team.name}
-              width={32}
-              height={32}
+              width={20}
+              height={20}
               className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 object-contain flex-shrink-0"
             />
           )}
@@ -757,8 +757,8 @@ function CombinedFormationField({
             <Image
               src={awayLineup.team.logo}
               alt={awayLineup.team.name}
-              width={32}
-              height={32}
+              width={20}
+              height={20}
               className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 object-contain flex-shrink-0"
             />
           )}

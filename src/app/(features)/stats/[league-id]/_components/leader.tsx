@@ -79,7 +79,7 @@ function TeamLogoImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         className="object-contain"
-        sizes="(max-width: 768px) 20px, 24px"
+        sizes="(max-width: 768px) 16px, 20px"
         onError={() => setImageError(true)}
       />
     </div>
