@@ -99,7 +99,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
               htmlFor="post-content"
               className="text-sm font-medium text-foreground"
             >
-              What's on your mind?
+              What&apos;s on your mind?
             </label>
             <textarea
               id="post-content"

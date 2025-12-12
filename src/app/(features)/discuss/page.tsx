@@ -384,7 +384,7 @@ function mapPostResponse(post: PostResponse): Post {
 export default function DiscussPage() {
   const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const pageSize = 20;
 
   // Fetch posts from API
