@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import FullPage from "@/components/common/full-page";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -13,14 +15,47 @@ import {
   MoreVertical,
   ChevronDown,
   ChevronUp,
+  User,
 } from "lucide-react";
-import {
-  mockPosts,
-  currentUser,
-  type Post,
-  type Comment,
-} from "@/data/discuss-mock";
+import { usePosts } from "@/services/fastapi/posts";
+import { useCurrentUser } from "@/services/fastapi/oauth";
+import type { PostResponse } from "@/type/fastapi/posts";
 import CreatePost from "./_components/create-post";
+
+// Frontend Post type (simplified, without title)
+interface Post {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  comments: Comment[];
+  userLiked?: boolean;
+  userDisliked?: boolean;
+}
+
+interface Comment {
+  id: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  replyCount: number;
+  replies?: Comment[];
+  userLiked?: boolean;
+  userDisliked?: boolean;
+}
 
 function formatTimeAgo(dateString: string): string {
   try {
@@ -132,7 +167,7 @@ function CommentItem({ comment, level = 0 }: CommentItemProps) {
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              getInitials(comment.author.name)
+              <span>{getInitials(comment.author.name)}</span>
             )}
           </div>
         </div>
@@ -241,17 +276,17 @@ function PostCard({ post }: PostCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start px-4 justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0 overflow-hidden">
               {post.author.avatar ? (
                 <Image
                   src={post.author.avatar}
                   alt={post.author.name}
-                  width={32}
-                  height={32}
+                  width={48}
+                  height={48}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                getInitials(post.author.name)
+                <span>{getInitials(post.author.name)}</span>
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -268,13 +303,10 @@ function PostCard({ post }: PostCardProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <h3 className="text-lg md:text-xl font-bold mb-2">{post.title}</h3>
-          <p className="text-sm md:text-base text-muted-foreground whitespace-pre-wrap break-words">
-            {post.content}
-          </p>
-        </div>
+      <CardContent className="space-y-2">
+        <p className="text-sm md:text-base  text-foreground whitespace-pre-wrap break-words">
+          {post.content}
+        </p>
 
         <div className="flex items-center gap-6 pt-2 border-t border-border">
           <button
@@ -329,28 +361,56 @@ function PostCard({ post }: PostCardProps) {
   );
 }
 
+// Helper function to map PostResponse to frontend Post type
+function mapPostResponse(post: PostResponse): Post {
+  return {
+    id: post.id.toString(),
+    content: post.content,
+    author: {
+      id: post.author.id.toString(),
+      name: post.author.username,
+      avatar: post.author.avatar_url,
+    },
+    createdAt: post.created_at,
+    likeCount: post.reaction_count, // Using reaction_count as likeCount for now
+    commentCount: post.comment_count,
+    viewCount: 0, // Backend doesn't have view count yet
+    comments: [], // Comments will be fetched separately if needed
+    userLiked: false, // Will be determined by checking user's reactions
+    userDisliked: false,
+  };
+}
+
 export default function DiscussPage() {
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
 
-  const handleCreatePost = (title: string, content: string) => {
-    // Create new post object
-    const newPost: Post = {
-      id: Date.now().toString(),
-      title,
-      content,
-      author: currentUser,
-      createdAt: new Date().toISOString(),
-      likeCount: 0,
-      commentCount: 0,
-      viewCount: 0,
-      comments: [],
-      userLiked: false,
-      userDisliked: false,
-    };
+  // Fetch posts from API
+  const {
+    data: postsData,
+    isLoading,
+    error,
+    refetch,
+  } = usePosts(page, pageSize);
 
-    // Add to beginning of posts array
-    setPosts((prev) => [newPost, ...prev]);
+  // Get current user
+  const { data: currentUser } = useCurrentUser();
+
+  // Map posts from API to frontend format
+  const posts = useMemo(() => {
+    if (!postsData?.items) return [];
+    return postsData.items.map(mapPostResponse);
+  }, [postsData]);
+
+  // Handle create post input click
+  const handleCreatePostClick = () => {
+    if (currentUser) {
+      setIsCreatePostOpen(true);
+    } else {
+      router.push("/login");
+    }
   };
 
   return (
@@ -360,21 +420,27 @@ export default function DiscussPage() {
         <Card className="mb-4 hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0">
-                {currentUser.avatar ? (
-                  <Image
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
-                    width={32}
-                    height={32}
-                    className="w-full h-full rounded-full object-cover"
-                  />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mygray flex items-center justify-center text-muted-foreground flex-shrink-0 overflow-hidden">
+                {currentUser ? (
+                  currentUser.avatar_url ? (
+                    <Image
+                      src={currentUser.avatar_url}
+                      alt={currentUser.username}
+                      width={48}
+                      height={48}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm md:text-base font-semibold">
+                      {getInitials(currentUser.username)}
+                    </span>
+                  )
                 ) : (
-                  getInitials(currentUser.name)
+                  <User className="w-5 h-5 md:w-6 md:h-6 text-background font-black" />
                 )}
               </div>
               <div
-                onClick={() => setIsCreatePostOpen(true)}
+                onClick={handleCreatePostClick}
                 className="flex-1 bg-muted/50 hover:bg-muted border border-border rounded-2xl px-4 py-3 cursor-pointer transition-colors"
               >
                 <p className="text-sm text-muted-foreground">
@@ -389,18 +455,66 @@ export default function DiscussPage() {
         <CreatePost
           open={isCreatePostOpen}
           onOpenChange={setIsCreatePostOpen}
-          onSubmit={handleCreatePost}
         />
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-12 h-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <div className="flex gap-6 pt-2">
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <MessageCircle className="w-12 h-12 mx-auto text-destructive mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                Failed to load posts
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {error instanceof Error ? error.message : "An error occurred"}
+              </p>
+              <Button onClick={() => refetch()} variant="outline">
+                Try again
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Posts List */}
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
+        {!isLoading && !error && (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
 
         {/* Empty State */}
-        {posts.length === 0 && (
+        {!isLoading && !error && posts.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />

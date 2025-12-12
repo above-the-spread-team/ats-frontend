@@ -11,8 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { currentUser } from "@/data/discuss-mock";
+import { useCreatePost } from "@/services/fastapi/posts";
+import { useCurrentUser } from "@/services/fastapi/oauth";
 import { cn } from "@/lib/utils";
 
 function getInitials(name: string): string {
@@ -26,43 +26,39 @@ function getInitials(name: string): string {
 interface CreatePostProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (title: string, content: string) => void;
 }
 
-export default function CreatePost({
-  open,
-  onOpenChange,
-  onSubmit,
-}: CreatePostProps) {
-  const [title, setTitle] = useState("");
+export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
   const [content, setContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createPostMutation = useCreatePost();
+  const { data: currentUser } = useCurrentUser();
 
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim()) {
+    if (!content.trim()) {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      onSubmit?.(title.trim(), content.trim());
-      setTitle("");
+      await createPostMutation.mutateAsync({
+        content: content.trim(),
+        image_url: null,
+      });
       setContent("");
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating post:", error);
-    } finally {
-      setIsSubmitting(false);
+      // Error is handled by React Query, but we can show a toast here if needed
     }
   };
 
   const handleClose = () => {
-    if (!isSubmitting) {
-      setTitle("");
+    if (!createPostMutation.isPending) {
       setContent("");
       onOpenChange(false);
     }
   };
+
+  const isSubmitting = createPostMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -76,42 +72,26 @@ export default function CreatePost({
 
         <div className="space-y-4 py-4">
           {/* User Info */}
-          <div className="flex items-center gap-3 pb-4 border-b border-border">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0 overflow-hidden relative">
-              {currentUser.avatar ? (
-                <Image
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  width={48}
-                  height={48}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                <span>{getInitials(currentUser.name)}</span>
-              )}
+          {currentUser && (
+            <div className="flex items-center gap-3 pb-4 border-b border-border">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0 overflow-hidden relative">
+                {currentUser.avatar_url ? (
+                  <Image
+                    src={currentUser.avatar_url}
+                    alt={currentUser.username}
+                    width={48}
+                    height={48}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span>{getInitials(currentUser.username)}</span>
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">{currentUser.username}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold">{currentUser.name}</p>
-            </div>
-          </div>
-
-          {/* Title Input */}
-          <div className="space-y-2">
-            <label
-              htmlFor="post-title"
-              className="text-sm font-medium text-foreground"
-            >
-              Title
-            </label>
-            <Input
-              id="post-title"
-              placeholder="Enter post title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={isSubmitting}
-              className="w-full"
-            />
-          </div>
+          )}
 
           {/* Content Textarea */}
           <div className="space-y-2">
@@ -119,15 +99,15 @@ export default function CreatePost({
               htmlFor="post-content"
               className="text-sm font-medium text-foreground"
             >
-              Content
+              What's on your mind?
             </label>
             <textarea
               id="post-content"
-              placeholder="What's on your mind?"
+              placeholder="Share your thoughts with the community..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isSubmitting}
-              rows={6}
+              rows={8}
               className={cn(
                 "flex w-full rounded-xl border border-input bg-card px-3 py-2 text-base shadow-sm transition-colors",
                 "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-font",
@@ -135,6 +115,13 @@ export default function CreatePost({
               )}
             />
           </div>
+          {createPostMutation.isError && (
+            <p className="text-sm text-destructive">
+              {createPostMutation.error instanceof Error
+                ? createPostMutation.error.message
+                : "Failed to create post. Please try again."}
+            </p>
+          )}
         </div>
 
         <DialogFooter>
@@ -147,7 +134,7 @@ export default function CreatePost({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !title.trim() || !content.trim()}
+            disabled={isSubmitting || !content.trim()}
           >
             {isSubmitting ? "Posting..." : "Post"}
           </Button>
