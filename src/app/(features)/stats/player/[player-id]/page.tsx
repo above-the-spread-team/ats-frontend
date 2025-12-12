@@ -9,7 +9,7 @@ import NoDate from "@/components/common/no-date";
 import { Skeleton } from "@/components/ui/skeleton";
 import IconBg from "@/components/common/icon-bg";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import type { PlayerStatisticsApiResponse } from "@/type/player-statistics";
+import type { PlayerStatisticsApiResponse } from "@/type/footballapi/player-statistics";
 
 export default function PlayerPage() {
   const params = useParams();

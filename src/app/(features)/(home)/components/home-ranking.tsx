@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { StandingsApiResponse, StandingEntry } from "@/type/standing";
+import type {
+  StandingsApiResponse,
+  StandingEntry,
+} from "@/type/footballapi/standing";
 
 export default function HomeRanking() {
   const [standings, setStandings] = useState<StandingEntry[]>([]);

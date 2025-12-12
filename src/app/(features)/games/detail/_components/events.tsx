@@ -1,6 +1,6 @@
 "use client";
 
-import type { FixtureEventsResponseItem } from "@/type/fixture-events";
+import type { FixtureEventsResponseItem } from "@/type/footballapi/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";

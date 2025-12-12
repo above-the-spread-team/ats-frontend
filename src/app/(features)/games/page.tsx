@@ -11,7 +11,7 @@ import FixturesError from "./_components/error";
 import { useEffect, useMemo, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getFixtureStatus } from "@/data/fixture-status";
-import type { FixtureResponseItem } from "@/type/fixture";
+import type { FixtureResponseItem } from "@/type/footballapi/fixture";
 import TeamInfo from "./_components/team";
 import { Switch } from "@/components/ui/switch";
 import { useFixtures } from "@/services/football-api/fixtures";
@@ -150,7 +150,7 @@ function FixturesContent() {
       const currentDateStr = selectedDate.toDateString();
       const parsedDateStr = parsed.toDateString();
       if (parsedDateStr !== currentDateStr) {
-      setSelectedDate(parsed);
+        setSelectedDate(parsed);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

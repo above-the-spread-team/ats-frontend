@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { FixturesApiResponse } from "@/type/fixture";
+import type { FixturesApiResponse } from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 import {
   Carousel,

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LEAGUE_IDS } from "@/data/league-ids";
-import type { FixtureResponseItem, FixturesApiResponse } from "@/type/fixture";
+import type {
+  FixtureResponseItem,
+  FixturesApiResponse,
+} from "@/type/footballapi/fixture";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 const DEFAULT_TIMEZONE = "Europe/London";

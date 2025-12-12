@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/table";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-date";
-import type { StandingsApiResponse, StandingEntry } from "@/type/standing";
+import type {
+  StandingsApiResponse,
+  StandingEntry,
+} from "@/type/footballapi/standing";
 
 function getFormColor(result: string | null): string {
   if (!result) return "bg-muted text-muted-foreground";

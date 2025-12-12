@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { LeagueResponseItem, LeagueSeason } from "@/type/league";
+import type {
+  LeagueResponseItem,
+  LeagueSeason,
+} from "@/type/footballapi/league";
 import { Earth } from "lucide-react";
 import IconBg from "@/components/common/icon-bg";
 interface LeagueCardProps {

@@ -6,7 +6,10 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-date";
-import type { TeamsApiResponse, TeamResponseItem } from "@/type/teams-info";
+import type {
+  TeamsApiResponse,
+  TeamResponseItem,
+} from "@/type/footballapi/teams-info";
 
 // Component to handle image errors gracefully
 function TeamLogoImage({

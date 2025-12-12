@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import type { FixturesApiResponse, FixtureResponseItem } from "@/type/fixture";
+import type {
+  FixturesApiResponse,
+  FixtureResponseItem,
+} from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 
 // Format date in a specific timezone (ensures consistency)
@@ -199,8 +202,7 @@ export function useFixtures(date: Date, timezone: string) {
   // - Today: 30 seconds (real-time data changes frequently)
   // - Yesterday: 30 seconds (games might still be in play, need real-time data)
   // - Other dates: 2 hours (matches API cache, historical data doesn't change)
-  const staleTime =
-    isToday || isYesterday ? 30 * 1000 : 2 * 60 * 60 * 1000;
+  const staleTime = isToday || isYesterday ? 30 * 1000 : 2 * 60 * 60 * 1000;
 
   // Refetch interval: how often to refetch in the background
   // - Today: every 1 minute (60s) - real-time data needs frequent updates

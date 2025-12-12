@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { User, AuthError } from "@/type/user";
+import type { User, AuthError } from "@/type/fastapi/user";
 import { storeToken, getAuthHeader } from "./token-storage";
 
 const BACKEND_URL =

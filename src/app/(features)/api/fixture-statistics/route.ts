@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { FixtureStatisticsApiResponse } from "@/type/fixture-statistics";
+import type { FixtureStatisticsApiResponse } from "@/type/footballapi/fixture-statistics";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 

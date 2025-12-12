@@ -18,7 +18,7 @@ import {
   RectangleVertical,
   PersonStanding,
 } from "lucide-react";
-import type { TeamStatisticsApiResponse } from "@/type/team-statistics";
+import type { TeamStatisticsApiResponse } from "@/type/footballapi/team-statistics";
 import FixtureSummary from "./stat-components/FixtureSummary";
 import StatCard from "./stat-components/StatCard";
 import MinuteStatChart from "./stat-components/MinuteStatChart";

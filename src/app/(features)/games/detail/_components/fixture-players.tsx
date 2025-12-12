@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type {
   FixturePlayersResponseItem,
   FixturePlayersPlayerItem,
-} from "@/type/fixture-players";
+} from "@/type/footballapi/fixture-players";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";

@@ -21,7 +21,10 @@ import {
 } from "@/components/ui/select";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-date";
-import type { LeadersApiResponse, LeaderResponseItem } from "@/type/leader";
+import type {
+  LeadersApiResponse,
+  LeaderResponseItem,
+} from "@/type/footballapi/leader";
 
 // Component to handle player image errors gracefully
 function PlayerImage({
