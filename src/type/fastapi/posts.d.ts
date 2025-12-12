@@ -31,6 +31,9 @@ export interface PostResponse extends PostBase {
   updated_at: string;
   comment_count: number;
   reaction_count: number;
+  likes: number;
+  dislikes: number;
+  user_reaction: boolean | null; // True for like, False for dislike, null if no reaction or not authenticated
 }
 
 export interface PostListResponse {
@@ -43,4 +46,10 @@ export interface PostListResponse {
 
 export interface PostError {
   detail: string;
+}
+
+export interface ReactionStats {
+  likes: number;
+  dislikes: number;
+  user_reaction: boolean | null; // True for like, False for dislike, null if no reaction
 }
