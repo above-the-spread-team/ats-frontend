@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Shirt } from "lucide-react";
-import type { LineupResponseItem } from "@/type/lineups";
+import type { LineupResponseItem } from "@/type/footballapi/lineups";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";

@@ -1,7 +1,7 @@
 "use client";
 
 import { LucideIcon } from "lucide-react";
-import type { LeagueResponseItem } from "@/type/league";
+import type { LeagueResponseItem } from "@/type/footballapi/league";
 
 interface SectionProps {
   title: string;

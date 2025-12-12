@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { StandingsApiResponse } from "@/type/standing";
+import type { StandingsApiResponse } from "@/type/footballapi/standing";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 

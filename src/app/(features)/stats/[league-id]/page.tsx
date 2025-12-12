@@ -11,7 +11,7 @@ import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
 import Leader from "./_components/leader";
 import Teams from "./_components/teams";
-import type { LeagueResponseItem } from "@/type/league";
+import type { LeagueResponseItem } from "@/type/footballapi/league";
 
 type TabType = "standings" | "leaders" | "teams";
 

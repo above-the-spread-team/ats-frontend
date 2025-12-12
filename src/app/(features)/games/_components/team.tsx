@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { FixtureTeam } from "@/type/fixture";
+import type { FixtureTeam } from "@/type/footballapi/fixture";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;

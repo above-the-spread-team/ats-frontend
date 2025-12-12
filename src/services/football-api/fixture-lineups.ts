@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { LineupsApiResponse } from "@/type/lineups";
+import type { LineupsApiResponse } from "@/type/footballapi/lineups";
 
 async function fetchFixtureLineups(
   fixtureId: number

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { FixtureResponseItem } from "@/type/fixture";
+import type { FixtureResponseItem } from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 import TeamInfo from "../../_components/team";
 

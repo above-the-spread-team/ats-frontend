@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import type { PredictionsApiResponse } from "@/type/predictions";
+import type { PredictionsApiResponse } from "@/type/footballapi/predictions";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-date";
 import FullPage from "@/components/common/full-page";

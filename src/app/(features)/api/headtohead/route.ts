@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { HeadToHeadApiResponse } from "@/type/headtohead";
+import type { HeadToHeadApiResponse } from "@/type/footballapi/headtohead";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 

@@ -16,7 +16,7 @@ import FullPage from "@/components/common/full-page";
 import IconBg from "@/components/common/icon-bg";
 import { Skeleton } from "@/components/ui/skeleton";
 import Nav from "@/components/common/nav";
-import type { TeamResponseItem } from "@/type/teams-info";
+import type { TeamResponseItem } from "@/type/footballapi/teams-info";
 import SeasonSelect from "../_components/season-select";
 import Statistic from "./_components/statistic";
 import Squad from "./_components/squad";

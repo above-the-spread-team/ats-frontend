@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { FixtureEventsApiResponse } from "@/type/fixture-events";
+import type { FixtureEventsApiResponse } from "@/type/footballapi/fixture-events";
 
 async function fetchFixtureEvents(
   fixtureId: number

@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-date";
 import { Users, Calendar } from "lucide-react";
-import type { SquadsApiResponse, SquadPlayer } from "@/type/squads";
+import type { SquadsApiResponse, SquadPlayer } from "@/type/footballapi/squads";
 
 interface SquadProps {
   teamId: string;

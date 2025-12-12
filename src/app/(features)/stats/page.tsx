@@ -7,7 +7,10 @@ import Nav from "@/components/common/nav";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
 import StatsSkeleton from "./_components/skeleton";
-import type { LeaguesApiResponse, LeagueResponseItem } from "@/type/league";
+import type {
+  LeaguesApiResponse,
+  LeagueResponseItem,
+} from "@/type/footballapi/league";
 
 type LeagueType = "all" | "league" | "cup";
 

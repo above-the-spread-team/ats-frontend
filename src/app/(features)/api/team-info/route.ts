@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { TeamsApiResponse } from "@/type/teams-info";
+import type { TeamsApiResponse } from "@/type/footballapi/teams-info";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 
