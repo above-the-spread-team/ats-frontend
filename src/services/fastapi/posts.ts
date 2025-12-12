@@ -5,6 +5,7 @@ import type {
   PostResponse,
   PostListResponse,
   PostError,
+  ReactionStats,
 } from "@/type/fastapi/posts";
 import { getAuthHeader } from "./token-storage";
 
@@ -394,6 +395,194 @@ export function useDeletePost() {
       // Invalidate all posts queries
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       // Invalidate user posts queries
+      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+    },
+  });
+}
+
+/**
+ * Like a post
+ * If already liked, removes the like
+ * If disliked, changes to like
+ * Requires authentication
+ */
+export async function likePost(postId: number): Promise<ReactionStats> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/v1/posts/${postId}/like`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: PostError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to like post" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Post not found");
+    }
+
+    throw new Error(error.detail || "Failed to like post. Please try again.");
+  }
+
+  const stats: ReactionStats = await response.json();
+  return stats;
+}
+
+/**
+ * Dislike a post
+ * If already disliked, removes the dislike
+ * If liked, changes to dislike
+ * Requires authentication
+ */
+export async function dislikePost(postId: number): Promise<ReactionStats> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/posts/${postId}/dislike`,
+    {
+      method: "POST",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: PostError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to dislike post" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Post not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to dislike post. Please try again."
+    );
+  }
+
+  const stats: ReactionStats = await response.json();
+  return stats;
+}
+
+/**
+ * Remove reaction from a post
+ * Requires authentication
+ */
+export async function removeReaction(postId: number): Promise<ReactionStats> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/posts/${postId}/reaction`,
+    {
+      method: "DELETE",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: PostError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to remove reaction" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Post not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to remove reaction. Please try again."
+    );
+  }
+
+  const stats: ReactionStats = await response.json();
+  return stats;
+}
+
+/**
+ * React Query mutation hook for liking a post
+ * Updates posts list queries on success
+ */
+export function useLikePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ReactionStats, Error, number>({
+    mutationFn: likePost,
+    onSuccess: (_, postId) => {
+      // Invalidate all posts queries to refetch with updated reaction counts
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+    },
+  });
+}
+
+/**
+ * React Query mutation hook for disliking a post
+ * Updates posts list queries on success
+ */
+export function useDislikePost() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ReactionStats, Error, number>({
+    mutationFn: dislikePost,
+    onSuccess: (_, postId) => {
+      // Invalidate all posts queries to refetch with updated reaction counts
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+    },
+  });
+}
+
+/**
+ * React Query mutation hook for removing reaction from a post
+ * Updates posts list queries on success
+ */
+export function useRemoveReaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ReactionStats, Error, number>({
+    mutationFn: removeReaction,
+    onSuccess: (_, postId) => {
+      // Invalidate all posts queries to refetch with updated reaction counts
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
     },
   });

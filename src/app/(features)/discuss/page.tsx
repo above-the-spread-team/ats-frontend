@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import FullPage from "@/components/common/full-page";
@@ -17,7 +17,11 @@ import {
   ChevronUp,
   User,
 } from "lucide-react";
-import { usePosts } from "@/services/fastapi/posts";
+import {
+  usePosts,
+  useLikePost,
+  useDislikePost,
+} from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import type { PostResponse } from "@/type/fastapi/posts";
 import CreatePost from "./_components/create-post";
@@ -33,6 +37,7 @@ interface Post {
   };
   createdAt: string;
   likeCount: number;
+  dislikeCount: number;
   commentCount: number;
   viewCount: number;
   comments: Comment[];
@@ -237,36 +242,117 @@ interface PostCardProps {
 }
 
 function PostCard({ post }: PostCardProps) {
+  const router = useRouter();
+  const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Initialize state from post data (from API response)
   const [userLiked, setUserLiked] = useState(post.userLiked || false);
   const [userDisliked, setUserDisliked] = useState(post.userDisliked || false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
-  const [dislikeCount, setDislikeCount] = useState(0);
+  const [dislikeCount, setDislikeCount] = useState(post.dislikeCount);
 
-  const handleLike = () => {
-    if (userLiked) {
-      setUserLiked(false);
-      setLikeCount((prev) => prev - 1);
-    } else {
-      setUserLiked(true);
-      setLikeCount((prev) => prev + 1);
-      if (userDisliked) {
-        setUserDisliked(false);
-        setDislikeCount((prev) => prev - 1);
+  // Sync state when post prop changes (e.g., after refetch)
+  useEffect(() => {
+    setUserLiked(post.userLiked || false);
+    setUserDisliked(post.userDisliked || false);
+    setLikeCount(post.likeCount);
+    setDislikeCount(post.dislikeCount);
+  }, [post.userLiked, post.userDisliked, post.likeCount, post.dislikeCount]);
+
+  const likePostMutation = useLikePost();
+  const dislikePostMutation = useDislikePost();
+
+  const handleLike = async () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    const postId = parseInt(post.id);
+    if (isNaN(postId)) return;
+
+    try {
+      // Optimistic update
+      const wasLiked = userLiked;
+      const wasDisliked = userDisliked;
+
+      if (wasLiked) {
+        setUserLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setUserLiked(true);
+        setLikeCount((prev) => prev + 1);
+        if (wasDisliked) {
+          setUserDisliked(false);
+          setDislikeCount((prev) => Math.max(0, prev - 1));
+        }
+      }
+
+      // Call API
+      const stats = await likePostMutation.mutateAsync(postId);
+
+      // Update with actual API response
+      setLikeCount(stats.likes);
+      setDislikeCount(stats.dislikes);
+      setUserLiked(stats.user_reaction === true);
+      setUserDisliked(stats.user_reaction === false);
+    } catch (error) {
+      // Revert optimistic update on error
+      setUserLiked(post.userLiked || false);
+      setUserDisliked(post.userDisliked || false);
+      setLikeCount(post.likeCount);
+      setDislikeCount(0);
+
+      if (error instanceof Error && error.message.includes("401")) {
+        router.push("/login");
       }
     }
   };
 
-  const handleDislike = () => {
-    if (userDisliked) {
-      setUserDisliked(false);
-      setDislikeCount((prev) => prev - 1);
-    } else {
-      setUserDisliked(true);
-      setDislikeCount((prev) => prev + 1);
-      if (userLiked) {
-        setUserLiked(false);
-        setLikeCount((prev) => prev - 1);
+  const handleDislike = async () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    const postId = parseInt(post.id);
+    if (isNaN(postId)) return;
+
+    try {
+      // Optimistic update
+      const wasLiked = userLiked;
+      const wasDisliked = userDisliked;
+
+      if (wasDisliked) {
+        setUserDisliked(false);
+        setDislikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setUserDisliked(true);
+        setDislikeCount((prev) => prev + 1);
+        if (wasLiked) {
+          setUserLiked(false);
+          setLikeCount((prev) => Math.max(0, prev - 1));
+        }
+      }
+
+      // Call API
+      const stats = await dislikePostMutation.mutateAsync(postId);
+
+      // Update with actual API response
+      setLikeCount(stats.likes);
+      setDislikeCount(stats.dislikes);
+      setUserLiked(stats.user_reaction === true);
+      setUserDisliked(stats.user_reaction === false);
+    } catch (error) {
+      // Revert optimistic update on error
+      setUserLiked(post.userLiked || false);
+      setUserDisliked(post.userDisliked || false);
+      setLikeCount(post.likeCount);
+      setDislikeCount(0);
+
+      if (error instanceof Error && error.message.includes("401")) {
+        router.push("/login");
       }
     }
   };
@@ -311,7 +397,10 @@ function PostCard({ post }: PostCardProps) {
         <div className="flex items-center gap-6 pt-2 border-t border-border">
           <button
             onClick={handleLike}
-            className={`flex items-center gap-2 text-sm transition-colors ${
+            disabled={
+              likePostMutation.isPending || dislikePostMutation.isPending
+            }
+            className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               userLiked
                 ? "text-primary"
                 : "text-muted-foreground hover:text-primary"
@@ -322,7 +411,10 @@ function PostCard({ post }: PostCardProps) {
           </button>
           <button
             onClick={handleDislike}
-            className={`flex items-center gap-2 text-sm transition-colors ${
+            disabled={
+              likePostMutation.isPending || dislikePostMutation.isPending
+            }
+            className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               userDisliked
                 ? "text-destructive"
                 : "text-muted-foreground hover:text-destructive"
@@ -372,12 +464,13 @@ function mapPostResponse(post: PostResponse): Post {
       avatar: post.author.avatar_url,
     },
     createdAt: post.created_at,
-    likeCount: post.reaction_count, // Using reaction_count as likeCount for now
+    likeCount: post.likes,
+    dislikeCount: post.dislikes,
     commentCount: post.comment_count,
     viewCount: 0, // Backend doesn't have view count yet
     comments: [], // Comments will be fetched separately if needed
-    userLiked: false, // Will be determined by checking user's reactions
-    userDisliked: false,
+    userLiked: post.user_reaction === true,
+    userDisliked: post.user_reaction === false,
   };
 }
 
