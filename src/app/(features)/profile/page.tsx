@@ -22,10 +22,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserDetailItem from "@/app/(features)/profile/_components/user-detail-item";
 import UserDetailItemSkeleton from "@/app/(features)/profile/_components/user-detail-item-skeleton";
+import UserIcon from "@/components/common/user-icon";
 
 export default function MePage() {
   const router = useRouter();
@@ -192,15 +192,6 @@ export default function MePage() {
     }
   };
 
-  const getInitials = (username: string) => {
-    return username
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
     <FullPage minusHeight={80}>
       <div className="w-full mx-auto max-w-5xl px-4 py-4 space-y-2">
@@ -213,24 +204,15 @@ export default function MePage() {
         {/* Avatar and Username */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative group">
-            <Avatar className="h-20 w-20 md:h-28 md:w-28 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-              {previewUrl ? (
-                <AvatarImage
-                  src={previewUrl}
-                  alt={user.username}
-                  className="object-cover"
-                />
-              ) : user.avatar_url ? (
-                <AvatarImage
-                  src={user.avatar_url}
-                  alt={user.username}
-                  className="object-cover"
-                />
-              ) : null}
-              <AvatarFallback className="text-2xl md:text-3xl font-bold bg-primary/10 text-primary">
-                {getInitials(user.username)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="h-20 w-20 md:h-28 md:w-28 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all rounded-full">
+              <UserIcon
+                avatarUrl={previewUrl || user.avatar_url}
+                name={user.username}
+                size="large"
+                variant="primary"
+                className="h-20 w-20 md:h-28 md:w-28 text-2xl md:text-3xl ring-2 ring-transparent group-hover:ring-primary/20 transition-all"
+              />
+            </div>
             <button
               onClick={handleAvatarClick}
               disabled={uploadIconMutation.isPending}
