@@ -22,9 +22,16 @@ import {
   useLikePost,
   useDislikePost,
 } from "@/services/fastapi/posts";
+import {
+  useComments,
+  useLikeComment,
+  useDislikeComment,
+} from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import type { PostResponse } from "@/type/fastapi/posts";
+import type { CommentResponse } from "@/type/fastapi/comments";
 import CreatePost from "./_components/create-post";
+import CreateComment from "./_components/create-comment";
 
 // Frontend Post type (simplified, without title)
 interface Post {
@@ -60,6 +67,7 @@ interface Comment {
   replies?: Comment[];
   userLiked?: boolean;
   userDisliked?: boolean;
+  parentCommentId?: number | null;
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -114,11 +122,21 @@ function getInitials(name: string): string {
 
 interface CommentItemProps {
   comment: Comment;
+  postId: number;
   level?: number;
+  onReply?: () => void;
 }
 
-function CommentItem({ comment, level = 0 }: CommentItemProps) {
+function CommentItem({
+  comment,
+  postId,
+  level = 0,
+  onReply,
+}: CommentItemProps) {
+  const router = useRouter();
+  const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showReplyForm, setShowReplyForm] = useState(false);
   const [userLiked, setUserLiked] = useState(comment.userLiked || false);
   const [userDisliked, setUserDisliked] = useState(
     comment.userDisliked || false
@@ -126,32 +144,129 @@ function CommentItem({ comment, level = 0 }: CommentItemProps) {
   const [likeCount, setLikeCount] = useState(comment.likeCount);
   const [dislikeCount, setDislikeCount] = useState(comment.dislikeCount);
 
-  const handleLike = () => {
-    if (userLiked) {
-      setUserLiked(false);
-      setLikeCount((prev) => prev - 1);
-    } else {
-      setUserLiked(true);
-      setLikeCount((prev) => prev + 1);
-      if (userDisliked) {
-        setUserDisliked(false);
-        setDislikeCount((prev) => prev - 1);
+  const likeCommentMutation = useLikeComment();
+  const dislikeCommentMutation = useDislikeComment();
+
+  // Sync state when comment prop changes
+  useEffect(() => {
+    setUserLiked(comment.userLiked || false);
+    setUserDisliked(comment.userDisliked || false);
+    setLikeCount(comment.likeCount);
+    setDislikeCount(comment.dislikeCount);
+  }, [
+    comment.userLiked,
+    comment.userDisliked,
+    comment.likeCount,
+    comment.dislikeCount,
+  ]);
+
+  const handleLike = async () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    const commentId = parseInt(comment.id);
+    if (isNaN(commentId)) return;
+
+    try {
+      // Optimistic update
+      const wasLiked = userLiked;
+      const wasDisliked = userDisliked;
+
+      if (wasLiked) {
+        setUserLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setUserLiked(true);
+        setLikeCount((prev) => prev + 1);
+        if (wasDisliked) {
+          setUserDisliked(false);
+          setDislikeCount((prev) => Math.max(0, prev - 1));
+        }
+      }
+
+      // Call API
+      const updatedComment = await likeCommentMutation.mutateAsync(commentId);
+
+      // Update with actual API response
+      setLikeCount(updatedComment.likes);
+      setDislikeCount(updatedComment.dislikes);
+      setUserLiked(updatedComment.user_reaction === true);
+      setUserDisliked(updatedComment.user_reaction === false);
+    } catch (error) {
+      // Revert optimistic update on error
+      setUserLiked(comment.userLiked || false);
+      setUserDisliked(comment.userDisliked || false);
+      setLikeCount(comment.likeCount);
+      setDislikeCount(comment.dislikeCount);
+
+      if (error instanceof Error && error.message.includes("401")) {
+        router.push("/login");
       }
     }
   };
 
-  const handleDislike = () => {
-    if (userDisliked) {
-      setUserDisliked(false);
-      setDislikeCount((prev) => prev - 1);
-    } else {
-      setUserDisliked(true);
-      setDislikeCount((prev) => prev + 1);
-      if (userLiked) {
-        setUserLiked(false);
-        setLikeCount((prev) => prev - 1);
+  const handleDislike = async () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    const commentId = parseInt(comment.id);
+    if (isNaN(commentId)) return;
+
+    try {
+      // Optimistic update
+      const wasLiked = userLiked;
+      const wasDisliked = userDisliked;
+
+      if (wasDisliked) {
+        setUserDisliked(false);
+        setDislikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setUserDisliked(true);
+        setDislikeCount((prev) => prev + 1);
+        if (wasLiked) {
+          setUserLiked(false);
+          setLikeCount((prev) => Math.max(0, prev - 1));
+        }
+      }
+
+      // Call API
+      const updatedComment = await dislikeCommentMutation.mutateAsync(
+        commentId
+      );
+
+      // Update with actual API response
+      setLikeCount(updatedComment.likes);
+      setDislikeCount(updatedComment.dislikes);
+      setUserLiked(updatedComment.user_reaction === true);
+      setUserDisliked(updatedComment.user_reaction === false);
+    } catch (error) {
+      // Revert optimistic update on error
+      setUserLiked(comment.userLiked || false);
+      setUserDisliked(comment.userDisliked || false);
+      setLikeCount(comment.likeCount);
+      setDislikeCount(comment.dislikeCount);
+
+      if (error instanceof Error && error.message.includes("401")) {
+        router.push("/login");
       }
     }
+  };
+
+  const handleReplyClick = () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
+    setShowReplyForm(!showReplyForm);
+  };
+
+  const handleReplySuccess = () => {
+    setShowReplyForm(false);
+    onReply?.();
   };
 
   return (
@@ -189,7 +304,11 @@ function CommentItem({ comment, level = 0 }: CommentItemProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1.5 text-xs hover:text-primary transition-colors ${
+              disabled={
+                likeCommentMutation.isPending ||
+                dislikeCommentMutation.isPending
+              }
+              className={`flex items-center gap-1.5 text-xs hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 userLiked ? "text-primary" : "text-muted-foreground"
               }`}
             >
@@ -198,12 +317,23 @@ function CommentItem({ comment, level = 0 }: CommentItemProps) {
             </button>
             <button
               onClick={handleDislike}
-              className={`flex items-center gap-1.5 text-xs hover:text-destructive transition-colors ${
+              disabled={
+                likeCommentMutation.isPending ||
+                dislikeCommentMutation.isPending
+              }
+              className={`flex items-center gap-1.5 text-xs hover:text-destructive transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 userDisliked ? "text-destructive" : "text-muted-foreground"
               }`}
             >
               <ThumbsDown className="w-4 h-4" />
               <span>{dislikeCount}</span>
+            </button>
+            <button
+              onClick={handleReplyClick}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Reply</span>
             </button>
             {comment.replyCount > 0 && (
               <button
@@ -224,10 +354,26 @@ function CommentItem({ comment, level = 0 }: CommentItemProps) {
               </button>
             )}
           </div>
+          {showReplyForm && (
+            <div className="mt-3 pl-4 border-l-2 border-border">
+              <CreateComment
+                postId={postId}
+                parentCommentId={parseInt(comment.id)}
+                onSuccess={handleReplySuccess}
+                placeholder="Write a reply..."
+              />
+            </div>
+          )}
           {comment.replies && comment.replies.length > 0 && isExpanded && (
             <div className="mt-4 space-y-2">
               {comment.replies.map((reply) => (
-                <CommentItem key={reply.id} comment={reply} level={level + 1} />
+                <CommentItem
+                  key={reply.id}
+                  comment={reply}
+                  postId={postId}
+                  level={level + 1}
+                  onReply={onReply}
+                />
               ))}
             </div>
           )}
@@ -245,6 +391,19 @@ function PostCard({ post }: PostCardProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(false);
+  const postId = parseInt(post.id);
+
+  // Fetch comments when expanded
+  const {
+    data: commentsData,
+    isLoading: commentsLoading,
+    refetch: refetchComments,
+  } = useComments(
+    isExpanded ? postId : null,
+    1,
+    20,
+    true // include replies
+  );
 
   // Initialize state from post data (from API response)
   const [userLiked, setUserLiked] = useState(post.userLiked || false);
@@ -436,16 +595,50 @@ function PostCard({ post }: PostCardProps) {
           </div>
         </div>
 
-        {post.comments.length > 0 && isExpanded && (
+        {isExpanded && (
           <div className="pt-4 border-t border-border mt-4">
             <h4 className="text-sm font-semibold mb-4">
               Comments ({post.commentCount})
             </h4>
-            <div className="space-y-1">
-              {post.comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
-              ))}
+
+            {/* Create Comment Form */}
+            <div className="mb-4">
+              <CreateComment
+                postId={postId}
+                onSuccess={() => refetchComments()}
+                placeholder="Write a comment..."
+              />
             </div>
+
+            {/* Comments List */}
+            {commentsLoading ? (
+              <div className="space-y-4">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : commentsData && commentsData.items.length > 0 ? (
+              <div className="space-y-1">
+                {commentsData.items.map((comment) => (
+                  <CommentItem
+                    key={comment.id}
+                    comment={mapCommentResponse(comment)}
+                    postId={postId}
+                    onReply={() => refetchComments()}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No comments yet. Be the first to comment!
+              </p>
+            )}
           </div>
         )}
       </CardContent>
@@ -468,9 +661,38 @@ function mapPostResponse(post: PostResponse): Post {
     dislikeCount: post.dislikes,
     commentCount: post.comment_count,
     viewCount: 0, // Backend doesn't have view count yet
-    comments: [], // Comments will be fetched separately if needed
+    comments: [], // Comments will be fetched separately when expanded
     userLiked: post.user_reaction === true,
     userDisliked: post.user_reaction === false,
+  };
+}
+
+/**
+ * Helper function to map CommentResponse to frontend Comment type
+ *
+ * Two-layer comment structure:
+ * - Layer 1 (Top-level): Comments directly under posts (parent_comment_id is null)
+ * - Layer 2 (Replies): All replies, whether to top-level comments or other replies
+ *   - Backend automatically enforces this structure via root_comment_id
+ *   - Users can reply to any comment, and it will stay in layer 2
+ */
+function mapCommentResponse(comment: CommentResponse): Comment {
+  return {
+    id: comment.id.toString(),
+    author: {
+      id: comment.author.id.toString(),
+      name: comment.author.username,
+      avatar: comment.author.avatar_url,
+    },
+    content: comment.content,
+    createdAt: comment.created_at,
+    likeCount: comment.likes,
+    dislikeCount: comment.dislikes,
+    replyCount: comment.reply_count,
+    replies: comment.replies?.map(mapCommentResponse), // Recursively map nested replies
+    userLiked: comment.user_reaction === true, // Shows if current user liked this comment
+    userDisliked: comment.user_reaction === false, // Shows if current user disliked this comment
+    parentCommentId: comment.parent_comment_id,
   };
 }
 
