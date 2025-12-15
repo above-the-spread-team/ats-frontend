@@ -30,6 +30,7 @@ export interface CommentResponse extends CommentBase {
   root_comment_id: number | null; // ID of root top-level comment (null for top-level)
   created_at: string;
   updated_at: string;
+  replied_to_user: CommentAuthor | null; // User who was replied to (null for top-level comments)
   reply_count: number;
   reaction_count: number;
   likes: number;
@@ -55,4 +56,3 @@ export interface CommentReactionStats {
   dislikes: number;
   user_reaction: boolean | null; // True for like, False for dislike, null if no reaction
 }
-

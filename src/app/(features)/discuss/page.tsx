@@ -68,6 +68,11 @@ interface Comment {
   userLiked?: boolean;
   userDisliked?: boolean;
   parentCommentId?: number | null;
+  repliedToUser?: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  } | null; // User who was replied to (null for top-level comments)
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -299,6 +304,11 @@ function CommentItem({
             </span>
           </div>
           <p className="text-sm text-foreground mb-2 whitespace-pre-wrap break-words">
+            {comment.repliedToUser && (
+              <span className="text-primary font-medium">
+                @{comment.repliedToUser.name}{" "}
+              </span>
+            )}
             {comment.content}
           </p>
           <div className="flex items-center gap-4">
@@ -693,6 +703,13 @@ function mapCommentResponse(comment: CommentResponse): Comment {
     userLiked: comment.user_reaction === true, // Shows if current user liked this comment
     userDisliked: comment.user_reaction === false, // Shows if current user disliked this comment
     parentCommentId: comment.parent_comment_id,
+    repliedToUser: comment.replied_to_user
+      ? {
+          id: comment.replied_to_user.id.toString(),
+          name: comment.replied_to_user.username,
+          avatar: comment.replied_to_user.avatar_url,
+        }
+      : null, // User who was replied to (for displaying @username)
   };
 }
 

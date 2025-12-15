@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateComment } from "@/services/fastapi/comments";
@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 interface CreateCommentProps {
   postId: number;
   parentCommentId?: number | null;
+  repliedToUsername?: string | null; // Username to show @username at the beginning
   onSuccess?: () => void;
   placeholder?: string;
   autoFocus?: boolean;
@@ -19,6 +20,7 @@ interface CreateCommentProps {
 export default function CreateComment({
   postId,
   parentCommentId = null,
+  repliedToUsername = null,
   onSuccess,
   placeholder = "Write a comment...",
   autoFocus = false,
@@ -26,7 +28,18 @@ export default function CreateComment({
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const createCommentMutation = useCreateComment();
-  const [content, setContent] = useState("");
+  // Initialize with @username if replying to a comment
+  const [content, setContent] = useState(() => {
+    return repliedToUsername ? `@${repliedToUsername} ` : "";
+  });
+
+  // Update content when repliedToUsername changes (only if content is empty)
+  useEffect(() => {
+    if (repliedToUsername && content.trim() === "") {
+      setContent(`@${repliedToUsername} `);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repliedToUsername]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,4 +106,3 @@ export default function CreateComment({
     </form>
   );
 }
-
