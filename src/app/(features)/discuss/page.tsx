@@ -680,11 +680,15 @@ function mapPostResponse(post: PostResponse): Post {
 /**
  * Helper function to map CommentResponse to frontend Comment type
  *
- * Two-layer comment structure:
+ * Two-layer comment system with @username display rules:
  * - Layer 1 (Top-level): Comments directly under posts (parent_comment_id is null)
  * - Layer 2 (Replies): All replies, whether to top-level comments or other replies
  *   - Backend automatically enforces this structure via root_comment_id
- *   - Users can reply to any comment, and it will stay in layer 2
+ *
+ * @username display rules (handled by backend):
+ * 1. First-layer replies (replying to top-level): replied_to_user = null → No @username
+ * 2. Second-layer replies to another user's reply: replied_to_user set → Show @username
+ * 3. Second-layer replies to own reply: replied_to_user = null → No @username
  */
 function mapCommentResponse(comment: CommentResponse): Comment {
   return {
@@ -703,13 +707,14 @@ function mapCommentResponse(comment: CommentResponse): Comment {
     userLiked: comment.user_reaction === true, // Shows if current user liked this comment
     userDisliked: comment.user_reaction === false, // Shows if current user disliked this comment
     parentCommentId: comment.parent_comment_id,
+    // replied_to_user is only set by backend for second-layer replies to another user's reply
     repliedToUser: comment.replied_to_user
       ? {
           id: comment.replied_to_user.id.toString(),
           name: comment.replied_to_user.username,
           avatar: comment.replied_to_user.avatar_url,
         }
-      : null, // User who was replied to (for displaying @username)
+      : null,
   };
 }
 
