@@ -24,6 +24,7 @@ import {
 } from "@/services/fastapi/posts";
 import {
   useComments,
+  useCommentReplies,
   useLikeComment,
   useDislikeComment,
 } from "@/services/fastapi/comments";
@@ -140,7 +141,7 @@ function CommentItem({
 }: CommentItemProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false); // Start collapsed, expand when user clicks
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [userLiked, setUserLiked] = useState(comment.userLiked || false);
   const [userDisliked, setUserDisliked] = useState(
@@ -151,6 +152,14 @@ function CommentItem({
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
+
+  // Only fetch replies for top-level comments (level === 0) when expanded
+  const commentId = level === 0 ? parseInt(comment.id) : null;
+  const {
+    data: repliesData,
+    isLoading: repliesLoading,
+    refetch: refetchReplies,
+  } = useCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
   // Sync state when comment prop changes
   useEffect(() => {
@@ -369,22 +378,50 @@ function CommentItem({
               <CreateComment
                 postId={postId}
                 parentCommentId={parseInt(comment.id)}
-                onSuccess={handleReplySuccess}
+                onSuccess={() => {
+                  handleReplySuccess();
+                  // Refetch replies if expanded
+                  if (isExpanded && level === 0) {
+                    refetchReplies();
+                  }
+                }}
                 placeholder="Write a reply..."
               />
             </div>
           )}
-          {comment.replies && comment.replies.length > 0 && isExpanded && (
+          {/* Only show replies for top-level comments (level === 0) */}
+          {level === 0 && isExpanded && (
             <div className="mt-4 space-y-2">
-              {comment.replies.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  postId={postId}
-                  level={level + 1}
-                  onReply={onReply}
-                />
-              ))}
+              {repliesLoading ? (
+                <div className="space-y-2 pl-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-muted animate-pulse" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : repliesData && repliesData.items.length > 0 ? (
+                repliesData.items.map((reply) => (
+                  <CommentItem
+                    key={reply.id}
+                    comment={mapCommentResponse(reply)}
+                    postId={postId}
+                    level={level + 1}
+                    onReply={() => {
+                      refetchReplies();
+                      onReply?.();
+                    }}
+                  />
+                ))
+              ) : comment.replyCount > 0 ? (
+                <p className="text-xs text-muted-foreground pl-4">
+                  No replies yet
+                </p>
+              ) : null}
             </div>
           )}
         </div>
@@ -412,7 +449,7 @@ function PostCard({ post }: PostCardProps) {
     isExpanded ? postId : null,
     1,
     20,
-    true // include replies
+    false // Only fetch top-level comments, replies loaded separately
   );
 
   // Initialize state from post data (from API response)
@@ -703,7 +740,8 @@ function mapCommentResponse(comment: CommentResponse): Comment {
     likeCount: comment.likes,
     dislikeCount: comment.dislikes,
     replyCount: comment.reply_count,
-    replies: comment.replies?.map(mapCommentResponse), // Recursively map nested replies
+    // Replies are loaded separately via lazy loading, so don't include nested replies here
+    replies: [], // Replies are fetched separately when user clicks "View replies"
     userLiked: comment.user_reaction === true, // Shows if current user liked this comment
     userDisliked: comment.user_reaction === false, // Shows if current user disliked this comment
     parentCommentId: comment.parent_comment_id,

@@ -88,7 +88,7 @@ export async function listComments(
   postId: number,
   page: number = 1,
   pageSize: number = 20,
-  includeReplies: boolean = true
+  includeReplies: boolean = false
 ): Promise<CommentListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -281,18 +281,83 @@ export async function deleteComment(commentId: number): Promise<void> {
 }
 
 /**
+ * Get replies for a specific top-level comment (lazy loading)
+ * Use this endpoint when user clicks "View replies"
+ */
+export async function getCommentReplies(
+  commentId: number,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<CommentListResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    page_size: pageSize.toString(),
+  });
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/posts/comments/${commentId}/replies?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: CommentError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to fetch replies" };
+
+    if (response.status === 404) {
+      throw new Error(error.detail || "Comment not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to fetch replies. Please try again."
+    );
+  }
+
+  const result: CommentListResponse = await response.json();
+  return result;
+}
+
+/**
  * React Query hook to get comments for a post
+ * By default, only returns top-level comments (includeReplies = false)
+ * Replies are loaded separately using useCommentReplies hook
  */
 export function useComments(
   postId: number | null,
   page: number = 1,
   pageSize: number = 20,
-  includeReplies: boolean = true
+  includeReplies: boolean = false
 ) {
   return useQuery<CommentListResponse>({
     queryKey: ["comments", postId, page, pageSize, includeReplies],
     queryFn: () => listComments(postId!, page, pageSize, includeReplies),
     enabled: !!postId,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * React Query hook to get replies for a specific top-level comment (lazy loading)
+ * Use this when user clicks "View replies" on a comment
+ */
+export function useCommentReplies(
+  commentId: number | null,
+  page: number = 1,
+  pageSize: number = 20
+) {
+  return useQuery<CommentListResponse>({
+    queryKey: ["commentReplies", commentId, page, pageSize],
+    queryFn: () => getCommentReplies(commentId!, page, pageSize),
+    enabled: !!commentId,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
   });
