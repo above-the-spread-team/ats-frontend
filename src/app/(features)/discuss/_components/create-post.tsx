@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -14,14 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useCreatePost } from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { cn } from "@/lib/utils";
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+import UserIcon from "@/components/common/user-icon";
 
 interface CreatePostProps {
   open: boolean;
@@ -74,19 +66,12 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           {/* User Info */}
           {currentUser && (
             <div className="flex items-center gap-3 pb-4 border-b border-border">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0 overflow-hidden relative">
-                {currentUser.avatar_url ? (
-                  <Image
-                    src={currentUser.avatar_url}
-                    alt={currentUser.username}
-                    width={48}
-                    height={48}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <span>{getInitials(currentUser.username)}</span>
-                )}
-              </div>
+              <UserIcon
+                avatarUrl={currentUser.avatar_url}
+                name={currentUser.username}
+                size="large"
+                variant="primary"
+              />
               <div>
                 <p className="text-sm font-semibold">{currentUser.username}</p>
               </div>

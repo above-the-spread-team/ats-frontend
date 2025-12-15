@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import FullPage from "@/components/common/full-page";
+import UserIcon from "@/components/common/user-icon";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,14 +115,6 @@ function formatTimeAgo(dateString: string): string {
   } catch {
     return "recently";
   }
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 interface CommentItemProps {
@@ -290,19 +282,12 @@ function CommentItem({
     >
       <div className="flex gap-3 py-3">
         <div className="flex-shrink-0">
-          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs md:text-sm font-semibold overflow-hidden">
-            {comment.author.avatar ? (
-              <Image
-                src={comment.author.avatar}
-                alt={comment.author.name}
-                width={32}
-                height={32}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <span>{getInitials(comment.author.name)}</span>
-            )}
-          </div>
+          <UserIcon
+            avatarUrl={comment.author.avatar}
+            name={comment.author.name}
+            size="small"
+            variant="primary"
+          />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -567,19 +552,12 @@ function PostCard({ post }: PostCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start px-4 justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm md:text-base font-semibold flex-shrink-0 overflow-hidden">
-              {post.author.avatar ? (
-                <Image
-                  src={post.author.avatar}
-                  alt={post.author.name}
-                  width={48}
-                  height={48}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                <span>{getInitials(post.author.name)}</span>
-              )}
-            </div>
+            <UserIcon
+              avatarUrl={post.author.avatar}
+              name={post.author.name}
+              size="medium"
+              variant="primary"
+            />
             <div className="flex-1 min-w-0">
               <p className="text-sm md:text-base font-semibold truncate">
                 {post.author.name}
@@ -790,25 +768,18 @@ export default function DiscussPage() {
         <Card className="mb-4 hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mygray flex items-center justify-center text-muted-foreground flex-shrink-0 overflow-hidden">
-                {currentUser ? (
-                  currentUser.avatar_url ? (
-                    <Image
-                      src={currentUser.avatar_url}
-                      alt={currentUser.username}
-                      width={48}
-                      height={48}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm md:text-base font-semibold">
-                      {getInitials(currentUser.username)}
-                    </span>
-                  )
-                ) : (
+              {currentUser ? (
+                <UserIcon
+                  avatarUrl={currentUser.avatar_url}
+                  name={currentUser.username}
+                  size="medium"
+                  variant="primary"
+                />
+              ) : (
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mygray flex items-center justify-center text-muted-foreground flex-shrink-0 overflow-hidden">
                   <User className="w-5 h-5 md:w-6 md:h-6 text-background font-black" />
-                )}
-              </div>
+                </div>
+              )}
               <div
                 onClick={handleCreatePostClick}
                 className="flex-1 bg-muted/50 hover:bg-muted border border-border rounded-2xl px-4 py-3 cursor-pointer transition-colors"

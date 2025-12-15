@@ -8,7 +8,7 @@ import LogoutDialog from "@/components/common/popup";
 import Image from "next/image";
 import Link from "next/link";
 import { User, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserIcon from "@/components/common/user-icon";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,15 +80,6 @@ export default function Header() {
     };
   }, [queryClient]);
 
-  const getInitials = (username: string) => {
-    return username
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
     <div className="flex justify-between  items-center px-4 md:px-6 h-12 md:h-14  bg-primary">
       <Link
@@ -125,21 +116,15 @@ export default function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="outline-none">
-                <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all">
-                  {user?.avatar_url ? (
-                    <AvatarImage
-                      src={user.avatar_url}
-                      alt={user.username || "User"}
-                    />
-                  ) : null}
-                  <AvatarFallback className="bg-primary-active text-white text-sm font-semibold">
-                    {user?.username ? (
-                      getInitials(user.username)
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all rounded-full">
+                  <UserIcon
+                    avatarUrl={user?.avatar_url}
+                    name={user?.username || "User"}
+                    size="small"
+                    variant="primary"
+                    className="ring-2 !w-8 !h-8 ring-transparent hover:ring-white/20 transition-all"
+                  />
+                </div>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
