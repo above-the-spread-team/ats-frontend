@@ -25,6 +25,10 @@ export default {
         icon: {
           hover: "hsl(var(--icon-hover))",
         },
+        heart: {
+          DEFAULT: "hsl(var(--heart))",
+          hover: "hsl(var(--heart-hover))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

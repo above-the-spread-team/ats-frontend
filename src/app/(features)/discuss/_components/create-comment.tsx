@@ -79,7 +79,7 @@ export default function CreateComment({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
-        className="min-h-[80px] resize-none"
+        className="min-h-[80px] resize-none bg-red-500"
         autoFocus={autoFocus}
         disabled={createCommentMutation.isPending}
         maxLength={5000}

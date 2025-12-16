@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ThumbsUp,
+  Heart,
   ThumbsDown,
   MessageCircle,
   MoreVertical,
@@ -311,11 +311,11 @@ function CommentItem({
                 likeCommentMutation.isPending ||
                 dislikeCommentMutation.isPending
               }
-              className={`flex items-center gap-1.5 text-xs hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                userLiked ? "text-primary" : "text-muted-foreground"
+              className={`flex items-center gap-1.5 text-xs hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                userLiked ? "text-heart" : "text-muted-foreground"
               }`}
             >
-              <ThumbsUp className="w-4 h-4" />
+              <Heart className={`w-4 h-4 ${userLiked ? "fill-current" : ""}`} />
               <span>{likeCount}</span>
             </button>
             <button
@@ -324,16 +324,16 @@ function CommentItem({
                 likeCommentMutation.isPending ||
                 dislikeCommentMutation.isPending
               }
-              className={`flex items-center gap-1.5 text-xs hover:text-destructive transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                userDisliked ? "text-destructive" : "text-muted-foreground"
+              className={`flex items-center gap-1.5 text-xs hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                userDisliked ? "text-heart" : "text-muted-foreground"
               }`}
             >
-              <ThumbsDown className="w-4 h-4" />
+              <ThumbsDown className={`w-4 h-4`} />
               <span>{dislikeCount}</span>
             </button>
             <button
               onClick={handleReplyClick}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary-font transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Reply</span>
@@ -589,11 +589,11 @@ function PostCard({ post }: PostCardProps) {
             }
             className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               userLiked
-                ? "text-primary"
-                : "text-muted-foreground hover:text-primary"
+                ? "text-heart"
+                : "text-muted-foreground hover:text-heart-hover"
             }`}
           >
-            <ThumbsUp className="w-5 h-5" />
+            <Heart className={`w-5 h-5 ${userLiked ? "fill-current" : ""}`} />
             <span>{likeCount}</span>
           </button>
           <button
@@ -603,16 +603,16 @@ function PostCard({ post }: PostCardProps) {
             }
             className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               userDisliked
-                ? "text-destructive"
-                : "text-muted-foreground hover:text-destructive"
+                ? "text-heart"
+                : "text-muted-foreground hover:text-heart-hover"
             }`}
           >
-            <ThumbsDown className="w-5 h-5" />
+            <ThumbsDown className={`w-5 h-5`} />
             <span>{dislikeCount}</span>
           </button>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary-font transition-colors"
           >
             <MessageCircle className="w-5 h-5" />
             <span>{post.commentCount}</span>
