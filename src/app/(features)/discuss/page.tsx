@@ -548,9 +548,9 @@ function PostCard({ post }: PostCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start px-4 justify-between gap-4">
+    <Card className="hover:shadow-md transition-shadow space-y-2 p-3 px-4">
+      <CardHeader className="p-0  ">
+        <div className="flex items-start   justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <UserIcon
               avatarUrl={post.author.avatar}
@@ -567,17 +567,21 @@ function PostCard({ post }: PostCardProps) {
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0 rounded-full"
+          >
             <MoreVertical className="w-4 h-4" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-2">
-        <p className="text-sm md:text-base  text-foreground whitespace-pre-wrap break-words">
+      <CardContent className="space-y-2 p-0">
+        <p className="text-sm md:text-base   text-foreground whitespace-pre-wrap break-words">
           {post.content}
         </p>
 
-        <div className="flex items-center gap-6 pt-2 border-t border-border">
+        <div className="flex items-center px-1 gap-4 md:gap-6 pt-2 border-t border-border">
           <button
             onClick={handleLike}
             disabled={
@@ -763,10 +767,10 @@ export default function DiscussPage() {
 
   return (
     <FullPage minusHeight={70}>
-      <div className="container mx-auto py-4 md:py-6 max-w-4xl px-4">
+      <div className="container  mx-auto py-4 md:py-6 max-w-4xl px-4">
         {/* Create Post Input */}
-        <Card className="mb-4 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
+        <Card className="mb-4 hover:shadow-md rounded-3xl transition-shadow">
+          <CardContent className="p-2 md:p-3">
             <div className="flex items-center gap-3">
               {currentUser ? (
                 <UserIcon
@@ -782,9 +786,9 @@ export default function DiscussPage() {
               )}
               <div
                 onClick={handleCreatePostClick}
-                className="flex-1 bg-muted/50 hover:bg-muted border border-border rounded-2xl px-4 py-3 cursor-pointer transition-colors"
+                className="flex-1 rounded-full bg-mygray/20 hover:bg-muted border border-border  px-4 py-2 md:py-3 cursor-pointer transition-colors"
               >
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   Want to say something?
                 </p>
               </div>
