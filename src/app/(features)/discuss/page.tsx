@@ -358,7 +358,7 @@ function CommentItem({
             )}
           </div>
           {showReplyForm && (
-            <div className="mt-3 pl-4 border-l-2 border-border">
+            <div className="mt-2 pl-4 border-l-2 border-border">
               <CreateComment
                 postId={postId}
                 parentCommentId={parseInt(comment.id)}
@@ -369,7 +369,7 @@ function CommentItem({
                     refetchReplies();
                   }
                 }}
-                placeholder="Write a reply..."
+                onCancel={() => setShowReplyForm(false)}
               />
             </div>
           )}
@@ -620,17 +620,16 @@ function PostCard({ post }: PostCardProps) {
         </div>
 
         {isExpanded && (
-          <div className="pt-4 border-t border-border mt-4">
-            <h4 className="text-sm font-semibold mb-4">
+          <div className="pt-2 border-t border-border ">
+            <h4 className="text-sm font-semibold mb-1 ">
               Comments ({post.commentCount})
             </h4>
 
             {/* Create Comment Form */}
-            <div className="mb-4">
+            <div className="">
               <CreateComment
                 postId={postId}
                 onSuccess={() => refetchComments()}
-                placeholder="Write a comment..."
               />
             </div>
 
