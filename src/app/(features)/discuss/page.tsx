@@ -230,7 +230,11 @@ function PostCard({ post }: PostCardProps) {
                 : "text-muted-foreground hover:text-heart-hover"
             }`}
           >
-            <Heart className={`w-5 h-5 ${userLiked ? "fill-current" : ""}`} />
+            <Heart
+              className={`w-5 h-5 scale-90 md:scale-100 ${
+                userLiked ? "fill-current" : ""
+              }`}
+            />
             <span className="font-semibold">{likeCount}</span>
           </button>
           <button
@@ -244,7 +248,7 @@ function PostCard({ post }: PostCardProps) {
                 : "text-muted-foreground hover:text-heart-hover"
             }`}
           >
-            <ThumbsDown className={`w-5 h-5`} />
+            <ThumbsDown className="w-5 h-5 scale-90 md:scale-100" />
             <span className="font-semibold">{dislikeCount}</span>
           </button>
           <button
@@ -255,19 +259,13 @@ function PostCard({ post }: PostCardProps) {
                 : "text-muted-foreground hover:text-primary-font"
             }`}
           >
-            <MessageCircle
-              className={`w-5 h-5 ${isExpanded ? "fill-current scale-90" : ""}`}
-            />
+            <MessageCircle className={`w-5 scale-90 md:scale-100 h-5 `} />
             <span className="font-semibold">{post.commentCount}</span>
           </button>
         </div>
 
         {isExpanded && (
           <div className="pt-2 border-t border-border ">
-            <h4 className="text-sm font-semibold mb-2 ">
-              Comments ({post.commentCount})
-            </h4>
-
             {/* Create Comment Form */}
             <div className="mb-1 md:mb-2">
               {!showCommentForm ? (
@@ -313,35 +311,37 @@ function PostCard({ post }: PostCardProps) {
               )}
             </div>
 
-            {/* Comments List */}
-            {commentsLoading ? (
-              <div className="space-y-4">
-                {[...Array(2)].map((_, i) => (
-                  <div key={i} className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                      <div className="h-4 w-full bg-muted animate-pulse rounded" />
+            {/* Comments List - Scrollable */}
+            <div className="max-h-[400px] pb-2 md:max-h-[500px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30">
+              {commentsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : commentsData && commentsData.items.length > 0 ? (
-              <div className="space-y-5 md:space-y-5 pt-3 md:pt-4">
-                {commentsData.items.map((comment) => (
-                  <CommentItem
-                    key={comment.id}
-                    comment={mapCommentResponse(comment)}
-                    postId={postId}
-                    onReply={() => refetchComments()}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No comments yet. Be the first to comment!
-              </p>
-            )}
+                  ))}
+                </div>
+              ) : commentsData && commentsData.items.length > 0 ? (
+                <div className="space-y-5 md:space-y-5 pt-3 md:pt-4">
+                  {commentsData.items.map((comment) => (
+                    <CommentItem
+                      key={comment.id}
+                      comment={mapCommentResponse(comment)}
+                      postId={postId}
+                      onReply={() => refetchComments()}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No comments yet. Be the first to comment!
+                </p>
+              )}
+            </div>
           </div>
         )}
       </CardContent>

@@ -309,7 +309,9 @@ export default function CommentItem({
                 userLiked ? "text-heart" : "text-muted-foreground"
               }`}
             >
-              <Heart className={`w-4 h-4 ${userLiked ? "fill-current" : ""}`} />
+              <Heart
+                className={` w-4 h-4 ${userLiked ? "fill-current" : ""}`}
+              />
               <span>{likeCount}</span>
             </button>
             <button

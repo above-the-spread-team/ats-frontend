@@ -110,17 +110,17 @@ export default function CreateComment({
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="min-h-[40px] !bg-muted/50  rounded-none border-0 border-b-2 border-t-0 border-l-0 border-r-0 border-primary-font/50 focus-visible:border-b-2 focus-visible:border-t-0 focus-visible:border-l-0 focus-visible:border-r-0 resize-none overflow-hidden py-2  shadow-none focus-visible:ring-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="min-h-[30px] text-sm md:text-base !bg-muted/50  rounded-none border-0 border-b-2 border-t-0 border-l-0 border-r-0 border-primary-font/50 focus-visible:border-b-2 focus-visible:border-t-0 focus-visible:border-l-0 focus-visible:border-r-0 resize-none overflow-hidden py-1 md:py-2  shadow-none focus-visible:ring-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           autoFocus={autoFocus}
           disabled={createCommentMutation.isPending}
           maxLength={5001}
           rows={1}
         />
         <div className="flex items-center justify-between">
-          <div className="min-h-[20px]">
+          <div className="min-h-[10px] -mt-2">
             {content.length > 5000 && (
               <span className="text-xs text-destructive">
-                Character limit exceeded ({content.length}/5000)
+                ({content.length}/5000)
               </span>
             )}
           </div>
@@ -143,7 +143,7 @@ export default function CreateComment({
                 content.length > 5000 ||
                 createCommentMutation.isPending
               }
-              className="flex-shrink-0 rounded-full h-8 px-4"
+              className="flex-shrink-0 rounded-full h-6 md:h-7 px-4"
             >
               {createCommentMutation.isPending ? (
                 <>
