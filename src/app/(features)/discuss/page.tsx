@@ -231,7 +231,7 @@ function PostCard({ post }: PostCardProps) {
             }`}
           >
             <Heart className={`w-5 h-5 ${userLiked ? "fill-current" : ""}`} />
-            <span>{likeCount}</span>
+            <span className="font-semibold">{likeCount}</span>
           </button>
           <button
             onClick={handleDislike}
@@ -245,14 +245,20 @@ function PostCard({ post }: PostCardProps) {
             }`}
           >
             <ThumbsDown className={`w-5 h-5`} />
-            <span>{dislikeCount}</span>
+            <span className="font-semibold">{dislikeCount}</span>
           </button>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2 text-sm  text-muted-foreground hover:text-primary-font transition-colors"
+            className={`flex items-center gap-2 text-sm transition-colors ${
+              isExpanded
+                ? "text-primary-font "
+                : "text-muted-foreground hover:text-primary-font"
+            }`}
           >
-            <MessageCircle className="w-5 h-5" />
-            <span>{post.commentCount}</span>
+            <MessageCircle
+              className={`w-5 h-5 ${isExpanded ? "fill-current scale-90" : ""}`}
+            />
+            <span className="font-semibold">{post.commentCount}</span>
           </button>
         </div>
 

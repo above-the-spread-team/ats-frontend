@@ -95,7 +95,7 @@ export default function CreateComment({
   }
 
   return (
-    <div className="flex items-start  gap-3">
+    <div className="flex items-start   gap-3">
       <div className="flex-shrink-0 pt-2">
         <UserIcon
           avatarUrl={currentUser.avatar_url}
