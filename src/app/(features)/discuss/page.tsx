@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import FullPage from "@/components/common/full-page";
 import UserIcon from "@/components/common/user-icon";
@@ -59,6 +59,9 @@ function PostCard({ post }: PostCardProps) {
   const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [showViewMore, setShowViewMore] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
   const postId = parseInt(post.id);
 
   // Fetch comments when expanded
@@ -86,6 +89,33 @@ function PostCard({ post }: PostCardProps) {
     setLikeCount(post.likeCount);
     setDislikeCount(post.dislikeCount);
   }, [post.userLiked, post.userDisliked, post.likeCount, post.dislikeCount]);
+
+  // Check if content exceeds 10 lines
+  useEffect(() => {
+    if (contentRef.current && !isContentExpanded) {
+      // Temporarily remove line-clamp to measure actual height
+      const element = contentRef.current;
+      const hadLineClamp = element.classList.contains("line-clamp-10");
+      if (hadLineClamp) {
+        element.classList.remove("line-clamp-10");
+      }
+
+      const lineHeight = parseFloat(
+        window.getComputedStyle(element).lineHeight
+      );
+      const maxHeight = lineHeight * 10; // 10 lines
+      const actualHeight = element.scrollHeight;
+
+      if (hadLineClamp) {
+        element.classList.add("line-clamp-10");
+      }
+
+      setShowViewMore(actualHeight > maxHeight);
+    } else if (isContentExpanded) {
+      // If expanded, we know it exceeded 10 lines
+      setShowViewMore(true);
+    }
+  }, [post.content, isContentExpanded]);
 
   const likePostMutation = useLikePost();
   const dislikePostMutation = useDislikePost();
@@ -214,9 +244,24 @@ function PostCard({ post }: PostCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-2 p-0">
-        <p className="text-sm md:text-base   text-foreground whitespace-pre-wrap break-words">
-          {post.content}
-        </p>
+        <div className="mb-1.5 flex flex-col items-start">
+          <p
+            ref={contentRef}
+            className={`text-sm md:text-base text-foreground whitespace-pre-wrap break-words ${
+              !isContentExpanded && showViewMore ? "line-clamp-[14]" : ""
+            }`}
+          >
+            {post.content}
+          </p>
+          {showViewMore && (
+            <button
+              onClick={() => setIsContentExpanded(!isContentExpanded)}
+              className="text-xs text-muted-foreground font-semibold hover:text-primary-font transition-colors mt-0.5"
+            >
+              {isContentExpanded ? "View less" : "View more"}
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center px-1 gap-4 md:gap-6 pt-2 border-t border-border">
           <button
