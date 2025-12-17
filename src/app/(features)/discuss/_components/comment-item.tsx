@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import UserIcon from "@/components/common/user-icon";
 import {
@@ -137,6 +137,9 @@ export default function CommentItem({
   );
   const [likeCount, setLikeCount] = useState(comment.likeCount);
   const [dislikeCount, setDislikeCount] = useState(comment.dislikeCount);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
@@ -161,6 +164,33 @@ export default function CommentItem({
     comment.likeCount,
     comment.dislikeCount,
   ]);
+
+  // Check if content exceeds 4 lines
+  useEffect(() => {
+    if (contentRef.current && !isContentExpanded) {
+      // Temporarily remove line-clamp to measure actual height
+      const element = contentRef.current;
+      const hadLineClamp = element.classList.contains("line-clamp-4");
+      if (hadLineClamp) {
+        element.classList.remove("line-clamp-4");
+      }
+
+      const lineHeight = parseFloat(
+        window.getComputedStyle(element).lineHeight
+      );
+      const maxHeight = lineHeight * 4; // 4 lines
+      const actualHeight = element.scrollHeight;
+
+      if (hadLineClamp) {
+        element.classList.add("line-clamp-4");
+      }
+
+      setShowReadMore(actualHeight > maxHeight);
+    } else if (isContentExpanded) {
+      // If expanded, we know it exceeded 4 lines
+      setShowReadMore(true);
+    }
+  }, [comment.content, isContentExpanded]);
 
   const handleLike = async () => {
     if (!currentUser) {
@@ -290,14 +320,29 @@ export default function CommentItem({
               {formatTimeAgo(comment.createdAt)}
             </span>
           </div>
-          <p className="text-sm text-foreground mb-2 whitespace-pre-wrap break-words">
-            {comment.repliedToUser && (
-              <span className="text-primary font-medium">
-                @{comment.repliedToUser.name}{" "}
-              </span>
+          <div className="mb-1.5 flex flex-col items-start">
+            <p
+              ref={contentRef}
+              className={`text-sm text-foreground whitespace-pre-wrap  break-words ${
+                !isContentExpanded && showReadMore ? "line-clamp-4" : ""
+              }`}
+            >
+              {comment.repliedToUser && (
+                <span className="text-primary font-medium">
+                  @{comment.repliedToUser.name}{" "}
+                </span>
+              )}
+              {comment.content}
+            </p>
+            {showReadMore && (
+              <button
+                onClick={() => setIsContentExpanded(!isContentExpanded)}
+                className="text-xs text-muted-foreground font-semibold hover:text-primary-font  transition-colors mt-0.5 "
+              >
+                {isContentExpanded ? "Read less" : "Read more"}
+              </button>
             )}
-            {comment.content}
-          </p>
+          </div>
           <div className="flex items-center gap-4">
             <button
               onClick={handleLike}
