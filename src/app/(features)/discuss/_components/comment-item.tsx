@@ -322,6 +322,10 @@ export default function CommentItem({
       router.push("/login");
       return;
     }
+    // Expand replies section when replying (only for top-level comments)
+    if (level === 0 && !isExpanded) {
+      setIsExpanded(true);
+    }
     setShowReplyForm(!showReplyForm);
   };
 
@@ -398,9 +402,7 @@ export default function CommentItem({
                 userDisliked ? "text-heart" : "text-muted-foreground"
               }`}
             >
-              <ThumbsDown
-                className={`w-4 h-4 ${userDisliked ? "fill-current" : ""}`}
-              />
+              <ThumbsDown className={`w-4 h-4`} />
               <span>{dislikeCount}</span>
             </button>
             <button
