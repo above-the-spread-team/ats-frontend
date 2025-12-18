@@ -1,13 +1,14 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import FullPage from "@/components/common/full-page";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { usePost } from "@/services/fastapi/posts";
-import PostCard, { mapPostResponse } from "../_components/post-card";
+import PostCard, { mapPostResponse, type Post } from "../_components/post-card";
 
 export default function DiscussPostPage() {
   const params = useParams();
@@ -16,14 +17,34 @@ export default function DiscussPostPage() {
     ? parseInt(params["post-id"] as string)
     : null;
 
+  // Try to get post from sessionStorage first (when navigating from list)
+  const [cachedPost, setCachedPost] = useState<Post | null>(null);
+
+  useEffect(() => {
+    if (postId && typeof window !== "undefined") {
+      const cached = sessionStorage.getItem(`post-${postId}`);
+      if (cached) {
+        try {
+          setCachedPost(JSON.parse(cached));
+          // Clear from sessionStorage after reading
+          sessionStorage.removeItem(`post-${postId}`);
+        } catch (e) {
+          console.error("Failed to parse cached post:", e);
+        }
+      }
+    }
+  }, [postId]);
+
+  // Only fetch from API if we don't have cached post (for direct links or when cache fails)
   const {
     data: postData,
     isLoading,
     error,
     refetch,
-  } = usePost(postId && !isNaN(postId) ? postId : null);
+  } = usePost(postId && !isNaN(postId) && !cachedPost ? postId : null);
 
-  const post = postData ? mapPostResponse(postData) : null;
+  // Use cached post if available, otherwise use fetched post
+  const post = cachedPost || (postData ? mapPostResponse(postData) : null);
 
   const handleBackToDiscussion = () => {
     if (postId) {
@@ -44,8 +65,8 @@ export default function DiscussPostPage() {
           </p>
         </Button>
         <div className="px-2">
-          {/* Loading State */}
-          {isLoading && (
+          {/* Loading State - Only show if we don't have cached post and are loading */}
+          {isLoading && !cachedPost && (
             <Card className="hover:shadow-md transition-shadow space-y-2 p-3 px-4">
               <div className="flex items-center gap-3 mb-4">
                 <Skeleton className="w-12 h-12 rounded-full" />

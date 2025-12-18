@@ -406,6 +406,13 @@ export default function PostCard({
             <button
               onClick={() => {
                 if (isMobile) {
+                  // Store post data in sessionStorage for the post-id page
+                  if (typeof window !== "undefined") {
+                    sessionStorage.setItem(
+                      `post-${post.id}`,
+                      JSON.stringify(post)
+                    );
+                  }
                   router.push(`/discuss/${post.id}`);
                 } else {
                   setIsExpanded(!isExpanded);
@@ -422,7 +429,13 @@ export default function PostCard({
             </button>
           </div>
           <button
-            onClick={() => router.push(`/discuss/${post.id}`)}
+            onClick={() => {
+              // Store post data in sessionStorage for the post-id page
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem(`post-${post.id}`, JSON.stringify(post));
+              }
+              router.push(`/discuss/${post.id}`);
+            }}
             className="flex mr-1 items-center gap-2 text-sm text-muted-foreground hover:text-primary-font transition-colors"
           >
             <Forward className="w-5 h-5 scale-90 md:scale-95" />
