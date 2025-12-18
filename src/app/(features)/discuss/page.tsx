@@ -81,6 +81,10 @@ function PostCard({ post }: PostCardProps) {
   const [userDisliked, setUserDisliked] = useState(post.userDisliked || false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [dislikeCount, setDislikeCount] = useState(post.dislikeCount);
+  const isUpdatingFromMutation = useRef(false);
+
+  const likePostMutation = useLikePost();
+  const dislikePostMutation = useDislikePost();
 
   const likePostMutation = useLikePost();
   const dislikePostMutation = useDislikePost();
@@ -178,10 +182,11 @@ function PostCard({ post }: PostCardProps) {
       setUserDisliked(stats.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(post.userLiked || false);
       setUserDisliked(post.userDisliked || false);
       setLikeCount(post.likeCount);
-      setDislikeCount(0);
+      setDislikeCount(post.dislikeCount);
 
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -226,10 +231,11 @@ function PostCard({ post }: PostCardProps) {
       setUserDisliked(stats.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(post.userLiked || false);
       setUserDisliked(post.userDisliked || false);
       setLikeCount(post.likeCount);
-      setDislikeCount(0);
+      setDislikeCount(post.dislikeCount);
 
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");

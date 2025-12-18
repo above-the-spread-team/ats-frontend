@@ -140,6 +140,7 @@ export default function CommentItem({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
+  const isUpdatingFromMutation = useRef(false);
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
@@ -245,6 +246,7 @@ export default function CommentItem({
       setUserDisliked(updatedComment.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(comment.userLiked || false);
       setUserDisliked(comment.userDisliked || false);
       setLikeCount(comment.likeCount);
@@ -295,6 +297,7 @@ export default function CommentItem({
       setUserDisliked(updatedComment.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(comment.userLiked || false);
       setUserDisliked(comment.userDisliked || false);
       setLikeCount(comment.likeCount);
@@ -387,9 +390,7 @@ export default function CommentItem({
                 userDisliked ? "text-heart" : "text-muted-foreground"
               }`}
             >
-              <ThumbsDown
-                className={`w-4 h-4 ${userDisliked ? "fill-current" : ""}`}
-              />
+              <ThumbsDown className={`w-4 h-4`} />
               <span>{dislikeCount}</span>
             </button>
             <button
