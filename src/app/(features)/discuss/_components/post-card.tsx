@@ -19,6 +19,7 @@ import {
   User,
   Edit,
   Trash2,
+  Forward,
 } from "lucide-react";
 import {
   useLikePost,
@@ -58,12 +59,16 @@ export interface Post {
 
 interface PostCardProps {
   post: Post;
+  initialExpanded?: boolean; // Auto-expand comments (useful for single post view)
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({
+  post,
+  initialExpanded = false,
+}: PostCardProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showViewMore, setShowViewMore] = useState(false);
@@ -347,49 +352,57 @@ export default function PostCard({ post }: PostCardProps) {
           )}
         </div>
 
-        <div className="flex items-center px-1 gap-4 md:gap-6 pt-2 border-t border-border">
-          <button
-            onClick={handleLike}
-            disabled={
-              likePostMutation.isPending || dislikePostMutation.isPending
-            }
-            className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              userLiked
-                ? "text-heart"
-                : "text-muted-foreground hover:text-heart-hover"
-            }`}
-          >
-            <Heart
-              className={`w-5 h-5 scale-90 md:scale-100 ${
-                userLiked ? "fill-current" : ""
+        <div className="flex items-center justify-between px-1 gap-4 md:gap-6 pt-2 border-t border-border">
+          <div className="flex items-center gap-4 md:gap-6">
+            <button
+              onClick={handleLike}
+              disabled={
+                likePostMutation.isPending || dislikePostMutation.isPending
+              }
+              className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                userLiked
+                  ? "text-heart"
+                  : "text-muted-foreground hover:text-heart-hover"
               }`}
-            />
-            <span className="font-semibold">{likeCount}</span>
-          </button>
+            >
+              <Heart
+                className={`w-5 h-5 scale-90 md:scale-100 ${
+                  userLiked ? "fill-current" : ""
+                }`}
+              />
+              <span className="font-semibold">{likeCount}</span>
+            </button>
+            <button
+              onClick={handleDislike}
+              disabled={
+                likePostMutation.isPending || dislikePostMutation.isPending
+              }
+              className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                userDisliked
+                  ? "text-heart"
+                  : "text-muted-foreground hover:text-heart-hover"
+              }`}
+            >
+              <ThumbsDown className="w-5 h-5 scale-90 md:scale-100" />
+              <span className="font-semibold">{dislikeCount}</span>
+            </button>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={`flex items-center gap-2 text-sm transition-colors ${
+                isExpanded
+                  ? "text-primary-font "
+                  : "text-muted-foreground hover:text-primary-font"
+              }`}
+            >
+              <MessageCircle className={`w-5 scale-90 md:scale-100 h-5 `} />
+              <span className="font-semibold">{post.commentCount}</span>
+            </button>
+          </div>
           <button
-            onClick={handleDislike}
-            disabled={
-              likePostMutation.isPending || dislikePostMutation.isPending
-            }
-            className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              userDisliked
-                ? "text-heart"
-                : "text-muted-foreground hover:text-heart-hover"
-            }`}
+            onClick={() => router.push(`/discuss/${post.id}`)}
+            className="flex mr-1 items-center gap-2 text-sm text-muted-foreground hover:text-primary-font transition-colors"
           >
-            <ThumbsDown className="w-5 h-5 scale-90 md:scale-100" />
-            <span className="font-semibold">{dislikeCount}</span>
-          </button>
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`flex items-center gap-2 text-sm transition-colors ${
-              isExpanded
-                ? "text-primary-font "
-                : "text-muted-foreground hover:text-primary-font"
-            }`}
-          >
-            <MessageCircle className={`w-5 scale-90 md:scale-100 h-5 `} />
-            <span className="font-semibold">{post.commentCount}</span>
+            <Forward className="w-5 h-5 scale-90 md:scale-95" />
           </button>
         </div>
 
