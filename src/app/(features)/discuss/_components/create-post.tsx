@@ -54,7 +54,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Create Post</DialogTitle>
           <DialogDescription>
@@ -62,7 +62,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div>
           {/* User Info */}
           {currentUser && (
             <div className="flex items-center gap-3 pb-4 border-b border-border">
@@ -82,13 +82,13 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           <div className="space-y-2">
             <label
               htmlFor="post-content"
-              className="text-sm font-medium text-foreground"
+              className="text-sm pl-2 font-medium text-foreground"
             >
               What&apos;s on your mind?
             </label>
             <textarea
               id="post-content"
-              placeholder="Share your thoughts with the community..."
+              placeholder="Write something..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isSubmitting}
@@ -96,7 +96,8 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
               className={cn(
                 "flex w-full rounded-xl border border-input bg-card px-3 py-2 text-base shadow-sm transition-colors",
                 "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-font",
-                "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none"
+                "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none",
+                "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative  [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
               )}
             />
           </div>
@@ -109,7 +110,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex flex-row justify-end px-4 md:px-2">
           <Button
             variant="outline"
             onClick={handleClose}

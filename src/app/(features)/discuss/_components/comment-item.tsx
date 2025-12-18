@@ -336,7 +336,7 @@ export default function CommentItem({
 
   return (
     <div className={`${level > 0 ? " py-1" : ""}`}>
-      <div className="flex gap-3 ">
+      <div className="flex gap-3  ">
         <div className="flex-shrink-0">
           <UserIcon
             avatarUrl={comment.author.avatar}
@@ -409,8 +409,7 @@ export default function CommentItem({
               onClick={handleReplyClick}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary-font transition-colors"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Reply</span>
+              <span className="text-xs font-medium">Reply</span>
             </button>
           </div>
           {comment.replyCount > 0 && (
@@ -433,7 +432,7 @@ export default function CommentItem({
           )}
 
           {showReplyForm && (
-            <div className="mt-2 ">
+            <div className={`mt-2 ${level > 0 ? "-ml-4" : ""}`}>
               <CreateComment
                 postId={postId}
                 parentCommentId={parseInt(comment.id)}
@@ -452,7 +451,7 @@ export default function CommentItem({
           {level === 0 && isExpanded && (
             <div className="mt-1 space-y-2">
               {repliesLoading ? (
-                <div className="space-y-2 pl-4">
+                <div className="space-y-2 pl-3">
                   {[...Array(2)].map((_, i) => (
                     <div key={i} className="flex gap-3">
                       <div className="w-6 h-6 rounded-full bg-muted animate-pulse" />
