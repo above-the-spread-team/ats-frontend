@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/common/theme-toggle";
-import LogoutDialog from "@/components/common/popup";
+import ConfirmDialog from "@/components/common/popup";
 import Image from "next/image";
 import Link from "next/link";
 import { User, LogOut } from "lucide-react";
@@ -155,11 +155,15 @@ export default function Header() {
       </div>
 
       {/* Logout Confirmation Dialog */}
-      <LogoutDialog
+      <ConfirmDialog
         open={showLogoutDialog}
         onOpenChange={setShowLogoutDialog}
         onConfirm={handleLogout}
+        title="Sign Out"
+        description="Are you sure you want to sign out? You will need to log in again to access your account."
+        confirmText="Sign out"
         isPending={logoutMutation.isPending}
+        variant="destructive"
       />
     </div>
   );

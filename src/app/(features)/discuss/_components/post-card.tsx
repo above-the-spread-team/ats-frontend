@@ -6,16 +6,30 @@ import UserIcon from "@/components/common/user-icon";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Heart,
   ThumbsDown,
   MessageCircle,
   MoreVertical,
   User,
+  Edit,
+  Trash2,
 } from "lucide-react";
-import { useLikePost, useDislikePost } from "@/services/fastapi/posts";
+import {
+  useLikePost,
+  useDislikePost,
+  useDeletePost,
+} from "@/services/fastapi/posts";
 import { useComments } from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";
+import ConfirmDialog from "@/components/common/popup";
 import CreateComment from "./create-comment";
+import EditPost from "./edit-post";
 import CommentItem, {
   type Comment,
   mapCommentResponse,
@@ -53,6 +67,8 @@ export default function PostCard({ post }: PostCardProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showViewMore, setShowViewMore] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const prevPostRef = useRef<{
     id: string;
@@ -145,6 +161,10 @@ export default function PostCard({ post }: PostCardProps) {
 
   const likePostMutation = useLikePost();
   const dislikePostMutation = useDislikePost();
+  const deletePostMutation = useDeletePost();
+
+  // Check if current user is the author
+  const isAuthor = currentUser && parseInt(post.author.id) === currentUser.id;
 
   const handleLike = async () => {
     if (!currentUser) {
@@ -240,6 +260,24 @@ export default function PostCard({ post }: PostCardProps) {
     }
   };
 
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deletePostMutation.mutateAsync(postId);
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      // Error is handled by the mutation
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditDialogOpen(true);
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow  space-y-2 p-3 px-4">
       <CardHeader className="p-0  ">
@@ -260,13 +298,33 @@ export default function PostCard({ post }: PostCardProps) {
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 rounded-full"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+          {isAuthor && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-shrink-0 rounded-full"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleDeleteClick}
+                  disabled={deletePostMutation.isPending}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-2 p-0">
@@ -416,6 +474,29 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
         )}
       </CardContent>
+
+      {/* Edit Post Dialog */}
+      <EditPost
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        postId={postId}
+        initialContent={post.content}
+        onSuccess={() => {
+          // Post will be refetched automatically due to query invalidation
+        }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Post"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        confirmText="Delete"
+        isPending={deletePostMutation.isPending}
+        variant="destructive"
+      />
     </Card>
   );
 }

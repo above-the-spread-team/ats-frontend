@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useCreatePost } from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { cn } from "@/lib/utils";
@@ -86,7 +87,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
             >
               What&apos;s on your mind?
             </label>
-            <textarea
+            <Textarea
               id="post-content"
               placeholder="Write something..."
               value={content}

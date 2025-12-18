@@ -10,28 +10,35 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-interface LogoutDialogProps {
+interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
   isPending?: boolean;
+  variant?: "default" | "destructive";
 }
 
-export default function LogoutDialog({
+export default function ConfirmDialog({
   open,
   onOpenChange,
   onConfirm,
+  title,
+  description,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   isPending = false,
-}: LogoutDialogProps) {
+  variant = "default",
+}: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Sign Out</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to sign out? You will need to log in again to
-            access your account.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button
@@ -39,15 +46,15 @@ export default function LogoutDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            Cancel
+            {cancelText}
           </Button>
           <Button
-            variant="destructive"
+            variant={variant === "destructive" ? "destructive" : "default"}
             onClick={onConfirm}
             disabled={isPending}
-            className="text-white"
+            className={variant === "destructive" ? "text-white" : ""}
           >
-            {isPending ? "Signing out..." : "Sign out"}
+            {isPending ? "Processing..." : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>
