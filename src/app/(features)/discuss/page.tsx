@@ -81,13 +81,27 @@ function PostCard({ post }: PostCardProps) {
   const [userDisliked, setUserDisliked] = useState(post.userDisliked || false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [dislikeCount, setDislikeCount] = useState(post.dislikeCount);
+  const isUpdatingFromMutation = useRef(false);
+
+  const likePostMutation = useLikePost();
+  const dislikePostMutation = useDislikePost();
 
   // Sync state when post prop changes (e.g., after refetch)
+  // Skip sync if we just updated from a mutation to prevent overwriting optimistic updates
   useEffect(() => {
-    setUserLiked(post.userLiked || false);
-    setUserDisliked(post.userDisliked || false);
-    setLikeCount(post.likeCount);
-    setDislikeCount(post.dislikeCount);
+    if (!isUpdatingFromMutation.current) {
+      setUserLiked(post.userLiked || false);
+      setUserDisliked(post.userDisliked || false);
+      setLikeCount(post.likeCount);
+      setDislikeCount(post.dislikeCount);
+    }
+    // Reset the flag after a short delay to allow normal syncing again
+    if (isUpdatingFromMutation.current) {
+      const timer = setTimeout(() => {
+        isUpdatingFromMutation.current = false;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, [post.userLiked, post.userDisliked, post.likeCount, post.dislikeCount]);
 
   // Check if content exceeds 10 lines
@@ -117,9 +131,6 @@ function PostCard({ post }: PostCardProps) {
     }
   }, [post.content, isContentExpanded]);
 
-  const likePostMutation = useLikePost();
-  const dislikePostMutation = useDislikePost();
-
   const handleLike = async () => {
     if (!currentUser) {
       router.push("/login");
@@ -147,6 +158,7 @@ function PostCard({ post }: PostCardProps) {
       }
 
       // Call API
+      isUpdatingFromMutation.current = true;
       const stats = await likePostMutation.mutateAsync(postId);
 
       // Update with actual API response
@@ -156,10 +168,11 @@ function PostCard({ post }: PostCardProps) {
       setUserDisliked(stats.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(post.userLiked || false);
       setUserDisliked(post.userDisliked || false);
       setLikeCount(post.likeCount);
-      setDislikeCount(0);
+      setDislikeCount(post.dislikeCount);
 
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -194,6 +207,7 @@ function PostCard({ post }: PostCardProps) {
       }
 
       // Call API
+      isUpdatingFromMutation.current = true;
       const stats = await dislikePostMutation.mutateAsync(postId);
 
       // Update with actual API response
@@ -203,10 +217,11 @@ function PostCard({ post }: PostCardProps) {
       setUserDisliked(stats.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(post.userLiked || false);
       setUserDisliked(post.userDisliked || false);
       setLikeCount(post.likeCount);
-      setDislikeCount(0);
+      setDislikeCount(post.dislikeCount);
 
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
