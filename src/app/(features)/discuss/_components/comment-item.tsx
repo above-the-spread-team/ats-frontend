@@ -143,6 +143,7 @@ export default function CommentItem({
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
+  const lastMutationTimeRef = useRef<number>(0);
 
   // Only fetch replies for top-level comments (level === 0) when expanded
   const commentId = level === 0 ? parseInt(comment.id) : null;
@@ -153,16 +154,31 @@ export default function CommentItem({
   } = useCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
   // Sync state when comment prop changes
+  // Skip sync if mutations are pending or just completed to prevent overwriting optimistic updates
+  // This is especially important for Safari which has different timing for query invalidation
   useEffect(() => {
-    setUserLiked(comment.userLiked || false);
-    setUserDisliked(comment.userDisliked || false);
-    setLikeCount(comment.likeCount);
-    setDislikeCount(comment.dislikeCount);
+    // On initial load (no mutation yet), always sync from props
+    // After mutations, wait 500ms to prevent Safari's faster refetch from overwriting state
+    const hasHadMutation = lastMutationTimeRef.current > 0;
+    const timeSinceLastMutation = Date.now() - lastMutationTimeRef.current;
+
+    if (
+      !likeCommentMutation.isPending &&
+      !dislikeCommentMutation.isPending &&
+      (!hasHadMutation || timeSinceLastMutation > 500)
+    ) {
+      setUserLiked(comment.userLiked || false);
+      setUserDisliked(comment.userDisliked || false);
+      setLikeCount(comment.likeCount);
+      setDislikeCount(comment.dislikeCount);
+    }
   }, [
     comment.userLiked,
     comment.userDisliked,
     comment.likeCount,
     comment.dislikeCount,
+    likeCommentMutation.isPending,
+    dislikeCommentMutation.isPending,
   ]);
 
   // Check if content exceeds 4 lines
@@ -219,6 +235,7 @@ export default function CommentItem({
       }
 
       // Call API
+      lastMutationTimeRef.current = Date.now();
       const updatedComment = await likeCommentMutation.mutateAsync(commentId);
 
       // Update with actual API response
@@ -266,6 +283,7 @@ export default function CommentItem({
       }
 
       // Call API
+      lastMutationTimeRef.current = Date.now();
       const updatedComment = await dislikeCommentMutation.mutateAsync(
         commentId
       );

@@ -82,13 +82,37 @@ function PostCard({ post }: PostCardProps) {
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [dislikeCount, setDislikeCount] = useState(post.dislikeCount);
 
+  const likePostMutation = useLikePost();
+  const dislikePostMutation = useDislikePost();
+  const lastMutationTimeRef = useRef<number>(0);
+
   // Sync state when post prop changes (e.g., after refetch)
+  // Skip sync if mutations are pending or just completed to prevent overwriting optimistic updates
+  // This is especially important for Safari which has different timing for query invalidation
   useEffect(() => {
-    setUserLiked(post.userLiked || false);
-    setUserDisliked(post.userDisliked || false);
-    setLikeCount(post.likeCount);
-    setDislikeCount(post.dislikeCount);
-  }, [post.userLiked, post.userDisliked, post.likeCount, post.dislikeCount]);
+    // On initial load (no mutation yet), always sync from props
+    // After mutations, wait 500ms to prevent Safari's faster refetch from overwriting state
+    const hasHadMutation = lastMutationTimeRef.current > 0;
+    const timeSinceLastMutation = Date.now() - lastMutationTimeRef.current;
+
+    if (
+      !likePostMutation.isPending &&
+      !dislikePostMutation.isPending &&
+      (!hasHadMutation || timeSinceLastMutation > 500)
+    ) {
+      setUserLiked(post.userLiked || false);
+      setUserDisliked(post.userDisliked || false);
+      setLikeCount(post.likeCount);
+      setDislikeCount(post.dislikeCount);
+    }
+  }, [
+    post.userLiked,
+    post.userDisliked,
+    post.likeCount,
+    post.dislikeCount,
+    likePostMutation.isPending,
+    dislikePostMutation.isPending,
+  ]);
 
   // Check if content exceeds 10 lines
   useEffect(() => {
@@ -117,9 +141,6 @@ function PostCard({ post }: PostCardProps) {
     }
   }, [post.content, isContentExpanded]);
 
-  const likePostMutation = useLikePost();
-  const dislikePostMutation = useDislikePost();
-
   const handleLike = async () => {
     if (!currentUser) {
       router.push("/login");
@@ -147,6 +168,7 @@ function PostCard({ post }: PostCardProps) {
       }
 
       // Call API
+      lastMutationTimeRef.current = Date.now();
       const stats = await likePostMutation.mutateAsync(postId);
 
       // Update with actual API response
@@ -194,6 +216,7 @@ function PostCard({ post }: PostCardProps) {
       }
 
       // Call API
+      lastMutationTimeRef.current = Date.now();
       const stats = await dislikePostMutation.mutateAsync(postId);
 
       // Update with actual API response
