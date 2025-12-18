@@ -140,6 +140,7 @@ export default function CommentItem({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
+  const isUpdatingFromMutation = useRef(false);
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
@@ -153,11 +154,21 @@ export default function CommentItem({
   } = useCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
   // Sync state when comment prop changes
+  // Skip sync if we just updated from a mutation to prevent overwriting optimistic updates
   useEffect(() => {
-    setUserLiked(comment.userLiked || false);
-    setUserDisliked(comment.userDisliked || false);
-    setLikeCount(comment.likeCount);
-    setDislikeCount(comment.dislikeCount);
+    if (!isUpdatingFromMutation.current) {
+      setUserLiked(comment.userLiked || false);
+      setUserDisliked(comment.userDisliked || false);
+      setLikeCount(comment.likeCount);
+      setDislikeCount(comment.dislikeCount);
+    }
+    // Reset the flag after a short delay to allow normal syncing again
+    if (isUpdatingFromMutation.current) {
+      const timer = setTimeout(() => {
+        isUpdatingFromMutation.current = false;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, [
     comment.userLiked,
     comment.userDisliked,
@@ -219,6 +230,7 @@ export default function CommentItem({
       }
 
       // Call API
+      isUpdatingFromMutation.current = true;
       const updatedComment = await likeCommentMutation.mutateAsync(commentId);
 
       // Update with actual API response
@@ -228,6 +240,7 @@ export default function CommentItem({
       setUserDisliked(updatedComment.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(comment.userLiked || false);
       setUserDisliked(comment.userDisliked || false);
       setLikeCount(comment.likeCount);
@@ -266,6 +279,7 @@ export default function CommentItem({
       }
 
       // Call API
+      isUpdatingFromMutation.current = true;
       const updatedComment = await dislikeCommentMutation.mutateAsync(
         commentId
       );
@@ -277,6 +291,7 @@ export default function CommentItem({
       setUserDisliked(updatedComment.user_reaction === false);
     } catch (error) {
       // Revert optimistic update on error
+      isUpdatingFromMutation.current = false;
       setUserLiked(comment.userLiked || false);
       setUserDisliked(comment.userDisliked || false);
       setLikeCount(comment.likeCount);
@@ -369,9 +384,7 @@ export default function CommentItem({
                 userDisliked ? "text-heart" : "text-muted-foreground"
               }`}
             >
-              <ThumbsDown
-                className={`w-4 h-4 ${userDisliked ? "fill-current" : ""}`}
-              />
+              <ThumbsDown className={`w-4 h-4`} />
               <span>{dislikeCount}</span>
             </button>
             <button
