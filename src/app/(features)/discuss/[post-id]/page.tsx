@@ -25,15 +25,19 @@ export default function DiscussPostPage() {
 
   const post = postData ? mapPostResponse(postData) : null;
 
+  const handleBackToDiscussion = () => {
+    if (postId) {
+      router.push(`/discuss#post-${postId}`);
+    } else {
+      router.push("/discuss");
+    }
+  };
+
   return (
     <FullPage minusHeight={70}>
       <div className="container mx-auto  pt-2 pb-8 space-y-2 max-w-4xl px-0">
         {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/discuss")}
-          className=" "
-        >
+        <Button variant="ghost" onClick={handleBackToDiscussion} className=" ">
           <ArrowLeft className="w-4 h-4 text-muted-foreground " />
           <p className="text-xs md:text-sm text-muted-foreground font-medium">
             Back to Discussion
@@ -74,10 +78,7 @@ export default function DiscussPostPage() {
                   {error instanceof Error ? error.message : "An error occurred"}
                 </p>
                 <div className="flex gap-2 justify-center">
-                  <Button
-                    onClick={() => router.push("/discuss")}
-                    variant="outline"
-                  >
+                  <Button onClick={handleBackToDiscussion} variant="outline">
                     Back to Discussion
                   </Button>
                   <Button onClick={() => refetch()} variant="outline">
@@ -98,10 +99,7 @@ export default function DiscussPostPage() {
                   The post you&apos;re looking for doesn&apos;t exist or has
                   been deleted.
                 </p>
-                <Button
-                  onClick={() => router.push("/discuss")}
-                  variant="outline"
-                >
+                <Button onClick={handleBackToDiscussion} variant="outline">
                   Back to Discussion
                 </Button>
               </CardContent>

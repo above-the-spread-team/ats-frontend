@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FullPage from "@/components/common/full-page";
 import UserIcon from "@/components/common/user-icon";
@@ -44,6 +44,28 @@ export default function DiscussPage() {
       router.push("/login");
     }
   };
+
+  // Scroll to post when hash is present in URL (e.g., when returning from single post view)
+  useEffect(() => {
+    if (!posts.length) return; // Wait for posts to load
+
+    const scrollToPost = () => {
+      if (typeof window !== "undefined" && window.location.hash) {
+        const hash = window.location.hash.substring(1); // Remove the '#'
+        const element = document.getElementById(hash);
+        if (element) {
+          // Small delay to ensure the page has rendered
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+            // Clear the hash after scrolling
+            window.history.replaceState(null, "", window.location.pathname);
+          }, 100);
+        }
+      }
+    };
+
+    scrollToPost();
+  }, [posts]); // Run when posts are loaded
 
   return (
     <FullPage minusHeight={70}>

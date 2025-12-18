@@ -286,7 +286,10 @@ export default function PostCard({
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow  space-y-2 p-3 px-4">
+    <Card
+      id={`post-${post.id}`}
+      className="hover:shadow-md transition-shadow  space-y-2 p-3 px-4"
+    >
       <CardHeader className="p-0  ">
         <div className="flex items-start   justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
