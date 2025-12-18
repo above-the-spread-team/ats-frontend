@@ -110,7 +110,7 @@ export default function CreateComment({
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="min-h-[30px] text-sm md:text-base !bg-muted/50  rounded-none border-0 border-b-2 border-t-0 border-l-0 border-r-0 border-primary-font/50 focus-visible:border-b-2 focus-visible:border-t-0 focus-visible:border-l-0 focus-visible:border-r-0 resize-none overflow-hidden py-1 md:py-2  shadow-none focus-visible:ring-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="min-h-[30px] text-base !bg-muted/50  rounded-none border-0 border-b-2 border-t-0 border-l-0 border-r-0 border-primary-font/50 focus-visible:border-b-2 focus-visible:border-t-0 focus-visible:border-l-0 focus-visible:border-r-0 resize-none overflow-hidden py-1 md:py-2  shadow-none focus-visible:ring-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           autoFocus={autoFocus}
           disabled={createCommentMutation.isPending}
           maxLength={5001}
