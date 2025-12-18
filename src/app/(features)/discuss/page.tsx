@@ -62,6 +62,13 @@ function PostCard({ post }: PostCardProps) {
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showViewMore, setShowViewMore] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
+  const prevPostRef = useRef<{
+    id: string;
+    userLiked?: boolean;
+    userDisliked?: boolean;
+    likeCount: number;
+    dislikeCount: number;
+  } | null>(null);
   const postId = parseInt(post.id);
 
   // Fetch comments when expanded
@@ -82,13 +89,40 @@ function PostCard({ post }: PostCardProps) {
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [dislikeCount, setDislikeCount] = useState(post.dislikeCount);
 
-  // Sync state when post prop changes (e.g., after refetch)
+  // Sync state when post prop changes, but only if values actually changed
+  // This prevents resetting state during optimistic updates
   useEffect(() => {
-    setUserLiked(post.userLiked || false);
-    setUserDisliked(post.userDisliked || false);
-    setLikeCount(post.likeCount);
-    setDislikeCount(post.dislikeCount);
-  }, [post.userLiked, post.userDisliked, post.likeCount, post.dislikeCount]);
+    const prev = prevPostRef.current;
+    // Only update if this is a different post or if reaction values changed
+    if (
+      !prev ||
+      prev.id !== post.id ||
+      prev.userLiked !== post.userLiked ||
+      prev.userDisliked !== post.userDisliked ||
+      prev.likeCount !== post.likeCount ||
+      prev.dislikeCount !== post.dislikeCount
+    ) {
+      // Update state with new values from prop
+      setUserLiked(post.userLiked || false);
+      setUserDisliked(post.userDisliked || false);
+      setLikeCount(post.likeCount);
+      setDislikeCount(post.dislikeCount);
+      // Update ref with current post values
+      prevPostRef.current = {
+        id: post.id,
+        userLiked: post.userLiked,
+        userDisliked: post.userDisliked,
+        likeCount: post.likeCount,
+        dislikeCount: post.dislikeCount,
+      };
+    }
+  }, [
+    post.id,
+    post.userLiked,
+    post.userDisliked,
+    post.likeCount,
+    post.dislikeCount,
+  ]);
 
   // Check if content exceeds 10 lines
   useEffect(() => {

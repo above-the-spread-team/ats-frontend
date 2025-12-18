@@ -96,13 +96,19 @@ export async function listComments(
     include_replies: includeReplies.toString(),
   });
 
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(
     `${BACKEND_URL}/api/v1/posts/${postId}/comments?${params.toString()}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
     }
   );
@@ -131,13 +137,19 @@ export async function listComments(
  * Get a single comment by ID
  */
 export async function getComment(commentId: number): Promise<CommentResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
     }
   );
@@ -294,13 +306,19 @@ export async function getCommentReplies(
     page_size: pageSize.toString(),
   });
 
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}/replies?${params.toString()}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
     }
   );
@@ -601,7 +619,7 @@ export async function removeCommentReaction(
 
 /**
  * React Query mutation hook for liking a comment
- * Updates comments queries on success
+ * Updates comments queries on success with optimistic cache updates
  */
 export function useLikeComment() {
   const queryClient = useQueryClient();
@@ -609,20 +627,53 @@ export function useLikeComment() {
   return useMutation<CommentResponse, Error, number>({
     mutationFn: likeComment,
     onSuccess: (data, commentId) => {
-      // Invalidate comments for the post to refetch with updated reaction counts
-      queryClient.invalidateQueries({
-        queryKey: ["comments", data.post_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["comment", commentId],
-      });
+      // Update the specific comment in cache
+      queryClient.setQueryData<CommentResponse>(["comment", commentId], data);
+
+      // Update comment in comments list cache
+      queryClient.setQueriesData<CommentListResponse>(
+        { queryKey: ["comments", data.post_id] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === commentId ? data : item
+            ),
+          };
+        }
+      );
+
+      // Update comment in replies cache
+      queryClient.setQueriesData<CommentListResponse>(
+        { queryKey: ["commentReplies"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === commentId ? data : item
+            ),
+          };
+        }
+      );
+
+      // Invalidate after a short delay to ensure backend is updated
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["comments", data.post_id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["comment", commentId],
+        });
+      }, 100);
     },
   });
 }
 
 /**
  * React Query mutation hook for disliking a comment
- * Updates comments queries on success
+ * Updates comments queries on success with optimistic cache updates
  */
 export function useDislikeComment() {
   const queryClient = useQueryClient();
@@ -630,13 +681,46 @@ export function useDislikeComment() {
   return useMutation<CommentResponse, Error, number>({
     mutationFn: dislikeComment,
     onSuccess: (data, commentId) => {
-      // Invalidate comments for the post to refetch with updated reaction counts
-      queryClient.invalidateQueries({
-        queryKey: ["comments", data.post_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["comment", commentId],
-      });
+      // Update the specific comment in cache
+      queryClient.setQueryData<CommentResponse>(["comment", commentId], data);
+
+      // Update comment in comments list cache
+      queryClient.setQueriesData<CommentListResponse>(
+        { queryKey: ["comments", data.post_id] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === commentId ? data : item
+            ),
+          };
+        }
+      );
+
+      // Update comment in replies cache
+      queryClient.setQueriesData<CommentListResponse>(
+        { queryKey: ["commentReplies"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === commentId ? data : item
+            ),
+          };
+        }
+      );
+
+      // Invalidate after a short delay to ensure backend is updated
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["comments", data.post_id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["comment", commentId],
+        });
+      }, 100);
     },
   });
 }

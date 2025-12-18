@@ -140,6 +140,13 @@ export default function CommentItem({
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
+  const prevCommentRef = useRef<{
+    id: string;
+    userLiked?: boolean;
+    userDisliked?: boolean;
+    likeCount: number;
+    dislikeCount: number;
+  } | null>(null);
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
@@ -152,13 +159,35 @@ export default function CommentItem({
     refetch: refetchReplies,
   } = useCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
-  // Sync state when comment prop changes
+  // Sync state when comment prop changes, but only if values actually changed
+  // This prevents resetting state during optimistic updates
   useEffect(() => {
-    setUserLiked(comment.userLiked || false);
-    setUserDisliked(comment.userDisliked || false);
-    setLikeCount(comment.likeCount);
-    setDislikeCount(comment.dislikeCount);
+    const prev = prevCommentRef.current;
+    // Only update if this is a different comment or if reaction values changed
+    if (
+      !prev ||
+      prev.id !== comment.id ||
+      prev.userLiked !== comment.userLiked ||
+      prev.userDisliked !== comment.userDisliked ||
+      prev.likeCount !== comment.likeCount ||
+      prev.dislikeCount !== comment.dislikeCount
+    ) {
+      // Update state with new values from prop
+      setUserLiked(comment.userLiked || false);
+      setUserDisliked(comment.userDisliked || false);
+      setLikeCount(comment.likeCount);
+      setDislikeCount(comment.dislikeCount);
+      // Update ref with current comment values
+      prevCommentRef.current = {
+        id: comment.id,
+        userLiked: comment.userLiked,
+        userDisliked: comment.userDisliked,
+        likeCount: comment.likeCount,
+        dislikeCount: comment.dislikeCount,
+      };
+    }
   }, [
+    comment.id,
     comment.userLiked,
     comment.userDisliked,
     comment.likeCount,

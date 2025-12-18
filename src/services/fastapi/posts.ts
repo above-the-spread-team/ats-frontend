@@ -87,13 +87,19 @@ export async function listPosts(
     params.append("author_id", authorId.toString());
   }
 
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(
     `${BACKEND_URL}/api/v1/posts?${params.toString()}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
     }
   );
@@ -116,11 +122,17 @@ export async function listPosts(
  * Get a single post by ID
  */
 export async function getPost(postId: number): Promise<PostResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     credentials: "include",
   });
 
@@ -263,13 +275,19 @@ export async function getUserPosts(
     page_size: pageSize.toString(),
   });
 
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(
     `${BACKEND_URL}/api/v1/posts/users/${userId}/posts?${params.toString()}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
     }
   );
@@ -536,36 +554,152 @@ export async function removeReaction(postId: number): Promise<ReactionStats> {
 
 /**
  * React Query mutation hook for liking a post
- * Updates posts list queries on success
+ * Updates posts list queries on success with optimistic cache updates
  */
 export function useLikePost() {
   const queryClient = useQueryClient();
 
   return useMutation<ReactionStats, Error, number>({
     mutationFn: likePost,
-    onSuccess: (_, postId) => {
-      // Invalidate all posts queries to refetch with updated reaction counts
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
-      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+    onSuccess: (stats, postId) => {
+      // Update the specific post in cache
+      queryClient.setQueriesData<PostResponse>(
+        { queryKey: ["post", postId] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            likes: stats.likes,
+            dislikes: stats.dislikes,
+            user_reaction: stats.user_reaction,
+          };
+        }
+      );
+
+      // Update post in posts list cache
+      queryClient.setQueriesData<PostListResponse>(
+        { queryKey: ["posts"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === postId
+                ? {
+                    ...item,
+                    likes: stats.likes,
+                    dislikes: stats.dislikes,
+                    user_reaction: stats.user_reaction,
+                  }
+                : item
+            ),
+          };
+        }
+      );
+
+      // Update post in user posts cache
+      queryClient.setQueriesData<PostListResponse>(
+        { queryKey: ["userPosts"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === postId
+                ? {
+                    ...item,
+                    likes: stats.likes,
+                    dislikes: stats.dislikes,
+                    user_reaction: stats.user_reaction,
+                  }
+                : item
+            ),
+          };
+        }
+      );
+
+      // Invalidate after a short delay to ensure backend is updated
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["post", postId] });
+        queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+      }, 100);
     },
   });
 }
 
 /**
  * React Query mutation hook for disliking a post
- * Updates posts list queries on success
+ * Updates posts list queries on success with optimistic cache updates
  */
 export function useDislikePost() {
   const queryClient = useQueryClient();
 
   return useMutation<ReactionStats, Error, number>({
     mutationFn: dislikePost,
-    onSuccess: (_, postId) => {
-      // Invalidate all posts queries to refetch with updated reaction counts
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
-      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+    onSuccess: (stats, postId) => {
+      // Update the specific post in cache
+      queryClient.setQueriesData<PostResponse>(
+        { queryKey: ["post", postId] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            likes: stats.likes,
+            dislikes: stats.dislikes,
+            user_reaction: stats.user_reaction,
+          };
+        }
+      );
+
+      // Update post in posts list cache
+      queryClient.setQueriesData<PostListResponse>(
+        { queryKey: ["posts"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === postId
+                ? {
+                    ...item,
+                    likes: stats.likes,
+                    dislikes: stats.dislikes,
+                    user_reaction: stats.user_reaction,
+                  }
+                : item
+            ),
+          };
+        }
+      );
+
+      // Update post in user posts cache
+      queryClient.setQueriesData<PostListResponse>(
+        { queryKey: ["userPosts"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === postId
+                ? {
+                    ...item,
+                    likes: stats.likes,
+                    dislikes: stats.dislikes,
+                    user_reaction: stats.user_reaction,
+                  }
+                : item
+            ),
+          };
+        }
+      );
+
+      // Invalidate after a short delay to ensure backend is updated
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["post", postId] });
+        queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+      }, 100);
     },
   });
 }
