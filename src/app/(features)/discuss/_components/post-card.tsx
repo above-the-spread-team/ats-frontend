@@ -71,6 +71,18 @@ export default function PostCard({
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showViewMore, setShowViewMore] = useState(false);
@@ -392,7 +404,13 @@ export default function PostCard({
               <span className="font-semibold">{dislikeCount}</span>
             </button>
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => {
+                if (isMobile) {
+                  router.push(`/discuss/${post.id}`);
+                } else {
+                  setIsExpanded(!isExpanded);
+                }
+              }}
               className={`flex items-center gap-2 text-sm transition-colors ${
                 isExpanded
                   ? "text-primary-font "
