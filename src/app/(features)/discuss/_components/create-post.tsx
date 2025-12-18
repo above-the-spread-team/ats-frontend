@@ -110,7 +110,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           )}
         </div>
 
-        <DialogFooter className="flex flex-row justify-end px-4 md:px-2">
+        <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
           <Button
             variant="outline"
             onClick={handleClose}
