@@ -3,13 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import UserIcon from "@/components/common/user-icon";
-import {
-  Heart,
-  ThumbsDown,
-  MessageCircle,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Heart, ThumbsDown, ChevronDown, ChevronUp } from "lucide-react";
 import {
   useCommentReplies,
   useLikeComment,

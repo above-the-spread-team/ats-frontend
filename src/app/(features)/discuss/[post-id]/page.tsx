@@ -95,7 +95,8 @@ export default function DiscussPostPage() {
                 <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Post not found</h3>
                 <p className="text-muted-foreground mb-4">
-                  The post you're looking for doesn't exist or has been deleted.
+                  The post you&apos;re looking for doesn&apos;t exist or has
+                  been deleted.
                 </p>
                 <Button
                   onClick={() => router.push("/discuss")}
