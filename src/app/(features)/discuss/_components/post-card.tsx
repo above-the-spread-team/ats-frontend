@@ -60,11 +60,13 @@ export interface Post {
 interface PostCardProps {
   post: Post;
   initialExpanded?: boolean; // Auto-expand comments (useful for single post view)
+  scrollableComments?: boolean; // Whether comments should be scrollable (default: true)
 }
 
 export default function PostCard({
   post,
   initialExpanded = false,
+  scrollableComments = true,
 }: PostCardProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
@@ -453,8 +455,14 @@ export default function PostCard({
               )}
             </div>
 
-            {/* Comments List - Scrollable */}
-            <div className="max-h-[400px] pb-2 md:max-h-[500px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30">
+            {/* Comments List */}
+            <div
+              className={`pb-2 pr-1 ${
+                scrollableComments
+                  ? "max-h-[400px] md:max-h-[500px] overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30"
+                  : ""
+              }`}
+            >
               {commentsLoading ? (
                 <div className="space-y-4">
                   {[...Array(2)].map((_, i) => (

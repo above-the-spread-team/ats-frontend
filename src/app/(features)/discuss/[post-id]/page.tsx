@@ -27,7 +27,7 @@ export default function DiscussPostPage() {
 
   return (
     <FullPage minusHeight={70}>
-      <div className="container mx-auto  py-2 space-y-2 max-w-4xl px-0">
+      <div className="container mx-auto  pt-2 pb-8 space-y-2 max-w-4xl px-0">
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -110,7 +110,11 @@ export default function DiscussPostPage() {
           {/* Post Content */}
           {!isLoading && !error && post && (
             <div className="space-y-4">
-              <PostCard post={post} initialExpanded={true} />
+              <PostCard
+                post={post}
+                initialExpanded={true}
+                scrollableComments={false}
+              />
             </div>
           )}
         </div>
