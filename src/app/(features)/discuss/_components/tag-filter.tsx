@@ -82,7 +82,7 @@ export default function TagFilter({
   }
 
   return (
-    <div className="mb-4  flex justify-between items-center gap-2">
+    <div className="mb-4  flex justify-between items-start gap-2">
       {/* Show selected tags as chips */}
       <div className="">
         {selectedCount > 0 && (
