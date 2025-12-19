@@ -2,6 +2,8 @@
  * Post-related types matching backend schemas
  */
 
+import type { TagSummary } from "./tags";
+
 export interface PostAuthor {
   id: number;
   username: string;
@@ -34,6 +36,7 @@ export interface PostResponse extends PostBase {
   likes: number;
   dislikes: number;
   user_reaction: boolean | null; // True for like, False for dislike, null if no reaction or not authenticated
+  tags: TagSummary[];
 }
 
 export interface PostListResponse {

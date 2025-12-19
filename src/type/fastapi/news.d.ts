@@ -2,16 +2,12 @@
  * News-related types matching backend schemas
  */
 
+import type { TagSummary } from "./tags";
+
 export interface NewsAuthor {
   id: number;
   username: string;
   avatar_url: string | null;
-}
-
-export interface NewsTag {
-  id: number;
-  name: string;
-  type: "league" | "team" | "player" | "topic";
 }
 
 export interface NewsResponse {
@@ -20,13 +16,13 @@ export interface NewsResponse {
   content: string;
   image_url: string | null;
   is_published: boolean;
-  author_id: number;
-  author: NewsAuthor;
+  author_id: number | null;
+  author: NewsAuthor | null;
   created_at: string;
   updated_at: string;
   comment_count: number;
   reaction_count: number;
-  tags: NewsTag[];
+  tags: TagSummary[];
 }
 
 export interface NewsListResponse {
