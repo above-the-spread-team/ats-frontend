@@ -12,20 +12,27 @@ import { usePosts } from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import CreatePost from "./_components/create-post";
 import PostCard, { mapPostResponse } from "./_components/post-card";
+import TagFilter from "./_components/tag-filter";
 
 export default function DiscussPage() {
   const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [page] = useState(1);
   const pageSize = 20;
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
 
-  // Fetch posts from API
+  // Fetch posts from API with tag filtering
   const {
     data: postsData,
     isLoading,
     error,
     refetch,
-  } = usePosts(page, pageSize);
+  } = usePosts(
+    page,
+    pageSize,
+    undefined,
+    selectedTagIds.length > 0 ? selectedTagIds : undefined
+  );
 
   // Get current user
   const { data: currentUser } = useCurrentUser();
@@ -104,6 +111,12 @@ export default function DiscussPage() {
           onOpenChange={setIsCreatePostOpen}
         />
 
+        {/* Tag Filter */}
+        <TagFilter
+          selectedTagIds={selectedTagIds}
+          onTagIdsChange={setSelectedTagIds}
+        />
+
         {/* Loading State */}
         {isLoading && (
           <div className="space-y-3 md:space-y-4">
@@ -164,8 +177,20 @@ export default function DiscussPage() {
             <CardContent className="py-12 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
-                No posts yet. Be the first to share!
+                {selectedTagIds.length > 0
+                  ? "No posts found with the selected tags."
+                  : "No posts yet. Be the first to share!"}
               </p>
+              {selectedTagIds.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedTagIds([])}
+                  className="mt-4"
+                >
+                  Clear filters
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

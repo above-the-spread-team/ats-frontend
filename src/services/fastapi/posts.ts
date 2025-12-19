@@ -72,12 +72,13 @@ export async function createPost(data: PostCreate): Promise<PostResponse> {
 
 /**
  * Get a paginated list of posts
- * Optionally filter by author_id
+ * Optionally filter by author_id and tag_ids
  */
 export async function listPosts(
   page: number = 1,
   pageSize: number = 20,
-  authorId?: number
+  authorId?: number,
+  tagIds?: number[]
 ): Promise<PostListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -85,6 +86,11 @@ export async function listPosts(
   });
   if (authorId !== undefined) {
     params.append("author_id", authorId.toString());
+  }
+  if (tagIds && tagIds.length > 0) {
+    tagIds.forEach((tagId) => {
+      params.append("tag_ids", tagId.toString());
+    });
   }
 
   const authHeader = getAuthHeader();
@@ -318,11 +324,16 @@ export async function getUserPosts(
 export function usePosts(
   page: number = 1,
   pageSize: number = 20,
-  authorId?: number
+  authorId?: number,
+  tagIds?: number[]
 ) {
+  // Sort tag IDs for consistent query key
+  const sortedTagIds =
+    tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
+
   return useQuery<PostListResponse>({
-    queryKey: ["posts", page, pageSize, authorId],
-    queryFn: () => listPosts(page, pageSize, authorId),
+    queryKey: ["posts", page, pageSize, authorId, sortedTagIds],
+    queryFn: () => listPosts(page, pageSize, authorId, tagIds),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
   });
