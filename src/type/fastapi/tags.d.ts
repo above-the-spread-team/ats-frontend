@@ -10,7 +10,7 @@ export interface TagBase {
   external_ref?: string | null;
 }
 
-export interface TagCreate extends TagBase {}
+export type TagCreate = TagBase;
 
 export interface TagUpdate {
   name?: string;

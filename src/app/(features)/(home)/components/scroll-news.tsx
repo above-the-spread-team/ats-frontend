@@ -118,8 +118,8 @@ export function ScrollNews() {
                         {news.title}
                       </h3>
                       <div className="flex items-center gap-2 mt-2 text-white/80 text-sm">
-                        <span>{news.author.username}</span>
-                        <span>•</span>
+                        {news.author && <span>{news.author.username}</span>}
+                        {news.author && <span>•</span>}
                         <span>
                           {new Date(news.created_at).toLocaleDateString()}
                         </span>
