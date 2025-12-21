@@ -443,6 +443,10 @@ export function useUpdateComment() {
       queryClient.invalidateQueries({
         queryKey: ["comments", data.post_id],
       });
+      // Invalidate comment replies (in case the updated comment is a reply)
+      queryClient.invalidateQueries({
+        queryKey: ["commentReplies"],
+      });
     },
   });
 }
@@ -464,6 +468,10 @@ export function useDeleteComment() {
       // Invalidate comments for the post
       queryClient.invalidateQueries({
         queryKey: ["comments", variables.postId],
+      });
+      // Invalidate comment replies (in case the deleted comment is a reply)
+      queryClient.invalidateQueries({
+        queryKey: ["commentReplies"],
       });
       // Also invalidate posts to update comment count
       queryClient.invalidateQueries({ queryKey: ["posts"] });

@@ -3,14 +3,32 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import UserIcon from "@/components/common/user-icon";
-import { Heart, ThumbsDown, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Heart,
+  ThumbsDown,
+  ChevronDown,
+  ChevronUp,
+  EllipsisVertical,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   useCommentReplies,
   useLikeComment,
   useDislikeComment,
+  useUpdateComment,
+  useDeleteComment,
 } from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import CreateComment from "./create-comment";
+import EditComment from "./edit-comment";
+import ConfirmDialog from "@/components/common/popup";
 import type { CommentResponse } from "@/type/fastapi/comments";
 
 // Comment interface (shared with page.tsx)
@@ -133,6 +151,8 @@ export default function CommentItem({
   const [dislikeCount, setDislikeCount] = useState(comment.dislikeCount);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const prevCommentRef = useRef<{
     id: string;
@@ -144,6 +164,10 @@ export default function CommentItem({
 
   const likeCommentMutation = useLikeComment();
   const dislikeCommentMutation = useDislikeComment();
+  const deleteCommentMutation = useDeleteComment();
+
+  // Check if current user is the comment author
+  const isAuthor = currentUser?.id === parseInt(comment.author.id);
 
   // Only fetch replies for top-level comments (level === 0) when expanded
   const commentId = level === 0 ? parseInt(comment.id) : null;
@@ -328,6 +352,22 @@ export default function CommentItem({
     onReply?.();
   };
 
+  const handleDeleteConfirm = async () => {
+    const commentId = parseInt(comment.id);
+    if (isNaN(commentId)) return;
+
+    try {
+      await deleteCommentMutation.mutateAsync({
+        commentId,
+        postId,
+      });
+      setIsDeleteDialogOpen(false);
+      onReply?.(); // Refresh comments
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
   return (
     <div className={`${level > 0 ? " py-1" : ""}`}>
       <div className="flex gap-3  ">
@@ -341,11 +381,38 @@ export default function CommentItem({
           />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-sm font-semibold">{comment.author.name}</p>
-            <span className="text-xs text-muted-foreground">
-              {formatTimeAgo(comment.createdAt)}
-            </span>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold">{comment.author.name}</p>
+              <span className="text-xs text-muted-foreground">
+                {formatTimeAgo(comment.createdAt)}
+              </span>
+            </div>
+            {isAuthor && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-1 hover:bg-accent rounded-sm transition-colors">
+                    <EllipsisVertical className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setIsEditDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           <div className="mb-1.5 flex flex-col items-start">
             <p
@@ -478,6 +545,29 @@ export default function CommentItem({
           )}
         </div>
       </div>
+
+      {/* Edit Comment Dialog */}
+      <EditComment
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        commentId={parseInt(comment.id)}
+        initialContent={comment.content}
+        onSuccess={() => {
+          onReply?.(); // Refresh comments
+        }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Comment"
+        description="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmText="Delete"
+        isPending={deleteCommentMutation.isPending}
+        variant="destructive"
+      />
     </div>
   );
 }
