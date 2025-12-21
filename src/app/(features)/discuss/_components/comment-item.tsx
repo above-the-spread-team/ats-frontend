@@ -151,7 +151,7 @@ export default function CommentItem({
   const [dislikeCount, setDislikeCount] = useState(comment.dislikeCount);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const prevCommentRef = useRef<{
@@ -397,7 +397,7 @@ export default function CommentItem({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => setIsEditDialogOpen(true)}
+                    onClick={() => setIsEditing(true)}
                     className="cursor-pointer"
                   >
                     <Edit className="w-4 h-4 mr-2" />
@@ -414,29 +414,43 @@ export default function CommentItem({
               </DropdownMenu>
             )}
           </div>
-          <div className="mb-1.5 flex flex-col items-start">
-            <p
-              ref={contentRef}
-              className={`text-sm text-foreground whitespace-pre-wrap  break-words ${
-                !isContentExpanded && showReadMore ? "line-clamp-4" : ""
-              }`}
-            >
-              {comment.repliedToUser && (
-                <span className="text-primary font-medium">
-                  @{comment.repliedToUser.name}{" "}
-                </span>
-              )}
-              {comment.content}
-            </p>
-            {showReadMore && (
-              <button
-                onClick={() => setIsContentExpanded(!isContentExpanded)}
-                className="text-xs text-muted-foreground font-semibold hover:text-primary-font  transition-colors mt-0.5 "
+          {isEditing ? (
+            <div className="mb-2">
+              <EditComment
+                commentId={parseInt(comment.id)}
+                initialContent={comment.content}
+                onSuccess={() => {
+                  setIsEditing(false);
+                  onReply?.(); // Refresh comments
+                }}
+                onCancel={() => setIsEditing(false)}
+              />
+            </div>
+          ) : (
+            <div className="mb-1.5 flex flex-col items-start">
+              <p
+                ref={contentRef}
+                className={`text-sm text-foreground whitespace-pre-wrap  break-words ${
+                  !isContentExpanded && showReadMore ? "line-clamp-4" : ""
+                }`}
               >
-                {isContentExpanded ? "Read less" : "Read more"}
-              </button>
-            )}
-          </div>
+                {comment.repliedToUser && (
+                  <span className="text-primary font-medium">
+                    @{comment.repliedToUser.name}{" "}
+                  </span>
+                )}
+                {comment.content}
+              </p>
+              {showReadMore && (
+                <button
+                  onClick={() => setIsContentExpanded(!isContentExpanded)}
+                  className="text-xs text-muted-foreground font-semibold hover:text-primary-font  transition-colors mt-0.5 "
+                >
+                  {isContentExpanded ? "Read less" : "Read more"}
+                </button>
+              )}
+            </div>
+          )}
           <div className="flex items-center gap-4">
             <button
               onClick={handleLike}
@@ -545,17 +559,6 @@ export default function CommentItem({
           )}
         </div>
       </div>
-
-      {/* Edit Comment Dialog */}
-      <EditComment
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        commentId={parseInt(comment.id)}
-        initialContent={comment.content}
-        onSuccess={() => {
-          onReply?.(); // Refresh comments
-        }}
-      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog

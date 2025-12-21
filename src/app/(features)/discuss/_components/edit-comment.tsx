@@ -1,46 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateComment } from "@/services/fastapi/comments";
-import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface EditCommentProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   commentId: number;
   initialContent: string;
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 export default function EditComment({
-  open,
-  onOpenChange,
   commentId,
   initialContent,
   onSuccess,
+  onCancel,
 }: EditCommentProps) {
   const [content, setContent] = useState(initialContent);
   const updateCommentMutation = useUpdateComment();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Update content when initialContent changes (e.g., when dialog opens)
+  // Update content when initialContent changes
   useEffect(() => {
-    if (open) {
-      setContent(initialContent);
-    }
-  }, [initialContent, open]);
+    setContent(initialContent);
+  }, [initialContent]);
 
-  const handleSubmit = async () => {
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [content]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!content.trim()) {
+      return;
+    }
+
+    // Prevent submission if content exceeds 5000 characters
+    if (content.length > 5000) {
       return;
     }
 
@@ -52,79 +56,75 @@ export default function EditComment({
         },
       });
       setContent("");
-      onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error updating comment:", error);
-      // Error is handled by the mutation, but we can show a toast here if needed
+      // Error is handled by the mutation
     }
   };
 
-  const handleClose = () => {
-    if (!updateCommentMutation.isPending) {
-      setContent(initialContent);
-      onOpenChange(false);
-    }
+  const handleCancel = () => {
+    setContent(initialContent);
+    onCancel?.();
   };
-
-  const isSubmitting = updateCommentMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Edit Comment</DialogTitle>
-          <DialogDescription>Update your comment content</DialogDescription>
-        </DialogHeader>
-
-        <div>
-          {/* Content Textarea */}
-          <div className="space-y-2">
-            <label
-              htmlFor="edit-comment-content"
-              className="text-sm pl-2 font-medium text-foreground"
-            >
-              Your comment
-            </label>
-            <Textarea
-              id="edit-comment-content"
-              placeholder="Write something..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              disabled={isSubmitting}
-              rows={6}
-              className={cn(
-                "resize-none",
-                "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
-              )}
-            />
-          </div>
+    <form onSubmit={handleSubmit} className="flex-1 space-y-2">
+      <Textarea
+        ref={textareaRef}
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        className="min-h-[30px] text-base !bg-muted/50 rounded-none border-0 border-b-2 border-t-0 border-l-0 border-r-0 border-primary-font/50 focus-visible:border-b-2 focus-visible:border-t-0 focus-visible:border-l-0 focus-visible:border-r-0 resize-none overflow-hidden py-1 md:py-2 shadow-none focus-visible:ring-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        autoFocus
+        disabled={updateCommentMutation.isPending}
+        maxLength={5001}
+        rows={1}
+      />
+      <div className="flex items-center justify-between">
+        <div className="min-h-[10px] -mt-2">
+          {content.length > 5000 && (
+            <span className="text-xs text-destructive">
+              ({content.length}/5000)
+            </span>
+          )}
           {updateCommentMutation.isError && (
-            <p className="text-sm text-destructive mt-2">
+            <span className="text-xs text-destructive">
               {updateCommentMutation.error instanceof Error
                 ? updateCommentMutation.error.message
                 : "Failed to update comment. Please try again."}
-            </p>
+            </span>
           )}
         </div>
-
-        <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
+        <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isSubmitting}
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            disabled={updateCommentMutation.isPending}
+            className="flex-shrink-0 rounded-full h-8 px-4"
           >
-            Cancel
+            <p className="text-xs">Cancel</p>
           </Button>
           <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || !content.trim()}
+            type="submit"
+            size="sm"
+            disabled={
+              !content.trim() ||
+              content.length > 5000 ||
+              updateCommentMutation.isPending
+            }
+            className="flex-shrink-0 rounded-full h-6 md:h-7 px-4"
           >
-            {isSubmitting ? "Updating..." : "Update"}
+            {updateCommentMutation.isPending ? (
+              <Loader2 className="w-4 animate-spin" />
+            ) : (
+              <p className="text-xs">Update</p>
+            )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </form>
   );
 }
 
