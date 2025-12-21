@@ -17,7 +17,7 @@ interface NoDateProps {
   icon?: "football" | "inbox" | React.ReactNode;
 }
 
-export default function NoDate({
+export default function NoData({
   date,
   message,
   helpText,

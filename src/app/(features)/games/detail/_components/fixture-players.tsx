@@ -7,7 +7,7 @@ import type {
   FixturePlayersPlayerItem,
 } from "@/type/footballapi/fixture-players";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import FullPage from "@/components/common/full-page";
 import { useFixturePlayers } from "@/services/football-api/fixture-players-statistics";
 import {

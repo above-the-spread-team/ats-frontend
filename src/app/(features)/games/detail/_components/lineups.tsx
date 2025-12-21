@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Shirt } from "lucide-react";
 import type { LineupResponseItem } from "@/type/footballapi/lineups";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import FullPage from "@/components/common/full-page";
 import { useFixtureLineups } from "@/services/football-api/fixture-lineups";
 

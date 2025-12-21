@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import FullPage from "@/components/common/full-page";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   TrendingUp,

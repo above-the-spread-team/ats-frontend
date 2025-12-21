@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import type {
   TeamsApiResponse,
   TeamResponseItem,

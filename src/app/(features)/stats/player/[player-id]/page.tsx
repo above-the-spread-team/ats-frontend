@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Flag } from "lucide-react";
 import FullPage from "@/components/common/full-page";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import IconBg from "@/components/common/icon-bg";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { FixturesApiResponse } from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
+import { useFixtures } from "@/services/football-api/fixtures";
+import { IoFootball } from "react-icons/io5";
 import {
   Carousel,
   CarouselContent,
@@ -43,69 +44,41 @@ function formatDate(dateString: string): string {
 }
 
 export default function Fixtures() {
-  const [fixturesData, setFixturesData] = useState<FixturesApiResponse | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  // Get today's date
+  const today = useMemo(() => new Date(), []);
 
-    const fetchFixtures = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Get today's date in YYYY-MM-DD format
-        const today = new Date().toISOString().split("T")[0];
-        const params = new URLSearchParams({
-          date: today,
-        });
-
-        const response = await fetch(`/api/fixtures?${params.toString()}`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load fixtures (${response.status})`);
-        }
-
-        const data = (await response.json()) as FixturesApiResponse;
-
-        if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
-        }
-
-        setFixturesData(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setFixturesData(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchFixtures();
-
-    // Refresh every 5 minutes for fixtures
-    const interval = setInterval(() => {
-      if (!controller.signal.aborted) {
-        fetchFixtures();
-      }
-    }, 300000);
-
-    return () => {
-      controller.abort();
-      clearInterval(interval);
-    };
+  // Get user's timezone
+  const timezone = useMemo(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return tz && tz.trim().length > 0 ? tz : "UTC";
+    } catch {
+      return "UTC";
+    }
   }, []);
+
+  // Use React Query to fetch fixtures
+  const {
+    data: fixturesData,
+    isLoading,
+    error: queryError,
+  } = useFixtures(today, timezone);
+
+  const fixtures = useMemo(
+    () => fixturesData?.response ?? [],
+    [fixturesData?.response]
+  );
+
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : fixturesData?.errors && fixturesData.errors.length > 0
+      ? fixturesData.errors.join("\n")
+      : null;
 
   useEffect(() => {
     if (!api) {
@@ -134,6 +107,7 @@ export default function Fixtures() {
           opts={{
             align: "start",
             loop: false,
+            dragFree: true,
           }}
           className="w-full"
         >
@@ -141,38 +115,34 @@ export default function Fixtures() {
             {Array.from({ length: 8 }).map((_, idx) => (
               <CarouselItem
                 key={idx}
-                className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-1/7 2xl:basis-1/8 px-0"
+                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/7 2xl:basis-1/8 px-0"
               >
                 <div className="group relative block border border-border bg-card p-2">
                   {/* Teams & Score */}
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     {/* Home Team */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <Skeleton className="w-6 h-6 rounded-full flex-shrink-0" />
-                        <Skeleton className="h-[14px] flex-1 max-w-[100px]" />
+                        <Skeleton className="h-[12px] md:h-[14px] flex-1 max-w-[100px]" />
                       </div>
-                      <Skeleton className="h-[18px] w-6 ml-2" />
+                      <Skeleton className="h-[16px] w-6 ml-2" />
                     </div>
-
-                    {/* Score Separator */}
-                    <Skeleton className="h-px w-full bg-border" />
 
                     {/* Away Team */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <Skeleton className="w-6 h-6 rounded-full flex-shrink-0" />
-                        <Skeleton className="h-[14px] flex-1 max-w-[100px]" />
+                        <Skeleton className="h-[12px] md:h-[14px] flex-1 max-w-[100px]" />
                       </div>
-                      <Skeleton className="h-[18px] w-6 ml-2" />
+                      <Skeleton className="h-[16px] w-6 ml-2" />
                     </div>
                   </div>
 
                   {/* Status */}
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-5 w-12 rounded px-2 py-0.5" />
-                      <Skeleton className="h-4 w-8" />
+                  <div className="mt-2 pt-1 border-t border-border">
+                    <div className="flex items-center justify-start">
+                      <Skeleton className="h-5 w-12 rounded px-2" />
                     </div>
                   </div>
                 </div>
@@ -184,7 +154,7 @@ export default function Fixtures() {
     );
   }
 
-  if (error || !fixturesData || !fixturesData.response) {
+  if (error || !fixturesData) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">
@@ -194,158 +164,142 @@ export default function Fixtures() {
     );
   }
 
-  const fixtures = fixturesData.response;
-
   if (fixtures.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">No fixtures available today</p>
+      <div className="w-full ">
+        <Link href="/games" className="group">
+          <div className="bg-gradient-to-br from-primary/50 via-card/40 to-background cursor-pointer min-h-[110px] flex items-center justify-center gap-3 transition-colors">
+            <IoFootball className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+            <span className="text-muted-foreground group-hover:text-primary-font text-sm md:text-base font-medium transition-colors">
+              No fixtures available today
+            </span>
+          </div>
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="">
-      <Carousel
-        opts={{
-          align: "start",
-          loop: false,
-        }}
-        setApi={setApi}
-        className="w-full "
-      >
-        <CarouselContent className="px-4">
-          {fixtures.map((fixture) => {
-            const statusInfo = getFixtureStatus(fixture.fixture.status.short);
-            const isInPlay = statusInfo.type === "In Play";
-            const hasStarted = isInPlay || statusInfo.type === "Finished";
-            const currentDateStr = formatDate(fixture.fixture.date);
-            const detailUrl = `/games/detail?id=${fixture.fixture.id}&date=${currentDateStr}`;
+    <Carousel
+      opts={{
+        align: "start",
+        loop: false,
+        dragFree: true,
+      }}
+      setApi={setApi}
+      className="w-full "
+    >
+      <CarouselContent className="px-4">
+        {fixtures.map((fixture) => {
+          const statusInfo = getFixtureStatus(fixture.fixture.status.short);
+          const isInPlay = statusInfo.type === "In Play";
+          const hasStarted = isInPlay || statusInfo.type === "Finished";
+          const currentDateStr = formatDate(fixture.fixture.date);
+          const detailUrl = `/games/detail?id=${fixture.fixture.id}&date=${currentDateStr}`;
 
-            return (
-              <CarouselItem
-                key={fixture.fixture.id}
-                className=" basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-1/7 2xl:basis-1/8 px-0"
+          return (
+            <CarouselItem
+              key={fixture.fixture.id}
+              className=" basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/7 2xl:basis-1/8 px-0"
+            >
+              <Link
+                href={detailUrl}
+                className="group relative block  border border-border bg-card p-2 hover:bg-card/80 transition-colors"
               >
-                <Link
-                  href={detailUrl}
-                  className="group relative block  border border-border bg-card p-2 hover:bg-card/80 transition-colors"
-                >
-                  {isInPlay && (
-                    <div className="absolute top-2 right-2">
-                      <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold animate-pulse">
-                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                        LIVE
-                      </span>
-                    </div>
-                  )}
+                {isInPlay && (
+                  <div className="absolute bottom-2 right-2.5">
+                    <span className="flex items-center p-1 rounded-full bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold animate-pulse">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                    </span>
+                  </div>
+                )}
 
-                  {/* League Info
-                  <div className="flex items-center gap-2 mb-3">
-                    {fixture.league.logo && (
-                      <Image
-                        src={fixture.league.logo}
-                        alt={fixture.league.name}
-                        width={16}
-                        height={16}
-                        className="w-4 h-4 object-contain"
-                      />
+                {/* Teams & Score */}
+                <div className="space-y-2 md:space-y-3">
+                  {/* Home Team */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {fixture.teams.home.logo ? (
+                        <Image
+                          src={fixture.teams.home.logo}
+                          alt={fixture.teams.home.name}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 object-contain flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground flex-shrink-0">
+                          {getInitials(fixture.teams.home.name)}
+                        </div>
+                      )}
+                      <p className="text-xs md:text-sm font-semibold truncate">
+                        {fixture.teams.home.name}
+                      </p>
+                    </div>
+                    {hasStarted && (
+                      <span className="text-base font-bold ml-2">
+                        {formatGoals(fixture.goals.home)}
+                      </span>
                     )}
-                    <p className="text-xs text-muted-foreground truncate">
-                      {fixture.league.name}
-                    </p>
-                  </div> */}
-
-                  {/* Teams & Score */}
-                  <div className="space-y-3">
-                    {/* Home Team */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {fixture.teams.home.logo ? (
-                          <Image
-                            src={fixture.teams.home.logo}
-                            alt={fixture.teams.home.name}
-                            width={24}
-                            height={24}
-                            className="w-6 h-6 object-contain flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground flex-shrink-0">
-                            {getInitials(fixture.teams.home.name)}
-                          </div>
-                        )}
-                        <p className="text-sm font-semibold truncate">
-                          {fixture.teams.home.name}
-                        </p>
-                      </div>
-                      {hasStarted && (
-                        <span className="text-lg font-bold ml-2">
-                          {formatGoals(fixture.goals.home)}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Score Separator */}
-                    {hasStarted && <div className="h-px bg-border"></div>}
-
-                    {/* Away Team */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {fixture.teams.away.logo ? (
-                          <Image
-                            src={fixture.teams.away.logo}
-                            alt={fixture.teams.away.name}
-                            width={24}
-                            height={24}
-                            className="w-6 h-6 object-contain flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground flex-shrink-0">
-                            {getInitials(fixture.teams.away.name)}
-                          </div>
-                        )}
-                        <p className="text-sm font-semibold truncate">
-                          {fixture.teams.away.name}
-                        </p>
-                      </div>
-                      {hasStarted && (
-                        <span className="text-lg font-bold ml-2">
-                          {formatGoals(fixture.goals.away)}
-                        </span>
-                      )}
-                    </div>
                   </div>
 
-                  {/* Status */}
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-xs font-semibold px-2 py-0.5 rounded ${statusInfo.badgeClass}`}
-                      >
-                        {statusInfo.short}
+                  {/* Away Team */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {fixture.teams.away.logo ? (
+                        <Image
+                          src={fixture.teams.away.logo}
+                          alt={fixture.teams.away.name}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 object-contain flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/40 text-[8px] font-semibold uppercase text-muted-foreground flex-shrink-0">
+                          {getInitials(fixture.teams.away.name)}
+                        </div>
+                      )}
+                      <p className="text-xs md:text-sm font-semibold truncate">
+                        {fixture.teams.away.name}
+                      </p>
+                    </div>
+                    {hasStarted && (
+                      <span className="text-base font-bold ml-2">
+                        {formatGoals(fixture.goals.away)}
                       </span>
-                      {fixture.fixture.status.elapsed !== null && (
-                        <span className="text-xs text-muted-foreground">
-                          {fixture.fixture.status.elapsed}&apos;
-                          {fixture.fixture.status.extra !== null &&
-                            fixture.fixture.status.extra > 0 &&
-                            `+${fixture.fixture.status.extra}`}
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
-                </Link>
-              </CarouselItem>
-            );
-          })}
-        </CarouselContent>
-        {canScrollPrev && (
-          <CarouselPrevious className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-primary rounded-full shadow-lg hover:bg-primary-active [&_svg]:!text-white" />
-        )}
-        {canScrollNext && (
-          <CarouselNext className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-primary rounded-full shadow-lg hover:bg-primary-active [&_svg]:!text-white" />
-        )}
-      </Carousel>
-    </div>
+                </div>
+
+                {/* Status */}
+                <div className="mt-2  pt-1 border-t border-border">
+                  <div className="flex items-center justify-start">
+                    <span
+                      className={`text-xs font-semibold px-2  rounded ${statusInfo.badgeClass}`}
+                    >
+                      {statusInfo.short}
+                    </span>
+                    {fixture.fixture.status.elapsed !== null && (
+                      <span className="text-xs text-muted-foreground">
+                        {fixture.fixture.status.elapsed}&apos;
+                        {fixture.fixture.status.extra !== null &&
+                          fixture.fixture.status.extra > 0 &&
+                          `+${fixture.fixture.status.extra}`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            </CarouselItem>
+          );
+        })}
+      </CarouselContent>
+      {canScrollPrev && (
+        <CarouselPrevious className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-primary rounded-full shadow-lg hover:bg-primary-active [&_svg]:!text-white" />
+      )}
+      {canScrollNext && (
+        <CarouselNext className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-primary rounded-full shadow-lg hover:bg-primary-active [&_svg]:!text-white" />
+      )}
+    </Carousel>
   );
 }

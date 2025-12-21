@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import FullPage from "@/components/common/full-page";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import type {
   StandingsApiResponse,
   StandingEntry,

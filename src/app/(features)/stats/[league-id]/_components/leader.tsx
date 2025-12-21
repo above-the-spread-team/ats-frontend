@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import FullPage from "@/components/common/full-page";
-import NoDate from "@/components/common/no-date";
+import NoDate from "@/components/common/no-data";
 import type {
   LeadersApiResponse,
   LeaderResponseItem,
