@@ -6,12 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Filter, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useTags } from "@/services/fastapi/tags";
 import type { TagSummary, TagType } from "@/type/fastapi/tags";
 
@@ -82,71 +79,69 @@ export default function TagFilter({
   }
 
   return (
-    <div className="mb-4  flex justify-between items-start gap-2">
-      {/* Show selected tags as chips */}
-      <div className="">
-        {selectedCount > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {selectedTagIds.map((tagId) => {
-              const tag = Object.values(tagsByType)
-                .flat()
-                .find((t) => t.id === tagId);
-              if (!tag) return null;
+    <div className="mb-4 flex flex-col items-start gap-2">
+      {/* Separate dropdown menus for each tag type */}
+      <div className="flex flex-wrap gap-2">
+        {TAG_TYPE_ORDER.map((type) => {
+          const tags = tagsByType[type];
+          if (tags.length === 0) return null;
 
-              return (
-                <Button
-                  key={tagId}
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleTagToggle(tagId)}
-                  className="h-7 gap-1.5 text-xs rounded-full"
-                >
-                  {tag.name}
-                  <X className="h-3 w-3" strokeWidth={2.5} />
+          return (
+            <DropdownMenu key={type}>
+              <DropdownMenuTrigger
+                asChild
+                className="rounded-full bg-primary !ring-0 text-white hover:bg-primary-active hover:text-white data-[state=open]:bg-primary-active"
+              >
+                <Button variant="outline" size="sm" className="gap-1">
+                  <span>{TAG_TYPE_LABELS[type]}</span>
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
-              );
-            })}
-          </div>
-        )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="w-56 max-h-[400px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
+              >
+                {tags.map((tag) => {
+                  const isSelected = selectedTagIds.includes(tag.id);
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={tag.id}
+                      checked={isSelected}
+                      onCheckedChange={() => handleTagToggle(tag.id)}
+                    >
+                      {tag.name}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        })}
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild className="rounded-full">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Filter className="h-4 w-4" />
-            <span>Filter by tags</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          className="w-56 max-h-[400px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
-        >
-          {TAG_TYPE_ORDER.map((type, index) => {
-            const tags = tagsByType[type];
-            if (tags.length === 0) return null;
+      {/* Show selected tags as chips */}
+      {selectedCount > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedTagIds.map((tagId) => {
+            const tag = Object.values(tagsByType)
+              .flat()
+              .find((t) => t.id === tagId);
+            if (!tag) return null;
 
             return (
-              <div key={type}>
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>{TAG_TYPE_LABELS[type]}</DropdownMenuLabel>
-                  {tags.map((tag) => {
-                    const isSelected = selectedTagIds.includes(tag.id);
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={tag.id}
-                        checked={isSelected}
-                        onCheckedChange={() => handleTagToggle(tag.id)}
-                      >
-                        {tag.name}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-                </DropdownMenuGroup>
-                {index < TAG_TYPE_ORDER.length - 1 && <DropdownMenuSeparator />}
-              </div>
+              <Button
+                key={tagId}
+                variant="secondary"
+                size="sm"
+                onClick={() => handleTagToggle(tagId)}
+                className="h-7 gap-1.5 text-xs rounded-full"
+              >
+                {tag.name}
+                <X className="h-3 w-3" strokeWidth={2.5} />
+              </Button>
             );
           })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </div>
+      )}
     </div>
   );
 }
