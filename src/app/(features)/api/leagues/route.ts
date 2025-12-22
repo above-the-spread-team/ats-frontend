@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
         headers: {
           "x-apisports-key": API_KEY,
         },
-        next: { revalidate: 86400 }, // 1 day revalidation for league data
+        next: { revalidate: 14400 }, // 4 hours revalidation for league data
       });
 
       if (!response.ok) {

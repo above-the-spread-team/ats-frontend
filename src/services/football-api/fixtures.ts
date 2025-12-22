@@ -233,6 +233,46 @@ export function useFixtures(date: Date, timezone: string) {
   });
 }
 
+async function fetchFixturesNextLast(
+  type: "next" | "last",
+  count: number,
+  leagueId?: number
+): Promise<FixturesApiResponse> {
+  const params = new URLSearchParams();
+  params.append(type, count.toString());
+  if (leagueId) {
+    params.append("league", leagueId.toString());
+  }
+
+  const response = await fetch(`/api/fixtures-next-last?${params.toString()}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load fixtures (${response.status})`);
+  }
+
+  const data = (await response.json()) as FixturesApiResponse;
+
+  if (data.errors && data.errors.length > 0) {
+    console.warn("Fixtures API errors:", data.errors);
+  }
+
+  return data;
+}
+
+export function useFixturesNextLast(
+  type: "next" | "last",
+  count: number,
+  leagueId?: number
+) {
+  return useQuery({
+    queryKey: ["fixtures-next-last", type, count, leagueId],
+    queryFn: () => fetchFixturesNextLast(type, count, leagueId),
+    staleTime: 5 * 60 * 1000, // 5 minutes - past fixtures don't change often
+    refetchInterval: false, // Don't auto-refetch past fixtures
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useFixture(fixtureId: number | null) {
   return useQuery({
     queryKey: ["fixture", fixtureId],

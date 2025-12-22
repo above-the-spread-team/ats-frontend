@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getFixtureStatus } from "@/data/fixture-status";
-import { useFixtures } from "@/services/football-api/fixtures";
+import { useFixturesNextLast } from "@/services/football-api/fixtures";
 import { IoFootball } from "react-icons/io5";
 import {
   Carousel,
@@ -48,25 +48,12 @@ export default function Fixtures() {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  // Get today's date
-  const today = useMemo(() => new Date(), []);
-
-  // Get user's timezone
-  const timezone = useMemo(() => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return tz && tz.trim().length > 0 ? tz : "UTC";
-    } catch {
-      return "UTC";
-    }
-  }, []);
-
-  // Use React Query to fetch fixtures
+  // Use React Query to fetch last 15 fixtures for league ID 2 (UEFA Champions League)
   const {
     data: fixturesData,
     isLoading,
     error: queryError,
-  } = useFixtures(today, timezone);
+  } = useFixturesNextLast("last", 15, 2);
 
   const fixtures = useMemo(
     () => fixturesData?.response ?? [],
@@ -166,12 +153,12 @@ export default function Fixtures() {
 
   if (fixtures.length === 0) {
     return (
-      <div className="w-full  ">
+      <div className="w-full">
         <Link href="/games" className="group">
           <div className="bg-gradient-to-br from-primary/50 via-card/40 to-slate-900/5 dark:to-slate-900 cursor-pointer min-h-[110px] flex items-center justify-center gap-3 transition-colors">
             <IoFootball className="w-6 h-6 md:w-8 md:h-8 text-primary" />
             <span className="text-muted-foreground group-hover:text-primary-font text-sm md:text-base font-medium transition-colors">
-              No fixtures available today
+              No fixtures available
             </span>
           </div>
         </Link>
