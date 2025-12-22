@@ -98,15 +98,12 @@ export default function HomeRanking() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+      <Link
+        href={`/stats/${leagueId}?season=${season}`}
+        className="text-sm px-2 block mb-2 text-primary-font hover:underline font-semibold"
+      >
         <h2 className="text-lg md:text-xl font-bold">{leagueName}</h2>
-        <Link
-          href={`/stats/${leagueId}?season=${season}`}
-          className="text-sm text-primary hover:underline font-semibold"
-        >
-          View All →
-        </Link>
-      </div>
+      </Link>
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         {/* Header */}
         <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">

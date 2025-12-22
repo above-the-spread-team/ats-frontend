@@ -38,15 +38,12 @@ export default function HomeNews() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+      <Link
+        href="/news"
+        className="text-sm px-2 block mb-2 text-primary-font hover:underline font-semibold"
+      >
         <h2 className="text-lg md:text-xl font-bold">Latest News</h2>
-        <Link
-          href="/news"
-          className="text-sm text-primary hover:underline font-semibold"
-        >
-          View All →
-        </Link>
-      </div>
+      </Link>
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <div className="divide-y divide-border">
           {topNews.map((article) => (

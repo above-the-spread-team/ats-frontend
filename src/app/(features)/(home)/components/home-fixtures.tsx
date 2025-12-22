@@ -166,9 +166,9 @@ export default function Fixtures() {
 
   if (fixtures.length === 0) {
     return (
-      <div className="w-full ">
+      <div className="w-full  ">
         <Link href="/games" className="group">
-          <div className="bg-gradient-to-br from-primary/50 via-card/40 to-background cursor-pointer min-h-[110px] flex items-center justify-center gap-3 transition-colors">
+          <div className="bg-gradient-to-br from-primary/50 via-card/40 to-slate-900/5 dark:to-slate-900 cursor-pointer min-h-[110px] flex items-center justify-center gap-3 transition-colors">
             <IoFootball className="w-6 h-6 md:w-8 md:h-8 text-primary" />
             <span className="text-muted-foreground group-hover:text-primary-font text-sm md:text-base font-medium transition-colors">
               No fixtures available today
@@ -187,7 +187,7 @@ export default function Fixtures() {
         dragFree: true,
       }}
       setApi={setApi}
-      className="w-full "
+      className="w-full bg-slate-900/5 dark:bg-slate-900"
     >
       <CarouselContent className="px-4">
         {fixtures.map((fixture) => {

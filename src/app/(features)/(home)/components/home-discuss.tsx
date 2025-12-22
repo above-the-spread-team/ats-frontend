@@ -32,15 +32,12 @@ export default function HomeDiscuss() {
   if (error || !postsData || postsData.items.length === 0) {
     return (
       <div className="w-full">
-        <div className="flex items-center justify-between mb-4">
+        <Link
+          href="/discuss"
+          className="text-sm block mb-2 text-primary-font hover:underline font-semibold"
+        >
           <h2 className="text-lg md:text-xl font-bold">Latest Discussions</h2>
-          <Link
-            href="/discuss"
-            className="text-sm text-primary hover:underline font-semibold"
-          >
-            View All →
-          </Link>
-        </div>
+        </Link>
         <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
           <div className="p-4 text-center">
             <p className="text-sm text-muted-foreground">
@@ -56,15 +53,12 @@ export default function HomeDiscuss() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+      <Link
+        href="/discuss"
+        className="text-sm px-2 block mb-2 text-primary-font hover:underline font-semibold"
+      >
         <h2 className="text-lg md:text-xl font-bold">Latest Discussions</h2>
-        <Link
-          href="/discuss"
-          className="text-sm text-primary hover:underline font-semibold"
-        >
-          View All →
-        </Link>
-      </div>
+      </Link>
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <div className="divide-y divide-border">
           {posts.map((post) => (
