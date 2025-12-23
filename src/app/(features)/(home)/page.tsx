@@ -9,9 +9,9 @@ export default function Home() {
   return (
     <FullPage minusHeight={40} className="space-y-4 md:space-y-6  pb-10">
       <Fixtures />
-      <div className="container mx-auto px-2  max-w-6xl space-y-6 lg:space-y-8">
+      <div className="container mx-auto px-4  max-w-6xl space-y-6 lg:space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 -mx-2    flex items-center justify-center">
+          <div className="lg:col-span-2 -mx-[21px]    flex items-center justify-center">
             <ScrollNews />
           </div>
           <div className="lg:col-span-1 hidden lg:block">
