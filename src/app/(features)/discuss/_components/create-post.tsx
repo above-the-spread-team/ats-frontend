@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +25,9 @@ import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useTags, useAddTagsToPost } from "@/services/fastapi/tags";
 import { cn } from "@/lib/utils";
 import UserIcon from "@/components/common/user-icon";
-import { Tag, X } from "lucide-react";
+import { Tag, X, Smile } from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
+import { POPULAR_EMOJIS } from "@/data/emoji";
 
 interface CreatePostProps {
   open: boolean;
@@ -46,6 +47,7 @@ const TAG_TYPE_LABELS: Record<TagType, string> = {
 export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const createPostMutation = useCreatePost();
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
@@ -77,6 +79,26 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     } else {
       setSelectedTagIds([...selectedTagIds, tagId]);
     }
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const textBefore = content.substring(0, start);
+    const textAfter = content.substring(end);
+
+    const newContent = textBefore + emoji + textAfter;
+    setContent(newContent);
+
+    // Set cursor position after the inserted emoji
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + emoji.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   };
 
   const handleSubmit = async () => {
@@ -146,14 +168,50 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           )}
 
           {/* Content Textarea */}
-          <div className="space-y-2">
-            <label
-              htmlFor="post-content"
-              className="text-sm pl-2 font-medium text-foreground"
-            >
-              What&apos;s on your mind?
-            </label>
+          <div className="space-y-1 pt-2">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="post-content"
+                className="text-sm pl-2 font-medium text-foreground"
+              >
+                What&apos;s on your mind?
+              </label>
+              {/* Emoji Picker Button */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isSubmitting}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Smile className="scale-110" />
+                    <span className="sr-only">Add emoji</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-[300px] max-h-[300px] overflow-y-auto rounded-2xl p-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30"
+                >
+                  <div className="grid grid-cols-8 gap-1">
+                    {POPULAR_EMOJIS.map((emoji, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleEmojiSelect(emoji)}
+                        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors text-lg cursor-pointer"
+                        title={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <Textarea
+              ref={textareaRef}
               id="post-content"
               placeholder="Write something..."
               value={content}
