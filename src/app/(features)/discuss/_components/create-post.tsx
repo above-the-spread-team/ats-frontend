@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +50,10 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const pendingFocusRef = useRef<{
+    cursorPos: number;
+    scrollTop: number;
+  } | null>(null);
   const createPostMutation = useCreatePost();
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
@@ -83,6 +87,87 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     }
   };
 
+  // Handle focus restoration after dropdown closes
+  useEffect(() => {
+    if (!emojiDropdownOpen && pendingFocusRef.current && textareaRef.current) {
+      let focusRestored = false;
+
+      const restoreFocus = () => {
+        if (focusRestored || !textareaRef.current || !pendingFocusRef.current) {
+          return;
+        }
+        focusRestored = true;
+        const { cursorPos, scrollTop } = pendingFocusRef.current;
+
+        // Restore scroll position first to prevent jumping
+        textareaRef.current.scrollTop = scrollTop;
+
+        // Then focus and set cursor position
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+
+        // Restore scroll position again after focus (in case browser scrolled)
+        requestAnimationFrame(() => {
+          if (textareaRef.current) {
+            textareaRef.current.scrollTop = scrollTop;
+          }
+        });
+
+        pendingFocusRef.current = null;
+      };
+
+      // Intercept focus events to catch when Radix UI tries to focus the trigger button
+      const handleFocusIn = (e: FocusEvent) => {
+        if (focusRestored || !pendingFocusRef.current) {
+          return;
+        }
+
+        const target = e.target as HTMLElement;
+        // Check if focus is going to a button that's not the textarea
+        // This likely means Radix UI is restoring focus to the trigger
+        if (
+          target &&
+          target.tagName === "BUTTON" &&
+          target !== textareaRef.current &&
+          !target.closest('[role="dialog"]') // Don't intercept focus in dialogs
+        ) {
+          // Prevent the focus and restore to textarea instead
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          // Restore focus to textarea in the next tick
+          requestAnimationFrame(() => {
+            restoreFocus();
+          });
+        }
+      };
+
+      // Listen for focus events with capture phase to intercept early
+      document.addEventListener("focusin", handleFocusIn, true);
+
+      // Fallback: restore focus after Radix UI's animation completes
+      const timeoutId = setTimeout(() => {
+        if (!focusRestored) {
+          restoreFocus();
+        }
+      }, 250);
+
+      // Cleanup
+      const cleanupTimeout = setTimeout(() => {
+        document.removeEventListener("focusin", handleFocusIn, true);
+        if (pendingFocusRef.current) {
+          pendingFocusRef.current = null;
+        }
+      }, 600);
+
+      return () => {
+        clearTimeout(timeoutId);
+        clearTimeout(cleanupTimeout);
+        document.removeEventListener("focusin", handleFocusIn, true);
+      };
+    }
+  }, [emojiDropdownOpen]);
+
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     if (!textareaRef.current || !emojiData) return;
 
@@ -100,18 +185,18 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     const textBefore = content.substring(0, start);
     const textAfter = content.substring(end);
 
+    // Store scroll position before making changes
+    const scrollTop = textarea.scrollTop;
+
     const newContent = textBefore + emojiString + textAfter;
     setContent(newContent);
 
-    // Close the dropdown menu
-    setEmojiDropdownOpen(false);
+    // Store cursor position and scroll position for focus restoration after dropdown closes
+    const newCursorPos = start + emojiString.length;
+    pendingFocusRef.current = { cursorPos: newCursorPos, scrollTop };
 
-    // Set cursor position after the inserted emoji
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + emojiString.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
+    // Close the dropdown menu - useEffect will handle focus restoration
+    setEmojiDropdownOpen(false);
   };
 
   const handleSubmit = async () => {
