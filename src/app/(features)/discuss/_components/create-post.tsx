@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
-import dynamic from "next/dynamic";
-import { useTheme } from "next-themes";
-import { Theme } from "emoji-picker-react";
 import {
   Dialog,
   DialogContent,
@@ -28,11 +25,10 @@ import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useTags, useAddTagsToPost } from "@/services/fastapi/tags";
 import { cn } from "@/lib/utils";
 import UserIcon from "@/components/common/user-icon";
+import EmojiPicker from "@/components/common/emoji-picker";
 import { Tag, X, Smile } from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
-
-// Dynamic import to avoid SSR issues with emoji-picker-react
-const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
+import type { EmojiClickData } from "emoji-picker-react";
 
 interface CreatePostProps {
   open: boolean;
@@ -54,18 +50,10 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const { resolvedTheme } = useTheme();
   const createPostMutation = useCreatePost();
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
   const { data: tagsData, isLoading: tagsLoading } = useTags(1, 100);
-
-  // Map resolved theme to emoji-picker-react theme
-  const emojiPickerTheme = useMemo<Theme>(() => {
-    if (resolvedTheme === "dark") return Theme.DARK;
-    if (resolvedTheme === "light") return Theme.LIGHT;
-    return Theme.AUTO; // fallback for system theme
-  }, [resolvedTheme]);
 
   // Group tags by type (only league tags for posts)
   const tagsByType = useMemo(() => {
@@ -95,7 +83,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     }
   };
 
-  const handleEmojiClick = (emojiData: any) => {
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
     if (!textareaRef.current || !emojiData) return;
 
     // emoji-picker-react v4 structure: emojiData.emoji is the emoji character (e.g., '😀')
@@ -222,12 +210,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
                   align="end"
                   className="w-auto p-0 border-0 shadow-lg bg-transparent"
                 >
-                  <EmojiPicker
-                    onEmojiClick={handleEmojiClick}
-                    theme={emojiPickerTheme}
-                    skinTonesDisabled={false}
-                    previewConfig={{ showPreview: false }}
-                  />
+                  <EmojiPicker onEmojiClick={handleEmojiClick} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
