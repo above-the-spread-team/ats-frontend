@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
+import { Theme } from "emoji-picker-react";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +30,9 @@ import { cn } from "@/lib/utils";
 import UserIcon from "@/components/common/user-icon";
 import { Tag, X, Smile } from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
-import { POPULAR_EMOJIS } from "@/data/emoji";
+
+// Dynamic import to avoid SSR issues with emoji-picker-react
+const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 interface CreatePostProps {
   open: boolean;
@@ -47,11 +52,20 @@ const TAG_TYPE_LABELS: Record<TagType, string> = {
 export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const { resolvedTheme } = useTheme();
   const createPostMutation = useCreatePost();
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
   const { data: tagsData, isLoading: tagsLoading } = useTags(1, 100);
+
+  // Map resolved theme to emoji-picker-react theme
+  const emojiPickerTheme = useMemo<Theme>(() => {
+    if (resolvedTheme === "dark") return Theme.DARK;
+    if (resolvedTheme === "light") return Theme.LIGHT;
+    return Theme.AUTO; // fallback for system theme
+  }, [resolvedTheme]);
 
   // Group tags by type (only league tags for posts)
   const tagsByType = useMemo(() => {
@@ -81,8 +95,16 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     }
   };
 
-  const handleEmojiSelect = (emoji: string) => {
-    if (!textareaRef.current) return;
+  const handleEmojiClick = (emojiData: any) => {
+    if (!textareaRef.current || !emojiData) return;
+
+    // emoji-picker-react v4 structure: emojiData.emoji is the emoji character (e.g., '😀')
+    const emojiString = emojiData.emoji;
+
+    if (!emojiString) {
+      console.error("Emoji data missing emoji property:", emojiData);
+      return;
+    }
 
     const textarea = textareaRef.current;
     const start = textarea.selectionStart;
@@ -90,13 +112,16 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     const textBefore = content.substring(0, start);
     const textAfter = content.substring(end);
 
-    const newContent = textBefore + emoji + textAfter;
+    const newContent = textBefore + emojiString + textAfter;
     setContent(newContent);
+
+    // Close the dropdown menu
+    setEmojiDropdownOpen(false);
 
     // Set cursor position after the inserted emoji
     setTimeout(() => {
       textarea.focus();
-      const newCursorPos = start + emoji.length;
+      const newCursorPos = start + emojiString.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
   };
@@ -177,7 +202,10 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
                 What&apos;s on your mind?
               </label>
               {/* Emoji Picker Button */}
-              <DropdownMenu>
+              <DropdownMenu
+                open={emojiDropdownOpen}
+                onOpenChange={setEmojiDropdownOpen}
+              >
                 <DropdownMenuTrigger asChild>
                   <Button
                     type="button"
@@ -192,21 +220,14 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-[300px] max-h-[300px] overflow-y-auto rounded-2xl p-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30"
+                  className="w-auto p-0 border-0 shadow-lg bg-transparent"
                 >
-                  <div className="grid grid-cols-8 gap-1">
-                    {POPULAR_EMOJIS.map((emoji, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => handleEmojiSelect(emoji)}
-                        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors text-lg cursor-pointer"
-                        title={emoji}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiClick}
+                    theme={emojiPickerTheme}
+                    skinTonesDisabled={false}
+                    previewConfig={{ showPreview: false }}
+                  />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
