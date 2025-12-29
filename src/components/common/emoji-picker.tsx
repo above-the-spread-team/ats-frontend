@@ -30,6 +30,8 @@ export default function EmojiPicker({ onEmojiClick }: EmojiPickerProps) {
       theme={emojiPickerTheme}
       skinTonesDisabled={false}
       previewConfig={{ showPreview: false }}
+      searchDisabled={true}
+      className="!h-[350px] "
     />
   );
 }

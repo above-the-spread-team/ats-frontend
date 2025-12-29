@@ -315,6 +315,15 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
               )}
             />
           </div>
+          {(createPostMutation.isError || addTagsMutation.isError) && (
+            <p className="text-sm px-1 py-1 text-red-500">
+              {createPostMutation.error instanceof Error
+                ? createPostMutation.error.message
+                : addTagsMutation.error instanceof Error
+                ? addTagsMutation.error.message
+                : "Failed to create post. Please try again."}
+            </p>
+          )}
 
           {/* Tag Selection */}
           <div className="space-y-2">
@@ -400,16 +409,6 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
               </DropdownMenu>
             </div>
           </div>
-
-          {(createPostMutation.isError || addTagsMutation.isError) && (
-            <p className="text-sm text-destructive">
-              {createPostMutation.error instanceof Error
-                ? createPostMutation.error.message
-                : addTagsMutation.error instanceof Error
-                ? addTagsMutation.error.message
-                : "Failed to create post. Please try again."}
-            </p>
-          )}
         </div>
 
         <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">

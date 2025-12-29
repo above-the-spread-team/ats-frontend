@@ -255,7 +255,7 @@ export default function EditPost({
             />
           </div>
           {updatePostMutation.isError && (
-            <p className="text-sm text-destructive mt-2">
+            <p className="text-sm text-red-500 px-1 my-1">
               {updatePostMutation.error instanceof Error
                 ? updatePostMutation.error.message
                 : "Failed to update post. Please try again."}
