@@ -3,8 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUpdateComment } from "@/services/fastapi/comments";
-import { Loader2 } from "lucide-react";
+import { Loader2, Smile } from "lucide-react";
+import EmojiPicker from "@/components/common/emoji-picker";
+import type { EmojiClickData } from "emoji-picker-react";
 
 interface EditCommentProps {
   commentId: number;
@@ -20,8 +27,13 @@ export default function EditComment({
   onCancel,
 }: EditCommentProps) {
   const [content, setContent] = useState(initialContent);
+  const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const updateCommentMutation = useUpdateComment();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pendingFocusRef = useRef<{
+    cursorPos: number;
+    scrollTop: number;
+  } | null>(null);
 
   // Update content when initialContent changes
   useEffect(() => {
@@ -35,6 +47,118 @@ export default function EditComment({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [content]);
+
+  // Handle focus restoration after dropdown closes
+  useEffect(() => {
+    if (!emojiDropdownOpen && pendingFocusRef.current && textareaRef.current) {
+      let focusRestored = false;
+
+      const restoreFocus = () => {
+        if (focusRestored || !textareaRef.current || !pendingFocusRef.current) {
+          return;
+        }
+        focusRestored = true;
+        const { cursorPos, scrollTop } = pendingFocusRef.current;
+
+        // Restore scroll position first to prevent jumping
+        textareaRef.current.scrollTop = scrollTop;
+
+        // Then focus and set cursor position
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+
+        // Restore scroll position again after focus (in case browser scrolled)
+        requestAnimationFrame(() => {
+          if (textareaRef.current) {
+            textareaRef.current.scrollTop = scrollTop;
+          }
+        });
+
+        pendingFocusRef.current = null;
+      };
+
+      // Intercept focus events to catch when Radix UI tries to focus the trigger button
+      const handleFocusIn = (e: FocusEvent) => {
+        if (focusRestored || !pendingFocusRef.current) {
+          return;
+        }
+
+        const target = e.target as HTMLElement;
+        // Check if focus is going to a button that's not the textarea
+        // This likely means Radix UI is restoring focus to the trigger
+        if (
+          target &&
+          target.tagName === "BUTTON" &&
+          target !== textareaRef.current &&
+          !target.closest('[role="dialog"]') // Don't intercept focus in dialogs
+        ) {
+          // Prevent the focus and restore to textarea instead
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          // Restore focus to textarea in the next tick
+          requestAnimationFrame(() => {
+            restoreFocus();
+          });
+        }
+      };
+
+      // Listen for focus events with capture phase to intercept early
+      document.addEventListener("focusin", handleFocusIn, true);
+
+      // Fallback: restore focus after Radix UI's animation completes
+      const timeoutId = setTimeout(() => {
+        if (!focusRestored) {
+          restoreFocus();
+        }
+      }, 250);
+
+      // Cleanup
+      const cleanupTimeout = setTimeout(() => {
+        document.removeEventListener("focusin", handleFocusIn, true);
+        if (pendingFocusRef.current) {
+          pendingFocusRef.current = null;
+        }
+      }, 600);
+
+      return () => {
+        clearTimeout(timeoutId);
+        clearTimeout(cleanupTimeout);
+        document.removeEventListener("focusin", handleFocusIn, true);
+      };
+    }
+  }, [emojiDropdownOpen]);
+
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    if (!textareaRef.current || !emojiData) return;
+
+    // emoji-picker-react v4 structure: emojiData.emoji is the emoji character (e.g., '😀')
+    const emojiString = emojiData.emoji;
+
+    if (!emojiString) {
+      console.error("Emoji data missing emoji property:", emojiData);
+      return;
+    }
+
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const textBefore = content.substring(0, start);
+    const textAfter = content.substring(end);
+
+    // Store scroll position before making changes
+    const scrollTop = textarea.scrollTop;
+
+    const newContent = textBefore + emojiString + textAfter;
+    setContent(newContent);
+
+    // Store cursor position and scroll position for focus restoration after dropdown closes
+    const newCursorPos = start + emojiString.length;
+    pendingFocusRef.current = { cursorPos: newCursorPos, scrollTop };
+
+    // Close the dropdown menu - useEffect will handle focus restoration
+    setEmojiDropdownOpen(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +205,31 @@ export default function EditComment({
         rows={1}
       />
       <div className="flex items-center justify-between">
-        <div className="min-h-[10px] -mt-2">
+        <div className="min-h-[10px] -mt-2 flex items-center gap-2">
+          {/* Emoji Picker */}
+          <DropdownMenu
+            open={emojiDropdownOpen}
+            onOpenChange={setEmojiDropdownOpen}
+          >
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={updateCommentMutation.isPending}
+                className="h-8 w-8 p-0"
+              >
+                <Smile className="scale-110" />
+                <span className="sr-only">Add emoji</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-auto p-0 border-0 shadow-lg bg-transparent"
+            >
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </DropdownMenuContent>
+          </DropdownMenu>
           {content.length > 5000 && (
             <span className="text-xs text-destructive">
               ({content.length}/5000)
