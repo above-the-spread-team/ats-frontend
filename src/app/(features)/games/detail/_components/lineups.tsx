@@ -10,13 +10,13 @@ import { useFixtureLineups } from "@/services/football-api/fixture-lineups";
 
 // Fixed colors for home and away teams (mild/soft colors)
 const HOME_TEAM_BASE = {
-  primary: "#6b9bd4", // Mild blue background
+  primary: "#6685BB", // Mild blue background
   number: "#ffffff", // White text
-  border: "#4a7fb8", // Darker mild blue border
+  border: "#5476A7", // Darker mild blue border
 };
 
 const AWAY_TEAM_BASE = {
-  primary: "#d97777", // Mild red background
+  primary: "#BB6667", // Mild red background
   number: "#ffffff", // White text
   border: "#c45a5a", // Darker mild red border
 };
@@ -29,7 +29,7 @@ function getTeamColors(pos: string, isHome: boolean) {
   if (isGoalkeeper) {
     // Goalkeeper gets a darker shade
     return {
-      primary: isHome ? "#3b5f8f" : "#b91c1c", // Darker blue/red
+      primary: isHome ? "#3579D8" : "#C6494B", // Darker blue/red
       number: base.number,
       border: isHome ? "#2a4a6f" : "#991b1b", // Even darker border
     };
@@ -816,7 +816,7 @@ function CombinedFormationField({
                     style={{
                       fill: teamColors.primary,
                       stroke: teamColors.border,
-                      strokeWidth: 1,
+                      strokeWidth: 0.4,
                     }}
                   />
                   <span
@@ -855,7 +855,7 @@ function CombinedFormationField({
                     style={{
                       fill: teamColors.primary,
                       stroke: teamColors.border,
-                      strokeWidth: 1,
+                      strokeWidth: 0.4,
                     }}
                   />
                   <span
