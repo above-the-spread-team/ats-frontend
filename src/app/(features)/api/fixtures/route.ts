@@ -111,7 +111,14 @@ export async function GET(req: NextRequest) {
   // Real-time data (scores, status, etc.) is fetched separately via fixtures-by-ids endpoint (60s cache)
   const revalidateTime = isTodayOrYesterday ? 7200 : 7200; // 2 hours for today/yesterday, 2 hours for others
 
-  const season = new Date(dateISO).getFullYear();
+  // Calculate season based on date
+  // Football seasons typically run from August/September to May
+  // If month is after May (June onwards), use current year as season
+  // Otherwise (January to May), use previous year as season
+  const dateObj = new Date(dateISO);
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
+  const season = month > 5 ? year : year - 1;
 
   const fixtures: FixtureResponseItem[] = [];
   const errors: Record<string, string> = {};
