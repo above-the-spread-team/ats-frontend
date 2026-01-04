@@ -194,7 +194,11 @@ function GameDetailContent() {
   return (
     <FullPage>
       {/* Fixture Detail - Always visible at top */}
-      <div className="bg-gradient-to-br from-[#e6fff9] dark:from-[#104239] via-[#ffffff] dark:via-[#000000] to-[#e7fffd] dark:to-[#1e4d3f] ">
+      <div
+        className="bg-gradient-to-br 
+  from-[#d1fae5] via-white to-[#f0fdfa] 
+  dark:from-[#062d27] dark:via-[#0a0a0a] dark:to-[#0d2b26]"
+      >
         <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
           <button
             onClick={() => {
