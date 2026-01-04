@@ -16,10 +16,10 @@ import Nav, { NavTab } from "@/components/common/nav";
 import { Skeleton } from "@/components/ui/skeleton";
 import FixtureDetail from "./_components/fixture-detail";
 import Lineups from "./_components/lineups";
-import FixtureStatistics from "./_components/fixture-statistics";
+import FixtureStatistics from "./_components/fixture-stats";
 import Events from "./_components/events";
 import FixturePlayers from "./_components/fixture-players";
-import Predictions from "./_components/predictions";
+import Predictions from "./_components/tips";
 import { useFixture } from "@/services/football-api/fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
 
@@ -182,9 +182,9 @@ function GameDetailContent() {
   const fixture = fixtureData.response[0];
 
   const tabs: NavTab<TabType>[] = [
-    { id: "predictions", label: "Predictions", icon: Brain },
+    { id: "predictions", label: "Tips", icon: Brain },
 
-    { id: "statistics", label: "Statistics", icon: BarChart3 },
+    { id: "statistics", label: "Stats", icon: BarChart3 },
 
     { id: "players", label: "Players", icon: User },
     { id: "events", label: "Events", icon: Activity },
@@ -230,14 +230,13 @@ function GameDetailContent() {
             setActiveTab={setActiveTab}
             preserveParams={true}
             additionalParams={{ id: fixtureId.toString() }}
-            containerClassName="mt-2 mb-2 justify-between max-w-4xl  mx-auto  px-2 gap-1"
+            containerClassName="mt-2 mb-2 justify-evenly max-w-4xl  mx-auto  px-2 gap-1"
             hideIconOnMobile={true}
-            justify="between"
           />
         )}
       </div>
 
-      <div className="pt-2 pb-10">
+      <div className="pt-3 md:pt-4 pb-10">
         {/* Tab Content */}
         {activeTab === "lineups" && (
           <div className="container mx-auto w-[95%]  max-w-4xl ">
