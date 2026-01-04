@@ -16,13 +16,13 @@
     --heart: 0 61% 58%;
     --heart-hover: 0 79% 67%;
 
-    --background: 0 0% 94%;
+    --background: 184 15% 96%;
 
     --foreground: 0 0% 6.5%;
 
     --icon-hover: 0 0% 93%;
 
-    --card: 0 0% 99.5%;
+    --card: 0 0% 100%;
 
     --card-foreground: 0 0% 3.9%;
 
@@ -65,13 +65,13 @@
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 15%;
+    --background: 184 15% 10%;
 
     --foreground: 0 0% 93.5%;
     --primary-title: 0 0% 80%;
     --primary-font: 172 47% 76%;
 
-    --card: 0 0% 3.9%;
+    --card: 184 15% 12%;
 
     --card-foreground: 0 0% 98%;
 

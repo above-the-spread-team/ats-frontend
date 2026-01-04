@@ -18,9 +18,16 @@ function TablesContent() {
   const [leagues, setLeagues] = useState<LeagueResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSeason, setSelectedSeason] = useState<number>(
-    new Date().getFullYear()
-  );
+  // Calculate season based on current date
+  // Football seasons typically run from August/September to May
+  // If month is after May (June onwards), use current year as season
+  // Otherwise (January to May), use previous year as season
+  const [selectedSeason, setSelectedSeason] = useState<number>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
+    return month > 5 ? year : year - 1;
+  });
   const [selectedType, setSelectedType] = useState<LeagueType>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -34,7 +41,7 @@ function TablesContent() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/leagues?season=${selectedSeason}`, {
+        const response = await fetch(`/api/leagues`, {
           signal: controller.signal,
         });
 
@@ -64,7 +71,7 @@ function TablesContent() {
     return () => {
       controller.abort();
     };
-  }, [selectedSeason]);
+  }, []);
 
   // Group and filter leagues
   const groupedLeagues = useMemo(() => {

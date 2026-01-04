@@ -194,7 +194,7 @@ function GameDetailContent() {
   return (
     <FullPage>
       {/* Fixture Detail - Always visible at top */}
-      <div className="bg-gradient-to-br from-[#91d7ca] dark:from-[#1D2E29] to-[#e3e3e3] dark:to-[#205847] ">
+      <div className="bg-gradient-to-br from-[#e6fff9] dark:from-[#104239] via-[#ffffff] dark:via-[#000000] to-[#e7fffd] dark:to-[#1e4d3f] ">
         <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
           <button
             onClick={() => {
@@ -205,7 +205,7 @@ function GameDetailContent() {
                 router.back();
               }
             }}
-            className="flex items-center gap-2 py-2 md:py-3 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+            className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-primary-font hover:text-foreground transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
