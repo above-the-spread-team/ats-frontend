@@ -199,8 +199,12 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     setEmojiDropdownOpen(false);
   };
 
-  const handleSubmit = async () => {
-    if (!content.trim()) {
+  const handleSubmit = async (e?: React.MouseEvent) => {
+    // Prevent event propagation to avoid triggering dialog close
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (!content.trim() || isSubmitting) {
       return;
     }
 
@@ -228,11 +232,20 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     }
   };
 
-  const handleClose = () => {
-    if (!createPostMutation.isPending && !addTagsMutation.isPending) {
+  const handleClose = (open: boolean) => {
+    // Prevent closing if submitting
+    if (isSubmitting) {
+      return;
+    }
+
+    // Only allow closing if not submitting
+    if (!open && !createPostMutation.isPending && !addTagsMutation.isPending) {
       setContent("");
       setSelectedTagIds([]);
       onOpenChange(false);
+    } else if (open) {
+      // Allow opening
+      onOpenChange(true);
     }
   };
 
@@ -241,7 +254,21 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]">
+      <DialogContent
+        className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]"
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking outside during submission
+          if (isSubmitting) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing with Escape key during submission
+          if (isSubmitting) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Create Post</DialogTitle>
           <DialogDescription>
@@ -414,7 +441,15 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
         <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
           <Button
             variant="outline"
-            onClick={handleClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!isSubmitting) {
+                setContent("");
+                setSelectedTagIds([]);
+                onOpenChange(false);
+              }
+            }}
             disabled={isSubmitting}
           >
             Cancel
@@ -422,6 +457,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !content.trim()}
+            type="button"
           >
             {isSubmitting ? "Posting..." : "Post"}
           </Button>
