@@ -9,6 +9,7 @@ import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import IconBg from "@/components/common/icon-bg";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { calculateSeason } from "@/lib/utils";
 import type { PlayerStatisticsApiResponse } from "@/type/footballapi/player-statistics";
 
 export default function PlayerPage() {
@@ -17,8 +18,8 @@ export default function PlayerPage() {
   const router = useRouter();
   const playerId = params["player-id"] as string;
 
-  // Always use current year, ignore season param from URL
-  const season = new Date().getFullYear();
+  // Always use calculated season, ignore season param from URL
+  const season = calculateSeason();
   const teamId = searchParams.get("teamId");
   const leagueId = searchParams.get("leagueId");
 

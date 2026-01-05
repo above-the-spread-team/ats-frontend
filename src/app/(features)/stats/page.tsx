@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, Suspense } from "react";
 import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Nav from "@/components/common/nav";
+import { calculateSeason } from "@/lib/utils";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
 import StatsSkeleton from "./_components/skeleton";
@@ -19,15 +20,9 @@ function TablesContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Calculate season based on current date
-  // Football seasons typically run from August/September to May
-  // If month is after May (June onwards), use current year as season
-  // Otherwise (January to May), use previous year as season
-  const [selectedSeason, setSelectedSeason] = useState<number>(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
-    return month > 5 ? year : year - 1;
-  });
+  const [selectedSeason, setSelectedSeason] = useState<number>(() =>
+    calculateSeason()
+  );
   const [selectedType, setSelectedType] = useState<LeagueType>("all");
   const [searchQuery, setSearchQuery] = useState("");
 

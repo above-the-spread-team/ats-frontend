@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { calculateSeason } from "@/lib/utils";
 import type {
   StandingsApiResponse,
   StandingEntry,
@@ -16,7 +17,7 @@ export default function HomeRanking() {
   const [leagueName, setLeagueName] = useState<string>("");
 
   const leagueId = 2;
-  const season = new Date().getFullYear();
+  const season = calculateSeason();
 
   useEffect(() => {
     const controller = new AbortController();

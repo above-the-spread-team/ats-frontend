@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LEAGUE_IDS } from "@/data/league-ids";
+import { calculateSeason } from "@/lib/utils";
 import type {
   LeaguesApiResponse,
   LeagueResponseItem,
@@ -33,17 +34,7 @@ export async function GET(req: NextRequest) {
   const seasonParam = req.nextUrl.searchParams.get("season");
 
   // Calculate season based on current date if not provided
-  // Football seasons typically run from August/September to May
-  // If month is after May (June onwards), use current year as season
-  // Otherwise (January to May), use previous year as season
-  const season = seasonParam
-    ? parseInt(seasonParam, 10)
-    : (() => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
-        return month > 5 ? year : year - 1;
-      })();
+  const season = seasonParam ? parseInt(seasonParam, 10) : calculateSeason();
 
   const leagues: LeagueResponseItem[] = [];
   const errors: Record<string, string> = {};

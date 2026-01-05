@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LEAGUE_IDS } from "@/data/league-ids";
+import { calculateSeason } from "@/lib/utils";
 import type {
   FixtureResponseItem,
   FixturesApiResponse,
@@ -112,13 +113,7 @@ export async function GET(req: NextRequest) {
   const revalidateTime = isTodayOrYesterday ? 7200 : 7200; // 2 hours for today/yesterday, 2 hours for others
 
   // Calculate season based on date
-  // Football seasons typically run from August/September to May
-  // If month is after May (June onwards), use current year as season
-  // Otherwise (January to May), use previous year as season
-  const dateObj = new Date(dateISO);
-  const year = dateObj.getFullYear();
-  const month = dateObj.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
-  const season = month > 5 ? year : year - 1;
+  const season = calculateSeason(dateISO);
 
   const fixtures: FixtureResponseItem[] = [];
   const errors: Record<string, string> = {};
