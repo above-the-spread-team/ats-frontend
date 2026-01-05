@@ -262,12 +262,10 @@ export default function Events({
 
   if (error || !eventsData || !eventsData.response) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message={error || "No events data available"}
-          helpText="Events are usually available once the match starts or shortly after."
-        />
-      </FullPage>
+      <NoDate
+        message={error || "No events data available"}
+        helpText="Events are usually available once the match starts or shortly after."
+      />
     );
   }
 
@@ -275,12 +273,10 @@ export default function Events({
 
   if (events.length === 0) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message="No events available for this fixture."
-          helpText="Events are usually available once the match starts or shortly after."
-        />
-      </FullPage>
+      <NoDate
+        message="No events available for this fixture."
+        helpText="Events are usually available once the match starts or shortly after."
+      />
     );
   }
 

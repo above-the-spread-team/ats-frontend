@@ -365,12 +365,10 @@ export default function FixturePlayers({
 
   if (error || !playersData || !playersData.response) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message={error || "No players data available"}
-          helpText="Player statistics are usually available during or after the match."
-        />
-      </FullPage>
+      <NoDate
+        message={error || "No players data available"}
+        helpText="Player statistics are usually available during or after the match."
+      />
     );
   }
 
@@ -378,12 +376,10 @@ export default function FixturePlayers({
 
   if (teams.length === 0) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message="No players data available for this fixture."
-          helpText="Player statistics are usually available during or after the match."
-        />
-      </FullPage>
+      <NoDate
+        message="No players data available for this fixture."
+        helpText="Player statistics are usually available during or after the match."
+      />
     );
   }
 

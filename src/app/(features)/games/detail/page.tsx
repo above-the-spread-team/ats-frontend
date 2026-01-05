@@ -230,7 +230,7 @@ function GameDetailContent() {
             setActiveTab={setActiveTab}
             preserveParams={true}
             additionalParams={{ id: fixtureId.toString() }}
-            containerClassName="mt-2 mb-2 justify-evenly max-w-4xl  mx-auto  px-2 gap-1"
+            containerClassName="mt-3 mb-2 justify-evenly max-w-4xl  mx-auto  px-2 gap-1"
             hideIconOnMobile={true}
           />
         )}

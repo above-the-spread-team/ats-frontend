@@ -86,7 +86,7 @@ export default function Nav<T extends string = string>({
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`flex   justify-center min-w-[59px] md:min-w-[84px] items-center gap-2 px-2 md:px-4 py-1 md:py-2 border-b-2 transition-colors whitespace-nowrap ${justifyClass} ${className} ${
+            className={`flex   justify-center min-w-[59px] md:min-w-[84px] items-center  md:px-4 py-1 md:py-2 border-b-2 transition-colors whitespace-nowrap ${justifyClass} ${className} ${
               isActive
                 ? "border-primary-font text-primary-font font-semibold"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -99,7 +99,7 @@ export default function Nav<T extends string = string>({
                 }`}
               />
             )}
-            <span className="text-xs md:text-base">{tab.label}</span>
+            <span className="text-base">{tab.label}</span>
             {tab.count !== undefined && (
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${

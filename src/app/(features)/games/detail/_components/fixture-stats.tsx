@@ -151,12 +151,10 @@ export default function FixtureStatistics({
   const teams = statisticsData.response;
   if (teams.length === 0) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message="No statistics available for this fixture."
-          helpText="Match statistics are usually available during or after the match."
-        />
-      </FullPage>
+      <NoDate
+        message="No statistics available for this fixture."
+        helpText="Match statistics are usually available during or after the match."
+      />
     );
   }
 

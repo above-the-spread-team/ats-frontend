@@ -249,12 +249,10 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
 
   if (error || !lineupsData || !lineupsData.response) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message={error || "No lineups data available"}
-          helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
-        />
-      </FullPage>
+      <NoDate
+        message={error || "No lineups data available"}
+        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+      />
     );
   }
 
@@ -262,12 +260,10 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
 
   if (lineups.length === 0) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message="No lineups available."
-          helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
-        />
-      </FullPage>
+      <NoDate
+        message="No lineups available."
+        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+      />
     );
   }
 
@@ -282,12 +278,10 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
   // If no lineup has player data, show no data message
   if (!hasLineupData) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message="No lineup data available."
-          helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
-        />
-      </FullPage>
+      <NoDate
+        message="No lineup data available."
+        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+      />
     );
   }
 

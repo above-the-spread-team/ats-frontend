@@ -330,24 +330,20 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
 
   if (error || !predictionsData || !predictionsData.response) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message={error || "No predictions data available"}
-          helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
-        />
-      </FullPage>
+      <NoDate
+        message={error || "No predictions data available"}
+        helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
+      />
     );
   }
 
   const prediction = predictionsData.response[0];
   if (!prediction) {
     return (
-      <FullPage center minusHeight={300}>
-        <NoDate
-          message="No predictions available for this fixture."
-          helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
-        />
-      </FullPage>
+      <NoDate
+        message="No predictions available for this fixture."
+        helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
+      />
     );
   }
 
