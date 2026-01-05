@@ -54,6 +54,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     cursorPos: number;
     scrollTop: number;
   } | null>(null);
+  const isSubmittingRef = useRef(false);
   const createPostMutation = useCreatePost();
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
@@ -199,14 +200,19 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     setEmojiDropdownOpen(false);
   };
 
-  const handleSubmit = async (e?: React.MouseEvent) => {
-    // Prevent event propagation to avoid triggering dialog close
-    e?.preventDefault();
-    e?.stopPropagation();
+  const handleSubmit = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevent default behavior and stop propagation to avoid Safari issues
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-    if (!content.trim() || isSubmitting) {
+    if (!content.trim() || isSubmittingRef.current) {
       return;
     }
+
+    // Set submitting flag to prevent multiple submissions
+    isSubmittingRef.current = true;
 
     try {
       // Create the post first
@@ -223,29 +229,33 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
         });
       }
 
+      // Only close dialog and reset state if mutations succeeded
       setContent("");
       setSelectedTagIds([]);
+      isSubmittingRef.current = false;
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating post:", error);
+      // Reset submitting flag on error so user can retry
+      isSubmittingRef.current = false;
       // Error is handled by React Query, but we can show a toast here if needed
     }
   };
 
   const handleClose = (open: boolean) => {
-    // Prevent closing if submitting
-    if (isSubmitting) {
+    // Prevent closing if currently submitting
+    if (
+      isSubmittingRef.current ||
+      createPostMutation.isPending ||
+      addTagsMutation.isPending
+    ) {
       return;
     }
 
-    // Only allow closing if not submitting
-    if (!open && !createPostMutation.isPending && !addTagsMutation.isPending) {
+    if (!open) {
       setContent("");
       setSelectedTagIds([]);
       onOpenChange(false);
-    } else if (open) {
-      // Allow opening
-      onOpenChange(true);
     }
   };
 
@@ -256,15 +266,22 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]"
-        onInteractOutside={(e) => {
-          // Prevent closing when clicking outside during submission
-          if (isSubmitting) {
+        // Prevent closing on outside click or escape during submission
+        onInteractOutside={(e: Event) => {
+          if (
+            isSubmittingRef.current ||
+            createPostMutation.isPending ||
+            addTagsMutation.isPending
+          ) {
             e.preventDefault();
           }
         }}
-        onEscapeKeyDown={(e) => {
-          // Prevent closing with Escape key during submission
-          if (isSubmitting) {
+        onEscapeKeyDown={(e: KeyboardEvent) => {
+          if (
+            isSubmittingRef.current ||
+            createPostMutation.isPending ||
+            addTagsMutation.isPending
+          ) {
             e.preventDefault();
           }
         }}
@@ -440,14 +457,13 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
 
         <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
           <Button
+            type="button"
             variant="outline"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               if (!isSubmitting) {
-                setContent("");
-                setSelectedTagIds([]);
-                onOpenChange(false);
+                handleClose(false);
               }
             }}
             disabled={isSubmitting}
@@ -455,9 +471,14 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
             Cancel
           </Button>
           <Button
+            type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || !content.trim()}
-            type="button"
+            onTouchEnd={(e) => {
+              // Prevent double-tap on mobile Safari
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             {isSubmitting ? "Posting..." : "Post"}
           </Button>
