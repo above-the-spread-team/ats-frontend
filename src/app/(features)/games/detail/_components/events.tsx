@@ -412,7 +412,7 @@ export default function Events({
                   <div className="relative">
                     {/* Connection line to timeline */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 md:w-12 h-0.5  bg-border" />
-                    <div className="relative bg-card border-2 border-border rounded-full px-2  md:px-3 md:py-1 shadow-md z-10 backdrop-blur-sm">
+                    <div className="relative bg-card border-2 border-border rounded-full px-2  md:px-2 pb-0.5 shadow-md z-10 backdrop-blur-sm">
                       <span className="text-xs md:text-sm font-bold text-foreground">
                         {formatTime(
                           firstEvent.time.elapsed,

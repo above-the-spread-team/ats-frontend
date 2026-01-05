@@ -192,7 +192,7 @@ function GameDetailContent() {
   ];
 
   return (
-    <FullPage>
+    <FullPage minusHeight={10}>
       {/* Fixture Detail - Always visible at top */}
       <div
         className="bg-gradient-to-br 
