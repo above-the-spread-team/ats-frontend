@@ -110,7 +110,7 @@ export async function GET(req: NextRequest) {
   // Use shorter cache for today and yesterday (5 minutes) to ensure fresh fixture IDs
   // For other dates, use 2 hours cache (fixture IDs don't change frequently)
   // Real-time data (scores, status, etc.) is fetched separately via fixtures-by-ids endpoint (60s cache)
-  const revalidateTime = isTodayOrYesterday ? 7200 : 7200; // 2 hours for today/yesterday, 2 hours for others
+  const revalidateTime = isTodayOrYesterday ? 300 : 2400; // 5 minutes for today/yesterday, 40 minutes for others
 
   // Calculate season based on date
   const season = calculateSeason(dateISO);

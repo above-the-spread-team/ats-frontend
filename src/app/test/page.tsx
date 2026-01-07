@@ -11,56 +11,85 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-interface MediaStackArticle {
-  author: string | null;
+interface NewsSource {
+  name: string;
+  icon?: string;
+  authors?: string[];
+}
+
+interface NewsResult {
+  position: number;
   title: string;
-  description: string;
-  url: string;
-  source: string;
-  image: string | null;
-  category: string;
-  language: string;
-  country: string;
-  published_at: string;
+  source?: NewsSource;
+  link: string;
+  thumbnail?: string;
+  thumbnail_small?: string;
+  date: string;
+  iso_date?: string;
 }
 
-interface MediaStackResponse {
-  pagination: {
-    limit: number;
-    offset: number;
-    count: number;
-    total: number;
+interface MenuLink {
+  title: string;
+  topic_token?: string;
+  publication_token?: string;
+  section_token?: string;
+  serpapi_link?: string;
+}
+
+interface SearchMetadata {
+  id?: string;
+  status?: string;
+  json_endpoint?: string;
+  created_at?: string;
+  processed_at?: string;
+  google_news_url?: string;
+  raw_html_file?: string;
+  total_time_taken?: number;
+}
+
+interface SerpApiResponse {
+  search_metadata?: SearchMetadata;
+  search_parameters: {
+    engine: string;
+    q?: string;
+    gl?: string;
+    hl?: string;
+    topic_token?: string;
+    publication_token?: string;
+    section_token?: string;
+    story_token?: string;
+    so?: string;
+    kgmid?: string;
   };
-  data: MediaStackArticle[];
+  news_results?: NewsResult[];
+  menu_links?: MenuLink[];
+  error?: string;
 }
 
-export default function TestPage() {
-  const [data, setData] = useState<MediaStackResponse | null>(null);
+export default function Test() {
+  const [data, setData] = useState<SerpApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [keywords, setKeywords] = useState("");
-  const [categories, setCategories] = useState("sports");
-  const [languages, setLanguages] = useState("en");
-  const [limit, setLimit] = useState("100");
+  const [query, setQuery] = useState("Premier League");
+  const [gl, setGl] = useState("uk"); // Country code (e.g., uk for United Kingdom)
+  const [hl, setHl] = useState("en"); // Language code
 
   const fetchNews = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (keywords) params.append("keywords", keywords);
-      if (categories) params.append("categories", categories);
-      if (languages) params.append("languages", languages);
-      if (limit) params.append("limit", limit);
-
-      const response = await fetch(`/api/mediastack?${params.toString()}`);
-
+      const params = new URLSearchParams({
+        engine: "google_news",
+        q: query,
+        gl: gl,
+        hl: hl,
+      });
+      const response = await fetch(`/api/serpapi?${params.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch news");
       }
-
-      const result = (await response.json()) as MediaStackResponse;
+      const result = await response.json();
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -71,9 +100,10 @@ export default function TestPage() {
 
   useEffect(() => {
     fetchNews();
-  }, []);
+  }, []); // Fetch on initial load
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
     try {
       return new Date(dateString).toLocaleString("en-US", {
         year: "numeric",
@@ -81,121 +111,90 @@ export default function TestPage() {
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-        timeZoneName: "short",
       });
     } catch {
       return dateString;
     }
   };
 
+  const handleMenuLinkClick = async (link: MenuLink) => {
+    if (!link.serpapi_link) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      // Extract the full URL and make a request
+      const url = new URL(link.serpapi_link);
+      const params = new URLSearchParams(url.search);
+      params.set("api_key", ""); // Will be added by API route
+
+      // Build our API route URL
+      const apiParams = new URLSearchParams();
+      if (params.get("engine")) apiParams.set("engine", params.get("engine")!);
+      if (params.get("q")) apiParams.set("q", params.get("q")!);
+      if (params.get("gl")) apiParams.set("gl", params.get("gl")!);
+      if (params.get("hl")) apiParams.set("hl", params.get("hl")!);
+      if (params.get("topic_token"))
+        apiParams.set("topic_token", params.get("topic_token")!);
+      if (params.get("publication_token"))
+        apiParams.set("publication_token", params.get("publication_token")!);
+      if (params.get("section_token"))
+        apiParams.set("section_token", params.get("section_token")!);
+
+      const response = await fetch(`/api/serpapi?${apiParams.toString()}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch news");
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">MediaStack News API Test</h1>
+        <h1 className="text-3xl font-bold mb-2">SerpAPI Google News Test</h1>
         <p className="text-muted-foreground mb-4">
-          Test the MediaStack API to see what news data is available
+          Testing SerpAPI for Google News articles
         </p>
-
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Search Parameters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="keywords"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Keywords
-                </label>
-                <input
-                  id="keywords"
-                  type="text"
-                  value={keywords}
-                  onChange={(e) => setKeywords(e.target.value)}
-                  placeholder="e.g., football, Premier League"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="categories"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Categories
-                </label>
-                <select
-                  id="categories"
-                  value={categories}
-                  onChange={(e) => setCategories(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="">All</option>
-                  <option value="general">General</option>
-                  <option value="business">Business</option>
-                  <option value="entertainment">Entertainment</option>
-                  <option value="health">Health</option>
-                  <option value="science">Science</option>
-                  <option value="sports">Sports</option>
-                  <option value="technology">Technology</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="languages"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Languages
-                </label>
-                <select
-                  id="languages"
-                  value={languages}
-                  onChange={(e) => setLanguages(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="en">English</option>
-                  <option value="ar">Arabic</option>
-                  <option value="de">German</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="it">Italian</option>
-                  <option value="pt">Portuguese</option>
-                  <option value="ru">Russian</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="limit"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Limit (max 100)
-                </label>
-                <input
-                  id="limit"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={limit}
-                  onChange={(e) => setLimit(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Button onClick={fetchNews} disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Fetch News"
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap items-center gap-4 mb-4">
+          <input
+            type="text"
+            placeholder="Search query (e.g., Premier League)"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="px-3 py-2 border rounded-md flex-1 min-w-[200px]"
+          />
+          <input
+            type="text"
+            placeholder="Country code (e.g., uk, us, fr)"
+            value={gl}
+            onChange={(e) => setGl(e.target.value)}
+            className="px-3 py-2 border rounded-md w-32"
+          />
+          <input
+            type="text"
+            placeholder="Language (e.g., en, es, fr)"
+            value={hl}
+            onChange={(e) => setHl(e.target.value)}
+            className="px-3 py-2 border rounded-md w-32"
+          />
+          <Button onClick={fetchNews} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Fetch News"
+            )}
+          </Button>
+        </div>
       </div>
 
       {loading && (
@@ -215,104 +214,157 @@ export default function TestPage() {
         </Card>
       )}
 
-      {!loading && !error && data && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Summary</CardTitle>
-              <CardDescription>
-                Total: {data.pagination.total} | Showing:{" "}
-                {data.pagination.count} | Limit: {data.pagination.limit} |
-                Offset: {data.pagination.offset}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+      {data && !loading && (
+        <div className="space-y-4">
+          {/* Search Metadata */}
+          {data.search_metadata && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Search Metadata</CardTitle>
+                <CardDescription>
+                  Status: {data.search_metadata.status || "N/A"} | Engine:{" "}
+                  {data.search_parameters.engine} | Query:{" "}
+                  {data.search_parameters.q || "N/A"} | Country:{" "}
+                  {data.search_parameters.gl || "N/A"} | Language:{" "}
+                  {data.search_parameters.hl || "N/A"}
+                  {data.search_metadata.total_time_taken &&
+                    ` | Time: ${data.search_metadata.total_time_taken}s`}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
 
-          {data.data && data.data.length > 0 ? (
+          {/* Menu Links */}
+          {data.menu_links && data.menu_links.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Menu Links</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {data.menu_links.map((link, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleMenuLinkClick(link)}
+                      disabled={loading}
+                    >
+                      {link.title}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Main News Results */}
+          {data.news_results && data.news_results.length > 0 && (
             <div className="space-y-4">
-              {data.data.map((article, index) => (
-                <Card
-                  key={index}
-                  className="hover:bg-muted/50 transition-colors"
-                >
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row gap-4">
-                      {article.image && (
-                        <div className="flex-shrink-0">
+              <h2 className="text-2xl font-bold">News Results</h2>
+              <div className="grid gap-4">
+                {data.news_results.map((article, index) => (
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-shadow"
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <CardTitle className="text-xl mb-2">
+                            <a
+                              href={article.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline text-primary"
+                            >
+                              {article.title}
+                            </a>
+                          </CardTitle>
+                          <CardDescription className="text-sm mb-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {article.source?.icon && (
+                                <img
+                                  src={article.source.icon}
+                                  alt={article.source?.name || "Source"}
+                                  className="w-4 h-4"
+                                  onError={(e) => {
+                                    (
+                                      e.target as HTMLImageElement
+                                    ).style.display = "none";
+                                  }}
+                                />
+                              )}
+                              <span>
+                                {article.source?.name || "Unknown Source"}
+                              </span>
+                              {article.source?.authors &&
+                                article.source.authors.length > 0 && (
+                                  <span className="text-muted-foreground">
+                                    • {article.source.authors.join(", ")}
+                                  </span>
+                                )}
+                              <span>• {article.date || "N/A"}</span>
+                              {article.iso_date && (
+                                <span className="text-muted-foreground">
+                                  • {formatDate(article.iso_date)}
+                                </span>
+                              )}
+                            </div>
+                          </CardDescription>
+                        </div>
+                        {article.thumbnail && (
                           <img
-                            src={article.image}
+                            src={article.thumbnail}
                             alt={article.title}
-                            className="w-full md:w-48 h-32 object-cover rounded-lg"
+                            className="w-32 h-32 object-cover rounded-lg flex-shrink-0"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display =
                                 "none";
                             }}
                           />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs font-semibold px-2 py-1 bg-primary/10 text-primary rounded">
-                            {article.category}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {article.source}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {article.country.toUpperCase()}
-                          </span>
-                          {article.language && (
-                            <span className="text-xs text-muted-foreground">
-                              {article.language.toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">
-                          <a
-                            href={article.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-primary transition-colors"
-                          >
-                            {article.title}
-                          </a>
-                        </h3>
-                        {article.description && (
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {article.description}
-                          </p>
                         )}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div>
-                            {article.author && (
-                              <span>By {article.author} • </span>
-                            )}
-                            <span>{formatDate(article.published_at)}</span>
-                          </div>
-                          <a
-                            href={article.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                          >
-                            Read more →
-                          </a>
-                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardHeader>
+                    <CardContent>
+                      <a
+                        href={article.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Read full article →
+                      </a>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          ) : (
+          )}
+
+          {/* No Results */}
+          {(!data.news_results || data.news_results.length === 0) && (
             <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">
-                  No news articles found
-                </p>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No news results found
               </CardContent>
             </Card>
           )}
+
+          {/* Raw JSON Data */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Raw API Response</CardTitle>
+              <CardDescription>
+                Full JSON data returned by the API
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <pre className="bg-muted p-4 rounded-lg overflow-auto text-xs max-h-96">
+                {JSON.stringify(data, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
