@@ -16,6 +16,7 @@ import {
   Calendar,
   User,
   ExternalLink,
+  ChevronLeft,
 } from "lucide-react";
 import { useNewsById } from "@/services/fastapi/news";
 import NoData from "@/components/common/no-data";
@@ -62,7 +63,7 @@ export default function NewsDetailPage() {
     });
   };
 
-  const getCategoryColor = (tagName: string) => {
+  const getCategoryColor = (tagName: string): string => {
     const colors: Record<string, string> = {
       "Premier League": "bg-purple-500",
       "La Liga": "bg-orange-500",
@@ -109,7 +110,7 @@ export default function NewsDetailPage() {
           />
           <div className="mt-6 text-center">
             <Button onClick={() => router.push("/news")} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className=" h-4 w-4" />
               Back to News
             </Button>
           </div>
@@ -120,10 +121,14 @@ export default function NewsDetailPage() {
 
   return (
     <FullPage>
-      <div className="container mx-auto max-w-4xl px-4 py-6">
+      <div className="container mx-auto max-w-4xl px-4  mb-8">
         {/* Back Button */}
-        <Button variant="ghost" onClick={() => router.back()} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="my-2 text-primary-font rounded-full hover:text-foreground"
+        >
+          <ChevronLeft className=" h-4 w-4" />
           Back
         </Button>
 
@@ -131,7 +136,7 @@ export default function NewsDetailPage() {
         <Card className="overflow-hidden">
           {/* Featured Image or Match Preview Header */}
           {isMatchPreview(news) ? (
-            <div className="relative w-full h-48 md:h-64 bg-gradient-to-br from-muted to-muted/50">
+            <div className="relative w-full h-40 md:h-40 ">
               <PreviewImage
                 homeTeamLogo={news.home_team_logo}
                 awayTeamLogo={news.away_team_logo}
@@ -139,19 +144,19 @@ export default function NewsDetailPage() {
               />
               {/* Category Badge */}
               {news.tags && news.tags.length > 0 && (
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-2 left-2 md:top-3 md:left-3">
                   <span
                     className={`${getCategoryColor(
                       news.tags[0].name
-                    )} text-white text-sm font-bold px-3 py-1.5 rounded-full`}
+                    )} text-white text-sm font-bold px-3 py-1 rounded-full`}
                   >
                     {news.tags[0].name}
                   </span>
                 </div>
               )}
               {/* Match Preview Badge */}
-              <div className="absolute top-4 right-4">
-                <span className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full">
+              <div className="absolute top-2 right-2 md:top-3 md:right-3">
+                <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
                   Match Preview
                 </span>
               </div>
@@ -182,7 +187,7 @@ export default function NewsDetailPage() {
           <CardContent className="p-6 md:p-8">
             {/* Article Header */}
             <div className="mb-6">
-              <h1 className="text-2xl md:text-4xl font-bold mb-4">
+              <h1 className="text-xl md:text-2xl font-bold mb-4">
                 {news.title}
               </h1>
 
@@ -214,7 +219,7 @@ export default function NewsDetailPage() {
                 {isMatchPreview(news) && news.fixture_id && (
                   <Link
                     href={`/games/detail?id=${news.fixture_id}`}
-                    className="flex items-center gap-2 text-primary hover:underline ml-auto"
+                    className="flex items-center gap-2 text-primary-font hover:underline  ml-auto"
                   >
                     <ExternalLink className="h-4 w-4" />
                     <span>View Fixture</span>
@@ -327,8 +332,12 @@ export default function NewsDetailPage() {
                   <span>• Updated {formatRelativeDate(news.updated_at)}</span>
                 )}
               </div>
-              <Button onClick={() => router.back()} variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
+              <Button
+                onClick={() => router.back()}
+                variant="outline"
+                className="text-primary-font rounded-full "
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
                 Back to News
               </Button>
             </div>

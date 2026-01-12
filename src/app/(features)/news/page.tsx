@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useNews } from "@/services/fastapi/news";
@@ -8,9 +9,16 @@ import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "./components/preview-image";
+import NewsFilter from "./components/news-filter";
+import FullPage from "@/components/common/full-page";
 
 export default function News() {
-  const { data, isLoading, error } = useNews(1, 20);
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const { data, isLoading, error } = useNews(
+    1,
+    20,
+    selectedTagIds.length > 0 ? selectedTagIds : undefined
+  );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -87,9 +95,21 @@ export default function News() {
   if (!data || !data.items || data.items.length === 0) {
     return (
       <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
+        <NewsFilter
+          selectedTagIds={selectedTagIds}
+          onTagIdsChange={setSelectedTagIds}
+        />
         <NoData
-          message="No news articles available"
-          helpText="Check back later for the latest football news."
+          message={
+            selectedTagIds.length > 0
+              ? "No news articles found for selected filters"
+              : "No news articles available"
+          }
+          helpText={
+            selectedTagIds.length > 0
+              ? "Try adjusting your filter selections."
+              : "Check back later for the latest football news."
+          }
         />
       </div>
     );
@@ -99,89 +119,97 @@ export default function News() {
   const publishedNews = data.items.filter((item) => item.is_published);
 
   return (
-    <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
-      {/* News Grid */}
-      {publishedNews.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-          {publishedNews.map((article) => (
-            <Link key={article.id} href={`/news/${article.id}`}>
-              <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
-                <div className="relative h-28 md:h-40 bg-muted">
-                  {isMatchPreview(article) ? (
-                    <PreviewImage
-                      homeTeamLogo={article.home_team_logo}
-                      awayTeamLogo={article.away_team_logo}
-                      variant="grid"
-                    />
-                  ) : article.image_url ? (
-                    <Image
-                      src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards (optimized for 3-column layout)
-                      alt={article.title}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <span className="text-2xl">⚽</span>
-                    </div>
-                  )}
-                  <div className="absolute top-2 left-2">
-                    <span
-                      className={`${getCategoryColor(
-                        getFirstTag(article)
-                      )} text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full`}
-                    >
-                      {getFirstTag(article)}
-                    </span>
-                  </div>
-                  {isMatchPreview(article) && (
-                    <div className="absolute top-2 right-2">
-                      <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        Preview
+    <FullPage>
+      <div className="container mx-auto max-w-5xl space-y-4 px-4 py-4  mb-8">
+        {/* Tag Filter */}
+        <NewsFilter
+          selectedTagIds={selectedTagIds}
+          onTagIdsChange={setSelectedTagIds}
+        />
+
+        {/* News Grid */}
+        {publishedNews.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+            {publishedNews.map((article) => (
+              <Link key={article.id} href={`/news/${article.id}`}>
+                <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <div className="relative h-28 md:h-40 bg-muted">
+                    {isMatchPreview(article) ? (
+                      <PreviewImage
+                        homeTeamLogo={article.home_team_logo}
+                        awayTeamLogo={article.away_team_logo}
+                        variant="grid"
+                      />
+                    ) : article.image_url ? (
+                      <Image
+                        src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards (optimized for 3-column layout)
+                        alt={article.title}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        <span className="text-2xl">⚽</span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2">
+                      <span
+                        className={`${getCategoryColor(
+                          getFirstTag(article)
+                        )} text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full`}
+                      >
+                        {getFirstTag(article)}
                       </span>
                     </div>
-                  )}
-                </div>
-                <div className="p-2.5 md:p-4">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
-                    {article.author && (
-                      <>
-                        <span className="font-semibold truncate max-w-[60px] md:max-w-none">
-                          {article.author.username}
+                    {isMatchPreview(article) && (
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                          Preview
                         </span>
-                        <span className="flex-shrink-0">•</span>
-                      </>
+                      </div>
                     )}
-                    <span className="flex-shrink-0">
-                      {formatDate(article.created_at)}
-                    </span>
                   </div>
-                  <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">
-                    {article.content.substring(0, 150)}
-                    {article.content.length > 150 ? "..." : ""}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate mr-2 max-w-[140px]">
-                      {article.comment_count > 0 && (
+                  <div className="p-2.5 md:p-4">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
+                      {article.author && (
                         <>
-                          <span>{article.comment_count} comments</span>
+                          <span className="font-semibold truncate max-w-[60px] md:max-w-none">
+                            {article.author.username}
+                          </span>
+                          <span className="flex-shrink-0">•</span>
                         </>
                       )}
+                      <span className="flex-shrink-0">
+                        {formatDate(article.created_at)}
+                      </span>
                     </div>
-                    <span className="text-primary font-semibold text-xs hover:underline flex-shrink-0">
-                      Read →
-                    </span>
+                    <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">
+                      {article.content.substring(0, 150)}
+                      {article.content.length > 150 ? "..." : ""}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate mr-2 max-w-[140px]">
+                        {article.comment_count > 0 && (
+                          <>
+                            <span>{article.comment_count} comments</span>
+                          </>
+                        )}
+                      </div>
+                      <span className="text-primary font-semibold text-xs hover:underline flex-shrink-0">
+                        Read →
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </FullPage>
   );
 }

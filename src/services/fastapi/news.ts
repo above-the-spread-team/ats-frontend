@@ -9,14 +9,25 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 /**
- * Fetch news list with pagination
+ * Fetch news list with pagination and optional tag filtering
  */
 export async function fetchNews(
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  tagIds?: number[]
 ): Promise<NewsListResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    page_size: pageSize.toString(),
+  });
+
+  // Add tag_ids if provided
+  if (tagIds && tagIds.length > 0) {
+    tagIds.forEach((id) => params.append("tag_ids", id.toString()));
+  }
+
   const response = await fetch(
-    `${BACKEND_URL}/api/v1/news?page=${page}&page_size=${pageSize}`,
+    `${BACKEND_URL}/api/v1/news?${params.toString()}`,
     {
       method: "GET",
       headers: {
@@ -65,10 +76,14 @@ export async function fetchNewsById(newsId: number): Promise<NewsResponse> {
 /**
  * React Query hook for fetching news list
  */
-export function useNews(page: number = 1, pageSize: number = 20) {
+export function useNews(
+  page: number = 1,
+  pageSize: number = 20,
+  tagIds?: number[]
+) {
   return useQuery<NewsListResponse, NewsError>({
-    queryKey: ["news", page, pageSize],
-    queryFn: () => fetchNews(page, pageSize),
+    queryKey: ["news", page, pageSize, tagIds],
+    queryFn: () => fetchNews(page, pageSize, tagIds),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
