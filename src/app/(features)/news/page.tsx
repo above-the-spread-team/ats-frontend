@@ -6,6 +6,8 @@ import { useNews } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
+import { getOptimizedNewsImage } from "@/lib/cloudinary";
+import PreviewImage from "./components/preview-image";
 
 export default function News() {
   const { data, isLoading, error } = useNews(1, 20);
@@ -48,12 +50,6 @@ export default function News() {
     return (
       <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
         <Skeleton className="h-8 w-64 mb-6" />
-        {/* Featured Article Skeleton */}
-        <div className="mb-8">
-          <Skeleton className="h-80 w-full mb-4" />
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/2" />
-        </div>
         {/* Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -86,9 +82,6 @@ export default function News() {
   if (!data || !data.items || data.items.length === 0) {
     return (
       <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
-        <h1 className="text-lg md:text-2xl font-bold mb-3 md:mb-6 px-1 md:px-0">
-          Latest Football News
-        </h1>
         <NoData
           message="No news articles available"
           helpText="Check back later for the latest football news."
@@ -97,98 +90,33 @@ export default function News() {
     );
   }
 
-  // Split news into featured (first published article) and regular news
+  // Filter published news
   const publishedNews = data.items.filter((item) => item.is_published);
-  const [featuredArticle, ...regularNews] = publishedNews;
 
   return (
     <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
-      <h1 className="text-lg md:text-2xl font-bold mb-3 md:mb-6 px-1 md:px-0">
-        Latest Football News
-      </h1>
-
-      {/* Featured Article */}
-      {featuredArticle && (
-        <div className="mb-4 md:mb-8">
-          <Link href={`/news/${featuredArticle.id}`}>
-            <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="relative h-40 md:h-80 bg-muted">
-                {featuredArticle.image_url ? (
-                  <Image
-                    src={featuredArticle.image_url}
-                    alt={featuredArticle.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    <span className="text-4xl">⚽</span>
-                  </div>
-                )}
-                <div className="absolute top-2 left-2 md:top-3 md:left-3">
-                  <span
-                    className={`${getCategoryColor(
-                      getFirstTag(featuredArticle)
-                    )} text-white text-xs font-bold px-2 md:px-3 py-1 rounded-full`}
-                  >
-                    {getFirstTag(featuredArticle)}
-                  </span>
-                </div>
-              </div>
-              <div className="p-3 md:p-6">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                  {featuredArticle.author && (
-                    <>
-                      <span className="font-semibold truncate">
-                        {featuredArticle.author.username}
-                      </span>
-                      <span className="flex-shrink-0">•</span>
-                    </>
-                  )}
-                  <span className="flex-shrink-0">
-                    {formatDate(featuredArticle.created_at)}
-                  </span>
-                </div>
-                <h2 className="text-base md:text-2xl font-bold mb-2 md:mb-3 line-clamp-2 md:line-clamp-none">
-                  {featuredArticle.title}
-                </h2>
-                <p className="text-xs md:text-base text-muted-foreground mb-2 md:mb-4 line-clamp-2 md:line-clamp-3">
-                  {featuredArticle.content.substring(0, 200)}
-                  {featuredArticle.content.length > 200 ? "..." : ""}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{featuredArticle.comment_count} comments</span>
-                    {featuredArticle.reaction_count > 0 && (
-                      <>
-                        <span>•</span>
-                        <span>{featuredArticle.reaction_count} reactions</span>
-                      </>
-                    )}
-                  </div>
-                  <span className="text-primary font-semibold text-xs md:text-sm hover:underline flex-shrink-0">
-                    Read More →
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Link>
-        </div>
-      )}
-
-      {/* Regular News Grid */}
-      {regularNews.length > 0 && (
+      {/* News Grid */}
+      {publishedNews.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-          {regularNews.map((article) => (
+          {publishedNews.map((article) => (
             <Link key={article.id} href={`/news/${article.id}`}>
               <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
                 <div className="relative h-28 md:h-40 bg-muted">
-                  {article.image_url ? (
+                  {article.category === "match_preview" &&
+                  article.home_team_logo &&
+                  article.away_team_logo ? (
+                    <PreviewImage
+                      homeTeamLogo={article.home_team_logo}
+                      awayTeamLogo={article.away_team_logo}
+                      variant="grid"
+                    />
+                  ) : article.image_url ? (
                     <Image
-                      src={article.image_url}
+                      src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards (optimized for 3-column layout)
                       alt={article.title}
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -204,6 +132,13 @@ export default function News() {
                       {getFirstTag(article)}
                     </span>
                   </div>
+                  {article.category === "match_preview" && (
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        Preview
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-2.5 md:p-4">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">

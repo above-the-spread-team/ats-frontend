@@ -3,13 +3,24 @@
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import FullPage from "@/components/common/full-page";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MessageCircle, Heart, Calendar, User } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageCircle,
+  Heart,
+  Calendar,
+  User,
+  ExternalLink,
+} from "lucide-react";
 import { useNewsById } from "@/services/fastapi/news";
 import NoData from "@/components/common/no-data";
+import { getOptimizedNewsImage } from "@/lib/cloudinary";
+import PreviewImage from "../components/preview-image";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -112,14 +123,43 @@ export default function NewsDetailPage() {
 
         {/* Article Content */}
         <Card className="overflow-hidden">
-          {/* Featured Image */}
-          {news.image_url && (
+          {/* Featured Image or Match Preview Header */}
+          {news.category === "match_preview" &&
+          news.home_team_logo &&
+          news.away_team_logo ? (
+            <div className="relative w-full h-48 md:h-64 bg-gradient-to-br from-muted to-muted/50">
+              <PreviewImage
+                homeTeamLogo={news.home_team_logo}
+                awayTeamLogo={news.away_team_logo}
+                variant="header"
+              />
+              {/* Category Badge */}
+              {news.tags && news.tags.length > 0 && (
+                <div className="absolute top-4 left-4">
+                  <span
+                    className={`${getCategoryColor(
+                      news.tags[0].name
+                    )} text-white text-sm font-bold px-3 py-1.5 rounded-full`}
+                  >
+                    {news.tags[0].name}
+                  </span>
+                </div>
+              )}
+              {/* Match Preview Badge */}
+              <div className="absolute top-4 right-4">
+                <span className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  Match Preview
+                </span>
+              </div>
+            </div>
+          ) : news.image_url ? (
             <div className="relative w-full h-64 md:h-96 bg-muted">
               <Image
-                src={news.image_url}
+                src={getOptimizedNewsImage(news.image_url, 1600)} // 1600px for detail page (full-width display)
                 alt={news.title}
                 fill
                 className="object-cover"
+                unoptimized
               />
               {news.tags && news.tags.length > 0 && (
                 <div className="absolute top-4 left-4">
@@ -133,7 +173,7 @@ export default function NewsDetailPage() {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
 
           <CardContent className="p-6 md:p-8">
             {/* Article Header */}
@@ -166,6 +206,30 @@ export default function NewsDetailPage() {
                     <span>{news.reaction_count} reactions</span>
                   </div>
                 )}
+                {/* Category Badge */}
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-semibold ${
+                      news.category === "match_preview"
+                        ? "bg-primary/20 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {news.category === "match_preview"
+                      ? "Match Preview"
+                      : "General News"}
+                  </span>
+                </div>
+                {/* Link to Fixture Detail if Match Preview */}
+                {news.category === "match_preview" && news.fixture_id && (
+                  <Link
+                    href={`/games/detail?id=${news.fixture_id}`}
+                    className="flex items-center gap-2 text-primary hover:underline ml-auto"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>View Fixture</span>
+                  </Link>
+                )}
               </div>
 
               {/* Tags */}
@@ -187,11 +251,82 @@ export default function NewsDetailPage() {
             </div>
 
             {/* Article Content */}
-            <div className="prose prose-sm md:prose-base max-w-none">
-              <div
-                className="text-base md:text-lg leading-relaxed whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: news.content }}
-              />
+            <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ node, ...props }) => (
+                    <h1 className="text-3xl font-bold mb-4 mt-6" {...props} />
+                  ),
+                  h2: ({ node, ...props }) => (
+                    <h2 className="text-2xl font-bold mb-3 mt-5" {...props} />
+                  ),
+                  h3: ({ node, ...props }) => (
+                    <h3 className="text-xl font-bold mb-2 mt-4" {...props} />
+                  ),
+                  h4: ({ node, ...props }) => (
+                    <h4 className="text-lg font-bold mb-2 mt-3" {...props} />
+                  ),
+                  p: ({ node, ...props }) => (
+                    <p className="mb-4 leading-relaxed" {...props} />
+                  ),
+                  ul: ({ node, ...props }) => (
+                    <ul
+                      className="list-disc list-inside mb-4 space-y-2"
+                      {...props}
+                    />
+                  ),
+                  ol: ({ node, ...props }) => (
+                    <ol
+                      className="list-decimal list-inside mb-4 space-y-2"
+                      {...props}
+                    />
+                  ),
+                  li: ({ node, ...props }) => (
+                    <li className="ml-4" {...props} />
+                  ),
+                  strong: ({ node, ...props }) => (
+                    <strong className="font-bold" {...props} />
+                  ),
+                  em: ({ node, ...props }) => (
+                    <em className="italic" {...props} />
+                  ),
+                  a: ({ node, ...props }) => (
+                    <a
+                      className="text-primary hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      {...props}
+                    />
+                  ),
+                  blockquote: ({ node, ...props }) => (
+                    <blockquote
+                      className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground"
+                      {...props}
+                    />
+                  ),
+                  code: ({ node, inline, ...props }: any) =>
+                    inline ? (
+                      <code
+                        className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+                        {...props}
+                      />
+                    ) : (
+                      <code
+                        className="block bg-muted p-4 rounded-lg text-sm font-mono overflow-x-auto my-4"
+                        {...props}
+                      />
+                    ),
+                  pre: ({ node, ...props }) => (
+                    <pre
+                      className="bg-muted p-4 rounded-lg overflow-x-auto my-4"
+                      {...props}
+                    />
+                  ),
+                }}
+              >
+                {news.content}
+              </ReactMarkdown>
             </div>
 
             {/* Footer Actions */}
