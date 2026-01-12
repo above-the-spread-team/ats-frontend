@@ -23,6 +23,7 @@ import NoData from "@/components/common/no-data";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../components/preview-image";
 import type { NewsResponse } from "@/type/fastapi/news";
+import { getTagColor } from "@/data/league-theme";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -61,19 +62,6 @@ export default function NewsDetailPage() {
       day: "numeric",
       year: "numeric",
     });
-  };
-
-  const getCategoryColor = (tagName: string): string => {
-    const colors: Record<string, string> = {
-      "Premier League": "bg-purple-500",
-      "La Liga": "bg-orange-500",
-      "Serie A": "bg-blue-500",
-      "Champions League": "bg-indigo-600",
-      "Europa League": "bg-orange-600",
-      "Transfer News": "bg-green-500",
-      International: "bg-red-500",
-    };
-    return colors[tagName] || "bg-gray-500";
   };
 
   // Check if news is a match preview (has team logos)
@@ -136,7 +124,7 @@ export default function NewsDetailPage() {
         <Card className="overflow-hidden">
           {/* Featured Image or Match Preview Header */}
           {isMatchPreview(news) ? (
-            <div className="relative w-full h-40 md:h-40 ">
+            <div className="relative w-full h-48 md:h-48 ">
               <PreviewImage
                 homeTeamLogo={news.home_team_logo}
                 awayTeamLogo={news.away_team_logo}
@@ -144,11 +132,12 @@ export default function NewsDetailPage() {
               />
               {/* Category Badge */}
               {news.tags && news.tags.length > 0 && (
-                <div className="absolute top-2 left-2 md:top-3 md:left-3">
+                <div className="absolute hidden md:block top-2 left-2 md:top-3 md:left-3">
                   <span
-                    className={`${getCategoryColor(
-                      news.tags[0].name
-                    )} text-white text-sm font-bold px-3 py-1 rounded-full`}
+                    className="text-white text-sm font-bold px-3 py-1 rounded-full"
+                    style={{
+                      backgroundColor: getTagColor(news.tags[0].name),
+                    }}
                   >
                     {news.tags[0].name}
                   </span>
@@ -173,9 +162,10 @@ export default function NewsDetailPage() {
               {news.tags && news.tags.length > 0 && (
                 <div className="absolute top-4 left-4">
                   <span
-                    className={`${getCategoryColor(
-                      news.tags[0].name
-                    )} text-white text-sm font-bold px-3 py-1.5 rounded-full`}
+                    className="text-white text-sm font-bold px-3 py-1.5 rounded-full"
+                    style={{
+                      backgroundColor: getTagColor(news.tags[0].name),
+                    }}
                   >
                     {news.tags[0].name}
                   </span>
@@ -234,9 +224,10 @@ export default function NewsDetailPage() {
                     <Link
                       key={tag.id}
                       href={`/discuss?tag=${tag.id}`}
-                      className={`${getCategoryColor(
-                        tag.name
-                      )} text-white text-xs font-semibold px-2 py-1 rounded-full hover:opacity-80 transition-opacity`}
+                      className="text-white text-xs font-semibold px-2 py-1 rounded-full hover:opacity-80 transition-opacity"
+                      style={{
+                        backgroundColor: getTagColor(tag.name),
+                      }}
                     >
                       {tag.name}
                     </Link>

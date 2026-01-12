@@ -638,16 +638,47 @@ export async function autoTagContent(
 
 /**
  * Hook to list tags with optional filtering
+ * Automatically fetches all pages to ensure all tags are loaded
  */
 export function useTags(
   page: number = 1,
-  pageSize: number = 20,
+  pageSize: number = 100,
   tagType?: TagType,
   search?: string
 ) {
   return useQuery<TagListResponse, Error>({
-    queryKey: ["tags", page, pageSize, tagType, search],
-    queryFn: () => listTags(page, pageSize, tagType, search),
+    queryKey: ["tags", "all", tagType, search],
+    queryFn: async () => {
+      // First request to get total pages
+      const firstPage = await listTags(1, pageSize, tagType, search);
+      const allTags: TagResponse[] = [...firstPage.items];
+
+      // If there are more pages, fetch them all
+      if (firstPage.total_pages > 1) {
+        const remainingPages = Array.from(
+          { length: firstPage.total_pages - 1 },
+          (_, i) => i + 2
+        );
+
+        const remainingPromises = remainingPages.map((pageNum) =>
+          listTags(pageNum, pageSize, tagType, search)
+        );
+
+        const remainingResults = await Promise.all(remainingPromises);
+        remainingResults.forEach((result) => {
+          allTags.push(...result.items);
+        });
+      }
+
+      // Return combined response with all tags
+      return {
+        items: allTags,
+        total: allTags.length,
+        page: 1,
+        page_size: allTags.length,
+        total_pages: 1,
+      };
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

@@ -11,6 +11,7 @@ import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "./components/preview-image";
 import NewsFilter from "./components/news-filter";
 import FullPage from "@/components/common/full-page";
+import { getTagColor } from "@/data/league-theme";
 
 export default function News() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
@@ -35,19 +36,6 @@ export default function News() {
       day: "numeric",
       year: "numeric",
     });
-  };
-
-  const getCategoryColor = (tagName: string) => {
-    const colors: Record<string, string> = {
-      "Premier League": "bg-purple-500",
-      "La Liga": "bg-orange-500",
-      "Serie A": "bg-blue-500",
-      "Champions League": "bg-indigo-600",
-      "Europa League": "bg-orange-600",
-      "Transfer News": "bg-green-500",
-      International: "bg-red-500",
-    };
-    return colors[tagName] || "bg-gray-500";
   };
 
   const getFirstTag = (news: NewsResponse) => {
@@ -155,9 +143,10 @@ export default function News() {
                     )}
                     <div className="absolute top-2 left-2">
                       <span
-                        className={`${getCategoryColor(
-                          getFirstTag(article)
-                        )} text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full`}
+                        className="text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full"
+                        style={{
+                          backgroundColor: getTagColor(getFirstTag(article)),
+                        }}
                       >
                         {getFirstTag(article)}
                       </span>

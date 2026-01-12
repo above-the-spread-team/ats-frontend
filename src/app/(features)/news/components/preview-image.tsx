@@ -26,16 +26,16 @@ export default function PreviewImage({
   if (variant === "grid") {
     return (
       <div
-        className={`w-full overflow-hidden h-full flex items-center justify-evenly gap-10 md:gap-10 p-2 relative ${className}`}
+        className={`w-full overflow-hidden h-full flex items-center justify-evenly gap-10 md:gap-10 pt-4 relative ${className}`}
       >
         {/* Left side background (diagonal split matching 30deg slash) */}
         <div
-          className="absolute inset-0 bg-gradient-to-tr from-primary/50 via-primary to-primary/70 "
+          className="absolute inset-0 bg-gradient-to-tr from-gray-800 via-gray-600 to-gray-400 "
           style={{ clipPath: "polygon(0 0, 60% 0, 40% 100%, 0 100%)" }}
         ></div>
         {/* Right side background */}
         <div
-          className="absolute inset-0 bg-gradient-to-br from-primary-active/50 via-primary-active to-primary-active/70"
+          className="absolute inset-0 bg-gradient-to-br from-gray-500 via-white to-slate-300 "
           style={{ clipPath: "polygon(60% 0, 100% 0, 100% 100%, 40% 100%)" }}
         ></div>
 
@@ -65,17 +65,17 @@ export default function PreviewImage({
   // Header variant: larger logos for detail pages/headers
   return (
     <div
-      className={`w-full h-full flex items-center justify-center gap-16 md:gap-40 pt-2 relative ${className}`}
+      className={`w-full h-full flex items-center justify-center gap-16 md:gap-40 pt-2 md:pt-4 relative ${className}`}
     >
-      {/* Left side background (diagonal split matching 45deg slash) */}
+      {/* Left side background (diagonal split matching 30deg slash) */}
       <div
-        className="absolute inset-0 bg-gradient-to-tr from-primary/50 via-primary to-primary/70"
-        style={{ clipPath: "polygon(0 0, 55% 0, 45% 100%, 0 100%)" }}
+        className="absolute inset-0 bg-gradient-to-tr from-gray-800 via-gray-600 to-gray-400 "
+        style={{ clipPath: "polygon(0 0, 60% 0, 40% 100%, 0 100%)" }}
       ></div>
       {/* Right side background */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-primary-active/50 via-primary-active to-primary-active/70"
-        style={{ clipPath: "polygon(55% 0, 100% 0, 100% 100%, 45% 100%)" }}
+        className="absolute inset-0 bg-gradient-to-br from-gray-500 via-white to-slate-300 "
+        style={{ clipPath: "polygon(60% 0, 100% 0, 100% 100%, 40% 100%)" }}
       ></div>
       <div className="flex flex-col items-center gap-2 relative z-10">
         <div className="relative w-20 h-20 md:w-28 md:h-28">
