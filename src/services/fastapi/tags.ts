@@ -641,7 +641,6 @@ export async function autoTagContent(
  * Automatically fetches all pages to ensure all tags are loaded
  */
 export function useTags(
-  page: number = 1,
   pageSize: number = 100,
   tagType?: TagType,
   search?: string

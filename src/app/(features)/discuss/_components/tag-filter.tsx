@@ -31,7 +31,7 @@ export default function TagFilter({
   onTagIdsChange,
 }: TagFilterProps) {
   // Fetch all tags (with pagination if needed)
-  const { data: tagsData, isLoading } = useTags(1, 100);
+  const { data: tagsData, isLoading } = useTags(100);
 
   // Group tags by type
   const tagsByType = useMemo(() => {

@@ -58,7 +58,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
   const createPostMutation = useCreatePost();
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
-  const { data: tagsData, isLoading: tagsLoading } = useTags(1, 100);
+  const { data: tagsData, isLoading: tagsLoading } = useTags(100);
 
   // Group tags by type (only league tags for posts)
   const tagsByType = useMemo(() => {

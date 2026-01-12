@@ -22,7 +22,6 @@ import {
   useCommentReplies,
   useLikeComment,
   useDislikeComment,
-  useUpdateComment,
   useDeleteComment,
 } from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";

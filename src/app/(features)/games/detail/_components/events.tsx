@@ -3,7 +3,6 @@
 import type { FixtureEventsResponseItem } from "@/type/footballapi/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoDate from "@/components/common/no-data";
-import FullPage from "@/components/common/full-page";
 import { useFixtureEvents } from "@/services/football-api/fixture-events";
 import {
   Target,
