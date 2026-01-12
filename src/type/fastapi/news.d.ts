@@ -10,13 +10,10 @@ export interface NewsAuthor {
   avatar_url: string | null;
 }
 
-export type NewsCategory = "general" | "match_preview";
-
 export interface NewsResponse {
   id: number;
   title: string;
   content: string; // Markdown format
-  category: NewsCategory;
   image_url: string | null; // For General News
   fixture_id: number | null; // For Match Preview
   home_team_logo: string | null; // For Match Preview only

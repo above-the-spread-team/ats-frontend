@@ -46,6 +46,11 @@ export default function News() {
     return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
   };
 
+  // Check if news is a match preview (has team logos)
+  const isMatchPreview = (news: NewsResponse) => {
+    return !!(news.home_team_logo && news.away_team_logo);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
@@ -102,9 +107,7 @@ export default function News() {
             <Link key={article.id} href={`/news/${article.id}`}>
               <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
                 <div className="relative h-28 md:h-40 bg-muted">
-                  {article.category === "match_preview" &&
-                  article.home_team_logo &&
-                  article.away_team_logo ? (
+                  {isMatchPreview(article) ? (
                     <PreviewImage
                       homeTeamLogo={article.home_team_logo}
                       awayTeamLogo={article.away_team_logo}
@@ -132,7 +135,7 @@ export default function News() {
                       {getFirstTag(article)}
                     </span>
                   </div>
-                  {article.category === "match_preview" && (
+                  {isMatchPreview(article) && (
                     <div className="absolute top-2 right-2">
                       <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
                         Preview

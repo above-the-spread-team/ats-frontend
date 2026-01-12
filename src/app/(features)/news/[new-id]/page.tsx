@@ -21,6 +21,7 @@ import { useNewsById } from "@/services/fastapi/news";
 import NoData from "@/components/common/no-data";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../components/preview-image";
+import type { NewsResponse } from "@/type/fastapi/news";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -74,6 +75,11 @@ export default function NewsDetailPage() {
     return colors[tagName] || "bg-gray-500";
   };
 
+  // Check if news is a match preview (has team logos)
+  const isMatchPreview = (news: NewsResponse) => {
+    return !!(news.home_team_logo && news.away_team_logo);
+  };
+
   if (isLoading) {
     return (
       <FullPage>
@@ -124,9 +130,7 @@ export default function NewsDetailPage() {
         {/* Article Content */}
         <Card className="overflow-hidden">
           {/* Featured Image or Match Preview Header */}
-          {news.category === "match_preview" &&
-          news.home_team_logo &&
-          news.away_team_logo ? (
+          {isMatchPreview(news) ? (
             <div className="relative w-full h-48 md:h-64 bg-gradient-to-br from-muted to-muted/50">
               <PreviewImage
                 homeTeamLogo={news.home_team_logo}
@@ -206,22 +210,8 @@ export default function NewsDetailPage() {
                     <span>{news.reaction_count} reactions</span>
                   </div>
                 )}
-                {/* Category Badge */}
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      news.category === "match_preview"
-                        ? "bg-primary/20 text-primary"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {news.category === "match_preview"
-                      ? "Match Preview"
-                      : "General News"}
-                  </span>
-                </div>
                 {/* Link to Fixture Detail if Match Preview */}
-                {news.category === "match_preview" && news.fixture_id && (
+                {isMatchPreview(news) && news.fixture_id && (
                   <Link
                     href={`/games/detail?id=${news.fixture_id}`}
                     className="flex items-center gap-2 text-primary hover:underline ml-auto"
