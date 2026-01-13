@@ -21,7 +21,7 @@ export default function Section({
   if (leagues.length === 0) return null;
 
   return (
-    <>
+    <div className="space-y-2">
       <div className="flex items-center gap-2">
         <Icon className="w-5 h-5 text-primary" />
         <h3 className="md:text-base font-bold text-foreground">{title}</h3>
@@ -32,6 +32,6 @@ export default function Section({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
         {leagues.map((league) => renderLeagueCard(league))}
       </div>
-    </>
+    </div>
   );
 }

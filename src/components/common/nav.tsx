@@ -44,8 +44,8 @@ export default function Nav<T extends string = string>({
   const searchParams = useSearchParams();
 
   const handleTabChange = (tab: T) => {
-    setActiveTab(tab);
-
+    // Update URL first - the useEffect in parent will sync state from URL
+    // This prevents race conditions and flickering
     let params: URLSearchParams;
     if (preserveParams) {
       params = new URLSearchParams(searchParams.toString());
@@ -63,6 +63,11 @@ export default function Nav<T extends string = string>({
 
     // Determine the path to navigate to
     const targetPath = basePath || pathname;
+
+    // Update state optimistically for immediate UI feedback
+    setActiveTab(tab);
+
+    // Then update URL - parent's useEffect will handle validation
     router.push(`${targetPath}?${params.toString()}`);
   };
 
@@ -74,46 +79,46 @@ export default function Nav<T extends string = string>({
   }[justify];
 
   return (
-    <div
-      className={`flex gap-2 border-b border-border overflow-x-auto ${containerClassName}`}
-    >
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
-        const showIcon = showIconAlways || (!hideIconOnMobile && Icon);
+    <div className={` bg-card   overflow-x-auto `}>
+      <div className={` flex       ${containerClassName} `}>
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          const showIcon = showIconAlways || (!hideIconOnMobile && Icon);
 
-        return (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={`flex   justify-center min-w-[59px] md:min-w-[84px] items-center gap-1  md:px-4 py-1 md:py-2 border-b-2 transition-colors whitespace-nowrap ${justifyClass} ${className} ${
-              isActive
-                ? "border-primary-font text-primary-font font-semibold"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {showIcon && Icon && (
-              <Icon
-                className={`w-4 h-4 mx-2 ${
-                  hideIconOnMobile ? "hidden md:block" : ""
-                }`}
-              />
-            )}
-            <span className="text-base">{tab.label}</span>
-            {tab.count !== undefined && (
-              <span
-                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  isActive
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {tab.count}
-              </span>
-            )}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex   justify-center  min-w-[59px] w-full md:min-w-[84px] items-center    py-1 md:py-1.5 border-b-2 transition-colors whitespace-nowrap ${justifyClass} ${className} ${
+                isActive
+                  ? "border-primary-font text-primary-font font-semibold bg-gray-400/20"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {showIcon && Icon && (
+                <Icon
+                  className={`w-4 h-4 mx-1  ${
+                    hideIconOnMobile ? "hidden md:block" : ""
+                  }`}
+                />
+              )}
+              <span className="text-base ">{tab.label}</span>
+              {tab.count !== undefined && (
+                <span
+                  className={`px-2 py-0.5 rounded-full mx-1 text-xs font-medium ${
+                    isActive
+                      ? "bg-primary/20 text-primary "
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

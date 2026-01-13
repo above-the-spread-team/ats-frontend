@@ -67,7 +67,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
                 className="w-6 md:w-6 h-6 md:h-6 object-contain"
               />
             )}
-            <h2 className="text-base md:text-lg font-bold">
+            <h2 className="text-base md:text-lg font-bold text-white">
               {fixture.league.name}
             </h2>
           </div>
@@ -75,11 +75,11 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
 
         {/* Match Date & Time */}
         <div className="text-center  space-y-1">
-          <p className="text-xs md:text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-gray-300">
             {formatDate(fixture.fixture.date)}
           </p>
           {!hasStarted && (
-            <p className="text-base md:text-lg font-semibold">
+            <p className="text-base md:text-lg font-semibold text-white">
               {formatTime(fixture.fixture.date, userTimezone)}
             </p>
           )}
@@ -93,27 +93,27 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           team={fixture.teams.home}
           orientation="home"
           className="col-span-3 md:gap-4"
-          nameClassName="text-xs md:text-sm lg:text-base font-semibold"
+          nameClassName="text-xs md:text-sm lg:text-base font-semibold text-white"
           logoClassName="w-10 h-10 md:w-12 md:h-12 object-contain"
         />
         <div className="col-span-1 flex flex-col items-center justify-center gap-2">
           {hasStarted ? (
             <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl md:text-3xl font-bold">
+              <span className="text-2xl md:text-3xl font-bold text-white">
                 {formatGoals(fixture.goals.home)}
               </span>
               <span className="h-8 w-[2px] bg-primary/50" />
-              <span className="text-2xl md:text-3xl font-bold">
+              <span className="text-2xl md:text-3xl font-bold text-white">
                 {formatGoals(fixture.goals.away)}
               </span>
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-base md:text-lg font-medium">VS</p>
+              <p className="text-base md:text-lg font-medium text-white">VS</p>
             </div>
           )}
           {statusInfo.type !== "Scheduled" && (
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white">
               {statusInfo.short}
             </p>
           )}
@@ -123,18 +123,18 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           team={fixture.teams.away}
           orientation="away"
           className="col-span-3  md:gap-4"
-          nameClassName="text-xs md:text-sm lg:text-base font-semibold"
+          nameClassName="text-xs md:text-sm lg:text-base font-semibold text-white"
           logoClassName="w-10 h-10 md:w-12 md:h-12 object-contain"
         />
       </div>
       {statusInfo.type === "In Play" && (
         <div className="flex flex-col -mt-8 md:-mt-4 items-center justify-center gap-0">
-          <p className="text-base md:text-lg font-semibold uppercase tracking-wide text-primary-font">
+          <p className="text-base md:text-lg font-semibold uppercase tracking-wide text-white">
             {fixture.fixture.status.elapsed}&apos;
           </p>
           <div className="relative w-10 h-[2.5px] overflow-hidden">
-            <div className="absolute inset-0 bg-primary-font/30"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-font to-transparent  animate-shimmer"></div>
+            <div className="absolute inset-0 bg-white/30"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent  animate-shimmer"></div>
           </div>
         </div>
       )}
@@ -146,8 +146,8 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
             fixture.fixture.status.elapsed &&
             fixture.fixture.status.elapsed >= 45 && (
               <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-1">Halftime</p>
-                <p className="text-sm font-semibold">
+                <p className="text-xs text-gray-300 mb-1">Halftime</p>
+                <p className="text-sm font-semibold text-white">
                   {formatGoals(fixture.score.halftime.home)} -{" "}
                   {formatGoals(fixture.score.halftime.away)}
                 </p>
@@ -156,8 +156,8 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           {fixture.score.fulltime.home !== null &&
             fixture.score.fulltime.home !== fixture.goals.home && (
               <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-1">Fulltime</p>
-                <p className="text-sm font-semibold">
+                <p className="text-xs text-gray-300 mb-1">Fulltime</p>
+                <p className="text-sm font-semibold text-white">
                   {formatGoals(fixture.score.fulltime.home)} -{" "}
                   {formatGoals(fixture.score.fulltime.away)}
                 </p>
@@ -165,7 +165,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
             )}
           {fixture.score.extratime.home !== null && (
             <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Extra Time</p>
+              <p className="text-xs text-gray-300 mb-1">Extra Time</p>
               <p className="text-sm font-semibold">
                 {formatGoals(fixture.score.extratime.home)} -{" "}
                 {formatGoals(fixture.score.extratime.away)}
@@ -174,7 +174,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           )}
           {fixture.score.penalty.home !== null && (
             <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Penalties</p>
+              <p className="text-xs text-gray-300 mb-1">Penalties</p>
               <p className="text-sm font-semibold">
                 {formatGoals(fixture.score.penalty.home)} -{" "}
                 {formatGoals(fixture.score.penalty.away)}

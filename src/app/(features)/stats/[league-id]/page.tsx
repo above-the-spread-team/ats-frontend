@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Trophy, Award, Earth, BarChart3, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import IconBg from "@/components/common/icon-bg";
-import Nav from "@/components/common/nav";
+import Nav from "@/components/common/nav-stats";
 import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
 import Leader from "./_components/leader";

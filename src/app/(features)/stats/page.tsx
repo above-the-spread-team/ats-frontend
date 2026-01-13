@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
-import Nav from "@/components/common/nav";
+import Nav from "@/components/common/nav-stats";
 import { calculateSeason } from "@/lib/utils";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
@@ -265,7 +265,7 @@ function TablesContent() {
 
       {/* Leagues Content */}
       {!isLoading && !error && totalFilteredCount > 0 && (
-        <FullPage minusHeight={minusHeight} className="space-y-4 mt-4 pb-10">
+        <FullPage minusHeight={minusHeight} className="space-y-6 mt-6 pb-10">
           <Section
             title="Cups"
             icon={Trophy}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, Suspense } from "react";
+import { useEffect, useState, useMemo, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -117,6 +117,9 @@ function GameDetailContent() {
     tabParam && allValidTabs.includes(tabParam) ? tabParam : "predictions"
   );
 
+  // Ref to track the last user-selected tab (prevents flickering)
+  const lastUserSelectedTab = useRef<TabType | null>(null);
+
   const timezone = useMemo(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -134,6 +137,7 @@ function GameDetailContent() {
   } = useFixture(fixtureId);
 
   // Sync tab state with URL parameter and fixture status
+  // Only sync FROM URL TO STATE to prevent flickering when user clicks tabs
   useEffect(() => {
     if (!fixtureData?.response?.[0]) return;
 
@@ -146,14 +150,40 @@ function GameDetailContent() {
       ? validTabsForScheduled
       : allValidTabs.filter((tab) => tab !== "odds");
 
-    const tab = searchParams.get("tab") as TabType;
-    if (tab && allowedTabs.includes(tab)) {
-      setActiveTab(tab);
-    } else if (!allowedTabs.includes(activeTab)) {
-      // If current tab is not allowed for this fixture status, switch to predictions
-      setActiveTab("predictions");
+    const tabFromUrl = searchParams.get("tab") as TabType;
+
+    // Skip syncing from URL if this matches the last user-selected tab
+    // This prevents flickering when user clicks tabs (Nav already updated state)
+    if (
+      lastUserSelectedTab.current &&
+      tabFromUrl === lastUserSelectedTab.current
+    ) {
+      // Still validate the tab is allowed
+      setActiveTab((currentTab) => {
+        if (!allowedTabs.includes(currentTab)) {
+          return "predictions";
+        }
+        return currentTab;
+      });
+      // Clear the ref after URL has synced
+      setTimeout(() => {
+        lastUserSelectedTab.current = null;
+      }, 100);
+      return;
     }
-  }, [searchParams, fixtureData, activeTab, allValidTabs]);
+
+    // Sync from URL to state (for initial load or browser back/forward)
+    setActiveTab((currentTab) => {
+      if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
+        return tabFromUrl;
+      }
+      // If current tab is not allowed, switch to predictions
+      if (!allowedTabs.includes(currentTab)) {
+        return "predictions";
+      }
+      return currentTab;
+    });
+  }, [searchParams, fixtureData]); // Only react to URL and fixture data changes
 
   // Handle loading state
   if (isLoading) {
@@ -226,11 +256,10 @@ function GameDetailContent() {
     <FullPage minusHeight={10}>
       {/* Fixture Detail - Always visible at top */}
       <div
-        className="bg-gradient-to-br 
-  from-[#d1fae5] via-white to-[#f0fdfa] 
-  dark:from-[#062d27] dark:via-[#0a0a0a] dark:to-[#0d2b26]"
+        className="bg-gradient-to-r 
+  from-[#0d3030] via-[#1b4d53] to-[#0d3030] pb-10 md:pb-12"
       >
-        <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
+        <div className="flex items-center  justify-between mb-2 container mx-auto max-w-4xl px-4">
           <button
             onClick={() => {
               // Preserve date parameter when going back
@@ -240,12 +269,12 @@ function GameDetailContent() {
                 router.back();
               }
             }}
-            className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-primary-font hover:text-foreground transition-colors w-fit"
+            className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-white hover:text-muted-foreground transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <div className="flex items-center gap-2 text-xs md:text-sm font-bold dark:text-mygray text-primary">
+          <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-white">
             <Clock8 className="w-4 h-4" />
             <p>{timezone}</p>
           </div>
@@ -253,21 +282,25 @@ function GameDetailContent() {
         <div className="container mx-auto max-w-5xl px-1">
           <FixtureDetail fixture={fixture} />
         </div>
-        {/* Tab Navigation */}
-        {fixtureId && (
-          <Nav
-            tabs={tabs}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            preserveParams={true}
-            additionalParams={{ id: fixtureId.toString() }}
-            containerClassName="my-4 justify-evenly max-w-4xl  mx-auto  px-2 gap-1"
-            hideIconOnMobile={true}
-          />
-        )}
       </div>
+      {/* Tab Navigation */}
+      {fixtureId && (
+        <Nav
+          tabs={tabs}
+          activeTab={activeTab}
+          setActiveTab={(tab) => {
+            // Store the user-selected tab to prevent useEffect from interfering
+            lastUserSelectedTab.current = tab;
+            setActiveTab(tab);
+          }}
+          preserveParams={true}
+          additionalParams={{ id: fixtureId.toString() }}
+          containerClassName="max-w-4xl mx-auto"
+          hideIconOnMobile={true}
+        />
+      )}
 
-      <div className="pt-3 md:pt-4 pb-10">
+      <div className="pt-5 md:pt-6 pb-10">
         {/* Tab Content */}
         {activeTab === "lineups" && (
           <div className="container mx-auto w-[95%]  max-w-4xl ">
