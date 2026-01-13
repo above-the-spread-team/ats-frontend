@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,6 +36,11 @@ export default function NewsDetailPage() {
     isLoading,
     error,
   } = useNewsById(newsId && !isNaN(newsId) ? newsId : 0);
+
+  // Scroll to top when news ID changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [newsId]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -129,6 +135,11 @@ export default function NewsDetailPage() {
                 homeTeamLogo={news.home_team_logo}
                 awayTeamLogo={news.away_team_logo}
                 variant="header"
+                tagName={
+                  news.tags && news.tags.length > 0
+                    ? news.tags[0].name
+                    : undefined
+                }
               />
               {/* Category Badge */}
               {news.tags && news.tags.length > 0 && (

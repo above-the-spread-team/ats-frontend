@@ -127,6 +127,7 @@ export default function News() {
                         homeTeamLogo={article.home_team_logo}
                         awayTeamLogo={article.away_team_logo}
                         variant="grid"
+                        tagName={getFirstTag(article)}
                       />
                     ) : article.image_url ? (
                       <Image
