@@ -6,8 +6,8 @@ export interface OddsLeague {
   id: number;
   name: string;
   country: string;
-  logo: string;
-  flag: string;
+  logo: string | null;
+  flag: string | null;
   season: number;
 }
 
@@ -20,7 +20,7 @@ export interface OddsFixture {
 
 export interface OddsValue {
   value: string | number;
-  odd: string;
+  odd: string | number;
 }
 
 export interface OddsBet {
@@ -32,14 +32,14 @@ export interface OddsBet {
 export interface OddsBookmaker {
   id: number;
   name: string;
-  bets: OddsBet[];
+  bets?: OddsBet[];
 }
 
 export interface OddsResponseItem {
   league: OddsLeague;
   fixture: OddsFixture;
   update: string;
-  bookmakers: OddsBookmaker[];
+  bookmakers?: OddsBookmaker[];
 }
 
 export interface OddsQueryParameters {
@@ -66,4 +66,3 @@ export interface OddsApiResponse {
   paging: OddsPaging;
   response: OddsResponseItem[];
 }
-

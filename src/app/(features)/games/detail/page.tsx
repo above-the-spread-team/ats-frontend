@@ -10,6 +10,7 @@ import {
   Activity,
   User,
   Brain,
+  TrendingUp,
 } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Nav, { NavTab } from "@/components/common/nav";
@@ -20,10 +21,17 @@ import FixtureStatistics from "./_components/fixture-stats";
 import Events from "./_components/events";
 import FixturePlayers from "./_components/fixture-players";
 import Predictions from "./_components/tips";
+import Odds from "./_components/odds";
 import { useFixture } from "@/services/football-api/fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
 
-type TabType = "lineups" | "statistics" | "events" | "players" | "predictions";
+type TabType =
+  | "lineups"
+  | "statistics"
+  | "events"
+  | "players"
+  | "predictions"
+  | "odds";
 
 function GameDetailSkeleton() {
   return (
@@ -97,9 +105,14 @@ function GameDetailContent() {
   const tabParam = searchParams.get("tab") as TabType;
   const [activeTab, setActiveTab] = useState<TabType>(
     tabParam &&
-      ["lineups", "statistics", "events", "players", "predictions"].includes(
-        tabParam
-      )
+      [
+        "lineups",
+        "statistics",
+        "events",
+        "players",
+        "predictions",
+        "odds",
+      ].includes(tabParam)
       ? tabParam
       : "predictions"
   );
@@ -125,9 +138,14 @@ function GameDetailContent() {
     const tab = searchParams.get("tab") as TabType;
     if (
       tab &&
-      ["lineups", "statistics", "events", "players", "predictions"].includes(
-        tab
-      )
+      [
+        "lineups",
+        "statistics",
+        "events",
+        "players",
+        "predictions",
+        "odds",
+      ].includes(tab)
     ) {
       setActiveTab(tab);
     }
@@ -183,9 +201,8 @@ function GameDetailContent() {
 
   const tabs: NavTab<TabType>[] = [
     { id: "predictions", label: "Tips", icon: Brain },
-
+    { id: "odds", label: "Odds", icon: TrendingUp },
     { id: "statistics", label: "Stats", icon: BarChart3 },
-
     { id: "players", label: "Players", icon: User },
     { id: "events", label: "Events", icon: Activity },
     { id: "lineups", label: "Lineups", icon: Users },
@@ -282,6 +299,12 @@ function GameDetailContent() {
         {activeTab === "predictions" && (
           <div className="container mx-auto w-[95%]  max-w-4xl ">
             <Predictions fixtureId={fixture.fixture.id} />
+          </div>
+        )}
+
+        {activeTab === "odds" && (
+          <div className="container mx-auto w-[95%]  max-w-4xl ">
+            <Odds fixtureId={fixture.fixture.id} />
           </div>
         )}
       </div>
