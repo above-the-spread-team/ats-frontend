@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Shirt } from "lucide-react";
 import type { LineupResponseItem } from "@/type/footballapi/lineups";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDate from "@/components/common/no-data";
+import NoData from "@/components/common/no-data";
 
 import { useFixtureLineups } from "@/services/football-api/fixture-lineups";
 
@@ -249,7 +249,7 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
 
   if (error || !lineupsData || !lineupsData.response) {
     return (
-      <NoDate
+      <NoData
         message={error || "No lineups data available"}
         helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
       />
@@ -260,7 +260,7 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
 
   if (lineups.length === 0) {
     return (
-      <NoDate
+      <NoData
         message="No lineups available."
         helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
       />
@@ -278,7 +278,7 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
   // If no lineup has player data, show no data message
   if (!hasLineupData) {
     return (
-      <NoDate
+      <NoData
         message="No lineup data available."
         helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
       />

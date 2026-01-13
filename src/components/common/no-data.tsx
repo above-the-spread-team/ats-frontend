@@ -21,7 +21,7 @@ export default function NoData({
   date,
   message,
   helpText,
-  className = "",
+  className = "min-h-[50vh]",
   icon = "inbox",
 }: NoDateProps) {
   // Determine default message based on props

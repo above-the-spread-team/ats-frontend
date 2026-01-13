@@ -7,7 +7,7 @@ import type {
   FixturePlayersPlayerItem,
 } from "@/type/footballapi/fixture-players";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDate from "@/components/common/no-data";
+import NoData from "@/components/common/no-data";
 import { useFixturePlayers } from "@/services/football-api/fixture-players-statistics";
 import {
   Table,
@@ -364,7 +364,7 @@ export default function FixturePlayers({
 
   if (error || !playersData || !playersData.response) {
     return (
-      <NoDate
+      <NoData
         message={error || "No players data available"}
         helpText="Player statistics are usually available during or after the match."
       />
@@ -375,7 +375,7 @@ export default function FixturePlayers({
 
   if (teams.length === 0) {
     return (
-      <NoDate
+      <NoData
         message="No players data available for this fixture."
         helpText="Player statistics are usually available during or after the match."
       />

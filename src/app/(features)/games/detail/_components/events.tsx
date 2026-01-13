@@ -2,7 +2,7 @@
 
 import type { FixtureEventsResponseItem } from "@/type/footballapi/fixture-events";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoDate from "@/components/common/no-data";
+import NoData from "@/components/common/no-data";
 import { useFixtureEvents } from "@/services/football-api/fixture-events";
 import {
   Target,
@@ -261,7 +261,7 @@ export default function Events({
 
   if (error || !eventsData || !eventsData.response) {
     return (
-      <NoDate
+      <NoData
         message={error || "No events data available"}
         helpText="Events are usually available once the match starts or shortly after."
       />
@@ -272,7 +272,7 @@ export default function Events({
 
   if (events.length === 0) {
     return (
-      <NoDate
+      <NoData
         message="No events available for this fixture."
         helpText="Events are usually available once the match starts or shortly after."
       />
