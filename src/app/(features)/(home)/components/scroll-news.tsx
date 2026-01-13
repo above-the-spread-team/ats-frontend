@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/carousel";
 import { useNews } from "@/services/fastapi/news";
 import Image from "next/image";
+import Link from "next/link";
+import PreviewImage from "@/app/(features)/news/components/preview-image";
+import { getOptimizedNewsImage } from "@/lib/cloudinary";
+import type { NewsResponse } from "@/type/fastapi/news";
+import { getTagColor } from "@/data/league-theme";
 
 export function ScrollNews() {
   const [api, setApi] = useState<CarouselApi>();
@@ -71,10 +76,20 @@ export function ScrollNews() {
 
   const newsItems = newsData?.items || [];
 
+  // Check if news is a match preview (has team logos)
+  const isMatchPreview = (news: NewsResponse) => {
+    return !!(news.home_team_logo && news.away_team_logo);
+  };
+
+  // Get first tag name for match preview
+  const getFirstTag = (news: NewsResponse) => {
+    return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
+  };
+
   if (newsItems.length === 0) {
     return (
       <div className="relative w-full max-w-2xl">
-        <Card>
+        <Card className="rounded-none">
           <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
             <span className="text-muted-foreground">No news available</span>
           </CardContent>
@@ -84,7 +99,7 @@ export function ScrollNews() {
   }
 
   return (
-    <div className="relative w-full max-w-2xl">
+    <div className="relative w-full  max-w-2xl">
       <Carousel
         setApi={setApi}
         opts={{
@@ -97,36 +112,67 @@ export function ScrollNews() {
           {newsItems.map((news) => (
             <CarouselItem key={news.id}>
               <div className="p-1 w-full">
-                <Card>
-                  <CardContent className="p-0 relative aspect-[4/3] overflow-hidden">
-                    {news.image_url ? (
-                      <Image
-                        src={news.image_url}
-                        alt={news.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 672px"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <span className="text-muted-foreground">No image</span>
-                      </div>
-                    )}
-                    {/* Overlay with title */}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6">
-                      <h3 className="text-white text-xl font-semibold line-clamp-2">
-                        {news.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-2 text-white/80 text-sm">
-                        {news.author && <span>{news.author.username}</span>}
-                        {news.author && <span>•</span>}
-                        <span>
-                          {new Date(news.created_at).toLocaleDateString()}
+                <Link href={`/news/${news.id}`}>
+                  <Card className="rounded-none cursor-pointer hover:opacity-95 transition-opacity">
+                    <CardContent className="p-0 relative aspect-[4/3] overflow-hidden">
+                      {isMatchPreview(news) ? (
+                        <PreviewImage
+                          homeTeamLogo={news.home_team_logo}
+                          awayTeamLogo={news.away_team_logo}
+                          variant="carousel"
+                          tagName={getFirstTag(news)}
+                        />
+                      ) : news.image_url ? (
+                        <Image
+                          src={getOptimizedNewsImage(news.image_url, 800)}
+                          alt={news.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 672px"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <span className="text-muted-foreground">
+                            No image
+                          </span>
+                        </div>
+                      )}
+                      {/* Tag badge */}
+                      <div className="absolute top-2 left-4 z-20">
+                        <span
+                          className="text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full"
+                          style={{
+                            backgroundColor: getTagColor(getFirstTag(news)),
+                          }}
+                        >
+                          {getFirstTag(news)}
                         </span>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      {/* Preview badge for match previews */}
+                      {isMatchPreview(news) && (
+                        <div className="absolute top-2 right-4 z-20">
+                          <span className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+                            Preview
+                          </span>
+                        </div>
+                      )}
+                      {/* Overlay with title */}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6">
+                        <h3 className="text-white text-xl font-semibold line-clamp-2">
+                          {news.title}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-2 text-white/80 text-sm">
+                          {news.author && <span>{news.author.username}</span>}
+                          {news.author && <span>•</span>}
+                          <span>
+                            {new Date(news.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               </div>
             </CarouselItem>
           ))}

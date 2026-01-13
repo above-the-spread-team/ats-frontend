@@ -5,7 +5,7 @@ import { getTagColor } from "@/data/league-theme";
 interface PreviewImageProps {
   homeTeamLogo: string | null;
   awayTeamLogo: string | null;
-  variant?: "grid" | "header";
+  variant?: "grid" | "carousel" | "header";
   className?: string;
   tagName?: string;
 }
@@ -104,6 +104,52 @@ export default function PreviewImage({
         <div className="relative w-12 h-12 md:w-20 md:h-20 z-10">
           <Image
             src={getOptimizedLogo(awayTeamLogo, 64)}
+            alt="Away team"
+            fill
+            className="object-contain"
+            unoptimized
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Carousel variant: medium-sized logos for carousel/slider views
+  if (variant === "carousel") {
+    return (
+      <div
+        className={`w-full overflow-hidden h-full flex items-center justify-evenly gap-12 md:gap-20  relative ${className}`}
+      >
+        {/* Left side background (diagonal split matching 30deg slash) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to top right, ${darkerColor}, ${darkColor}, ${leagueColor})`,
+            clipPath: "polygon(0 0, 60% 0, 40% 100%, 0 100%)",
+          }}
+        ></div>
+        {/* Right side background */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom right, ${lightColor}, white, ${lighterColor})`,
+            clipPath: "polygon(60% 0, 100% 0, 100% 100%, 40% 100%)",
+          }}
+        ></div>
+
+        <div className="relative w-32 h-32 md:w-36 md:h-36 ">
+          <Image
+            src={getOptimizedLogo(homeTeamLogo, 96)}
+            alt="Home team"
+            fill
+            className="object-contain"
+            unoptimized
+          />
+        </div>
+
+        <div className="relative w-32 h-32 md:w-36 md:h-36 ">
+          <Image
+            src={getOptimizedLogo(awayTeamLogo, 96)}
             alt="Away team"
             fill
             className="object-contain"
