@@ -103,18 +103,18 @@ function GameDetailContent() {
 
   // Get tab from URL or default to predictions
   const tabParam = searchParams.get("tab") as TabType;
+  const allValidTabs: TabType[] = [
+    "lineups",
+    "statistics",
+    "events",
+    "players",
+    "predictions",
+    "odds",
+  ];
+
+  // Initial tab state - will be adjusted after fixture loads
   const [activeTab, setActiveTab] = useState<TabType>(
-    tabParam &&
-      [
-        "lineups",
-        "statistics",
-        "events",
-        "players",
-        "predictions",
-        "odds",
-      ].includes(tabParam)
-      ? tabParam
-      : "predictions"
+    tabParam && allValidTabs.includes(tabParam) ? tabParam : "predictions"
   );
 
   const timezone = useMemo(() => {
@@ -133,23 +133,27 @@ function GameDetailContent() {
     error: queryError,
   } = useFixture(fixtureId);
 
-  // Sync tab state with URL parameter
+  // Sync tab state with URL parameter and fixture status
   useEffect(() => {
+    if (!fixtureData?.response?.[0]) return;
+
+    const fixture = fixtureData.response[0];
+    const fixtureStatus = getFixtureStatus(fixture.fixture.status.short);
+    const isScheduled = fixtureStatus.type === "Scheduled";
+    const validTabsForScheduled: TabType[] = ["predictions", "odds"];
+    // For non-scheduled fixtures, exclude odds from allowed tabs
+    const allowedTabs = isScheduled
+      ? validTabsForScheduled
+      : allValidTabs.filter((tab) => tab !== "odds");
+
     const tab = searchParams.get("tab") as TabType;
-    if (
-      tab &&
-      [
-        "lineups",
-        "statistics",
-        "events",
-        "players",
-        "predictions",
-        "odds",
-      ].includes(tab)
-    ) {
+    if (tab && allowedTabs.includes(tab)) {
       setActiveTab(tab);
+    } else if (!allowedTabs.includes(activeTab)) {
+      // If current tab is not allowed for this fixture status, switch to predictions
+      setActiveTab("predictions");
     }
-  }, [searchParams]);
+  }, [searchParams, fixtureData, activeTab, allValidTabs]);
 
   // Handle loading state
   if (isLoading) {
@@ -198,8 +202,11 @@ function GameDetailContent() {
   }
 
   const fixture = fixtureData.response[0];
+  const fixtureStatus = getFixtureStatus(fixture.fixture.status.short);
+  const isScheduled = fixtureStatus.type === "Scheduled";
 
-  const tabs: NavTab<TabType>[] = [
+  // Define all available tabs
+  const allTabs: NavTab<TabType>[] = [
     { id: "predictions", label: "Tips", icon: Brain },
     { id: "odds", label: "Odds", icon: TrendingUp },
     { id: "statistics", label: "Stats", icon: BarChart3 },
@@ -207,6 +214,13 @@ function GameDetailContent() {
     { id: "events", label: "Events", icon: Activity },
     { id: "lineups", label: "Lineups", icon: Users },
   ];
+
+  // Filter tabs based on fixture status
+  // For Scheduled fixtures: only show Tips and Odds
+  // For non-Scheduled fixtures: show all tabs except Odds
+  const tabs = isScheduled
+    ? allTabs.filter((tab) => tab.id === "predictions" || tab.id === "odds")
+    : allTabs.filter((tab) => tab.id !== "odds");
 
   return (
     <FullPage minusHeight={10}>
