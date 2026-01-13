@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NoData from "@/components/common/no-data";
 import { useOdds } from "@/services/football-api/odds";
 import { TrendingUp, Clock, BookOpen } from "lucide-react";
-import type { OddsBet, OddsValue } from "@/type/footballapi/odds";
+import type { OddsBet } from "@/type/footballapi/odds";
 
 interface OddsProps {
   fixtureId: number;

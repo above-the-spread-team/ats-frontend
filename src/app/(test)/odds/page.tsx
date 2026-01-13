@@ -217,44 +217,56 @@ export default function OddsPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  {item.bookmakers.map((bookmaker, bookmakerIndex) => (
-                    <div
-                      key={bookmakerIndex}
-                      className="mb-6 last:mb-0 border-b last:border-0 pb-6 last:pb-0"
-                    >
-                      <h3 className="text-xl font-semibold mb-4">
-                        {bookmaker.name} (ID: {bookmaker.id})
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {bookmaker.bets.map((bet, betIndex) => (
-                          <Card key={betIndex} className="border">
-                            <CardHeader className="pb-3">
-                              <CardTitle className="text-sm font-semibold">
-                                {bet.name} (ID: {bet.id})
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-2">
-                                {bet.values.map((value, valueIndex) => (
-                                  <div
-                                    key={valueIndex}
-                                    className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
-                                  >
-                                    <span className="text-sm font-medium">
-                                      {value.value}
-                                    </span>
-                                    <span className="text-sm font-bold text-primary">
-                                      {value.odd}
-                                    </span>
+                  {item.bookmakers && item.bookmakers.length > 0 ? (
+                    item.bookmakers.map((bookmaker, bookmakerIndex) => (
+                      <div
+                        key={bookmakerIndex}
+                        className="mb-6 last:mb-0 border-b last:border-0 pb-6 last:pb-0"
+                      >
+                        <h3 className="text-xl font-semibold mb-4">
+                          {bookmaker.name} (ID: {bookmaker.id})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {bookmaker.bets && bookmaker.bets.length > 0 ? (
+                            bookmaker.bets.map((bet, betIndex) => (
+                              <Card key={betIndex} className="border">
+                                <CardHeader className="pb-3">
+                                  <CardTitle className="text-sm font-semibold">
+                                    {bet.name} (ID: {bet.id})
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="space-y-2">
+                                    {bet.values.map((value, valueIndex) => (
+                                      <div
+                                        key={valueIndex}
+                                        className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
+                                      >
+                                        <span className="text-sm font-medium">
+                                          {value.value}
+                                        </span>
+                                        <span className="text-sm font-bold text-primary">
+                                          {value.odd}
+                                        </span>
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                                </CardContent>
+                              </Card>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              No bets available for this bookmaker
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      No bookmakers available for this fixture
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))

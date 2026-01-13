@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
-import FullPage from "@/components/common/full-page";
 import { useFixtureStatistics } from "@/services/football-api/fixture-statistics";
 
 function getInitials(text: string | null | undefined, fallback = "??") {

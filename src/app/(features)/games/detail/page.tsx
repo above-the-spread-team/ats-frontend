@@ -183,7 +183,7 @@ function GameDetailContent() {
       }
       return currentTab;
     });
-  }, [searchParams, fixtureData]); // Only react to URL and fixture data changes
+  }, [searchParams, fixtureData, allValidTabs]); // Only react to URL and fixture data changes
 
   // Handle loading state
   if (isLoading) {
