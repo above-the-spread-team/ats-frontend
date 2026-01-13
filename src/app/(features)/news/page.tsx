@@ -15,11 +15,14 @@ import { getTagColor } from "@/data/league-theme";
 
 export default function News() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
-  const { data, isLoading, error } = useNews(
-    1,
-    20,
-    selectedTagIds.length > 0 ? selectedTagIds : undefined
-  );
+
+  // Sort tag IDs to ensure consistent query keys
+  const sortedTagIds =
+    selectedTagIds.length > 0
+      ? [...selectedTagIds].sort((a, b) => a - b)
+      : undefined;
+
+  const { data, isLoading, error } = useNews(1, 20, sortedTagIds);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
