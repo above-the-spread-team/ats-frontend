@@ -1,11 +1,13 @@
 "use client";
 
-import { mockNews } from "@/data/news-mock";
 import Link from "next/link";
+import { useNews } from "@/services/fastapi/news";
+import { getTagColor } from "@/data/league-theme";
+import type { NewsResponse } from "@/type/fastapi/news";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomeNews() {
-  // Get top 5 news items
-  const topNews = mockNews.slice(0, 5);
+  const { data: newsData, isLoading, error } = useNews(1, 5);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -23,18 +25,57 @@ export default function HomeNews() {
     });
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      "Premier League": "bg-purple-500",
-      "La Liga": "bg-orange-500",
-      "Serie A": "bg-blue-500",
-      "Champions League": "bg-indigo-600",
-      "Europa League": "bg-orange-600",
-      "Transfer News": "bg-green-500",
-      International: "bg-red-500",
-    };
-    return colors[category] || "bg-gray-500";
+  const getFirstTag = (news: NewsResponse) => {
+    return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <Link
+          href="/news"
+          className="text-sm px-2 block mb-2 text-primary-font hover:underline font-semibold"
+        >
+          <h2 className="text-lg md:text-xl font-bold">Latest News</h2>
+        </Link>
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="divide-y divide-border">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-3">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-5 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <Link
+          href="/news"
+          className="text-sm px-2 block mb-2 text-primary-font hover:underline font-semibold"
+        >
+          <h2 className="text-lg md:text-xl font-bold">Latest News</h2>
+        </Link>
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm p-4">
+          <p className="text-sm text-muted-foreground text-center">
+            Failed to load news
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const newsItems = newsData?.items || [];
+  // Filter published news only
+  const publishedNews = newsItems
+    .filter((item) => item.is_published)
+    .slice(0, 5);
 
   return (
     <div className="w-full">
@@ -45,46 +86,45 @@ export default function HomeNews() {
         <h2 className="text-lg md:text-xl font-bold">Latest News</h2>
       </Link>
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-        <div className="divide-y divide-border">
-          {topNews.map((article) => (
-            <Link
-              key={article.id}
-              href={article.url}
-              className="block p-3 hover:bg-muted/30 transition-colors group"
-            >
-              <div className="flex items-start gap-2">
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    {/* Category Badge */}
-                    <div className="flex-shrink-0">
+        {publishedNews.length > 0 ? (
+          <div className="divide-y divide-border">
+            {publishedNews.map((article) => (
+              <Link
+                key={article.id}
+                href={`/news/${article.id}`}
+                className="block px-3 py-2 hover:bg-muted/30 transition-colors group"
+              >
+                <div className="flex items-start ">
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex-shrink-0 line-clamp-1 flex items-center gap-2">
                       <span
-                        className={`px-2 py-1 rounded text-[10px] font-semibold text-white ${getCategoryColor(
-                          article.category
-                        )}`}
+                        className="px-2 py-1 rounded-full text-[10px] font-semibold text-white"
+                        style={{
+                          backgroundColor: getTagColor(getFirstTag(article)),
+                        }}
                       >
-                        {article.category}
+                        {getFirstTag(article)}
                       </span>
+                      <h3 className="font-semibold line-clamp-1 text-sm md:text-base text-foreground mb-1  group-hover:text-primary transition-colors">
+                        {article.title}
+                      </h3>
                     </div>
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      {article.source}
-                    </span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(article.publishedAt)}
-                    </span>
+
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
+                      {article.content.substring(0, 150)}
+                      {article.content.length > 150 ? "..." : ""}
+                    </p>
                   </div>
-                  <h3 className="font-semibold text-sm md:text-base text-foreground mb-1 line-clamp-2 group-hover:text-primary transition-colors">
-                    {article.title}
-                  </h3>
-                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
-                    {article.description}
-                  </p>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="p-4 text-center">
+            <p className="text-sm text-muted-foreground">No news available</p>
+          </div>
+        )}
       </div>
     </div>
   );

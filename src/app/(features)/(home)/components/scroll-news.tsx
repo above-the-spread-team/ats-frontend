@@ -139,7 +139,7 @@ export function ScrollNews() {
                         </div>
                       )}
                       {/* Tag badge */}
-                      <div className="absolute top-2 left-4 z-20">
+                      <div className="absolute top-2 left-4 z-20 rounded-full">
                         <span
                           className="text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full"
                           style={{
