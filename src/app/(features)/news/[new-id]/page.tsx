@@ -155,13 +155,15 @@ export default function NewsDetailPage() {
               </div>
             </div>
           ) : news.image_url ? (
+            // General News: Backend uploads images to Cloudinary
+            // Frontend adds transformations (width, format, quality) to Cloudinary URLs
             <div className="relative w-full h-64 md:h-96 bg-muted">
               <Image
                 src={getOptimizedNewsImage(news.image_url, 1600)} // 1600px for detail page (full-width display)
                 alt={news.title}
                 fill
                 className="object-cover"
-                unoptimized
+                unoptimized // Cloudinary handles optimization, so Next.js Image optimization is disabled
               />
               {news.tags && news.tags.length > 0 && (
                 <div className="absolute top-4 left-4">

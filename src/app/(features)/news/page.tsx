@@ -126,6 +126,7 @@ export default function News() {
                 <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
                   <div className="relative h-28 md:h-40 bg-muted">
                     {isMatchPreview(article) ? (
+                      // Match Preview: Use PreviewImage component with team logos
                       <PreviewImage
                         homeTeamLogo={article.home_team_logo}
                         awayTeamLogo={article.away_team_logo}
@@ -133,14 +134,17 @@ export default function News() {
                         tagName={getFirstTag(article)}
                       />
                     ) : article.image_url ? (
+                      // General News: Backend uploads images to Cloudinary
+                      // Frontend adds transformations (width, format, quality) to Cloudinary URLs
                       <Image
-                        src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards (optimized for 3-column layout)
+                        src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards
                         alt={article.title}
                         fill
                         className="object-cover"
-                        unoptimized
+                        unoptimized // Cloudinary handles optimization, so Next.js Image optimization is disabled
                       />
                     ) : (
+                      // Fallback: No image available
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         <span className="text-2xl">⚽</span>
                       </div>
