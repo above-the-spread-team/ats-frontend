@@ -11,7 +11,7 @@ import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "./components/preview-image";
 import NewsFilter from "./components/news-filter";
 import FullPage from "@/components/common/full-page";
-import { getTagColor } from "@/data/league-theme";
+import { Tag } from "@/components/common/tag";
 
 export default function News() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
@@ -146,14 +146,7 @@ export default function News() {
                       </div>
                     )}
                     <div className="absolute top-2 left-2">
-                      <span
-                        className="text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full"
-                        style={{
-                          backgroundColor: getTagColor(getFirstTag(article)),
-                        }}
-                      >
-                        {getFirstTag(article)}
-                      </span>
+                      <Tag name={getFirstTag(article)} variant="medium" />
                     </div>
                     {isMatchPreview(article) && (
                       <div className="absolute top-2 right-2">

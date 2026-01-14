@@ -15,7 +15,7 @@ import Link from "next/link";
 import PreviewImage from "@/app/(features)/news/components/preview-image";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import type { NewsResponse } from "@/type/fastapi/news";
-import { getTagColor } from "@/data/league-theme";
+import { Tag } from "@/components/common/tag";
 
 export function ScrollNews() {
   const [api, setApi] = useState<CarouselApi>();
@@ -140,14 +140,7 @@ export function ScrollNews() {
                       )}
                       {/* Tag badge */}
                       <div className="absolute top-2 left-4 z-20 rounded-full">
-                        <span
-                          className="text-white text-xs font-bold px-2 py-0.5 md:py-1 rounded-full"
-                          style={{
-                            backgroundColor: getTagColor(getFirstTag(news)),
-                          }}
-                        >
-                          {getFirstTag(news)}
-                        </span>
+                        <Tag name={getFirstTag(news)} variant="medium" />
                       </div>
                       {/* Preview badge for match previews */}
                       {isMatchPreview(news) && (

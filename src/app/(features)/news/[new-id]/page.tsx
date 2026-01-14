@@ -24,7 +24,7 @@ import NoData from "@/components/common/no-data";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../components/preview-image";
 import type { NewsResponse } from "@/type/fastapi/news";
-import { getTagColor } from "@/data/league-theme";
+import { Tag } from "@/components/common/tag";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -144,14 +144,7 @@ export default function NewsDetailPage() {
               {/* Category Badge */}
               {news.tags && news.tags.length > 0 && (
                 <div className="absolute hidden md:block top-2 left-2 md:top-3 md:left-3">
-                  <span
-                    className="text-white text-sm font-bold px-3 py-1 rounded-full"
-                    style={{
-                      backgroundColor: getTagColor(news.tags[0].name),
-                    }}
-                  >
-                    {news.tags[0].name}
-                  </span>
+                  <Tag name={news.tags[0].name} variant="large" />
                 </div>
               )}
               {/* Match Preview Badge */}
@@ -172,14 +165,7 @@ export default function NewsDetailPage() {
               />
               {news.tags && news.tags.length > 0 && (
                 <div className="absolute top-4 left-4">
-                  <span
-                    className="text-white text-sm font-bold px-3 py-1.5 rounded-full"
-                    style={{
-                      backgroundColor: getTagColor(news.tags[0].name),
-                    }}
-                  >
-                    {news.tags[0].name}
-                  </span>
+                  <Tag name={news.tags[0].name} variant="large" />
                 </div>
               )}
             </div>
@@ -232,16 +218,12 @@ export default function NewsDetailPage() {
               {news.tags && news.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {news.tags.map((tag) => (
-                    <Link
+                    <Tag
                       key={tag.id}
+                      name={tag.name}
+                      variant="medium"
                       href={`/discuss?tag=${tag.id}`}
-                      className="text-white text-xs font-semibold px-2 py-1 rounded-full hover:opacity-80 transition-opacity"
-                      style={{
-                        backgroundColor: getTagColor(tag.name),
-                      }}
-                    >
-                      {tag.name}
-                    </Link>
+                    />
                   ))}
                 </div>
               )}
