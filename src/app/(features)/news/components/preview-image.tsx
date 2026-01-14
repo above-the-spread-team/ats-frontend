@@ -63,10 +63,10 @@ export default function PreviewImage({
 
   // Get league color or default to gray
   const leagueColor = tagName ? getTagColor(tagName) : "#64648F";
-  const darkColor = darkenColor(leagueColor, 30);
-  const darkerColor = darkenColor(leagueColor, 50);
+  const darkColor = darkenColor(leagueColor, 20);
+  const darkerColor = darkenColor(leagueColor, 90);
   const lightColor = lightenColor(leagueColor, 40);
-  const lighterColor = lightenColor(leagueColor, 95);
+  const lighterColor = lightenColor(leagueColor, 90);
 
   // Grid variant: smaller logos for list/grid views
   if (variant === "grid") {
