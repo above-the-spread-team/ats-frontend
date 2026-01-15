@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useNews } from "@/services/fastapi/news";
+import { useInfiniteNews } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
@@ -22,7 +22,42 @@ export default function News() {
       ? [...selectedTagIds].sort((a, b) => a - b)
       : undefined;
 
-  const { data, isLoading, error } = useNews(1, 20, sortedTagIds);
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteNews(sortedTagIds);
+
+  // Flatten all pages into a single array
+  const allNews = useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => page.items);
+  }, [data]);
+
+  // Scroll detection for infinite loading
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if user is near the bottom of the page
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // Load more when user is 200px from the bottom
+      if (
+        scrollTop + windowHeight >= documentHeight - 200 &&
+        hasNextPage &&
+        !isFetchingNextPage
+      ) {
+        fetchNextPage();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -52,7 +87,7 @@ export default function News() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
+      <div className="min-h-screen container mx-auto max-w-5xl bg-background p-2 md:p-6 pb-20 md:pb-6">
         <Skeleton className="h-8 w-64 mb-6" />
         {/* Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -70,7 +105,7 @@ export default function News() {
 
   if (error) {
     return (
-      <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
+      <div className="min-h-screen container mx-auto max-w-5xl bg-background p-2 md:p-6 pb-20 md:pb-6">
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <p className="text-destructive mb-2">Failed to load news</p>
@@ -83,9 +118,12 @@ export default function News() {
     );
   }
 
-  if (!data || !data.items || data.items.length === 0) {
+  // Filter published news
+  const publishedNews = allNews.filter((item) => item.is_published);
+
+  if (!isLoading && !error && publishedNews.length === 0) {
     return (
-      <div className="min-h-screen container mx-auto max-w-6xl bg-background p-2 md:p-6 pb-20 md:pb-6">
+      <div className="min-h-screen container mx-auto max-w-5xl bg-background p-2 md:p-6 pb-20 md:pb-6">
         <NewsFilter
           selectedTagIds={selectedTagIds}
           onTagIdsChange={setSelectedTagIds}
@@ -106,9 +144,6 @@ export default function News() {
     );
   }
 
-  // Filter published news
-  const publishedNews = data.items.filter((item) => item.is_published);
-
   return (
     <FullPage>
       <div className="container mx-auto max-w-5xl space-y-4 px-4 py-4  mb-8">
@@ -120,84 +155,98 @@ export default function News() {
 
         {/* News Grid */}
         {publishedNews.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-            {publishedNews.map((article) => (
-              <Link key={article.id} href={`/news/${article.id}`}>
-                <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
-                  <div className="relative h-28 md:h-40 bg-muted">
-                    {isMatchPreview(article) ? (
-                      // Match Preview: Use PreviewImage component with team logos
-                      <PreviewImage
-                        homeTeamLogo={article.home_team_logo}
-                        awayTeamLogo={article.away_team_logo}
-                        variant="grid"
-                        tagName={getFirstTag(article)}
-                      />
-                    ) : article.image_url ? (
-                      // General News: Backend uploads images to Cloudinary
-                      // Frontend adds transformations (width, format, quality) to Cloudinary URLs
-                      <Image
-                        src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards
-                        alt={article.title}
-                        fill
-                        className="object-cover"
-                        unoptimized // Cloudinary handles optimization, so Next.js Image optimization is disabled
-                      />
-                    ) : (
-                      // Fallback: No image available
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        <span className="text-2xl">⚽</span>
-                      </div>
-                    )}
-                    <div className="absolute top-2 left-2">
-                      <Tag name={getFirstTag(article)} variant="medium" />
-                    </div>
-                    {isMatchPreview(article) && (
-                      <div className="absolute top-2 right-2">
-                        <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                          Preview
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2.5 md:p-4">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
-                      {article.author && (
-                        <>
-                          <span className="font-semibold truncate max-w-[60px] md:max-w-none">
-                            {article.author.username}
-                          </span>
-                          <span className="flex-shrink-0">•</span>
-                        </>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+              {publishedNews.map((article) => (
+                <Link key={article.id} href={`/news/${article.id}`}>
+                  <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
+                    <div className="relative h-28 md:h-40 bg-muted">
+                      {isMatchPreview(article) ? (
+                        // Match Preview: Use PreviewImage component with team logos
+                        <PreviewImage
+                          homeTeamLogo={article.home_team_logo}
+                          awayTeamLogo={article.away_team_logo}
+                          variant="grid"
+                          tagName={getFirstTag(article)}
+                        />
+                      ) : article.image_url ? (
+                        // General News: Backend uploads images to Cloudinary
+                        // Frontend adds transformations (width, format, quality) to Cloudinary URLs
+                        <Image
+                          src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards
+                          alt={article.title}
+                          fill
+                          className="object-cover"
+                          unoptimized // Cloudinary handles optimization, so Next.js Image optimization is disabled
+                        />
+                      ) : (
+                        // Fallback: No image available
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                          <span className="text-2xl">⚽</span>
+                        </div>
                       )}
-                      <span className="flex-shrink-0">
-                        {formatDate(article.created_at)}
-                      </span>
+                      <div className="absolute top-2 left-2">
+                        <Tag name={getFirstTag(article)} variant="medium" />
+                      </div>
+                      {isMatchPreview(article) && (
+                        <div className="absolute top-2 right-2">
+                          <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            Preview
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2">
-                      {article.title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">
-                      {article.content.substring(0, 150)}
-                      {article.content.length > 150 ? "..." : ""}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate mr-2 max-w-[140px]">
-                        {article.comment_count > 0 && (
+                    <div className="p-2.5 md:p-4">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
+                        {article.author && (
                           <>
-                            <span>{article.comment_count} comments</span>
+                            <span className="font-semibold truncate max-w-[60px] md:max-w-none">
+                              {article.author.username}
+                            </span>
+                            <span className="flex-shrink-0">•</span>
                           </>
                         )}
+                        <span className="flex-shrink-0">
+                          {formatDate(article.created_at)}
+                        </span>
                       </div>
-                      <span className="text-primary font-semibold text-xs hover:underline flex-shrink-0">
-                        Read →
-                      </span>
+                      <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">
+                        {article.content.substring(0, 150)}
+                        {article.content.length > 150 ? "..." : ""}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate mr-2 max-w-[140px]">
+                          {article.comment_count > 0 && (
+                            <>
+                              <span>{article.comment_count} comments</span>
+                            </>
+                          )}
+                        </div>
+                        <span className="text-primary font-semibold text-xs hover:underline flex-shrink-0">
+                          Read →
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+            {/* Loading indicator for fetching more */}
+            {isFetchingNextPage && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 mt-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i}>
+                    <Skeleton className="h-40 w-full mb-4" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </FullPage>

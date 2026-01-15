@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type {
   NewsListResponse,
   NewsResponse,
@@ -91,6 +96,30 @@ export function useNews(
   return useQuery<NewsListResponse, NewsError>({
     queryKey: ["news", page, pageSize, tagIds],
     queryFn: () => fetchNews(page, pageSize, tagIds),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+/**
+ * React Query hook for infinite scrolling news list
+ * Fetches 15 items per page, loads more on scroll
+ */
+export function useInfiniteNews(tagIds?: number[]) {
+  return useInfiniteQuery<NewsListResponse, NewsError>({
+    queryKey: ["news", "infinite", tagIds],
+    queryFn: ({ pageParam = 1 }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return fetchNews(page, 15, tagIds);
+    },
+    getNextPageParam: (lastPage) => {
+      // If current page is less than total pages, return next page number
+      if (lastPage.page < lastPage.total_pages) {
+        return lastPage.page + 1;
+      }
+      // Otherwise, no more pages
+      return undefined;
+    },
+    initialPageParam: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, User } from "lucide-react";
-import { usePosts } from "@/services/fastapi/posts";
+import { useInfinitePosts } from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import CreatePost from "./_components/create-post";
 import PostCard, { mapPostResponse } from "./_components/post-card";
@@ -17,19 +17,18 @@ import TagFilter from "./_components/tag-filter";
 export default function DiscussPage() {
   const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const [page] = useState(1);
-  const pageSize = 20;
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
 
-  // Fetch posts from API with tag filtering
+  // Fetch posts from API with infinite scrolling
   const {
     data: postsData,
     isLoading,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch,
-  } = usePosts(
-    page,
-    pageSize,
+  } = useInfinitePosts(
     undefined,
     selectedTagIds.length > 0 ? selectedTagIds : undefined
   );
@@ -37,11 +36,34 @@ export default function DiscussPage() {
   // Get current user
   const { data: currentUser } = useCurrentUser();
 
-  // Map posts from API to frontend format
+  // Flatten all pages into a single array and map to frontend format
   const posts = useMemo(() => {
-    if (!postsData?.items) return [];
-    return postsData.items.map(mapPostResponse);
+    if (!postsData?.pages) return [];
+    const allPosts = postsData.pages.flatMap((page) => page.items);
+    return allPosts.map(mapPostResponse);
   }, [postsData]);
+
+  // Scroll detection for infinite loading
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if user is near the bottom of the page
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // Load more when user is 200px from the bottom
+      if (
+        scrollTop + windowHeight >= documentHeight - 200 &&
+        hasNextPage &&
+        !isFetchingNextPage
+      ) {
+        fetchNextPage();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Handle create post input click
   const handleCreatePostClick = () => {
@@ -164,11 +186,40 @@ export default function DiscussPage() {
 
         {/* Posts List */}
         {!isLoading && !error && (
-          <div className="space-y-3 md:space-y-4">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <>
+            <div className="space-y-3 md:space-y-4">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+            {/* Loading indicator for fetching more */}
+            {isFetchingNextPage && (
+              <div className="space-y-3 md:space-y-4 mt-4">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Card key={i} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <div className="flex gap-6 pt-2">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Empty State */}

@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type {
   PostCreate,
   PostUpdate,
@@ -334,6 +339,35 @@ export function usePosts(
   return useQuery<PostListResponse>({
     queryKey: ["posts", page, pageSize, authorId, sortedTagIds],
     queryFn: () => listPosts(page, pageSize, authorId, tagIds),
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * React Query hook for infinite scrolling posts list
+ * Fetches 12 items per page, loads more on scroll
+ */
+export function useInfinitePosts(authorId?: number, tagIds?: number[]) {
+  // Sort tag IDs for consistent query key
+  const sortedTagIds =
+    tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
+
+  return useInfiniteQuery<PostListResponse>({
+    queryKey: ["posts", "infinite", authorId, sortedTagIds],
+    queryFn: ({ pageParam = 1 }) => {
+      const page = typeof pageParam === "number" ? pageParam : 1;
+      return listPosts(page, 12, authorId, tagIds);
+    },
+    getNextPageParam: (lastPage) => {
+      // If current page is less than total pages, return next page number
+      if (lastPage.page < lastPage.total_pages) {
+        return lastPage.page + 1;
+      }
+      // Otherwise, no more pages
+      return undefined;
+    },
+    initialPageParam: 1,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
   });
