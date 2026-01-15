@@ -42,7 +42,7 @@ export function ScrollNews() {
         // If at the end, scroll back to the beginning
         api.scrollTo(0);
       }
-    }, 3000); // Auto-scroll every 3 seconds
+    }, 5000); // Auto-scroll every 3 seconds
 
     return () => {
       clearInterval(interval);
