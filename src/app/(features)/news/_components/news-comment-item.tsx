@@ -516,6 +516,7 @@ export default function NewsCommentItem({
                 newsId={newsId}
                 parentCommentId={parseInt(comment.id)}
                 repliedToUsername={comment.author.name}
+                autoFocus={true}
                 onSuccess={() => {
                   handleReplySuccess();
                   // Refetch replies if expanded
