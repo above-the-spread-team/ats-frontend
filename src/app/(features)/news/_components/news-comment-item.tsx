@@ -18,19 +18,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  useCommentReplies,
-  useLikeComment,
-  useDislikeComment,
-  useDeleteComment,
-} from "@/services/fastapi/comments";
+  useNewsCommentReplies,
+  useLikeNewsComment,
+  useDislikeNewsComment,
+  useDeleteNewsComment,
+} from "@/services/fastapi/news";
 import { useCurrentUser } from "@/services/fastapi/oauth";
-import CreateComment from "./create-comment";
-import EditComment from "./edit-comment";
+import CreateNewsComment from "./create-news-comment";
+import EditNewsComment from "./edit-news-comment";
 import ConfirmDialog from "@/components/common/popup";
 import type { CommentResponse } from "@/type/fastapi/comments";
 
 // Comment interface (shared with page.tsx)
-export interface Comment {
+export interface NewsComment {
   id: string;
   author: {
     id: string;
@@ -42,7 +42,7 @@ export interface Comment {
   likeCount: number;
   dislikeCount: number;
   replyCount: number;
-  replies?: Comment[];
+  replies?: NewsComment[];
   userLiked?: boolean;
   userDisliked?: boolean;
   parentCommentId?: number | null;
@@ -96,8 +96,8 @@ export function formatTimeAgo(dateString: string): string {
   }
 }
 
-// Helper function to map CommentResponse to frontend Comment type
-export function mapCommentResponse(comment: CommentResponse): Comment {
+// Helper function to map CommentResponse to frontend NewsComment type
+export function mapNewsCommentResponse(comment: CommentResponse): NewsComment {
   return {
     id: comment.id.toString(),
     author: {
@@ -124,19 +124,19 @@ export function mapCommentResponse(comment: CommentResponse): Comment {
   };
 }
 
-interface CommentItemProps {
-  comment: Comment;
-  postId: number;
+interface NewsCommentItemProps {
+  comment: NewsComment;
+  newsId: number;
   level?: number;
   onReply?: () => void;
 }
 
-export default function CommentItem({
+export default function NewsCommentItem({
   comment,
-  postId,
+  newsId,
   level = 0,
   onReply,
-}: CommentItemProps) {
+}: NewsCommentItemProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(false); // Start collapsed, expand when user clicks
@@ -160,9 +160,9 @@ export default function CommentItem({
     dislikeCount: number;
   } | null>(null);
 
-  const likeCommentMutation = useLikeComment();
-  const dislikeCommentMutation = useDislikeComment();
-  const deleteCommentMutation = useDeleteComment();
+  const likeCommentMutation = useLikeNewsComment();
+  const dislikeCommentMutation = useDislikeNewsComment();
+  const deleteCommentMutation = useDeleteNewsComment();
 
   // Check if current user is the comment author
   const isAuthor = currentUser?.id === parseInt(comment.author.id);
@@ -173,7 +173,7 @@ export default function CommentItem({
     data: repliesData,
     isLoading: repliesLoading,
     refetch: refetchReplies,
-  } = useCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
+  } = useNewsCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
   // Sync state when comment prop changes, but only if values actually changed
   // This prevents resetting state during optimistic updates
@@ -357,7 +357,7 @@ export default function CommentItem({
     try {
       await deleteCommentMutation.mutateAsync({
         commentId,
-        postId,
+        newsId,
       });
       setIsDeleteDialogOpen(false);
       onReply?.(); // Refresh comments
@@ -414,7 +414,7 @@ export default function CommentItem({
           </div>
           {isEditing ? (
             <div className="mb-2">
-              <EditComment
+              <EditNewsComment
                 commentId={parseInt(comment.id)}
                 initialContent={comment.content}
                 onSuccess={() => {
@@ -512,9 +512,10 @@ export default function CommentItem({
 
           {showReplyForm && (
             <div className={`mt-2 ${level > 0 ? "-ml-4" : ""}`}>
-              <CreateComment
-                postId={postId}
+              <CreateNewsComment
+                newsId={newsId}
                 parentCommentId={parseInt(comment.id)}
+                repliedToUsername={comment.author.name}
                 onSuccess={() => {
                   handleReplySuccess();
                   // Refetch replies if expanded
@@ -543,10 +544,10 @@ export default function CommentItem({
                 </div>
               ) : repliesData && repliesData.items.length > 0 ? (
                 repliesData.items.map((reply) => (
-                  <CommentItem
+                  <NewsCommentItem
                     key={reply.id}
-                    comment={mapCommentResponse(reply)}
-                    postId={postId}
+                    comment={mapNewsCommentResponse(reply)}
+                    newsId={newsId}
                     level={level + 1}
                     onReply={() => {
                       refetchReplies();

@@ -19,12 +19,22 @@ import {
   ExternalLink,
   ChevronLeft,
 } from "lucide-react";
-import { useNewsById } from "@/services/fastapi/news";
+import { BiLike, BiDislike, BiSolidLike, BiSolidDislike } from "react-icons/bi";
+import {
+  useNewsById,
+  useNewsComments,
+  useLikeNews,
+  useDislikeNews,
+} from "@/services/fastapi/news";
 import NoData from "@/components/common/no-data";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../components/preview-image";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Tag } from "@/components/common/tag";
+import CreateNewsComment from "../_components/create-news-comment";
+import NewsCommentItem, {
+  mapNewsCommentResponse,
+} from "../_components/news-comment-item";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -37,10 +47,47 @@ export default function NewsDetailPage() {
     error,
   } = useNewsById(newsId && !isNaN(newsId) ? newsId : 0);
 
+  // Fetch comments for this news article
+  const {
+    data: commentsData,
+    isLoading: commentsLoading,
+    refetch: refetchComments,
+  } = useNewsComments(newsId && !isNaN(newsId) ? newsId : null, 1, 20, false);
+
+  const likeNewsMutation = useLikeNews();
+  const dislikeNewsMutation = useDislikeNews();
+
+  // Use news prop directly - React Query will update it automatically via cache
+  const userLiked = news?.user_reaction === true;
+  const userDisliked = news?.user_reaction === false;
+  const likeCount = news?.likes ?? 0;
+  const dislikeCount = news?.dislikes ?? 0;
+  const reactionCount = news?.reaction_count ?? 0;
+
   // Scroll to top when news ID changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [newsId]);
+
+  const handleLikeNews = async () => {
+    if (!newsId) return;
+    try {
+      await likeNewsMutation.mutateAsync(newsId);
+      // State will be updated automatically via React Query cache
+    } catch (error) {
+      console.error("Error liking news:", error);
+    }
+  };
+
+  const handleDislikeNews = async () => {
+    if (!newsId) return;
+    try {
+      await dislikeNewsMutation.mutateAsync(newsId);
+      // State will be updated automatically via React Query cache
+    } catch (error) {
+      console.error("Error disliking news:", error);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -181,39 +228,80 @@ export default function NewsDetailPage() {
               </h1>
 
               {/* Meta Information */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4 pb-4 border-b">
-                {news.author && (
+              <div className="flex flex-wrap justify-between items-center gap-4 text-sm text-muted-foreground mb-4 pb-4 border-b">
+                <div className="">
+                  {news.author && (
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span>{news.author.username}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span>{news.author.username}</span>
+                    <Calendar className="h-4 w-4" />
+                    <span>{formatDate(news.created_at)}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{formatDate(news.created_at)}</span>
                 </div>
-                {news.comment_count > 0 && (
+
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
+                    <MessageCircle className="h-5 w-5" />
                     <span>{news.comment_count} comments</span>
                   </div>
-                )}
-                {news.reaction_count > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4" />
-                    <span>{news.reaction_count} reactions</span>
+
+                  {/* News Reactions */}
+                  <div className="flex items-center gap-2 ml-auto">
+                    <button
+                      onClick={handleLikeNews}
+                      disabled={
+                        likeNewsMutation.isPending ||
+                        dislikeNewsMutation.isPending
+                      }
+                      className={`flex items-center gap-1 text-sm hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        userLiked ? "text-heart" : "text-muted-foreground"
+                      }`}
+                      aria-label={
+                        userLiked ? "Unlike this news" : "Like this news"
+                      }
+                    >
+                      {userLiked ? (
+                        <BiSolidLike className="h-5 w-5" />
+                      ) : (
+                        <BiLike className="h-5 w-5" />
+                      )}
+                      <span>{likeCount}</span>
+                    </button>
+                    <button
+                      onClick={handleDislikeNews}
+                      disabled={
+                        likeNewsMutation.isPending ||
+                        dislikeNewsMutation.isPending
+                      }
+                      className={`flex items-center gap-1 text-sm hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        userDisliked ? "text-heart" : "text-muted-foreground"
+                      }`}
+                      aria-label={
+                        userDisliked ? "Remove dislike" : "Dislike this news"
+                      }
+                    >
+                      {userDisliked ? (
+                        <BiSolidDislike className="h-5 w-5" />
+                      ) : (
+                        <BiDislike className="h-5 w-5" />
+                      )}
+                      <span>{dislikeCount}</span>
+                    </button>
                   </div>
-                )}
-                {/* Link to Fixture Detail if Match Preview */}
-                {isMatchPreview(news) && news.fixture_id && (
-                  <Link
-                    href={`/games/detail?id=${news.fixture_id}`}
-                    className="flex items-center gap-2 text-primary-font hover:underline  ml-auto"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span>View Fixture</span>
-                  </Link>
-                )}
+                  {/* Link to Fixture Detail if Match Preview */}
+                  {isMatchPreview(news) && news.fixture_id && (
+                    <Link
+                      href={`/games/detail?id=${news.fixture_id}`}
+                      className="flex items-center gap-2 text-primary-font hover:underline  ml-auto"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span>View Fixture</span>
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* Tags */}
@@ -327,6 +415,50 @@ export default function NewsDetailPage() {
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Back to News
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Comments Section */}
+        <Card className="mt-4">
+          <CardContent className="p-4 md:p-6">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold mb-3">Comments</h2>
+              {/* Create Comment Form */}
+              <CreateNewsComment
+                newsId={newsId!}
+                onSuccess={() => refetchComments()}
+              />
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-5 md:space-y-5 pt-3 md:pt-4">
+              {commentsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : commentsData && commentsData.items.length > 0 ? (
+                commentsData.items.map((comment) => (
+                  <NewsCommentItem
+                    key={comment.id}
+                    comment={mapNewsCommentResponse(comment)}
+                    newsId={newsId!}
+                    onReply={() => refetchComments()}
+                  />
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No comments yet. Be the first to comment!
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

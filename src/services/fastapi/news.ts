@@ -890,7 +890,7 @@ export function useLikeNews() {
       queryClient.setQueriesData<NewsListResponse>(
         { queryKey: ["news"] },
         (oldData) => {
-          if (!oldData) return oldData;
+          if (!oldData || !oldData.items) return oldData;
           return {
             ...oldData,
             items: oldData.items.map((item) =>
@@ -900,11 +900,8 @@ export function useLikeNews() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["news"] });
-        queryClient.invalidateQueries({ queryKey: ["news", newsId] });
-      }, 100);
+      // Don't invalidate immediately - the cache update is sufficient
+      // The backend response already contains the correct data
     },
   });
 }
@@ -926,7 +923,7 @@ export function useDislikeNews() {
       queryClient.setQueriesData<NewsListResponse>(
         { queryKey: ["news"] },
         (oldData) => {
-          if (!oldData) return oldData;
+          if (!oldData || !oldData.items) return oldData;
           return {
             ...oldData,
             items: oldData.items.map((item) =>
@@ -935,12 +932,6 @@ export function useDislikeNews() {
           };
         }
       );
-
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["news"] });
-        queryClient.invalidateQueries({ queryKey: ["news", newsId] });
-      }, 100);
     },
   });
 }

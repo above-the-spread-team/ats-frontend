@@ -12,8 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Heart,
-  ThumbsDown,
   MessageCircle,
   MoreVertical,
   User,
@@ -21,6 +19,7 @@ import {
   Trash2,
   Forward,
 } from "lucide-react";
+import { BiLike, BiDislike, BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import {
   useLikePost,
   useDislikePost,
@@ -382,11 +381,11 @@ export default function PostCard({
                   : "text-muted-foreground hover:text-heart-hover"
               }`}
             >
-              <Heart
-                className={`w-5 h-5 scale-90 md:scale-100 ${
-                  userLiked ? "fill-current" : ""
-                }`}
-              />
+              {userLiked ? (
+                <BiSolidLike className="w-5 h-5 scale-90 md:scale-100" />
+              ) : (
+                <BiLike className="w-5 h-5 scale-90 md:scale-100" />
+              )}
               <span className="font-semibold">{likeCount}</span>
             </button>
             <button
@@ -400,7 +399,11 @@ export default function PostCard({
                   : "text-muted-foreground hover:text-heart-hover"
               }`}
             >
-              <ThumbsDown className="w-5 h-5 scale-90 md:scale-100" />
+              {userDisliked ? (
+                <BiSolidDislike className="w-5 h-5 scale-90 md:scale-100" />
+              ) : (
+                <BiDislike className="w-5 h-5 scale-90 md:scale-100" />
+              )}
               <span className="font-semibold">{dislikeCount}</span>
             </button>
             <button
