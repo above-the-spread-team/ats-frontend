@@ -25,6 +25,9 @@ export interface NewsResponse {
   updated_at: string;
   comment_count: number;
   reaction_count: number;
+  likes: number;
+  dislikes: number;
+  user_reaction: boolean | null; // True for like, False for dislike, null if no reaction or not authenticated
   tags: TagSummary[];
 }
 

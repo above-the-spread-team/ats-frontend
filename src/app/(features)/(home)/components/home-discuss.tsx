@@ -63,7 +63,7 @@ export default function HomeDiscuss() {
         <div className="divide-y divide-border">
           {posts.map((post) => (
             <Link key={post.id} href={`/discuss/${post.id}`} className="block">
-              <div className="flex items-center gap-2  px-4 py-3 hover:bg-muted/40  transition-all duration-200 group border-l-4 border-primary-font/30 hover:border-primary">
+              <div className="flex items-center gap-2  px-4 py-3 hover:bg-muted/40  transition-all duration-200 group border-l-4 border-primary-font/30 hover:border-primary-font">
                 <div className="flex-shrink-0">
                   <UserIcon
                     avatarUrl={post.author.avatar}

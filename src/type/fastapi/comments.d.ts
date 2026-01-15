@@ -25,7 +25,8 @@ export interface CommentResponse extends CommentBase {
   id: number;
   author_id: number;
   author: CommentAuthor;
-  post_id: number;
+  post_id: number | null; // Post ID (null for news comments)
+  news_id: number | null; // News ID (null for post comments)
   parent_comment_id: number | null; // ID of parent comment (null for top-level)
   root_comment_id: number | null; // ID of root top-level comment (null for top-level)
   created_at: string;
