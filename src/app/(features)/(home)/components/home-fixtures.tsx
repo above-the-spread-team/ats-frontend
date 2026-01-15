@@ -210,8 +210,8 @@ export default function Fixtures() {
                         <Image
                           src={fixture.teams.home.logo}
                           alt={fixture.teams.home.name}
-                          width={24}
-                          height={24}
+                          width={20}
+                          height={20}
                           className="w-6 h-6 object-contain flex-shrink-0"
                         />
                       ) : (

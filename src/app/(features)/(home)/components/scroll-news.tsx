@@ -52,8 +52,8 @@ export function ScrollNews() {
 
   if (isLoading) {
     return (
-      <div className="relative w-full max-w-2xl">
-        <Card>
+      <div className="relative w-full">
+        <Card className="rounded-none">
           <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
             <span className="text-muted-foreground">Loading news...</span>
           </CardContent>
@@ -64,8 +64,8 @@ export function ScrollNews() {
 
   if (error) {
     return (
-      <div className="relative w-full max-w-2xl">
-        <Card>
+      <div className="relative w-full ">
+        <Card className="rounded-none">
           <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
             <span className="text-destructive">Failed to load news</span>
           </CardContent>
@@ -88,7 +88,7 @@ export function ScrollNews() {
 
   if (newsItems.length === 0) {
     return (
-      <div className="relative w-full max-w-2xl">
+      <div className="relative w-full ">
         <Card className="rounded-none">
           <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
             <span className="text-muted-foreground">No news available</span>
@@ -99,7 +99,7 @@ export function ScrollNews() {
   }
 
   return (
-    <div className="relative w-full  max-w-2xl">
+    <div className="relative w-full   ">
       <Carousel
         setApi={setApi}
         opts={{
@@ -123,14 +123,16 @@ export function ScrollNews() {
                           tagName={getFirstTag(news)}
                         />
                       ) : news.image_url ? (
-                        <Image
-                          src={getOptimizedNewsImage(news.image_url, 800)}
-                          alt={news.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 672px"
-                          unoptimized
-                        />
+                        <div className="w-full h-full bg-black flex items-center justify-center">
+                          <Image
+                            src={getOptimizedNewsImage(news.image_url, 800)}
+                            alt={news.title}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, 672px"
+                            unoptimized
+                          />
+                        </div>
                       ) : (
                         <div className="w-full h-full bg-muted flex items-center justify-center">
                           <span className="text-muted-foreground">

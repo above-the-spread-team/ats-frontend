@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
 
 export default function HomeNews() {
-  const { data: newsData, isLoading, error } = useNews(1, 5);
+  const { data: newsData, isLoading, error } = useNews(1, 8);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -40,7 +40,7 @@ export default function HomeNews() {
         </Link>
         <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
           <div className="divide-y divide-border">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="p-3">
                 <Skeleton className="h-4 w-20 mb-2" />
                 <Skeleton className="h-5 w-full mb-2" />
@@ -75,7 +75,7 @@ export default function HomeNews() {
   // Filter published news only
   const publishedNews = newsItems
     .filter((item) => item.is_published)
-    .slice(0, 5);
+    .slice(0, 8);
 
   return (
     <div className="w-full">

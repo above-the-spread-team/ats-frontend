@@ -153,7 +153,7 @@ export default function HomeRanking() {
                         alt={standing.team.name}
                         fill
                         className="object-contain"
-                        sizes="(max-width: 768px) 24px, 28px"
+                        sizes="(max-width: 768px) 18px, 20px"
                       />
                     </div>
                   )}

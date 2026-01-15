@@ -7,7 +7,7 @@ import UserIcon from "@/components/common/user-icon";
 import { mapPostResponse } from "@/app/(features)/discuss/_components/post-card";
 
 export default function HomeDiscuss() {
-  const { data: postsData, isLoading, error } = usePosts(1, 11);
+  const { data: postsData, isLoading, error } = usePosts(1, 12);
 
   if (isLoading) {
     return (
