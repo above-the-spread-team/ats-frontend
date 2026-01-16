@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useInfiniteNews } from "@/services/fastapi/news";
+import { useNews } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
@@ -15,6 +24,8 @@ import { Tag } from "@/components/common/tag";
 
 export default function News() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
 
   // Sort tag IDs to ensure consistent query keys
   const sortedTagIds =
@@ -22,42 +33,12 @@ export default function News() {
       ? [...selectedTagIds].sort((a, b) => a - b)
       : undefined;
 
-  const {
-    data,
-    isLoading,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteNews(sortedTagIds);
+  const { data, isLoading, error } = useNews(page, pageSize, sortedTagIds);
 
-  // Flatten all pages into a single array
-  const allNews = useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap((page) => page.items);
-  }, [data]);
-
-  // Scroll detection for infinite loading
+  // Reset to page 1 when tag filters change
   useEffect(() => {
-    const handleScroll = () => {
-      // Check if user is near the bottom of the page
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-
-      // Load more when user is 200px from the bottom
-      if (
-        scrollTop + windowHeight >= documentHeight - 200 &&
-        hasNextPage &&
-        !isFetchingNextPage
-      ) {
-        fetchNextPage();
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+    setPage(1);
+  }, [selectedTagIds]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -119,7 +100,7 @@ export default function News() {
   }
 
   // Filter published news
-  const publishedNews = allNews.filter((item) => item.is_published);
+  const publishedNews = data?.items?.filter((item) => item.is_published) || [];
 
   if (!isLoading && !error && publishedNews.length === 0) {
     return (
@@ -234,16 +215,132 @@ export default function News() {
                 </Link>
               ))}
             </div>
-            {/* Loading indicator for fetching more */}
-            {isFetchingNextPage && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 mt-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i}>
-                    <Skeleton className="h-40 w-full mb-4" />
-                    <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
-                ))}
+            {/* Pagination */}
+            {data && data.total_pages > 1 && (
+              <div className="flex justify-center pt-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page > 1) {
+                            setPage(page - 1);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
+                        }}
+                        className={
+                          page === 1
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      />
+                    </PaginationItem>
+
+                    {/* Generate page numbers */}
+                    {(() => {
+                      const pages: (number | "ellipsis")[] = [];
+                      const totalPages = data.total_pages;
+
+                      // Always show first page
+                      if (totalPages > 0) {
+                        pages.push(1);
+                      }
+
+                      // Show ellipsis if current page is far from start
+                      if (page > 3) {
+                        pages.push("ellipsis");
+                      }
+
+                      // Show pages around current page
+                      const start = Math.max(2, page - 1);
+                      const end = Math.min(totalPages - 1, page + 1);
+
+                      for (let i = start; i <= end; i++) {
+                        if (i !== 1 && i !== totalPages) {
+                          pages.push(i);
+                        }
+                      }
+
+                      // Show ellipsis if current page is far from end
+                      if (page < totalPages - 2) {
+                        pages.push("ellipsis");
+                      }
+
+                      // Always show last page (if more than 1 page)
+                      if (totalPages > 1) {
+                        pages.push(totalPages);
+                      }
+
+                      // Remove duplicates and sort
+                      const uniquePages: (number | "ellipsis")[] = [];
+                      let lastNum = 0;
+                      for (const p of pages) {
+                        if (p === "ellipsis") {
+                          if (
+                            uniquePages.length === 0 ||
+                            uniquePages[uniquePages.length - 1] !== "ellipsis"
+                          ) {
+                            uniquePages.push("ellipsis");
+                          }
+                        } else {
+                          if (p > lastNum) {
+                            uniquePages.push(p);
+                            lastNum = p;
+                          }
+                        }
+                      }
+
+                      return uniquePages.map((p, idx) => {
+                        if (p === "ellipsis") {
+                          return (
+                            <PaginationItem key={`ellipsis-${idx}`}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
+                        return (
+                          <PaginationItem key={p}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setPage(p);
+                                window.scrollTo({
+                                  top: 0,
+                                  behavior: "smooth",
+                                });
+                              }}
+                              isActive={p === page}
+                              className="cursor-pointer"
+                            >
+                              {p}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      });
+                    })()}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page < data.total_pages) {
+                            setPage(page + 1);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
+                        }}
+                        className={
+                          page === data.total_pages
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </>
