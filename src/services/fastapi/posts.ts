@@ -621,11 +621,35 @@ export function useLikePost() {
         }
       );
 
-      // Update post in posts list cache
+      // Update post in infinite posts cache
+      queryClient.setQueriesData<{
+        pages: PostListResponse[];
+        pageParams: number[];
+      }>({ queryKey: ["posts", "infinite"] }, (oldData) => {
+        if (!oldData || !oldData.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) =>
+              item.id === postId
+                ? {
+                    ...item,
+                    likes: stats.likes,
+                    dislikes: stats.dislikes,
+                    user_reaction: stats.user_reaction,
+                  }
+                : item
+            ),
+          })),
+        };
+      });
+
+      // Update post in regular posts list cache
       queryClient.setQueriesData<PostListResponse>(
-        { queryKey: ["posts"] },
+        { queryKey: ["posts"], exact: false },
         (oldData) => {
-          if (!oldData) return oldData;
+          if (!oldData || !oldData.items) return oldData;
           return {
             ...oldData,
             items: oldData.items.map((item) =>
@@ -662,13 +686,6 @@ export function useLikePost() {
           };
         }
       );
-
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["posts"] });
-        queryClient.invalidateQueries({ queryKey: ["post", postId] });
-        queryClient.invalidateQueries({ queryKey: ["userPosts"] });
-      }, 100);
     },
   });
 }
@@ -697,11 +714,35 @@ export function useDislikePost() {
         }
       );
 
-      // Update post in posts list cache
+      // Update post in infinite posts cache
+      queryClient.setQueriesData<{
+        pages: PostListResponse[];
+        pageParams: number[];
+      }>({ queryKey: ["posts", "infinite"] }, (oldData) => {
+        if (!oldData || !oldData.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) =>
+              item.id === postId
+                ? {
+                    ...item,
+                    likes: stats.likes,
+                    dislikes: stats.dislikes,
+                    user_reaction: stats.user_reaction,
+                  }
+                : item
+            ),
+          })),
+        };
+      });
+
+      // Update post in regular posts list cache
       queryClient.setQueriesData<PostListResponse>(
-        { queryKey: ["posts"] },
+        { queryKey: ["posts"], exact: false },
         (oldData) => {
-          if (!oldData) return oldData;
+          if (!oldData || !oldData.items) return oldData;
           return {
             ...oldData,
             items: oldData.items.map((item) =>
@@ -738,13 +779,6 @@ export function useDislikePost() {
           };
         }
       );
-
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["posts"] });
-        queryClient.invalidateQueries({ queryKey: ["post", postId] });
-        queryClient.invalidateQueries({ queryKey: ["userPosts"] });
-      }, 100);
     },
   });
 }

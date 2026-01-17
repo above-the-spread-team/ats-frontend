@@ -134,9 +134,9 @@ export function ScrollNews() {
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <span className="text-muted-foreground">
-                            No image
+                        <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                          <span className="text-5xl md:text-6xl opacity-60">
+                            ⚽
                           </span>
                         </div>
                       )}

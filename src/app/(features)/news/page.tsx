@@ -162,8 +162,10 @@ export default function News() {
                         />
                       ) : (
                         // Fallback: No image available
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          <span className="text-2xl">⚽</span>
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                          <span className="text-4xl md:text-5xl opacity-50">
+                            ⚽
+                          </span>
                         </div>
                       )}
                       <div className="absolute top-2 left-2">

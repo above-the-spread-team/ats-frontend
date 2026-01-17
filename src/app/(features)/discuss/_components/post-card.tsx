@@ -88,13 +88,6 @@ export default function PostCard({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
-  const prevPostRef = useRef<{
-    id: string;
-    userLiked?: boolean;
-    userDisliked?: boolean;
-    likeCount: number;
-    dislikeCount: number;
-  } | null>(null);
   const postId = parseInt(post.id);
 
   // Fetch comments when expanded
@@ -109,46 +102,12 @@ export default function PostCard({
     false // Only fetch top-level comments, replies loaded separately
   );
 
-  // Initialize state from post data (from API response)
-  const [userLiked, setUserLiked] = useState(post.userLiked || false);
-  const [userDisliked, setUserDisliked] = useState(post.userDisliked || false);
-  const [likeCount, setLikeCount] = useState(post.likeCount);
-  const [dislikeCount, setDislikeCount] = useState(post.dislikeCount);
-
-  // Sync state when post prop changes, but only if values actually changed
-  // This prevents resetting state during optimistic updates
-  useEffect(() => {
-    const prev = prevPostRef.current;
-    // Only update if this is a different post or if reaction values changed
-    if (
-      !prev ||
-      prev.id !== post.id ||
-      prev.userLiked !== post.userLiked ||
-      prev.userDisliked !== post.userDisliked ||
-      prev.likeCount !== post.likeCount ||
-      prev.dislikeCount !== post.dislikeCount
-    ) {
-      // Update state with new values from prop
-      setUserLiked(post.userLiked || false);
-      setUserDisliked(post.userDisliked || false);
-      setLikeCount(post.likeCount);
-      setDislikeCount(post.dislikeCount);
-      // Update ref with current post values
-      prevPostRef.current = {
-        id: post.id,
-        userLiked: post.userLiked,
-        userDisliked: post.userDisliked,
-        likeCount: post.likeCount,
-        dislikeCount: post.dislikeCount,
-      };
-    }
-  }, [
-    post.id,
-    post.userLiked,
-    post.userDisliked,
-    post.likeCount,
-    post.dislikeCount,
-  ]);
+  // Derive state directly from post prop - React Query will update it automatically via cache
+  // This matches the pattern used in the news detail page
+  const userLiked = post.userLiked ?? false;
+  const userDisliked = post.userDisliked ?? false;
+  const likeCount = post.likeCount ?? 0;
+  const dislikeCount = post.dislikeCount ?? 0;
 
   // Check if content exceeds 10 lines
   useEffect(() => {
@@ -194,37 +153,10 @@ export default function PostCard({
     if (isNaN(postId)) return;
 
     try {
-      // Optimistic update
-      const wasLiked = userLiked;
-      const wasDisliked = userDisliked;
-
-      if (wasLiked) {
-        setUserLiked(false);
-        setLikeCount((prev) => Math.max(0, prev - 1));
-      } else {
-        setUserLiked(true);
-        setLikeCount((prev) => prev + 1);
-        if (wasDisliked) {
-          setUserDisliked(false);
-          setDislikeCount((prev) => Math.max(0, prev - 1));
-        }
-      }
-
-      // Call API
-      const stats = await likePostMutation.mutateAsync(postId);
-
-      // Update with actual API response
-      setLikeCount(stats.likes);
-      setDislikeCount(stats.dislikes);
-      setUserLiked(stats.user_reaction === true);
-      setUserDisliked(stats.user_reaction === false);
+      // Call API - React Query will update the cache automatically
+      await likePostMutation.mutateAsync(postId);
     } catch (error) {
-      // Revert optimistic update on error
-      setUserLiked(post.userLiked || false);
-      setUserDisliked(post.userDisliked || false);
-      setLikeCount(post.likeCount);
-      setDislikeCount(0);
-
+      console.error("Error liking post:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
       }
@@ -241,37 +173,10 @@ export default function PostCard({
     if (isNaN(postId)) return;
 
     try {
-      // Optimistic update
-      const wasLiked = userLiked;
-      const wasDisliked = userDisliked;
-
-      if (wasDisliked) {
-        setUserDisliked(false);
-        setDislikeCount((prev) => Math.max(0, prev - 1));
-      } else {
-        setUserDisliked(true);
-        setDislikeCount((prev) => prev + 1);
-        if (wasLiked) {
-          setUserLiked(false);
-          setLikeCount((prev) => Math.max(0, prev - 1));
-        }
-      }
-
-      // Call API
-      const stats = await dislikePostMutation.mutateAsync(postId);
-
-      // Update with actual API response
-      setLikeCount(stats.likes);
-      setDislikeCount(stats.dislikes);
-      setUserLiked(stats.user_reaction === true);
-      setUserDisliked(stats.user_reaction === false);
+      // Call API - React Query will update the cache automatically
+      await dislikePostMutation.mutateAsync(postId);
     } catch (error) {
-      // Revert optimistic update on error
-      setUserLiked(post.userLiked || false);
-      setUserDisliked(post.userDisliked || false);
-      setLikeCount(post.likeCount);
-      setDislikeCount(0);
-
+      console.error("Error disliking post:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
       }
