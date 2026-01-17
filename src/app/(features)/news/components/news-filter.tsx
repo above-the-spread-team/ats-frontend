@@ -82,7 +82,7 @@ export default function NewsFilter({
     <div className=" flex flex-col items-start gap-2">
       {/* Separate dropdown menus for each tag type */}
       <div className="flex flex-wrap gap-2">
-        {TAG_TYPE_ORDER.map((type) => {
+        {TAG_TYPE_ORDER.filter((type) => type !== "player").map((type) => {
           const tags = tagsByType[type];
           if (tags.length === 0) return null;
 
