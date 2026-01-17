@@ -101,17 +101,17 @@ function FixturesContent() {
     return false;
   });
   // Get timezone from browser
-  // const timezone = useMemo(() => {
-  //   try {
-  //     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  //     return tz && tz.trim().length > 0 ? tz : "UTC";
-  //   } catch {
-  //     return "UTC";
-  //   }
-  // }, []);
+  const timezone = useMemo(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return tz && tz.trim().length > 0 ? tz : "UTC";
+    } catch {
+      return "UTC";
+    }
+  }, []);
 
   // set the timezone to UTC
-  const timezone = "UTC";
+  // const timezone = "UTC";
   // Use React Query to fetch fixtures
   const {
     data: fixturesData,
