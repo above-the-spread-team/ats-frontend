@@ -49,7 +49,7 @@ function BetSection({ bet }: { bet: OddsBet }) {
         <BookOpen className="h-4 w-4 text-primary" />
         {betName}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
         {bet.values.map((value, idx) => (
           <div
             key={idx}
@@ -75,21 +75,46 @@ export default function Odds({ fixtureId }: OddsProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="text-center space-y-2">
+        {/* Header Skeleton */}
+        <div className="text-center space-y-1">
           <Skeleton className="h-6 w-48 mx-auto" />
-          <Skeleton className="h-4 w-32 mx-auto" />
+          <div className="flex items-center justify-center gap-2">
+            <Skeleton className="h-3 w-3 rounded-full" />
+            <Skeleton className="h-4 w-40" />
+          </div>
         </div>
+
+        {/* Bookmaker Card Skeleton */}
         <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-32" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 px-6">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-5 w-32" />
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <div className="grid grid-cols-3 gap-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 rounded-lg" />
-              ))}
-            </div>
+            {/* Bet Section Skeleton (2 sections) */}
+            {Array.from({ length: 2 }).map((_, sectionIdx) => (
+              <div key={sectionIdx} className="space-y-3">
+                {/* Bet Title Skeleton */}
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                {/* Bet Values Grid Skeleton */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border"
+                    >
+                      <Skeleton className="h-4 w-16 flex-1" />
+                      <Skeleton className="h-4 w-10 ml-2 flex-shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
