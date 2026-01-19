@@ -779,6 +779,20 @@ export function useDislikePost() {
           };
         }
       );
+
+      // Invalidate after a short delay to ensure backend is updated
+      // This ensures consistency with news and comments, and helps with Safari refresh issues
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["post", postId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["posts"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["userPosts"],
+        });
+      }, 100);
     },
   });
 }
