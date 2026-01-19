@@ -666,15 +666,8 @@ export function useLikeComment() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ["comments", data.post_id],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["comment", commentId],
-        });
-      }, 100);
+      // Don't invalidate - matches useLikePost pattern which works correctly
+      // The mutation response already contains correct data, and cache update is sufficient
     },
   });
 }
@@ -720,15 +713,8 @@ export function useDislikeComment() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ["comments", data.post_id],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["comment", commentId],
-        });
-      }, 100);
+      // Don't invalidate - matches useLikePost pattern which works correctly
+      // The mutation response already contains correct data, and cache update is sufficient
     },
   });
 }
