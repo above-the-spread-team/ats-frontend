@@ -929,16 +929,9 @@ export function useLikeNews() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      // This matches the pattern used in comments which works correctly
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ["news", newsId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["news"],
-        });
-      }, 100);
+      // Don't invalidate - matches useLikePost pattern which works correctly
+      // The mutation response already contains correct data, and cache update is sufficient
+      // Invalidating causes immediate refetch that may return stale data on Safari/Vercel
     },
   });
 }
@@ -970,16 +963,9 @@ export function useDislikeNews() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      // This matches the pattern used in comments which works correctly
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ["news", newsId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["news"],
-        });
-      }, 100);
+      // Don't invalidate - matches useLikePost pattern which works correctly
+      // The mutation response already contains correct data, and cache update is sufficient
+      // Invalidating causes immediate refetch that may return stale data on Safari/Vercel
     },
   });
 }
