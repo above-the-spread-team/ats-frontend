@@ -929,8 +929,17 @@ export function useLikeNews() {
         }
       );
 
-      // Don't invalidate immediately - the cache update is sufficient
-      // The backend response already contains the correct data
+      // Invalidate after a short delay to ensure backend is updated
+      // This is especially important for Safari which handles cookies/storage differently
+      // Posts work because infinite queries refetch more frequently, but news uses staleTime
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["news", newsId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["news"],
+        });
+      }, 100);
     },
   });
 }
@@ -961,6 +970,18 @@ export function useDislikeNews() {
           };
         }
       );
+
+      // Invalidate after a short delay to ensure backend is updated
+      // This is especially important for Safari which handles cookies/storage differently
+      // Posts work because infinite queries refetch more frequently, but news uses staleTime
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["news", newsId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["news"],
+        });
+      }, 100);
     },
   });
 }
@@ -974,7 +995,7 @@ export function useRemoveNewsReaction() {
 
   return useMutation<NewsResponse, Error, number>({
     mutationFn: removeNewsReaction,
-    onSuccess: (data, newsId) => {
+    onSuccess: (_, newsId) => {
       // Invalidate news to refetch with updated reaction counts
       queryClient.invalidateQueries({ queryKey: ["news"] });
       queryClient.invalidateQueries({ queryKey: ["news", newsId] });
