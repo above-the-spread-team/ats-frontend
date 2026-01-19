@@ -131,7 +131,7 @@ export function useNewsById(newsId: number) {
   return useQuery<NewsResponse, NewsError>({
     queryKey: ["news", newsId],
     queryFn: () => fetchNewsById(newsId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds - shorter staleTime helps Safari refresh get fresh data
     enabled: !!newsId && newsId > 0, // Only fetch if newsId is valid
   });
 }
@@ -930,8 +930,7 @@ export function useLikeNews() {
       );
 
       // Invalidate after a short delay to ensure backend is updated
-      // This is especially important for Safari which handles cookies/storage differently
-      // Posts work because infinite queries refetch more frequently, but news uses staleTime
+      // This matches the pattern used in comments which works correctly
       setTimeout(() => {
         queryClient.invalidateQueries({
           queryKey: ["news", newsId],
@@ -972,8 +971,7 @@ export function useDislikeNews() {
       );
 
       // Invalidate after a short delay to ensure backend is updated
-      // This is especially important for Safari which handles cookies/storage differently
-      // Posts work because infinite queries refetch more frequently, but news uses staleTime
+      // This matches the pattern used in comments which works correctly
       setTimeout(() => {
         queryClient.invalidateQueries({
           queryKey: ["news", newsId],
