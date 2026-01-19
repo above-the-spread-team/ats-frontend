@@ -65,11 +65,17 @@ export async function fetchNews(
  * Fetch a single news article by ID
  */
 export async function fetchNewsById(newsId: number): Promise<NewsResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/v1/news/${newsId}`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     credentials: "include",
   });
 
