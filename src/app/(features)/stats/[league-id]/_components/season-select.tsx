@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { calculateSeason } from "@/lib/utils";
 
 type TabType = "standings" | "leaders" | "teams";
 
@@ -38,8 +39,10 @@ export default function SeasonSelect({ season, activeTab }: SeasonSelectProps) {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  // Use calculateSeason to get the current season year
+  const currentSeasonYear = calculateSeason();
   const seasons = Array.from({ length: 5 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
+    const year = currentSeasonYear - i;
     return { value: year.toString(), label: `${year}/${year + 1}` };
   });
 

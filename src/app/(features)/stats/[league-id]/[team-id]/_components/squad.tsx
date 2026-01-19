@@ -9,6 +9,7 @@ import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
 import { Users, Calendar } from "lucide-react";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/footballapi/squads";
+import { calculateSeason } from "@/lib/utils";
 
 interface SquadProps {
   teamId: string;
@@ -61,8 +62,8 @@ function PlayerImage({
 export default function Squad({ teamId, leagueId }: SquadProps) {
   const searchParams = useSearchParams();
   const seasonParam = searchParams.get("season");
-  const currentYear = new Date().getFullYear();
-  const season = seasonParam ? parseInt(seasonParam, 10) : currentYear;
+  const currentSeasonYear = calculateSeason();
+  const season = seasonParam ? parseInt(seasonParam, 10) : currentSeasonYear;
 
   const [squad, setSquad] = useState<SquadsApiResponse["response"][0] | null>(
     null
@@ -238,7 +239,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs md:text-sm font-semibold text-foreground">
-              Season {currentYear}
+              Season {currentSeasonYear}
             </span>
             <span className="text-[10px] md:text-xs text-muted-foreground">
               Current season
