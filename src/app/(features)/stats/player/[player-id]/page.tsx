@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Flag } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,24 +23,73 @@ export default function PlayerPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const playerId = params["player-id"] as string;
 
-  // Always use calculated season, ignore season param from URL
-  const season = calculateSeason();
+  // Get season from URL or use calculated season as default
+  const seasonParam = searchParams.get("season");
+  const defaultSeason = calculateSeason();
+  const season = seasonParam ? parseInt(seasonParam, 10) : defaultSeason;
   const teamId = searchParams.get("teamId");
   const leagueId = searchParams.get("leagueId");
 
   const [playerData, setPlayerData] = useState<
     PlayerStatisticsApiResponse["response"][0] | null
   >(null);
+  const [availableSeasons, setAvailableSeasons] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch available seasons for the player
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchAvailableSeasons = async () => {
+      if (!playerId) return;
+
+      setIsLoadingSeasons(true);
+
+      try {
+        const response = await fetch(
+          `/api/player-seasons?player=${playerId}`,
+          { signal: controller.signal }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.response && Array.isArray(data.response)) {
+            // Sort seasons in descending order (most recent first)
+            const sortedSeasons = data.response
+              .map((s: number) => s)
+              .sort((a: number, b: number) => b - a);
+            setAvailableSeasons(sortedSeasons);
+          }
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          console.error("Error fetching available seasons:", err);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingSeasons(false);
+        }
+      }
+    };
+
+    fetchAvailableSeasons();
+
+    return () => {
+      controller.abort();
+    };
+  }, [playerId]);
+
+  // Fetch player statistics for the selected season
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchPlayerStatistics = async () => {
-      if (!playerId) return;
+      if (!playerId || !season) return;
 
       setIsLoading(true);
       setError(null);
@@ -78,6 +134,18 @@ export default function PlayerPage() {
       controller.abort();
     };
   }, [playerId, season]);
+
+  const handleSeasonChange = (newSeason: string) => {
+    const seasonNum = parseInt(newSeason, 10);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("season", seasonNum.toString());
+    
+    // Preserve teamId and leagueId if they exist
+    if (teamId) params.set("teamId", teamId);
+    if (leagueId) params.set("leagueId", leagueId);
+    
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   if (isLoading) {
     return (
@@ -204,69 +272,106 @@ export default function PlayerPage() {
           Back
         </button>
 
-        {/* Player Header */}
-        <div className="flex flex-row items-start md:items-center gap-4 p-2 md:p-4 pt-0 md:pt-2">
-          {player.photo && (
-            <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
-              <Image
-                src={player.photo}
-                alt={player.name}
-                fill
-                className="object-cover rounded-full border-2 border-border"
-                sizes="(max-width: 768px) 80px, 96px"
-              />
+        {/* Player Header with Season Selector */}
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="flex flex-row items-start md:items-center gap-4 p-2 md:p-4 pt-0 md:pt-2 flex-1">
+            {player.photo && (
+              <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+                <Image
+                  src={player.photo}
+                  alt={player.name}
+                  fill
+                  className="object-cover rounded-full border-2 border-border"
+                  sizes="(max-width: 768px) 80px, 96px"
+                />
+              </div>
+            )}
+            <div className="flex-1 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg md:text-xl font-bold text-foreground">
+                  {player.name}
+                </h1>
+                {statistics.length > 0 && statistics[0].games.captain && (
+                  <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold border border-primary/20">
+                    Captain
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                {player.nationality && (
+                  <span className="flex items-center gap-1">
+                    <Flag className="w-3 h-3" />
+                    {player.nationality}
+                  </span>
+                )}
+                {player.age && (
+                  <>
+                    <span>•</span>
+                    <span>{player.age} years old</span>
+                  </>
+                )}
+                {statistics.length > 0 && statistics[0].games.position && (
+                  <>
+                    <span>•</span>
+                    <span>{statistics[0].games.position}</span>
+                  </>
+                )}
+                {player.height && (
+                  <>
+                    <span>•</span>
+                    <span>{player.height} cm</span>
+                  </>
+                )}
+                {player.weight && (
+                  <>
+                    <span>•</span>
+                    <span>{player.weight} kg</span>
+                  </>
+                )}
+              </div>
+              {player.birth && (
+                <p className="text-xs text-muted-foreground">
+                  Born: {player.birth.date}{" "}
+                  {player.birth.place && `in ${player.birth.place}`}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Season Selector */}
+          {availableSeasons.length > 0 && (
+            <div className="flex items-center justify-end gap-2 px-2 md:px-4">
+              <label
+                htmlFor="player-season-select"
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Season:
+              </label>
+              <Select
+                value={season.toString()}
+                onValueChange={handleSeasonChange}
+                disabled={isLoadingSeasons}
+              >
+                <SelectTrigger
+                  id="player-season-select"
+                  className="w-[100px] md:w-[120px] rounded-xl font-medium ring-1 ring-mygray"
+                >
+                  <SelectValue placeholder="Select season" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl p-1 bg-primary-active text-mygray max-h-[300px]">
+                  {availableSeasons.map((seasonYear) => (
+                    <SelectItem
+                      key={seasonYear}
+                      value={seasonYear.toString()}
+                      className="rounded-xl font-medium"
+                    >
+                      {seasonYear}/{seasonYear + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
-          <div className="flex-1 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg md:text-xl font-bold text-foreground">
-                {player.name}
-              </h1>
-              {statistics.length > 0 && statistics[0].games.captain && (
-                <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold border border-primary/20">
-                  Captain
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-muted-foreground">
-              {player.nationality && (
-                <span className="flex items-center gap-1">
-                  <Flag className="w-3 h-3" />
-                  {player.nationality}
-                </span>
-              )}
-              {player.age && (
-                <>
-                  <span>•</span>
-                  <span>{player.age} years old</span>
-                </>
-              )}
-              {statistics.length > 0 && statistics[0].games.position && (
-                <>
-                  <span>•</span>
-                  <span>{statistics[0].games.position}</span>
-                </>
-              )}
-              {player.height && (
-                <>
-                  <span>•</span>
-                  <span>{player.height} cm</span>
-                </>
-              )}
-              {player.weight && (
-                <>
-                  <span>•</span>
-                  <span>{player.weight} kg</span>
-                </>
-              )}
-            </div>
-            {player.birth && (
-              <p className="text-xs text-muted-foreground">
-                Born: {player.birth.date}{" "}
-                {player.birth.place && `in ${player.birth.place}`}
-              </p>
-            )}
-          </div>
         </div>
 
         {/* Statistics by Team/League */}
