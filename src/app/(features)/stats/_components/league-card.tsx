@@ -7,7 +7,6 @@ import type {
   LeagueSeason,
 } from "@/type/footballapi/league";
 import { Earth } from "lucide-react";
-import IconBg from "@/components/common/icon-bg";
 interface LeagueCardProps {
   league: LeagueResponseItem;
   season: number;
@@ -32,16 +31,14 @@ export default function LeagueCard({
     >
       <div className="flex flex-row items-start gap-4">
         {/* League Logo */}
-        <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
+        <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0 ">
           {league.league.logo ? (
-            <IconBg className="w-full h-full">
               <Image
                 src={league.league.logo}
                 alt={league.league.name}
                 fill
-                className="object-contain dark:p-1"
+                className="object-contain dark:p-1 dark:bg-white dark:rounded-xl"
               />
-            </IconBg>
           ) : (
             <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
               <span className="text-xs font-semibold text-muted-foreground">

@@ -13,7 +13,6 @@ import {
   BarChart3,
 } from "lucide-react";
 import FullPage from "@/components/common/full-page";
-import IconBg from "@/components/common/icon-bg";
 import { Skeleton } from "@/components/ui/skeleton";
 import Nav from "@/components/common/nav-stats";
 import type { TeamResponseItem } from "@/type/footballapi/teams-info";
@@ -160,15 +159,13 @@ export default function TeamPage() {
           <div className="flex items-center gap-3">
             {teamInfo?.team.logo && (
               <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
-                <IconBg className="w-full h-full">
                   <Image
                     src={teamInfo.team.logo}
                     alt={teamInfo.team.name}
                     fill
-                    className="object-contain dark:p-1"
+                    className="object-contain dark:p-1 dark:bg-white dark:rounded-xl"
                     sizes="(max-width: 768px) 80px, 96px"
                   />
-                </IconBg>
               </div>
             )}
             <div className="flex flex-col">

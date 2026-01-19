@@ -14,7 +14,6 @@ import {
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
-import IconBg from "@/components/common/icon-bg";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { calculateSeason } from "@/lib/utils";
 import type { PlayerStatisticsApiResponse } from "@/type/footballapi/player-statistics";
@@ -385,17 +384,15 @@ export default function PlayerPage() {
                 {/* Team/League Header */}
                 <div className="flex items-center gap-2 md:gap-3 mb-3 pb-3 border-b border-border/50">
                   {stat.team.logo && (
-                    <IconBg>
                       <div className="relative w-8 h-8 md:w-10 md:h-10">
                         <Image
                           src={stat.team.logo}
                           alt={stat.team.name}
                           fill
-                          className="object-contain dark:p-1"
+                          className="object-contain dark:p-1 dark:bg-white dark:rounded-xl"
                           sizes="(max-width: 768px) 32px, 40px"
                         />
                       </div>
-                    </IconBg>
                   )}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm md:text-base font-bold text-foreground truncate">
