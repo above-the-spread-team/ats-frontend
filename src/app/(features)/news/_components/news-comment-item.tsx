@@ -141,24 +141,18 @@ export default function NewsCommentItem({
   const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(false); // Start collapsed, expand when user clicks
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [userLiked, setUserLiked] = useState(comment.userLiked || false);
-  const [userDisliked, setUserDisliked] = useState(
-    comment.userDisliked || false
-  );
-  const [likeCount, setLikeCount] = useState(comment.likeCount);
-  const [dislikeCount, setDislikeCount] = useState(comment.dislikeCount);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
-  const prevCommentRef = useRef<{
-    id: string;
-    userLiked?: boolean;
-    userDisliked?: boolean;
-    likeCount: number;
-    dislikeCount: number;
-  } | null>(null);
+
+  // Derive state directly from comment prop - React Query will update it automatically via cache
+  // This matches the pattern used in news detail page and post-card
+  const userLiked = comment.userLiked ?? false;
+  const userDisliked = comment.userDisliked ?? false;
+  const likeCount = comment.likeCount ?? 0;
+  const dislikeCount = comment.dislikeCount ?? 0;
 
   const likeCommentMutation = useLikeNewsComment();
   const dislikeCommentMutation = useDislikeNewsComment();
@@ -175,40 +169,6 @@ export default function NewsCommentItem({
     refetch: refetchReplies,
   } = useNewsCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
-  // Sync state when comment prop changes, but only if values actually changed
-  // This prevents resetting state during optimistic updates
-  useEffect(() => {
-    const prev = prevCommentRef.current;
-    // Only update if this is a different comment or if reaction values changed
-    if (
-      !prev ||
-      prev.id !== comment.id ||
-      prev.userLiked !== comment.userLiked ||
-      prev.userDisliked !== comment.userDisliked ||
-      prev.likeCount !== comment.likeCount ||
-      prev.dislikeCount !== comment.dislikeCount
-    ) {
-      // Update state with new values from prop
-      setUserLiked(comment.userLiked || false);
-      setUserDisliked(comment.userDisliked || false);
-      setLikeCount(comment.likeCount);
-      setDislikeCount(comment.dislikeCount);
-      // Update ref with current comment values
-      prevCommentRef.current = {
-        id: comment.id,
-        userLiked: comment.userLiked,
-        userDisliked: comment.userDisliked,
-        likeCount: comment.likeCount,
-        dislikeCount: comment.dislikeCount,
-      };
-    }
-  }, [
-    comment.id,
-    comment.userLiked,
-    comment.userDisliked,
-    comment.likeCount,
-    comment.dislikeCount,
-  ]);
 
   // Check if content exceeds 4 lines
   useEffect(() => {
@@ -247,37 +207,10 @@ export default function NewsCommentItem({
     if (isNaN(commentId)) return;
 
     try {
-      // Optimistic update
-      const wasLiked = userLiked;
-      const wasDisliked = userDisliked;
-
-      if (wasLiked) {
-        setUserLiked(false);
-        setLikeCount((prev) => Math.max(0, prev - 1));
-      } else {
-        setUserLiked(true);
-        setLikeCount((prev) => prev + 1);
-        if (wasDisliked) {
-          setUserDisliked(false);
-          setDislikeCount((prev) => Math.max(0, prev - 1));
-        }
-      }
-
-      // Call API
-      const updatedComment = await likeCommentMutation.mutateAsync(commentId);
-
-      // Update with actual API response
-      setLikeCount(updatedComment.likes);
-      setDislikeCount(updatedComment.dislikes);
-      setUserLiked(updatedComment.user_reaction === true);
-      setUserDisliked(updatedComment.user_reaction === false);
+      // Call API - React Query will update the cache automatically
+      await likeCommentMutation.mutateAsync(commentId);
     } catch (error) {
-      // Revert optimistic update on error
-      setUserLiked(comment.userLiked || false);
-      setUserDisliked(comment.userDisliked || false);
-      setLikeCount(comment.likeCount);
-      setDislikeCount(comment.dislikeCount);
-
+      console.error("Error liking comment:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
       }
@@ -294,39 +227,10 @@ export default function NewsCommentItem({
     if (isNaN(commentId)) return;
 
     try {
-      // Optimistic update
-      const wasLiked = userLiked;
-      const wasDisliked = userDisliked;
-
-      if (wasDisliked) {
-        setUserDisliked(false);
-        setDislikeCount((prev) => Math.max(0, prev - 1));
-      } else {
-        setUserDisliked(true);
-        setDislikeCount((prev) => prev + 1);
-        if (wasLiked) {
-          setUserLiked(false);
-          setLikeCount((prev) => Math.max(0, prev - 1));
-        }
-      }
-
-      // Call API
-      const updatedComment = await dislikeCommentMutation.mutateAsync(
-        commentId
-      );
-
-      // Update with actual API response
-      setLikeCount(updatedComment.likes);
-      setDislikeCount(updatedComment.dislikes);
-      setUserLiked(updatedComment.user_reaction === true);
-      setUserDisliked(updatedComment.user_reaction === false);
+      // Call API - React Query will update the cache automatically
+      await dislikeCommentMutation.mutateAsync(commentId);
     } catch (error) {
-      // Revert optimistic update on error
-      setUserLiked(comment.userLiked || false);
-      setUserDisliked(comment.userDisliked || false);
-      setLikeCount(comment.likeCount);
-      setDislikeCount(comment.dislikeCount);
-
+      console.error("Error disliking comment:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
       }

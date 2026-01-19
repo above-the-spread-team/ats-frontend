@@ -1039,17 +1039,8 @@ export function useLikeNewsComment() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        if (data.news_id) {
-          queryClient.invalidateQueries({
-            queryKey: ["newsComments", data.news_id],
-          });
-        }
-        queryClient.invalidateQueries({
-          queryKey: ["newsComment", commentId],
-        });
-      }, 100);
+      // Don't invalidate - matches useLikePost pattern which works correctly
+      // The mutation response already contains correct data, and cache update is sufficient
     },
   });
 }
@@ -1100,17 +1091,8 @@ export function useDislikeNewsComment() {
         }
       );
 
-      // Invalidate after a short delay to ensure backend is updated
-      setTimeout(() => {
-        if (data.news_id) {
-          queryClient.invalidateQueries({
-            queryKey: ["newsComments", data.news_id],
-          });
-        }
-        queryClient.invalidateQueries({
-          queryKey: ["newsComment", commentId],
-        });
-      }, 100);
+      // Don't invalidate - matches useLikePost pattern which works correctly
+      // The mutation response already contains correct data, and cache update is sufficient
     },
   });
 }
