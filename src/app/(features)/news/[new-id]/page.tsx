@@ -162,7 +162,7 @@ export default function NewsDetailPage() {
 
   return (
     <FullPage>
-      <div className="container mx-auto max-w-4xl px-4  mb-8">
+      <div className="container mx-auto max-w-4xl px-2  mb-8">
         {/* Back Button */}
         <Button
           variant="outline"
@@ -220,7 +220,7 @@ export default function NewsDetailPage() {
             </div>
           ) : null}
 
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="p-4 md:p-6">
             {/* Article Header */}
             <div className="mb-6">
               <h1 className="text-xl md:text-2xl font-bold mb-4">
@@ -243,9 +243,17 @@ export default function NewsDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5" />
-                    <span>{news.comment_count} comments</span>
+                  <div
+                    onClick={() => {
+                      document
+                        .getElementById("comments-section")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="flex items-center hover:text-primary-font transition-colors cursor-pointer"
+                  >
+                    <MessageCircle className="h-5 w-5 mr-1.5" />
+                    <span>{news.comment_count} </span>
+                    <span className="ml-1 md:block hidden">comments</span>
                   </div>
 
                   {/* News Reactions */}
@@ -320,11 +328,12 @@ export default function NewsDetailPage() {
             </div>
 
             {/* Article Content */}
-            <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
+            <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-a:text-primary-font prose-a:no-underline hover:prose-a:underline prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({ ...props }) => (
+                    // hidden title
                     <h1 className="text-3xl font-bold mb-4 mt-6" {...props} />
                   ),
                   h2: ({ ...props }) => (
@@ -358,7 +367,7 @@ export default function NewsDetailPage() {
                   em: ({ ...props }) => <em className="italic" {...props} />,
                   a: ({ ...props }) => (
                     <a
-                      className="text-primary hover:underline"
+                      className=" hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"
                       {...props}
@@ -400,9 +409,9 @@ export default function NewsDetailPage() {
             </div>
 
             {/* Footer Actions */}
-            <div className="mt-8 pt-6 border-t flex items-center justify-between">
+            <div className="mt-6 pt-4 border-t flex items-center justify-between">
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>Published {formatRelativeDate(news.created_at)}</span>
+                <span className="hidden md:block">Published {formatRelativeDate(news.created_at)}</span>
                 {news.updated_at !== news.created_at && (
                   <span>• Updated {formatRelativeDate(news.updated_at)}</span>
                 )}
@@ -420,9 +429,9 @@ export default function NewsDetailPage() {
         </Card>
 
         {/* Comments Section */}
-        <Card className="mt-4">
+        <Card id="comments-section" className="mt-4 scroll-mt-4">
           <CardContent className="p-4 md:p-6">
-            <div className="mb-4">
+            <div className="mb-3">
               <h2 className="text-xl font-bold mb-3">Comments</h2>
               {/* Create Comment Form */}
               <CreateNewsComment
