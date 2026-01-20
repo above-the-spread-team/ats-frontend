@@ -19,7 +19,7 @@ import type { EmojiClickData } from "emoji-picker-react";
 interface CreateNewsCommentProps {
   newsId: number;
   parentCommentId?: number | null;
-  repliedToUsername?: string | null; // Username to show @username at the beginning
+  repliedToUsername?: string | null; // Not used for display - backend handles @username
   onSuccess?: () => void;
   onCancel?: () => void;
   autoFocus?: boolean;
@@ -43,18 +43,18 @@ export default function CreateNewsComment({
     scrollTop: number;
   } | null>(null);
 
-  // Initialize with @username if replying to a comment
-  const [content, setContent] = useState(() => {
-    return repliedToUsername ? `@${repliedToUsername} ` : "";
-  });
+  // Initialize with empty content - backend handles @username display
+  const [content, setContent] = useState("");
 
-  // Update content when repliedToUsername changes (only if content is empty)
+  // Auto-focus when autoFocus is true
   useEffect(() => {
-    if (repliedToUsername && content.trim() === "") {
-      setContent(`@${repliedToUsername} `);
+    if (autoFocus && textareaRef.current) {
+      // Small delay to ensure the component is fully rendered and interactive
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repliedToUsername]);
+  }, [autoFocus]);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -235,7 +235,7 @@ export default function CreateNewsComment({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="min-h-[30px] text-base !bg-muted/50  rounded-none border-0 border-b-2 border-t-0 border-l-0 border-r-0 border-primary-font/50 focus-visible:border-b-2 focus-visible:border-t-0 focus-visible:border-l-0 focus-visible:border-r-0 resize-none overflow-hidden py-1 md:py-2  shadow-none focus-visible:ring-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          autoFocus={autoFocus}
+          autoFocus={false}
           disabled={createCommentMutation.isPending}
           maxLength={5001}
           rows={1}

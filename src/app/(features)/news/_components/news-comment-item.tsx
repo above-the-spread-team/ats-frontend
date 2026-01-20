@@ -337,7 +337,7 @@ export default function NewsCommentItem({
                 }`}
               >
                 {comment.repliedToUser && (
-                  <span className="text-primary font-medium">
+                  <span className="text-primary-font font-medium">
                     @{comment.repliedToUser.name}{" "}
                   </span>
                 )}
@@ -419,7 +419,6 @@ export default function NewsCommentItem({
               <CreateNewsComment
                 newsId={newsId}
                 parentCommentId={parseInt(comment.id)}
-                repliedToUsername={comment.author.name}
                 autoFocus={true}
                 onSuccess={() => {
                   handleReplySuccess();

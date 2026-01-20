@@ -337,7 +337,7 @@ export default function CommentItem({
                 }`}
               >
                 {comment.repliedToUser && (
-                  <span className="text-primary font-medium">
+                  <span className="text-primary-font font-medium">
                     @{comment.repliedToUser.name}{" "}
                   </span>
                 )}
@@ -419,6 +419,7 @@ export default function CommentItem({
               <CreateComment
                 postId={postId}
                 parentCommentId={parseInt(comment.id)}
+                autoFocus={true}
                 onSuccess={() => {
                   handleReplySuccess();
                   // Refetch replies if expanded
