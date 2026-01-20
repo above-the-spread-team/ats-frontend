@@ -38,11 +38,6 @@ function EmailVerifyForm() {
   const [isInitializing, setIsInitializing] = useState(true);
   const redirectTimeoutRef = useRef<number | null>(null);
 
-
-  useEffect(() => {
-    console.log("status", status);
-  }, [status]);
-
   // Check for verification token in URL
   useEffect(() => {
     // Skip if already redirecting
