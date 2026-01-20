@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -36,6 +36,12 @@ function EmailVerifyForm() {
   const [hasVerified, setHasVerified] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const redirectTimeoutRef = useRef<number | null>(null);
+
+
+  useEffect(() => {
+    console.log("status", status);
+  }, [status]);
 
   // Check for verification token in URL
   useEffect(() => {
@@ -91,12 +97,18 @@ function EmailVerifyForm() {
           // Backend returns auto_login=true when verification succeeds
           // Cookie is already set by backend response
           if (data.auto_login) {
-            // Prevent error states
-            setIsRedirecting(true);
-            // Invalidate query to refetch user data with the new cookie
-            queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-            // Redirect to home page immediately
-            window.location.href = "/";
+            setStatus("success");
+            if (redirectTimeoutRef.current) {
+              window.clearTimeout(redirectTimeoutRef.current);
+            }
+            redirectTimeoutRef.current = window.setTimeout(() => {
+              // Prevent error states
+              setIsRedirecting(true);
+              // Invalidate query to refetch user data with the new cookie
+              queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+              // Redirect to home page after showing success UI
+              window.location.href = "/";
+            }, 2000);
             return;
           }
           setStatus("success");
@@ -110,12 +122,10 @@ function EmailVerifyForm() {
 
           // Handle specific error cases
           if (errorDetail.toLowerCase().includes("already verified")) {
-            // If email is already verified, show resend form
-            // When user resends, backend will show message: "if email exists and not verified, we will send you an email"
-            setStatus("idle");
-            setShowResendForm(true);
-            // Clear any error messages
-            setErrorMessage("");
+            // Show error UI with guidance
+            setStatus("error");
+            setErrorMessage("Email already verified. Please sign in.");
+            setShowResendForm(false);
           } else if (errorDetail.toLowerCase().includes("expired")) {
             setStatus("expired");
             setShowResendForm(true);
@@ -144,6 +154,14 @@ function EmailVerifyForm() {
     status,
     isRedirecting,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleResend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
