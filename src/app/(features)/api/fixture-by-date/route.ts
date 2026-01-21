@@ -75,42 +75,48 @@ export async function GET(req: NextRequest) {
   }
 
   const season = calculateSeason(dateParam);
-  const fixtures: FixtureResponseItem[] = [];
-  const errors: Record<string, string> = {};
 
-  for (const leagueId of LEAGUE_IDS) {
-    const params = new URLSearchParams({
-      date: dateParam,
-      league: leagueId.toString(),
-      season: season.toString(),
-      timezone,
-    });
-
-    try {
-      const response = await fetchWithTimeout(
-        `${API_URL}?${params.toString()}`,
-        {
-          headers: { "x-apisports-key": API_KEY },
-          next: { revalidate: CACHE_SECONDS },
+  const results = await Promise.all(
+    LEAGUE_IDS.map(async (leagueId) => {
+      const params = new URLSearchParams({
+        date: dateParam,
+        league: leagueId.toString(),
+        season: season.toString(),
+        timezone,
+      });
+      try {
+        const response = await fetchWithTimeout(
+          `${API_URL}?${params.toString()}`,
+          {
+            headers: { "x-apisports-key": API_KEY },
+            next: { revalidate: CACHE_SECONDS },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Fetch failed ${response.status} ${response.statusText}`
+          );
         }
-      );
-      if (!response.ok) {
-        throw new Error(`Fetch failed ${response.status} ${response.statusText}`);
+        const data = (await response.json()) as FixturesApiResponse;
+        if (!data || !Array.isArray(data.response)) {
+          throw new Error("Unexpected payload structure");
+        }
+        return { leagueId, data: data.response, error: null as string | null };
+      } catch (error) {
+        return {
+          leagueId,
+          data: [] as FixtureResponseItem[],
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
       }
+    })
+  );
 
-      const data = (await response.json()) as FixturesApiResponse;
-      if (!data || !Array.isArray(data.response)) {
-        throw new Error("Unexpected payload structure");
-      }
-
-      for (const f of data.response) {
-        fixtures.push(f);
-      }
-    } catch (error) {
-      errors[leagueId.toString()] =
-        error instanceof Error ? error.message : "Unknown error";
-    }
-  }
+  const fixtures = results.flatMap((r) => r.data);
+  const errors: Record<string, string> = {};
+  results.forEach((r) => {
+    if (r.error) errors[r.leagueId.toString()] = r.error;
+  });
 
   const uniqueFixtures = Array.from(
     new Map(fixtures.map((f) => [f.fixture.id, f])).values()

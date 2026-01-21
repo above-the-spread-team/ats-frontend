@@ -42,11 +42,11 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
   const isFinished = statusInfo.type === "Finished";
   const hasStarted = isInPlay || isFinished;
 
-  // Get user's timezone
+  // Get user's timezone (UTC fallback when browser fails to resolve, e.g. Safari low‑power)
   const userTimezone = (() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return tz && tz.trim().length > 0 ? tz : "UTC";
+      return tz?.trim() ? tz : "UTC";
     } catch {
       return "UTC";
     }

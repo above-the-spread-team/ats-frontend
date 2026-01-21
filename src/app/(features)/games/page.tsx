@@ -100,11 +100,13 @@ function FixturesContent() {
     }
     return false;
   });
-  // Get timezone from browser
+  // Get timezone from browser. Fallback when Safari/M2 low-power or similar
+  // fails to resolve (see https://bugs.webkit.org/show_bug.cgi?id=197769).
   const timezone = useMemo(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return tz && tz.trim().length > 0 ? tz : "UTC";
+      if (tz?.trim()) return tz;
+      return "UTC";
     } catch {
       return "UTC";
     }

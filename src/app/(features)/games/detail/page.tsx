@@ -123,7 +123,7 @@ function GameDetailContent() {
   const timezone = useMemo(() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return tz && tz.trim().length > 0 ? tz : "UTC";
+      return tz?.trim() ? tz : "UTC";
     } catch {
       return "UTC";
     }

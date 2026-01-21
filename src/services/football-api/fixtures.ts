@@ -56,17 +56,6 @@ async function fetchFixturesLive(): Promise<FixturesApiResponse> {
   return data;
 }
 
-export function useFixturesLive(options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: ["fixtures-live"],
-    queryFn: fetchFixturesLive,
-    staleTime: 3 * 60 * 1000,   // 3 minutes
-    refetchInterval: 3 * 60 * 1000,  // 3 minutes
-    refetchOnWindowFocus: true,
-    enabled: options?.enabled ?? true,
-  });
-}
-
 export function useFixturesByDate(dateStr: string, timezone: string) {
   return useQuery({
     queryKey: ["fixtures-by-date", dateStr, timezone],
@@ -75,6 +64,17 @@ export function useFixturesByDate(dateStr: string, timezone: string) {
     staleTime: 60 * 60 * 1000,
     refetchInterval: 2 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
+  });
+}
+
+export function useFixturesLive(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["fixtures-live"],
+    queryFn: fetchFixturesLive,
+    staleTime: 3 * 60 * 1000,
+    refetchInterval: 3 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    enabled: options?.enabled ?? true,
   });
 }
 
