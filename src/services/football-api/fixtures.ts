@@ -45,6 +45,29 @@ async function fetchFixturesBySeason(
   return data;
 }
 
+async function fetchFixturesLive(): Promise<FixturesApiResponse> {
+  const response = await fetch("/api/fixture-live", { cache: "default" });
+  if (!response.ok) {
+    throw new Error(`Failed to load live fixtures (${response.status})`);
+  }
+  const data = (await response.json()) as FixturesApiResponse;
+  if (data.errors && data.errors.length > 0) {
+    console.warn("Fixture live API errors:", data.errors);
+  }
+  return data;
+}
+
+export function useFixturesLive(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["fixtures-live"],
+    queryFn: fetchFixturesLive,
+    staleTime: 3 * 60 * 1000,   // 3 minutes
+    refetchInterval: 3 * 60 * 1000,  // 3 minutes
+    refetchOnWindowFocus: true,
+    enabled: options?.enabled ?? true,
+  });
+}
+
 export function useFixturesBySeason(season: number, timezone: string) {
   return useQuery({
     queryKey: ["fixtures-by-season", season, timezone],
@@ -69,23 +92,37 @@ export function useFixtures(date: Date, timezone: string) {
     [date, timezone]
   );
 
+  const isToday =
+    dateStr === formatDateParam(new Date(), timezone);
+
+  const { data: liveData } = useFixturesLive({ enabled: isToday });
+
   const data = useMemo(() => {
     if (!seasonData?.response) return undefined;
     const filtered = seasonData.response.filter(
       (f) =>
         formatDateParam(new Date(f.fixture.date), timezone) === dateStr
     );
+
+    let list = filtered;
+    if (isToday && liveData?.response && liveData.response.length > 0) {
+      const liveMap = new Map(
+        liveData.response.map((f) => [f.fixture.id, f])
+      );
+      list = filtered.map((f) => liveMap.get(f.fixture.id) ?? f);
+    }
+
     return {
       ...seasonData,
-      response: filtered,
-      results: filtered.length,
+      response: list,
+      results: list.length,
       parameters: {
         ...seasonData.parameters,
         date: dateStr,
         timezone,
       },
     };
-  }, [seasonData, dateStr, timezone]);
+  }, [seasonData, dateStr, timezone, isToday, liveData]);
 
   return { data, isLoading, error, ...rest };
 }
