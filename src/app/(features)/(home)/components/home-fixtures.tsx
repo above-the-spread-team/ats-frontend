@@ -4,7 +4,10 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getFixtureStatus } from "@/data/fixture-status";
-import { useFixturesNextLast } from "@/services/football-api/fixtures";
+import {
+  useFixturesLive,
+  useFixturesNextLast,
+} from "@/services/football-api/fixtures";
 import { IoFootball } from "react-icons/io5";
 import {
   Carousel,
@@ -48,24 +51,34 @@ export default function Fixtures() {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  // Use React Query to fetch last 15 fixtures for league ID 2 (UEFA Champions League)
+  const MAX_FIXTURES = 15;
+
+  // Live fixtures (all leagues); best-effort, do not block on error
+  const { data: liveData } = useFixturesLive({ enabled: true });
+
+  // Last 15 for league 2 (UEFA Champions League); backbone for the section
   const {
-    data: fixturesData,
+    data: lastData,
     isLoading,
     error: queryError,
-  } = useFixturesNextLast("last", 15, 2);
+  } = useFixturesNextLast("last", MAX_FIXTURES, 2);
 
-  const fixtures = useMemo(
-    () => fixturesData?.response ?? [],
-    [fixturesData?.response]
-  );
+  // Merge: all live first, then last to fill up to MAX_FIXTURES (15). If live ≥ 15, show only live.
+  const fixtures = useMemo(() => {
+    const live = liveData?.response ?? [];
+    const last = lastData?.response ?? [];
+    const liveIds = new Set(live.map((f) => f.fixture.id));
+    const lastExcludingLive = last.filter((f) => !liveIds.has(f.fixture.id));
+    const restSlots = Math.max(0, MAX_FIXTURES - live.length);
+    return [...live, ...lastExcludingLive.slice(0, restSlots)];
+  }, [liveData?.response, lastData?.response]);
 
   const error =
     queryError instanceof Error
       ? queryError.message
-      : fixturesData?.errors && fixturesData.errors.length > 0
-      ? fixturesData.errors.join("\n")
-      : null;
+      : lastData?.errors && lastData.errors.length > 0
+        ? lastData.errors.join("\n")
+        : null;
 
   useEffect(() => {
     if (!api) {
@@ -141,7 +154,7 @@ export default function Fixtures() {
     );
   }
 
-  if (error || !fixturesData) {
+  if (error || !lastData) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">
