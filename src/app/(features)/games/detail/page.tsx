@@ -103,14 +103,10 @@ function GameDetailContent() {
 
   // Get tab from URL or default to predictions
   const tabParam = searchParams.get("tab") as TabType;
-  const allValidTabs: TabType[] = [
-    "lineups",
-    "statistics",
-    "events",
-    "players",
-    "predictions",
-    "odds",
-  ];
+  const allValidTabs = useMemo<TabType[]>(
+    () => ["lineups", "statistics", "events", "players", "predictions", "odds"],
+    []
+  );
 
   // Initial tab state - will be adjusted after fixture loads
   const [activeTab, setActiveTab] = useState<TabType>(
@@ -152,38 +148,31 @@ function GameDetailContent() {
 
     const tabFromUrl = searchParams.get("tab") as TabType;
 
-    // Skip syncing from URL if this matches the last user-selected tab
-    // This prevents flickering when user clicks tabs (Nav already updated state)
-    if (
-      lastUserSelectedTab.current &&
-      tabFromUrl === lastUserSelectedTab.current
-    ) {
-      // Still validate the tab is allowed
+    // Skip syncing from URL when user just clicked a tab: URL may not have updated yet,
+    // so tabFromUrl can be stale and would revert the selected tab (flicker).
+    // Nav already called setActiveTab; we only validate and clear the ref.
+    if (lastUserSelectedTab.current) {
       setActiveTab((currentTab) => {
-        if (!allowedTabs.includes(currentTab)) {
-          return "predictions";
-        }
+        if (!allowedTabs.includes(currentTab)) return "predictions";
         return currentTab;
       });
-      // Clear the ref after URL has synced
       setTimeout(() => {
         lastUserSelectedTab.current = null;
       }, 100);
       return;
     }
 
-    // Sync from URL to state (for initial load or browser back/forward)
+    // Sync from URL to state (initial load or browser back/forward)
     setActiveTab((currentTab) => {
       if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
         return tabFromUrl;
       }
-      // If current tab is not allowed, switch to predictions
       if (!allowedTabs.includes(currentTab)) {
         return "predictions";
       }
       return currentTab;
     });
-  }, [searchParams, fixtureData, allValidTabs]); // Only react to URL and fixture data changes
+  }, [searchParams, fixtureData, allValidTabs]);
 
   // Handle loading state
   if (isLoading) {
