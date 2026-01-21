@@ -5,7 +5,6 @@ import type {
   FixtureResponseItem,
 } from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
-import { calculateSeason } from "@/lib/utils";
 
 // Format date in a specific timezone (YYYY-MM-DD)
 function formatDateParam(date: Date, timezone?: string): string {
@@ -24,23 +23,23 @@ function formatDateParam(date: Date, timezone?: string): string {
   return `${year}-${month}-${day}`;
 }
 
-async function fetchFixturesBySeason(
-  season: number,
+async function fetchFixturesByDate(
+  dateStr: string,
   timezone: string
 ): Promise<FixturesApiResponse> {
   const params = new URLSearchParams({
-    season: season.toString(),
+    date: dateStr,
     timezone,
   });
-  const response = await fetch(`/api/fixture-season?${params.toString()}`, {
+  const response = await fetch(`/api/fixture-by-date?${params.toString()}`, {
     cache: "default",
   });
   if (!response.ok) {
-    throw new Error(`Failed to load season fixtures (${response.status})`);
+    throw new Error(`Failed to load fixtures (${response.status})`);
   }
   const data = (await response.json()) as FixturesApiResponse;
   if (data.errors && data.errors.length > 0) {
-    console.warn("Fixture season API errors:", data.errors);
+    console.warn("Fixture by date API errors:", data.errors);
   }
   return data;
 }
@@ -68,10 +67,11 @@ export function useFixturesLive(options?: { enabled?: boolean }) {
   });
 }
 
-export function useFixturesBySeason(season: number, timezone: string) {
+export function useFixturesByDate(dateStr: string, timezone: string) {
   return useQuery({
-    queryKey: ["fixtures-by-season", season, timezone],
-    queryFn: () => fetchFixturesBySeason(season, timezone),
+    queryKey: ["fixtures-by-date", dateStr, timezone],
+    queryFn: () => fetchFixturesByDate(dateStr, timezone),
+    enabled: !!dateStr && !!timezone,
     staleTime: 60 * 60 * 1000,
     refetchInterval: 2 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -79,50 +79,36 @@ export function useFixturesBySeason(season: number, timezone: string) {
 }
 
 export function useFixtures(date: Date, timezone: string) {
-  const season = useMemo(() => calculateSeason(date), [date]);
-  const {
-    data: seasonData,
-    isLoading,
-    error,
-    ...rest
-  } = useFixturesBySeason(season, timezone);
-
   const dateStr = useMemo(
     () => formatDateParam(date, timezone),
     [date, timezone]
   );
 
-  const isToday =
-    dateStr === formatDateParam(new Date(), timezone);
+  const {
+    data: dateData,
+    isLoading,
+    error,
+    ...rest
+  } = useFixturesByDate(dateStr, timezone);
 
+  const isToday = dateStr === formatDateParam(new Date(), timezone);
   const { data: liveData } = useFixturesLive({ enabled: isToday });
 
   const data = useMemo(() => {
-    if (!seasonData?.response) return undefined;
-    const filtered = seasonData.response.filter(
-      (f) =>
-        formatDateParam(new Date(f.fixture.date), timezone) === dateStr
-    );
-
-    let list = filtered;
+    if (!dateData?.response) return undefined;
+    let list = dateData.response;
     if (isToday && liveData?.response && liveData.response.length > 0) {
       const liveMap = new Map(
         liveData.response.map((f) => [f.fixture.id, f])
       );
-      list = filtered.map((f) => liveMap.get(f.fixture.id) ?? f);
+      list = list.map((f) => liveMap.get(f.fixture.id) ?? f);
     }
-
     return {
-      ...seasonData,
+      ...dateData,
       response: list,
       results: list.length,
-      parameters: {
-        ...seasonData.parameters,
-        date: dateStr,
-        timezone,
-      },
     };
-  }, [seasonData, dateStr, timezone, isToday, liveData]);
+  }, [dateData, isToday, liveData]);
 
   return { data, isLoading, error, ...rest };
 }
