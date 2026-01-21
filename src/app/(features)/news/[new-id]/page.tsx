@@ -249,9 +249,9 @@ export default function NewsDetailPage() {
                         .getElementById("comments-section")
                         ?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
-                    className="flex items-center hover:text-primary-font transition-colors cursor-pointer"
+                    className="flex items-center hover:text-primary-font  transition-colors cursor-pointer"
                   >
-                    <MessageCircle className="h-5 w-5 mr-1.5" />
+                    <MessageCircle className="h-5 w-5 mr-2" />
                     <span>{news.comment_count} </span>
                     <span className="ml-1 md:block hidden">comments</span>
                   </div>
@@ -345,7 +345,7 @@ export default function NewsDetailPage() {
                     <h4 className="text-lg md:text-xl font-bold mb-3 mt-5 text-foreground" {...props} />
                   ),
                   p: ({ ...props }) => (
-                    <p className="mb-4 leading-7 text-foreground" {...props} />
+                    <p className="mb-4 leading-7  text-base  text-foreground" {...props} />
                   ),
                   ul: ({ ...props }) => (
                     <ul

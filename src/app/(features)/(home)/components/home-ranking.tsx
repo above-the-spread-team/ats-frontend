@@ -110,7 +110,7 @@ export default function HomeRanking() {
         <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">
           <div className="col-span-1 text-center">#</div>
           <div className="col-span-6">Team</div>
-          <div className="col-span-2 text-center hidden sm:block">P</div>
+          <div className="col-span-2 text-center ">P</div>
           <div className="col-span-3 text-right">Pts</div>
         </div>
         {/* Standings List */}
@@ -162,7 +162,7 @@ export default function HomeRanking() {
                   </span>
                 </div>
                 {/* Played */}
-                <div className="col-span-2 text-center hidden sm:flex items-center justify-center">
+                <div className="col-span-2 text-center flex items-center justify-center">
                   <span className="text-xs text-muted-foreground">
                     {standing.all.played}
                   </span>
@@ -176,7 +176,7 @@ export default function HomeRanking() {
                   >
                     {standing.points}
                   </span>
-                  <span className="text-xs text-muted-foreground hidden md:inline">
+                  <span className="text-xs text-muted-foreground ">
                     pts
                   </span>
                 </div>

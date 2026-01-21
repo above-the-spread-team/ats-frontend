@@ -10,11 +10,11 @@ export default function Home() {
     <FullPage minusHeight={40} className="space-y-4 md:space-y-8  pb-10">
       <Fixtures />
       <div className="container mx-auto px-4   max-w-6xl space-y-6 lg:space-y-10">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
           <div className="lg:col-span-3  -mx-[16px] md:mx-0 flex items-center justify-center">
             <ScrollNews />
           </div>
-          <div className="lg:col-span-2 hidden lg:block">
+          <div className="lg:col-span-2 ">
             <HomeRanking />
           </div>
         </div>
