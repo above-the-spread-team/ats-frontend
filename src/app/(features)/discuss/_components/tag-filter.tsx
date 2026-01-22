@@ -82,7 +82,7 @@ export default function TagFilter({
     <div className="mb-4 flex flex-col items-start gap-2">
       {/* Separate dropdown menus for each tag type */}
       <div className="flex flex-wrap gap-2">
-        {TAG_TYPE_ORDER.filter((type) => type !== "player").map((type) => {
+        {TAG_TYPE_ORDER.filter((type) => type !== "player" && type !== "team" && type !== "topic").map((type) => {
           const tags = tagsByType[type];
           if (tags.length === 0) return null;
 

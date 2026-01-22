@@ -26,6 +26,7 @@ import {
   useLikeNews,
   useDislikeNews,
 } from "@/services/fastapi/news";
+import { useCurrentUser } from "@/services/fastapi/oauth";
 import NoData from "@/components/common/no-data";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../components/preview-image";
@@ -54,6 +55,7 @@ export default function NewsDetailPage() {
     refetch: refetchComments,
   } = useNewsComments(newsId && !isNaN(newsId) ? newsId : null, 1, 20, false);
 
+  const { data: currentUser } = useCurrentUser();
   const likeNewsMutation = useLikeNews();
   const dislikeNewsMutation = useDislikeNews();
 
@@ -70,22 +72,36 @@ export default function NewsDetailPage() {
   }, [newsId]);
 
   const handleLikeNews = async () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
     if (!newsId) return;
     try {
       await likeNewsMutation.mutateAsync(newsId);
       // State will be updated automatically via React Query cache
     } catch (error) {
       console.error("Error liking news:", error);
+      if (error instanceof Error && error.message.includes("401")) {
+        router.push("/login");
+      }
     }
   };
 
   const handleDislikeNews = async () => {
+    if (!currentUser) {
+      router.push("/login");
+      return;
+    }
     if (!newsId) return;
     try {
       await dislikeNewsMutation.mutateAsync(newsId);
       // State will be updated automatically via React Query cache
     } catch (error) {
       console.error("Error disliking news:", error);
+      if (error instanceof Error && error.message.includes("401")) {
+        router.push("/login");
+      }
     }
   };
 
