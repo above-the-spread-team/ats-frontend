@@ -10,7 +10,8 @@ import type {
   PostResponse,
   PostListResponse,
   PostError,
-  ReactionStats,
+  PostDateFilter,
+  PostSortOption,
 } from "@/type/fastapi/posts";
 import { getAuthHeader } from "./token-storage";
 
@@ -77,13 +78,15 @@ export async function createPost(data: PostCreate): Promise<PostResponse> {
 
 /**
  * Get a paginated list of posts
- * Optionally filter by author_id and tag_ids
+ * Optionally filter by author_id, tag_ids, date_range, and sort_by
  */
 export async function listPosts(
   page: number = 1,
   pageSize: number = 20,
   authorId?: number,
-  tagIds?: number[]
+  tagIds?: number[],
+  dateRange?: PostDateFilter,
+  sortBy?: PostSortOption
 ): Promise<PostListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -96,6 +99,12 @@ export async function listPosts(
     tagIds.forEach((tagId) => {
       params.append("tag_ids", tagId.toString());
     });
+  }
+  if (dateRange) {
+    params.append("date_range", dateRange);
+  }
+  if (sortBy) {
+    params.append("sort_by", sortBy);
   }
 
   const authHeader = getAuthHeader();
@@ -330,15 +339,17 @@ export function usePosts(
   page: number = 1,
   pageSize: number = 20,
   authorId?: number,
-  tagIds?: number[]
+  tagIds?: number[],
+  dateRange?: PostDateFilter,
+  sortBy?: PostSortOption
 ) {
   // Sort tag IDs for consistent query key
   const sortedTagIds =
     tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
 
   return useQuery<PostListResponse>({
-    queryKey: ["posts", page, pageSize, authorId, sortedTagIds],
-    queryFn: () => listPosts(page, pageSize, authorId, tagIds),
+    queryKey: ["posts", page, pageSize, authorId, sortedTagIds, dateRange, sortBy],
+    queryFn: () => listPosts(page, pageSize, authorId, tagIds, dateRange, sortBy),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
   });
@@ -348,16 +359,21 @@ export function usePosts(
  * React Query hook for infinite scrolling posts list
  * Fetches 12 items per page, loads more on scroll
  */
-export function useInfinitePosts(authorId?: number, tagIds?: number[]) {
+export function useInfinitePosts(
+  authorId?: number,
+  tagIds?: number[],
+  dateRange?: PostDateFilter,
+  sortBy?: PostSortOption
+) {
   // Sort tag IDs for consistent query key
   const sortedTagIds =
     tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
 
   return useInfiniteQuery<PostListResponse>({
-    queryKey: ["posts", "infinite", authorId, sortedTagIds],
+    queryKey: ["posts", "infinite", authorId, sortedTagIds, dateRange, sortBy],
     queryFn: ({ pageParam = 1 }) => {
       const page = typeof pageParam === "number" ? pageParam : 1;
-      return listPosts(page, 12, authorId, tagIds);
+      return listPosts(page, 12, authorId, tagIds, dateRange, sortBy);
     },
     getNextPageParam: (lastPage) => {
       // If current page is less than total pages, return next page number
@@ -468,8 +484,9 @@ export function useDeletePost() {
  * If already liked, removes the like
  * If disliked, changes to like
  * Requires authentication
+ * Returns the updated post with reaction stats
  */
-export async function likePost(postId: number): Promise<ReactionStats> {
+export async function likePost(postId: number): Promise<PostResponse> {
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -501,8 +518,8 @@ export async function likePost(postId: number): Promise<ReactionStats> {
     throw new Error(error.detail || "Failed to like post. Please try again.");
   }
 
-  const stats: ReactionStats = await response.json();
-  return stats;
+  const post: PostResponse = await response.json();
+  return post;
 }
 
 /**
@@ -510,8 +527,9 @@ export async function likePost(postId: number): Promise<ReactionStats> {
  * If already disliked, removes the dislike
  * If liked, changes to dislike
  * Requires authentication
+ * Returns the updated post with reaction stats
  */
-export async function dislikePost(postId: number): Promise<ReactionStats> {
+export async function dislikePost(postId: number): Promise<PostResponse> {
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -548,15 +566,16 @@ export async function dislikePost(postId: number): Promise<ReactionStats> {
     );
   }
 
-  const stats: ReactionStats = await response.json();
-  return stats;
+  const post: PostResponse = await response.json();
+  return post;
 }
 
 /**
  * Remove reaction from a post
  * Requires authentication
+ * Returns the updated post with reaction stats
  */
-export async function removeReaction(postId: number): Promise<ReactionStats> {
+export async function removeReaction(postId: number): Promise<PostResponse> {
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -593,8 +612,8 @@ export async function removeReaction(postId: number): Promise<ReactionStats> {
     );
   }
 
-  const stats: ReactionStats = await response.json();
-  return stats;
+  const post: PostResponse = await response.json();
+  return post;
 }
 
 /**
@@ -604,21 +623,13 @@ export async function removeReaction(postId: number): Promise<ReactionStats> {
 export function useLikePost() {
   const queryClient = useQueryClient();
 
-  return useMutation<ReactionStats, Error, number>({
+  return useMutation<PostResponse, Error, number>({
     mutationFn: likePost,
-    onSuccess: (stats, postId) => {
-      // Update the specific post in cache
+    onSuccess: (updatedPost, postId) => {
+      // Update the specific post in cache with full response
       queryClient.setQueriesData<PostResponse>(
         { queryKey: ["post", postId] },
-        (oldData) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            likes: stats.likes,
-            dislikes: stats.dislikes,
-            user_reaction: stats.user_reaction,
-          };
-        }
+        updatedPost
       );
 
       // Update post in infinite posts cache
@@ -632,14 +643,7 @@ export function useLikePost() {
           pages: oldData.pages.map((page) => ({
             ...page,
             items: page.items.map((item) =>
-              item.id === postId
-                ? {
-                    ...item,
-                    likes: stats.likes,
-                    dislikes: stats.dislikes,
-                    user_reaction: stats.user_reaction,
-                  }
-                : item
+              item.id === postId ? updatedPost : item
             ),
           })),
         };
@@ -653,14 +657,7 @@ export function useLikePost() {
           return {
             ...oldData,
             items: oldData.items.map((item) =>
-              item.id === postId
-                ? {
-                    ...item,
-                    likes: stats.likes,
-                    dislikes: stats.dislikes,
-                    user_reaction: stats.user_reaction,
-                  }
-                : item
+              item.id === postId ? updatedPost : item
             ),
           };
         }
@@ -674,14 +671,7 @@ export function useLikePost() {
           return {
             ...oldData,
             items: oldData.items.map((item) =>
-              item.id === postId
-                ? {
-                    ...item,
-                    likes: stats.likes,
-                    dislikes: stats.dislikes,
-                    user_reaction: stats.user_reaction,
-                  }
-                : item
+              item.id === postId ? updatedPost : item
             ),
           };
         }
@@ -697,21 +687,13 @@ export function useLikePost() {
 export function useDislikePost() {
   const queryClient = useQueryClient();
 
-  return useMutation<ReactionStats, Error, number>({
+  return useMutation<PostResponse, Error, number>({
     mutationFn: dislikePost,
-    onSuccess: (stats, postId) => {
-      // Update the specific post in cache
+    onSuccess: (updatedPost, postId) => {
+      // Update the specific post in cache with full response
       queryClient.setQueriesData<PostResponse>(
         { queryKey: ["post", postId] },
-        (oldData) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            likes: stats.likes,
-            dislikes: stats.dislikes,
-            user_reaction: stats.user_reaction,
-          };
-        }
+        updatedPost
       );
 
       // Update post in infinite posts cache
@@ -725,14 +707,7 @@ export function useDislikePost() {
           pages: oldData.pages.map((page) => ({
             ...page,
             items: page.items.map((item) =>
-              item.id === postId
-                ? {
-                    ...item,
-                    likes: stats.likes,
-                    dislikes: stats.dislikes,
-                    user_reaction: stats.user_reaction,
-                  }
-                : item
+              item.id === postId ? updatedPost : item
             ),
           })),
         };
@@ -746,14 +721,7 @@ export function useDislikePost() {
           return {
             ...oldData,
             items: oldData.items.map((item) =>
-              item.id === postId
-                ? {
-                    ...item,
-                    likes: stats.likes,
-                    dislikes: stats.dislikes,
-                    user_reaction: stats.user_reaction,
-                  }
-                : item
+              item.id === postId ? updatedPost : item
             ),
           };
         }
@@ -767,21 +735,11 @@ export function useDislikePost() {
           return {
             ...oldData,
             items: oldData.items.map((item) =>
-              item.id === postId
-                ? {
-                    ...item,
-                    likes: stats.likes,
-                    dislikes: stats.dislikes,
-                    user_reaction: stats.user_reaction,
-                  }
-                : item
+              item.id === postId ? updatedPost : item
             ),
           };
         }
       );
-
-      // Don't invalidate - matches useLikePost pattern which works correctly
-      // The mutation response already contains correct data, and cache update is sufficient
     },
   });
 }
@@ -793,13 +751,59 @@ export function useDislikePost() {
 export function useRemoveReaction() {
   const queryClient = useQueryClient();
 
-  return useMutation<ReactionStats, Error, number>({
+  return useMutation<PostResponse, Error, number>({
     mutationFn: removeReaction,
-    onSuccess: (_, postId) => {
-      // Invalidate all posts queries to refetch with updated reaction counts
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
-      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+    onSuccess: (updatedPost, postId) => {
+      // Update the specific post in cache with full response
+      queryClient.setQueriesData<PostResponse>(
+        { queryKey: ["post", postId] },
+        updatedPost
+      );
+
+      // Update post in infinite posts cache
+      queryClient.setQueriesData<{
+        pages: PostListResponse[];
+        pageParams: number[];
+      }>({ queryKey: ["posts", "infinite"] }, (oldData) => {
+        if (!oldData || !oldData.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) =>
+              item.id === postId ? updatedPost : item
+            ),
+          })),
+        };
+      });
+
+      // Update post in regular posts list cache
+      queryClient.setQueriesData<PostListResponse>(
+        { queryKey: ["posts"], exact: false },
+        (oldData) => {
+          if (!oldData || !oldData.items) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === postId ? updatedPost : item
+            ),
+          };
+        }
+      );
+
+      // Update post in user posts cache
+      queryClient.setQueriesData<PostListResponse>(
+        { queryKey: ["userPosts"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            items: oldData.items.map((item) =>
+              item.id === postId ? updatedPost : item
+            ),
+          };
+        }
+      );
     },
   });
 }

@@ -25,6 +25,10 @@ export interface PostUpdate {
   image_url?: string | null;
 }
 
+export type PostDateFilter = "24h" | "week" | "month";
+
+export type PostSortOption = "most_liked" | "most_disliked" | "most_commented";
+
 export interface PostResponse extends PostBase {
   id: number;
   author_id: number;

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, User } from "lucide-react";
 import { useInfinitePosts } from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
+import type { PostDateFilter, PostSortOption } from "@/type/fastapi/posts";
 import CreatePost from "./_components/create-post";
 import PostCard, { mapPostResponse } from "./_components/post-card";
 import TagFilter from "./_components/tag-filter";
@@ -18,6 +19,10 @@ export default function DiscussPage() {
   const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [dateRange, setDateRange] = useState<PostDateFilter | undefined>(
+    undefined
+  );
+  const [sortBy, setSortBy] = useState<PostSortOption | undefined>(undefined);
 
   // Fetch posts from API with infinite scrolling
   const {
@@ -30,7 +35,9 @@ export default function DiscussPage() {
     refetch,
   } = useInfinitePosts(
     undefined,
-    selectedTagIds.length > 0 ? selectedTagIds : undefined
+    selectedTagIds.length > 0 ? selectedTagIds : undefined,
+    dateRange,
+    sortBy
   );
 
   // Get current user
@@ -137,6 +144,10 @@ export default function DiscussPage() {
         <TagFilter
           selectedTagIds={selectedTagIds}
           onTagIdsChange={setSelectedTagIds}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
         />
 
         {/* Loading State */}
@@ -228,15 +239,19 @@ export default function DiscussPage() {
             <CardContent className="py-12 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
-                {selectedTagIds.length > 0
-                  ? "No posts found with the selected tags."
+                {selectedTagIds.length > 0 || dateRange || sortBy
+                  ? "No posts found with the selected filters."
                   : "No posts yet. Be the first to share!"}
               </p>
-              {selectedTagIds.length > 0 && (
+              {(selectedTagIds.length > 0 || dateRange || sortBy) && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setSelectedTagIds([])}
+                  onClick={() => {
+                    setSelectedTagIds([]);
+                    setDateRange(undefined);
+                    setSortBy(undefined);
+                  }}
                   className="mt-4"
                 >
                   Clear filters
