@@ -103,9 +103,8 @@ export default function DiscussPage() {
     scrollToPost();
   }, [posts]); // Run when posts are loaded
 
-  return (
-    <FullPage minusHeight={70}>
-      <div className="container  mx-auto py-4 md:py-6 max-w-4xl px-2 ">
+    return (
+     <>
         {/* Create Post Input */}
         <Card className="mb-3 hover:shadow-md rounded-3xl transition-shadow">
           <CardContent className="p-2 px-3 md:p-3 md:px-4">
@@ -260,7 +259,7 @@ export default function DiscussPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </FullPage>
+
+    </>
   );
 }

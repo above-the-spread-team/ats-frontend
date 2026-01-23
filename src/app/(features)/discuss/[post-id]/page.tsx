@@ -55,8 +55,7 @@ export default function DiscussPostPage() {
   };
 
   return (
-    <FullPage minusHeight={70}>
-      <div className="container mx-auto  pt-2 pb-8 space-y-2 max-w-4xl px-0">
+   <>
         {/* Back Button */}
         <Button variant="ghost" onClick={handleBackToDiscussion} className=" ">
           <ArrowLeft className="w-4 h-4 text-muted-foreground " />
@@ -138,7 +137,7 @@ export default function DiscussPostPage() {
             </div>
           )}
         </div>
-      </div>
-    </FullPage>
+
+  </>
   );
 }
