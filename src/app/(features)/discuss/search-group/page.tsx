@@ -16,8 +16,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Search, Users, Lock, UserPlus, Check, Crown } from "lucide-react";
-import { useAllGroups, useFollowGroup, useUnfollowGroup, useUserGroups } from "@/services/fastapi/groups";
+import { Search, Users, Lock, UserPlus, Check, Crown, Clock, Ban } from "lucide-react";
+import { useAllGroups, useFollowGroup, useUnfollowGroup } from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -28,16 +28,10 @@ export default function SearchGroupPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const { data: groupsData, isLoading } = useAllGroups(page, pageSize);
-  const { data: userGroupsData } = useUserGroups(1, 100); // Get all user groups to check membership
   const { data: currentUser } = useCurrentUser();
   const followGroupMutation = useFollowGroup();
   const unfollowGroupMutation = useUnfollowGroup();
   const groups = groupsData?.items || [];
-  
-  // Get list of group IDs the user is a member of
-  const userGroupIds = new Set(
-    userGroupsData?.items.map((group) => group.id) || []
-  );
 
   // Reset to page 1 when search query changes
   useEffect(() => {
@@ -65,7 +59,15 @@ export default function SearchGroupPage() {
       return;
     }
 
-    const isFollowing = userGroupIds.has(groupId);
+    const group = groups.find((g) => g.id === groupId);
+    const followerStatus = group?.follower_status as "active" | "pending" | "banned" | null | undefined;
+
+    // Banned users cannot follow or unfollow
+    if (followerStatus === "banned") {
+      return;
+    }
+
+    const isFollowing = followerStatus === "active" || followerStatus === "pending";
 
     try {
       if (isFollowing) {
@@ -74,7 +76,7 @@ export default function SearchGroupPage() {
       } else {
         // Follow the group
         await followGroupMutation.mutateAsync(groupId);
-        // Success - user is now a member, navigate to group page
+        // Success - user is now a member (or pending), navigate to group page if active
         // Navigation happens after cache invalidation completes
         setTimeout(() => {
           router.push(`/discuss/group-posts/${groupId}`);
@@ -191,7 +193,27 @@ export default function SearchGroupPage() {
                                 <Crown className="w-3 h-3 mr-1" />
                                 Owner
                               </Button>
-                            ) : userGroupIds.has(group.id) ? (
+                            ) : group.follower_status === "banned" ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                disabled
+                              >
+                                <Ban className="w-3 h-3 mr-1" />
+                                Banned
+                              </Button>
+                            ) : group.follower_status === "pending" ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                disabled
+                              >
+                                <Clock className="w-3 h-3 mr-1" />
+                                Pending
+                              </Button>
+                            ) : group.follower_status === "active" ? (
                               <Button
                                 size="sm"
                                 variant="outline"

@@ -23,19 +23,19 @@ export interface GroupUpdate {
   is_private?: boolean;
 }
 
-export interface GroupMemberResponse {
+export interface GroupFollowerResponse {
   user_id: number;
   joined_at: string;
 }
 
-export interface GroupMemberItem {
+export interface GroupFollowerItem {
   id: number; // User ID
-  username: string; // Member username
-  avatar_url: string | null; // Member avatar URL
+  username: string; // Follower username
+  avatar_url: string | null; // Follower avatar URL
 }
 
-export interface GroupMemberListResponse {
-  items: GroupMemberItem[];
+export interface GroupFollowerListResponse {
+  items: GroupFollowerItem[];
   total: number;
   page: number;
   page_size: number;
@@ -51,6 +51,7 @@ export interface GroupResponse extends GroupBase {
   total_dislikes: number; // Total dislikes on all group posts
   post_count: number; // Number of posts in the group
   comment_count: number; // Number of comments on group posts
+  pending_count: number | null; // Number of pending followers (owner/admin only, null for regular users)
 }
 
 export interface GroupListItem extends GroupBase {
@@ -60,7 +61,7 @@ export interface GroupListItem extends GroupBase {
   // Note: GroupListItem does NOT include member_count (only in GroupResponse)
 }
 
-export interface GroupMemberAddRequest {
+export interface GroupFollowerAddRequest {
   user_id: number;
 }
 
@@ -77,6 +78,7 @@ export interface GroupPublicListItem extends GroupBase {
   owner_id: number;
   created_at: string;
   member_count: number; // Number of members in the group (included in public list)
+  follower_status: string | null; // Current user's follower status: 'active', 'pending', 'banned', or null
 }
 
 export interface GroupPublicListResponse {

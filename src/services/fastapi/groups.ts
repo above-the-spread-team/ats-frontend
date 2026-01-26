@@ -9,8 +9,8 @@ import type {
   GroupResponse,
   GroupListResponse,
   GroupPublicListResponse,
-  GroupMemberAddRequest,
-  GroupMemberListResponse,
+  GroupFollowerAddRequest,
+  GroupFollowerListResponse,
   GroupError,
 } from "@/type/fastapi/groups";
 import type { PostListResponse } from "@/type/fastapi/posts";
@@ -305,8 +305,11 @@ export async function deleteGroup(groupId: number): Promise<void> {
 }
 
 /**
- * Follow a public group
- * Requires authentication - allows users to follow public groups
+ * Follow a group
+ * Requires authentication
+ * - Public groups: User is added immediately as ACTIVE follower (can view content and post)
+ * - Private groups: User status is set to PENDING until Owner/ADMIN approves
+ * - Banned users: Cannot follow (403 error)
  */
 export async function followGroup(groupId: number): Promise<GroupResponse> {
   const authHeader = getAuthHeader();
@@ -334,6 +337,12 @@ export async function followGroup(groupId: number): Promise<GroupResponse> {
       throw new Error("401: Not authenticated");
     }
     if (response.status === 403) {
+      // Check if user is banned (backend returns specific message)
+      if (error.detail && error.detail.includes("banned")) {
+        throw new Error(
+          error.detail || "You are banned from this group and cannot rejoin"
+        );
+      }
       throw new Error(
         error.detail || "You don't have permission to follow this group"
       );
@@ -359,6 +368,7 @@ export async function followGroup(groupId: number): Promise<GroupResponse> {
 /**
  * Unfollow a group
  * Requires authentication - allows users to unfollow groups they previously followed
+ * Exception: Banned users cannot unfollow (must be unbanned by owner/ADMIN)
  */
 export async function unfollowGroup(groupId: number): Promise<GroupResponse> {
   const authHeader = getAuthHeader();
@@ -386,6 +396,12 @@ export async function unfollowGroup(groupId: number): Promise<GroupResponse> {
       throw new Error("401: Not authenticated");
     }
     if (response.status === 403) {
+      // Check if user is banned (backend returns specific message)
+      if (error.detail && error.detail.includes("banned")) {
+        throw new Error(
+          error.detail || "You are banned from this group and cannot unfollow. Please contact the group owner."
+        );
+      }
       throw new Error(
         error.detail || "You don't have permission to unfollow this group"
       );
@@ -409,12 +425,12 @@ export async function unfollowGroup(groupId: number): Promise<GroupResponse> {
 }
 
 /**
- * Add a member to a group
- * Requires authentication - only the group owner can add members
+ * Add a follower to a group
+ * Requires authentication - only the group owner can add followers
  */
-export async function addGroupMember(
+export async function addGroupFollower(
   groupId: number,
-  data: GroupMemberAddRequest
+  data: GroupFollowerAddRequest
 ): Promise<GroupResponse> {
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
@@ -456,20 +472,20 @@ export async function addGroupMember(
     const error: GroupError =
       errorData.detail && typeof errorData.detail === "string"
         ? { detail: errorData.detail }
-        : { detail: "Failed to add member" };
+        : { detail: "Failed to add follower" };
 
     if (response.status === 401) {
       throw new Error("401: Not authenticated");
     }
     if (response.status === 403) {
-      throw new Error(error.detail || "Only the group owner can add members");
+      throw new Error(error.detail || "Only the group owner can add followers");
     }
     if (response.status === 404) {
       throw new Error(error.detail || "Group or user not found");
     }
 
     throw new Error(
-      error.detail || "Failed to add member. Please try again."
+      error.detail || "Failed to add follower. Please try again."
     );
   }
 
@@ -478,10 +494,10 @@ export async function addGroupMember(
 }
 
 /**
- * Remove a member from a group
- * Requires authentication - owner can kick, members can leave
+ * Remove a follower from a group
+ * Requires authentication - owner can kick, followers can leave
  */
-export async function removeGroupMember(
+export async function removeGroupFollower(
   groupId: number,
   userId: number
 ): Promise<void> {
@@ -507,39 +523,39 @@ export async function removeGroupMember(
     const error: GroupError =
       errorData.detail && typeof errorData.detail === "string"
         ? { detail: errorData.detail }
-        : { detail: "Failed to remove member" };
+        : { detail: "Failed to remove follower" };
 
     if (response.status === 401) {
       throw new Error("401: Not authenticated");
     }
     if (response.status === 403) {
       throw new Error(
-        error.detail || "Only the group owner can remove other members"
+        error.detail || "Only the group owner can remove other followers"
       );
     }
     if (response.status === 404) {
-      throw new Error(error.detail || "Group or member not found");
+      throw new Error(error.detail || "Group or follower not found");
     }
     if (response.status === 400) {
       throw new Error(error.detail || "Group owner cannot be removed");
     }
 
     throw new Error(
-      error.detail || "Failed to remove member. Please try again."
+      error.detail || "Failed to remove follower. Please try again."
     );
   }
 }
 
 /**
- * List group members
- * Public groups are visible to everyone; private groups are members-only
- * Returns paginated list of members with id, username, avatar_url
+ * List group followers
+ * Public groups are visible to everyone; private groups are followers-only
+ * Returns paginated list of followers with id, username, avatar_url
  */
-export async function listGroupMembers(
+export async function listGroupFollowers(
   groupId: number,
   page: number = 1,
   pageSize: number = 20
-): Promise<GroupMemberListResponse> {
+): Promise<GroupFollowerListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
@@ -567,7 +583,7 @@ export async function listGroupMembers(
     const error: GroupError =
       errorData.detail && typeof errorData.detail === "string"
         ? { detail: errorData.detail }
-        : { detail: "Failed to fetch group members" };
+        : { detail: "Failed to fetch group followers" };
 
     if (response.status === 401) {
       throw new Error("401: Not authenticated");
@@ -582,17 +598,17 @@ export async function listGroupMembers(
     }
 
     throw new Error(
-      error.detail || "Failed to fetch group members. Please try again."
+      error.detail || "Failed to fetch group followers. Please try again."
     );
   }
 
-  const result: GroupMemberListResponse = await response.json();
+  const result: GroupFollowerListResponse = await response.json();
   return result;
 }
 
 
 /**
- * List all groups for the current user (owned and member of)
+ * List all groups for the current user (owned and follower of)
  * Requires authentication
  * Supports pagination
  */
@@ -644,8 +660,8 @@ export async function listUserGroups(
 
 /**
  * List all public groups (for searching/discovering groups)
- * Does not require authentication
- * Returns groups with member counts
+ * Does not require authentication (but if authenticated, includes follower_status)
+ * Returns groups with member counts and follower_status (if authenticated)
  * Supports pagination
  */
 export async function listAllGroups(
@@ -657,13 +673,19 @@ export async function listAllGroups(
     page_size: pageSize.toString(),
   });
 
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
   const response = await fetch(
     `${BACKEND_URL}/api/v1/groups/all?${params.toString()}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
     }
   );
@@ -756,7 +778,9 @@ export function useDeleteGroup() {
 }
 
 /**
- * React Query mutation hook for following a public group
+ * React Query mutation hook for following a group
+ * - Public groups: Immediate ACTIVE status
+ * - Private groups: PENDING status (requires owner/ADMIN approval)
  */
 export function useFollowGroup() {
   const queryClient = useQueryClient();
@@ -764,12 +788,12 @@ export function useFollowGroup() {
   return useMutation<GroupResponse, Error, number>({
     mutationFn: (groupId) => followGroup(groupId),
     onSuccess: (_, groupId) => {
-      // Invalidate group queries to refetch with updated members
+      // Invalidate group queries to refetch with updated followers
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
       queryClient.invalidateQueries({ queryKey: ["allGroups"] });
       queryClient.invalidateQueries({ queryKey: ["group", groupId] });
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["groupFollowers", groupId] });
     },
   });
 }
@@ -783,52 +807,52 @@ export function useUnfollowGroup() {
   return useMutation<GroupResponse, Error, number>({
     mutationFn: (groupId) => unfollowGroup(groupId),
     onSuccess: (_, groupId) => {
-      // Invalidate group queries to refetch with updated members
+      // Invalidate group queries to refetch with updated followers
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
       queryClient.invalidateQueries({ queryKey: ["allGroups"] });
       queryClient.invalidateQueries({ queryKey: ["group", groupId] });
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["groupFollowers", groupId] });
     },
   });
 }
 
 /**
- * React Query mutation hook for adding a member to a group
+ * React Query mutation hook for adding a follower to a group
  */
-export function useAddGroupMember() {
+export function useAddGroupFollower() {
   const queryClient = useQueryClient();
 
   return useMutation<
     GroupResponse,
     Error,
-    { groupId: number; data: GroupMemberAddRequest }
+    { groupId: number; data: GroupFollowerAddRequest }
   >({
-    mutationFn: ({ groupId, data }) => addGroupMember(groupId, data),
+    mutationFn: ({ groupId, data }) => addGroupFollower(groupId, data),
     onSuccess: (_, variables) => {
-      // Invalidate group queries to refetch with updated members
+      // Invalidate group queries to refetch with updated followers
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
       queryClient.invalidateQueries({ queryKey: ["group", variables.groupId] });
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["groupFollowers", variables.groupId] });
     },
   });
 }
 
 /**
- * React Query mutation hook for removing a member from a group
+ * React Query mutation hook for removing a follower from a group
  */
-export function useRemoveGroupMember() {
+export function useRemoveGroupFollower() {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, { groupId: number; userId: number }>({
-    mutationFn: ({ groupId, userId }) => removeGroupMember(groupId, userId),
+    mutationFn: ({ groupId, userId }) => removeGroupFollower(groupId, userId),
     onSuccess: (_, variables) => {
-      // Invalidate group queries to refetch with updated members
+      // Invalidate group queries to refetch with updated followers
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
       queryClient.invalidateQueries({ queryKey: ["group", variables.groupId] });
-      queryClient.invalidateQueries({ queryKey: ["groupMembers", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["groupFollowers", variables.groupId] });
     },
   });
 }
@@ -879,7 +903,7 @@ export function useGroup(groupId: number | null) {
 
 /**
  * React Query hook to list all public groups (for searching/discovering)
- * Does not require authentication
+ * Does not require authentication (but if authenticated, includes follower_status)
  * Supports pagination
  */
 export function useAllGroups(page: number = 1, pageSize: number = 20) {
@@ -892,18 +916,498 @@ export function useAllGroups(page: number = 1, pageSize: number = 20) {
 }
 
 /**
- * React Query hook to list group members
- * Public groups are visible to everyone; private groups are members-only
+ * Approve a pending follower request
+ * Requires authentication - only the group owner or ADMIN can approve
+ */
+export async function approvePendingFollower(
+  groupId: number,
+  userId: number
+): Promise<GroupResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/${groupId}/members/${userId}/approve`,
+    {
+      method: "POST",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to approve follower" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "Only the group owner can approve followers"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Pending membership request not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to approve follower. Please try again."
+    );
+  }
+
+  const group: GroupResponse = await response.json();
+  return group;
+}
+
+/**
+ * Reject a pending follower request
+ * Requires authentication - only the group owner or ADMIN can reject
+ */
+export async function rejectPendingFollower(
+  groupId: number,
+  userId: number
+): Promise<void> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/${groupId}/members/${userId}/reject`,
+    {
+      method: "DELETE",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to reject follower" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "Only the group owner can reject followers"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Pending membership request not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to reject follower. Please try again."
+    );
+  }
+}
+
+/**
+ * List pending followers for a group
+ * Requires authentication - only the group owner or ADMIN can view
  * Supports pagination
  */
-export function useGroupMembers(
+export async function listPendingFollowers(
+  groupId: number,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<GroupFollowerListResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    page_size: pageSize.toString(),
+  });
+
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/${groupId}/members/pending?${params.toString()}`,
+    {
+      method: "GET",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to fetch pending followers" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "Only the group owner can view pending followers"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Group not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to fetch pending followers. Please try again."
+    );
+  }
+
+  const result: GroupFollowerListResponse = await response.json();
+  return result;
+}
+
+/**
+ * React Query mutation hook for approving a pending follower
+ */
+export function useApprovePendingFollower() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    GroupResponse,
+    Error,
+    { groupId: number; userId: number }
+  >({
+    mutationFn: ({ groupId, userId }) =>
+      approvePendingFollower(groupId, userId),
+    onSuccess: (_, variables) => {
+      // Invalidate group queries to refetch with updated followers
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["userGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", variables.groupId] });
+      queryClient.invalidateQueries({
+        queryKey: ["groupFollowers", variables.groupId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingFollowers", variables.groupId],
+      });
+    },
+  });
+}
+
+/**
+ * React Query mutation hook for rejecting a pending follower
+ */
+export function useRejectPendingFollower() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { groupId: number; userId: number }>({
+    mutationFn: ({ groupId, userId }) => rejectPendingFollower(groupId, userId),
+    onSuccess: (_, variables) => {
+      // Invalidate group queries to refetch with updated followers
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["userGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", variables.groupId] });
+      queryClient.invalidateQueries({
+        queryKey: ["groupFollowers", variables.groupId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingFollowers", variables.groupId],
+      });
+    },
+  });
+}
+
+/**
+ * Ban a user from a group
+ * Requires authentication - only the group owner or ADMIN can ban
+ */
+export async function banUser(
+  groupId: number,
+  userId: number
+): Promise<GroupResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/${groupId}/members/${userId}/ban`,
+    {
+      method: "POST",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to ban user" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "Only the group owner or admin can ban users"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Group or user not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to ban user. Please try again."
+    );
+  }
+
+  const group: GroupResponse = await response.json();
+  return group;
+}
+
+/**
+ * Unban a user from a group
+ * Requires authentication - only the group owner or ADMIN can unban
+ */
+export async function unbanUser(
+  groupId: number,
+  userId: number
+): Promise<GroupResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/${groupId}/members/${userId}/unban`,
+    {
+      method: "POST",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to unban user" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "Only the group owner or admin can unban users"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Group or user not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to unban user. Please try again."
+    );
+  }
+
+  const group: GroupResponse = await response.json();
+  return group;
+}
+
+/**
+ * React Query mutation hook for banning a user from a group
+ */
+export function useBanUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    GroupResponse,
+    Error,
+    { groupId: number; userId: number }
+  >({
+    mutationFn: ({ groupId, userId }) => banUser(groupId, userId),
+    onSuccess: (_, variables) => {
+      // Invalidate group queries to refetch with updated followers
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["userGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["allGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", variables.groupId] });
+      queryClient.invalidateQueries({
+        queryKey: ["groupFollowers", variables.groupId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingFollowers", variables.groupId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["bannedUsers", variables.groupId],
+      });
+    },
+  });
+}
+
+/**
+ * React Query mutation hook for unbanning a user from a group
+ */
+export function useUnbanUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    GroupResponse,
+    Error,
+    { groupId: number; userId: number }
+  >({
+    mutationFn: ({ groupId, userId }) => unbanUser(groupId, userId),
+    onSuccess: (_, variables) => {
+      // Invalidate group queries to refetch with updated followers
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["userGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["allGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", variables.groupId] });
+      queryClient.invalidateQueries({
+        queryKey: ["groupFollowers", variables.groupId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["pendingFollowers", variables.groupId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["bannedUsers", variables.groupId],
+      });
+    },
+  });
+}
+
+/**
+ * React Query hook to list pending followers for a group
+ * Requires authentication - only the group owner or ADMIN can view
+ * Supports pagination
+ */
+export function usePendingFollowers(
   groupId: number | null,
   page: number = 1,
   pageSize: number = 20
 ) {
-  return useQuery<GroupMemberListResponse>({
-    queryKey: ["groupMembers", groupId, page, pageSize],
-    queryFn: () => listGroupMembers(groupId!, page, pageSize),
+  return useQuery<GroupFollowerListResponse>({
+    queryKey: ["pendingFollowers", groupId, page, pageSize],
+    queryFn: () => listPendingFollowers(groupId!, page, pageSize),
+    enabled: !!groupId,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * List banned users for a group
+ * Requires authentication - only the group owner or ADMIN can view
+ * Supports pagination
+ */
+export async function listBannedUsers(
+  groupId: number,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<GroupFollowerListResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    page_size: pageSize.toString(),
+  });
+
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/${groupId}/members/banned?${params.toString()}`,
+    {
+      method: "GET",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to fetch banned users" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "Only the group owner or admin can view banned users"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "Group not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to fetch banned users. Please try again."
+    );
+  }
+
+  const result: GroupFollowerListResponse = await response.json();
+  return result;
+}
+
+/**
+ * React Query hook to list group followers
+ * Public groups are visible to everyone; private groups are followers-only
+ * Supports pagination
+ */
+export function useGroupFollowers(
+  groupId: number | null,
+  page: number = 1,
+  pageSize: number = 20
+) {
+  return useQuery<GroupFollowerListResponse>({
+    queryKey: ["groupFollowers", groupId, page, pageSize],
+    queryFn: () => listGroupFollowers(groupId!, page, pageSize),
+    enabled: !!groupId,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * React Query hook to list banned users for a group
+ * Requires authentication - only the group owner or ADMIN can view
+ * Supports pagination
+ */
+export function useBannedUsers(
+  groupId: number | null,
+  page: number = 1,
+  pageSize: number = 20
+) {
+  return useQuery<GroupFollowerListResponse>({
+    queryKey: ["bannedUsers", groupId, page, pageSize],
+    queryFn: () => listBannedUsers(groupId!, page, pageSize),
     enabled: !!groupId,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,

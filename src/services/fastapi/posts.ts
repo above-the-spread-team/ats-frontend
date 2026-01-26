@@ -66,6 +66,13 @@ export async function createPost(data: PostCreate): Promise<PostResponse> {
       throw new Error("401: Not authenticated");
     }
     if (response.status === 403) {
+      // Check for specific error messages
+      if (error.detail && error.detail.includes("active follower")) {
+        throw new Error("You must be an active follower to post in this group");
+      }
+      if (error.detail && error.detail.includes("banned")) {
+        throw new Error("You are banned from this group and cannot post");
+      }
       throw new Error(error.detail || "User account is inactive");
     }
 
@@ -135,6 +142,14 @@ export async function listPosts(
         ? { detail: errorData.detail }
         : { detail: "Failed to fetch posts" };
 
+    if (response.status === 403) {
+      // Check for "Content is private" message
+      if (error.detail && error.detail.includes("private")) {
+        throw new Error("Content is private");
+      }
+      throw new Error(error.detail || "You don't have permission to view this content");
+    }
+
     throw new Error(error.detail || "Failed to fetch posts. Please try again.");
   }
 
@@ -167,6 +182,13 @@ export async function getPost(postId: number): Promise<PostResponse> {
         ? { detail: errorData.detail }
         : { detail: "Failed to fetch post" };
 
+    if (response.status === 403) {
+      // Check for "Content is private" message
+      if (error.detail && error.detail.includes("private")) {
+        throw new Error("Content is private");
+      }
+      throw new Error(error.detail || "You don't have permission to view this post");
+    }
     if (response.status === 404) {
       throw new Error(error.detail || "Post not found");
     }
