@@ -88,11 +88,17 @@ export default function GroupMember({
 
   return (
     <>
-      <div className="space-y-3 md:space-y-4">
-        {groupMembersData.items.map((member) => (
-          <Card key={member.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-4 ">
+          <h2 className="text-base md:text-lg font-semibold text-foreground mb-4 md:mb-5">
+            Group members
+          </h2>
+          <div className="space-y-2 md:space-y-3">
+            {groupMembersData.items.map((member) => (
+              <div
+                key={member.id}
+                className="flex items-center gap-3 pb-3 md:pb-4 border-b border-border last:border-b-0 last:pb-0"
+              >
                 <UserIcon
                   avatarUrl={member.avatar_url}
                   name={member.username}
@@ -105,10 +111,10 @@ export default function GroupMember({
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pagination for members */}
       {groupMembersData.total_pages > 1 && (

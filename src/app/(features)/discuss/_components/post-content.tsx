@@ -211,81 +211,13 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                 )}
 
                 {/* Group Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="flex-1 flex flex-col gap-2 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
                     <h1 className="text-xl md:text-2xl font-bold text-foreground truncate">
                       {groupData.name}
                     </h1>
-                  
-                  </div>
-                  {groupData.description && (
-                    <p className="text-sm md:text-base text-muted-foreground mb-3">
-                      {groupData.description}
-                    </p>
-                  )}
-                  {/* Group Stats */}
-                  <div className="flex items-center gap-4 md:gap-8 flex-wrap text-xs md:text-sm">
-                    {groupData.is_private && (
-                      <>
-                        <span className="flex items-center gap-1.5 text-muted-foreground">
-                          <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                          <span>Private</span>
-                        </span>
-                      </>
-                    )}
-                    <button
-                      onClick={() => {
-                        setShowMembers(!showMembers);
-                        setMembersPage(1);
-                      }}
-                      className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
-                        showMembers
-                          ? "text-primary-font bg-primary/10"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <Users className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.member_count}</span>
-                      <span>{groupData.member_count === 1 ? "member" : "members"}</span>
-                    </button>
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <FileText className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.post_count}</span>
-                      <span>{groupData.post_count === 1 ? "post" : "posts"}</span>
-                    </span>
-                    
-                  </div>
 
-                  {/* Additional Info */}
-                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-2 mt-2 border-t border-border">
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3" />
-                      <span>
-                        Created {new Date(groupData.created_at).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric"
-                        })}
-                      </span>
-                    </span>
-                  <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.comment_count}</span>
-                      <span>{groupData.comment_count === 1 ? "comment" : "comments"}</span>
-                    </span>
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
-                      <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.total_likes}</span>
-                      <span>{groupData.total_likes === 1 ? "like" : "likes"}</span>
-                    </span>
-                  
-                  </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Follow/Unfollow/Owner Button and Actions */}
+                       {/* Follow/Unfollow/Owner Button and Actions */}
               {currentUser && (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {currentUser.id === groupData.owner_id ? (
@@ -383,6 +315,86 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                   )}
                 </div>
               )}
+                  
+                  </div>
+                  {groupData.description && (
+                    <p className="text-sm md:text-base text-muted-foreground mb-3">
+                      {groupData.description}
+                    </p>
+                  )}
+                  {/* Group Stats */}
+                  <div className="flex pr-1 items-center gap-4 md:gap-8 flex-wrap text-xs md:text-sm">
+                    {groupData.is_private && (
+                      <>
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                          <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                          <span>Private</span>
+                        </span>
+                      </>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowMembers(!showMembers);
+                        setMembersPage(1);
+                      }}
+                      className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
+                        showMembers
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="font-semibold text-foreground">{groupData.member_count}</span>
+                      <span>{groupData.member_count === 1 ? "member" : "members"}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowMembers(false);
+                        setPage(1);
+                      }}
+                      className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
+                        !showMembers
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="font-semibold text-foreground">{groupData.post_count}</span>
+                      <span>{groupData.post_count === 1 ? "post" : "posts"}</span>
+                    </button>
+                    
+                  </div>
+
+                  {/* Additional Info */}
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-2 mt-2 border-t border-border">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" />
+                      <span>
+                        Created {new Date(groupData.created_at).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric"
+                        })}
+                      </span>
+                    </span>
+                  <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="font-semibold text-foreground">{groupData.comment_count}</span>
+                      <span>{groupData.comment_count === 1 ? "comment" : "comments"}</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="font-semibold text-foreground">{groupData.total_likes}</span>
+                      <span>{groupData.total_likes === 1 ? "like" : "likes"}</span>
+                    </span>
+                  
+                  </div>
+                  </div>
+                </div>
+              </div>
+
+           
             </div>
           </CardContent>
         </Card>
