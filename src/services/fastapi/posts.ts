@@ -78,12 +78,13 @@ export async function createPost(data: PostCreate): Promise<PostResponse> {
 
 /**
  * Get a paginated list of posts
- * Optionally filter by author_id, tag_ids, date_range, and sort_by
+ * Optionally filter by author_id, group_id, tag_ids, date_range, and sort_by
  */
 export async function listPosts(
   page: number = 1,
   pageSize: number = 20,
   authorId?: number,
+  groupId?: number | null,
   tagIds?: number[],
   dateRange?: PostDateFilter,
   sortBy?: PostSortOption
@@ -94,6 +95,9 @@ export async function listPosts(
   });
   if (authorId !== undefined) {
     params.append("author_id", authorId.toString());
+  }
+  if (groupId !== undefined && groupId !== null) {
+    params.append("group_id", groupId.toString());
   }
   if (tagIds && tagIds.length > 0) {
     tagIds.forEach((tagId) => {
@@ -339,6 +343,7 @@ export function usePosts(
   page: number = 1,
   pageSize: number = 20,
   authorId?: number,
+  groupId?: number | null,
   tagIds?: number[],
   dateRange?: PostDateFilter,
   sortBy?: PostSortOption
@@ -348,8 +353,8 @@ export function usePosts(
     tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
 
   return useQuery<PostListResponse>({
-    queryKey: ["posts", page, pageSize, authorId, sortedTagIds, dateRange, sortBy],
-    queryFn: () => listPosts(page, pageSize, authorId, tagIds, dateRange, sortBy),
+    queryKey: ["posts", page, pageSize, authorId, groupId, sortedTagIds, dateRange, sortBy],
+    queryFn: () => listPosts(page, pageSize, authorId, groupId, tagIds, dateRange, sortBy),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
   });
@@ -361,6 +366,7 @@ export function usePosts(
  */
 export function useInfinitePosts(
   authorId?: number,
+  groupId?: number | null,
   tagIds?: number[],
   dateRange?: PostDateFilter,
   sortBy?: PostSortOption
@@ -370,10 +376,10 @@ export function useInfinitePosts(
     tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
 
   return useInfiniteQuery<PostListResponse>({
-    queryKey: ["posts", "infinite", authorId, sortedTagIds, dateRange, sortBy],
+    queryKey: ["posts", "infinite", authorId, groupId, sortedTagIds, dateRange, sortBy],
     queryFn: ({ pageParam = 1 }) => {
       const page = typeof pageParam === "number" ? pageParam : 1;
-      return listPosts(page, 12, authorId, tagIds, dateRange, sortBy);
+      return listPosts(page, 12, authorId, groupId, tagIds, dateRange, sortBy);
     },
     getNextPageParam: (lastPage) => {
       // If current page is less than total pages, return next page number
@@ -428,11 +434,17 @@ export function useCreatePost() {
 
   return useMutation<PostResponse, Error, PostCreate>({
     mutationFn: createPost,
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate all posts queries to refetch the list
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       // Also invalidate user posts queries
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+      // If post was created in a group, invalidate group posts
+      if (data.group_id) {
+        queryClient.invalidateQueries({ queryKey: ["groupPosts", data.group_id] });
+      }
+      // Also invalidate all group posts queries
+      queryClient.invalidateQueries({ queryKey: ["groupPosts"] });
     },
   });
 }
@@ -454,6 +466,12 @@ export function useUpdatePost() {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         // Invalidate user posts queries
         queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+        // If post is in a group, invalidate group posts
+        if (data.group_id) {
+          queryClient.invalidateQueries({ queryKey: ["groupPosts", data.group_id] });
+        }
+        // Also invalidate all group posts queries
+        queryClient.invalidateQueries({ queryKey: ["groupPosts"] });
       },
     }
   );
@@ -468,13 +486,23 @@ export function useDeletePost() {
 
   return useMutation<void, Error, number>({
     mutationFn: deletePost,
-    onSuccess: (_, postId) => {
+    onSuccess: async (_, postId) => {
+      // Get the post from cache to check if it has a group_id
+      const postCache = queryClient.getQueryData<PostResponse>(["post", postId]);
+      
       // Remove the specific post from cache
       queryClient.removeQueries({ queryKey: ["post", postId] });
       // Invalidate all posts queries
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       // Invalidate user posts queries
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+      
+      // If post was in a group, invalidate that group's posts
+      if (postCache?.group_id) {
+        queryClient.invalidateQueries({ queryKey: ["groupPosts", postCache.group_id] });
+      }
+      // Also invalidate all group posts queries
+      queryClient.invalidateQueries({ queryKey: ["groupPosts"] });
     },
   });
 }
@@ -626,6 +654,10 @@ export function useLikePost() {
   return useMutation<PostResponse, Error, number>({
     mutationFn: likePost,
     onSuccess: (updatedPost, postId) => {
+      // Get the post from cache to check if it has a group_id
+      const postCache = queryClient.getQueryData<PostResponse>(["post", postId]);
+      const groupId = updatedPost.group_id || postCache?.group_id;
+
       // Update the specific post in cache with full response
       queryClient.setQueriesData<PostResponse>(
         { queryKey: ["post", postId] },
@@ -676,6 +708,22 @@ export function useLikePost() {
           };
         }
       );
+
+      // Update post in group posts cache if post belongs to a group
+      if (groupId) {
+        queryClient.setQueriesData<PostListResponse>(
+          { queryKey: ["groupPosts", groupId] },
+          (oldData) => {
+            if (!oldData || !oldData.items) return oldData;
+            return {
+              ...oldData,
+              items: oldData.items.map((item) =>
+                item.id === postId ? updatedPost : item
+              ),
+            };
+          }
+        );
+      }
     },
   });
 }
@@ -690,6 +738,10 @@ export function useDislikePost() {
   return useMutation<PostResponse, Error, number>({
     mutationFn: dislikePost,
     onSuccess: (updatedPost, postId) => {
+      // Get the post from cache to check if it has a group_id
+      const postCache = queryClient.getQueryData<PostResponse>(["post", postId]);
+      const groupId = updatedPost.group_id || postCache?.group_id;
+
       // Update the specific post in cache with full response
       queryClient.setQueriesData<PostResponse>(
         { queryKey: ["post", postId] },
@@ -740,6 +792,22 @@ export function useDislikePost() {
           };
         }
       );
+
+      // Update post in group posts cache if post belongs to a group
+      if (groupId) {
+        queryClient.setQueriesData<PostListResponse>(
+          { queryKey: ["groupPosts", groupId] },
+          (oldData) => {
+            if (!oldData || !oldData.items) return oldData;
+            return {
+              ...oldData,
+              items: oldData.items.map((item) =>
+                item.id === postId ? updatedPost : item
+              ),
+            };
+          }
+        );
+      }
     },
   });
 }
@@ -754,6 +822,10 @@ export function useRemoveReaction() {
   return useMutation<PostResponse, Error, number>({
     mutationFn: removeReaction,
     onSuccess: (updatedPost, postId) => {
+      // Get the post from cache to check if it has a group_id
+      const postCache = queryClient.getQueryData<PostResponse>(["post", postId]);
+      const groupId = updatedPost.group_id || postCache?.group_id;
+
       // Update the specific post in cache with full response
       queryClient.setQueriesData<PostResponse>(
         { queryKey: ["post", postId] },
@@ -804,6 +876,22 @@ export function useRemoveReaction() {
           };
         }
       );
+
+      // Update post in group posts cache if post belongs to a group
+      if (groupId) {
+        queryClient.setQueriesData<PostListResponse>(
+          { queryKey: ["groupPosts", groupId] },
+          (oldData) => {
+            if (!oldData || !oldData.items) return oldData;
+            return {
+              ...oldData,
+              items: oldData.items.map((item) =>
+                item.id === postId ? updatedPost : item
+              ),
+            };
+          }
+        );
+      }
     },
   });
 }

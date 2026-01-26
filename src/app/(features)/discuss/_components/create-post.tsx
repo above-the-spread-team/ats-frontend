@@ -33,6 +33,7 @@ import type { EmojiClickData } from "emoji-picker-react";
 interface CreatePostProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  groupId?: number; // Optional group ID - if provided, post will be created in this group
 }
 
 // Only allow league tags for posts
@@ -45,7 +46,7 @@ const TAG_TYPE_LABELS: Record<TagType, string> = {
   topic: "Topics",
 };
 
-export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
+export default function CreatePost({ open, onOpenChange, groupId }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
@@ -219,6 +220,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
       const newPost = await createPostMutation.mutateAsync({
         content: content.trim(),
         image_url: null,
+        group_id: groupId || null,
       });
 
       // Add tags if any are selected
