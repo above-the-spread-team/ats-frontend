@@ -33,6 +33,7 @@ import { useFollowGroup, useUnfollowGroup, useDeleteGroup } from "@/services/fas
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import type { GroupResponse } from "@/type/fastapi/groups";
 import ConfirmDialog from "@/components/common/popup";
+import { Tag } from "@/components/common/tag";
 
 interface PostHeaderProps {
   groupData: GroupResponse | null;
@@ -245,6 +246,18 @@ export default function PostHeader({
                   <p className="text-sm md:text-base text-muted-foreground mb-3">
                     {groupData.description}
                   </p>
+                )}
+                {/* Tags */}
+                {groupData.tags && groupData.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {groupData.tags.map((tag) => (
+                      <Tag
+                        key={tag.id}
+                        name={tag.name}
+                        variant="small"
+                      />
+                    ))}
+                  </div>
                 )}
                 {/* Group Stats */}
                 <div className="flex pr-1 items-center gap-4 md:gap-8 flex-wrap text-xs md:text-sm">

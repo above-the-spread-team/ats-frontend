@@ -1,6 +1,7 @@
 /**
  * Group-related types matching backend schemas
  */
+import type { TagSummary } from "./tags";
 
 export interface GroupBase {
   name: string;
@@ -14,6 +15,7 @@ export interface GroupCreate {
   description?: string | null;
   icon_url?: string | null;
   is_private?: boolean;
+  tag_ids?: number[]; // Optional list of tag IDs to associate with the group
 }
 
 export interface GroupUpdate {
@@ -21,6 +23,7 @@ export interface GroupUpdate {
   description?: string | null;
   icon_url?: string | null;
   is_private?: boolean;
+  tag_ids?: number[]; // Optional list of tag IDs to associate with the group (replaces existing tags)
 }
 
 export interface GroupFollowerResponse {
@@ -52,6 +55,7 @@ export interface GroupResponse extends GroupBase {
   post_count: number; // Number of posts in the group
   comment_count: number; // Number of comments on group posts
   pending_count: number | null; // Number of pending followers (owner/admin only, null for regular users)
+  tags: TagSummary[]; // Associated tags
 }
 
 export interface GroupListItem extends GroupBase {

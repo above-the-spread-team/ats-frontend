@@ -662,16 +662,22 @@ export async function listUserGroups(
  * List all public groups (for searching/discovering groups)
  * Does not require authentication (but if authenticated, includes follower_status)
  * Returns groups with member counts and follower_status (if authenticated)
- * Supports pagination
+ * Supports pagination and tag filtering
  */
 export async function listAllGroups(
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  tagIds?: number[]
 ): Promise<GroupPublicListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
   });
+
+  // Add tag_ids if provided (OR logic - groups with any of these tags)
+  if (tagIds && tagIds.length > 0) {
+    tagIds.forEach((id) => params.append("tag_ids", id.toString()));
+  }
 
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
@@ -904,12 +910,20 @@ export function useGroup(groupId: number | null) {
 /**
  * React Query hook to list all public groups (for searching/discovering)
  * Does not require authentication (but if authenticated, includes follower_status)
- * Supports pagination
+ * Supports pagination and tag filtering
  */
-export function useAllGroups(page: number = 1, pageSize: number = 20) {
+export function useAllGroups(
+  page: number = 1,
+  pageSize: number = 20,
+  tagIds?: number[]
+) {
+  // Sort tag IDs for consistent query key (prevents unnecessary refetches)
+  const sortedTagIds =
+    tagIds && tagIds.length > 0 ? [...tagIds].sort((a, b) => a - b) : undefined;
+
   return useQuery<GroupPublicListResponse>({
-    queryKey: ["allGroups", page, pageSize],
-    queryFn: () => listAllGroups(page, pageSize),
+    queryKey: ["allGroups", page, pageSize, sortedTagIds],
+    queryFn: () => listAllGroups(page, pageSize, tagIds),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,20 +8,41 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Upload, Loader2, Users, Lock } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Upload, Loader2, Users, Lock, Tag, X } from "lucide-react";
 import {
   useCreateGroup,
   useUpdateGroup,
   useUploadGroupIcon,
   useGroup,
 } from "@/services/fastapi/groups";
+import { useTags } from "@/services/fastapi/tags";
 import Image from "next/image";
+import type { TagType, TagResponse } from "@/type/fastapi/tags";
 
 interface CreateEditGroupProps {
   groupId?: number | null; // null for create mode, number for edit mode
   onSuccess?: () => void;
   onCancel?: () => void;
 }
+
+// Only allow league tags for groups
+const TAG_TYPE_ORDER: TagType[] = ["league"];
+
+const TAG_TYPE_LABELS: Record<TagType, string> = {
+  league: "Leagues",
+  team: "Teams",
+  player: "Players",
+  topic: "Topics",
+};
 
 export default function CreateEditGroup({
   groupId = null,
@@ -33,19 +54,49 @@ export default function CreateEditGroup({
 
   // Fetch group data if in edit mode
   const { data: groupData, isLoading: isLoadingGroup } = useGroup(
-    isEditMode ? groupId : null
+    isEditMode ? groupId : null,
   );
 
   const createGroupMutation = useCreateGroup();
   const updateGroupMutation = useUpdateGroup();
   const uploadIconMutation = useUploadGroupIcon();
+  const { data: tagsData, isLoading: tagsLoading } = useTags(100);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Group tags by type (only league tags for groups)
+  const tagsByType = useMemo(() => {
+    const tags = tagsData?.items || [];
+    const grouped: Record<TagType, TagResponse[]> = {
+      league: [],
+      team: [],
+      player: [],
+      topic: [],
+    };
+
+    tags.forEach((tag) => {
+      // Only include league tags
+      if (tag.type === "league" && grouped[tag.type]) {
+        grouped[tag.type].push(tag);
+      }
+    });
+
+    return grouped;
+  }, [tagsData]);
+
+  const handleTagToggle = (tagId: number) => {
+    if (selectedTagIds.includes(tagId)) {
+      setSelectedTagIds(selectedTagIds.filter((id) => id !== tagId));
+    } else {
+      setSelectedTagIds([...selectedTagIds, tagId]);
+    }
+  };
 
   // Initialize form with group data when in edit mode
   useEffect(() => {
@@ -54,6 +105,15 @@ export default function CreateEditGroup({
       setDescription(groupData.description || "");
       setIsPrivate(groupData.is_private || false);
       setPreviewUrl(groupData.icon_url || null);
+      // Initialize selected tags from group data
+      if (groupData.tags && groupData.tags.length > 0) {
+        setSelectedTagIds(groupData.tags.map((tag) => tag.id));
+      } else {
+        setSelectedTagIds([]);
+      }
+    } else {
+      // Reset tags when switching to create mode
+      setSelectedTagIds([]);
     }
   }, [isEditMode, groupData]);
 
@@ -85,7 +145,9 @@ export default function CreateEditGroup({
       // Only revoke if it's a new preview URL (not the existing icon)
       URL.revokeObjectURL(previewUrl);
     }
-    setPreviewUrl(isEditMode && groupData?.icon_url ? groupData.icon_url : null);
+    setPreviewUrl(
+      isEditMode && groupData?.icon_url ? groupData.icon_url : null,
+    );
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -105,6 +167,7 @@ export default function CreateEditGroup({
           name?: string;
           description?: string | null;
           is_private?: boolean;
+          tag_ids?: number[];
         } = {};
 
         // Only include fields that have changed
@@ -116,6 +179,17 @@ export default function CreateEditGroup({
         }
         if (isPrivate !== groupData?.is_private) {
           updateData.is_private = isPrivate;
+        }
+
+        // Check if tags have changed
+        const currentTagIds = groupData?.tags?.map((tag) => tag.id) || [];
+        const tagIdsChanged =
+          selectedTagIds.length !== currentTagIds.length ||
+          !selectedTagIds.every((id) => currentTagIds.includes(id)) ||
+          !currentTagIds.every((id) => selectedTagIds.includes(id));
+
+        if (tagIdsChanged) {
+          updateData.tag_ids = selectedTagIds;
         }
 
         // Only update if there are changes
@@ -151,6 +225,7 @@ export default function CreateEditGroup({
           description: description.trim() || null,
           icon_url: null, // Icon will be uploaded separately if provided
           is_private: isPrivate,
+          tag_ids: selectedTagIds.length > 0 ? selectedTagIds : undefined,
         });
 
         // Upload icon if file was selected
@@ -177,7 +252,7 @@ export default function CreateEditGroup({
       // Error is handled by mutation state
       console.error(
         `Failed to ${isEditMode ? "update" : "create"} group:`,
-        error
+        error,
       );
     }
   };
@@ -232,8 +307,7 @@ export default function CreateEditGroup({
     );
   }
 
-  const currentError =
-    createGroupMutation.error || updateGroupMutation.error;
+  const currentError = createGroupMutation.error || updateGroupMutation.error;
 
   return (
     <Card>
@@ -309,8 +383,7 @@ export default function CreateEditGroup({
                     onClick={handleRemoveImage}
                     disabled={isSubmitting}
                   >
-                    <span className="sr-only">Remove image</span>
-                    ×
+                    <span className="sr-only">Remove image</span>×
                   </Button>
                 </div>
               ) : (
@@ -341,6 +414,89 @@ export default function CreateEditGroup({
                   Max 5MB. Recommended: Square image, 512x512px
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Tag Selection */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Tags (optional)</Label>
+            <div className="space-y-2">
+              {/* Selected tags as chips */}
+              {selectedTagIds.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedTagIds.map((tagId) => {
+                    const tag = Object.values(tagsByType)
+                      .flat()
+                      .find((t) => t.id === tagId);
+                    if (!tag) return null;
+
+                    return (
+                      <Button
+                        key={tagId}
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleTagToggle(tagId)}
+                        disabled={isSubmitting}
+                        className="h-7 gap-1.5 text-xs rounded-full"
+                      >
+                        {tag.name}
+                        <X className="h-3 w-3" strokeWidth={2.5} />
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Tag selector dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="rounded-full">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isSubmitting || tagsLoading}
+                    className="gap-2"
+                  >
+                    <Tag className="h-4 w-4" />
+                    <span>Add tags</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-56 max-h-[400px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
+                >
+                  {TAG_TYPE_ORDER.map((type, index) => {
+                    const tags = tagsByType[type];
+                    if (tags.length === 0) return null;
+
+                    return (
+                      <div key={type}>
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel>
+                            {TAG_TYPE_LABELS[type]}
+                          </DropdownMenuLabel>
+                          {tags.map((tag) => {
+                            const isSelected = selectedTagIds.includes(tag.id);
+                            return (
+                              <DropdownMenuCheckboxItem
+                                key={tag.id}
+                                checked={isSelected}
+                                onCheckedChange={() => handleTagToggle(tag.id)}
+                              >
+                                {tag.name}
+                              </DropdownMenuCheckboxItem>
+                            );
+                          })}
+                        </DropdownMenuGroup>
+                        {index < TAG_TYPE_ORDER.length - 1 && (
+                          <DropdownMenuSeparator />
+                        )}
+                      </div>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -397,8 +553,10 @@ export default function CreateEditGroup({
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Updating..." : "Creating..."}
                 </>
+              ) : isEditMode ? (
+                "Update Group"
               ) : (
-                isEditMode ? "Update Group" : "Create Group"
+                "Create Group"
               )}
             </Button>
           </div>

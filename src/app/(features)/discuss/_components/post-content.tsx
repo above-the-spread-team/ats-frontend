@@ -16,8 +16,16 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { MessageCircle, User, Lock, UserPlus } from "lucide-react";
-import { useInfinitePosts } from "@/services/fastapi/posts";
-import { useGroupPosts, useGroup, useUserGroups, useGroupFollowers, useAllGroups, useFollowGroup, usePendingFollowers } from "@/services/fastapi/groups";
+import { usePosts } from "@/services/fastapi/posts";
+import {
+  useGroupPosts,
+  useGroup,
+  useUserGroups,
+  useGroupFollowers,
+  useAllGroups,
+  useFollowGroup,
+  usePendingFollowers,
+} from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import Image from "next/image";
 import type { PostDateFilter, PostSortOption } from "@/type/fastapi/posts";
@@ -36,7 +44,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState<PostDateFilter | undefined>(
-    undefined
+    undefined,
   );
   const [sortBy, setSortBy] = useState<PostSortOption | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -52,10 +60,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   const isGroupMode = groupId !== null && groupId !== undefined;
 
   // Fetch group details
-  const {
-    data: groupData,
-    isLoading: isLoadingGroup,
-  } = useGroup(groupId);
+  const { data: groupData, isLoading: isLoadingGroup } = useGroup(groupId);
 
   // Fetch group posts with pagination
   const {
@@ -65,22 +70,20 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     refetch: refetchGroupPosts,
   } = useGroupPosts(groupId || null, page, pageSize);
 
-
-  // Fetch all posts with infinite scrolling
+  // Fetch all posts with pagination
   const {
     data: postsData,
     isLoading: isLoadingAllPosts,
     error: allPostsError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
     refetch: refetchAllPosts,
-  } = useInfinitePosts(
+  } = usePosts(
+    page, // page
+    pageSize, // pageSize
     undefined, // authorId
     null, // groupId (null for all posts)
     selectedTagIds.length > 0 ? selectedTagIds : undefined, // tagIds
     dateRange,
-    sortBy
+    sortBy,
   );
 
   // Use group posts if in group mode, otherwise use all posts
@@ -90,16 +93,16 @@ export default function PostContent({ groupId = null }: PostContentProps) {
 
   // Get current user
   const { data: currentUser } = useCurrentUser();
-  
+
   // Get user's groups to check if following
   const { data: userGroupsData } = useUserGroups(1, 100);
   // Get all groups to check follower_status (needed for pending/banned status)
   const { data: allGroupsData } = useAllGroups(1, 100);
   const followGroupMutation = useFollowGroup();
-  
+
   // Get list of group IDs the user is following (active followers only)
   const userGroupIds = new Set<number>(
-    userGroupsData?.items.map((group) => group.id) || []
+    userGroupsData?.items.map((group) => group.id) || [],
   );
 
   // Get follower_status for current group (if in group mode)
@@ -108,9 +111,15 @@ export default function PostContent({ groupId = null }: PostContentProps) {
       return null;
     }
     const group = allGroupsData.items.find((g) => g.id === groupId);
-    return (group?.follower_status as "active" | "pending" | "banned" | null | undefined) || null;
+    return (
+      (group?.follower_status as
+        | "active"
+        | "pending"
+        | "banned"
+        | null
+        | undefined) || null
+    );
   }, [isGroupMode, groupId, allGroupsData]);
-
 
   // Map posts to frontend format
   const posts = useMemo(() => {
@@ -119,43 +128,16 @@ export default function PostContent({ groupId = null }: PostContentProps) {
       if (!groupPostsData?.items) return [];
       return groupPostsData.items.map(mapPostResponse);
     } else {
-      // For all posts, flatten infinite query pages
-      if (!postsData?.pages) return [];
-      const allPosts = postsData.pages.flatMap((page) => page.items);
-      return allPosts.map(mapPostResponse);
+      // For all posts, use paginated response
+      if (!postsData?.items) return [];
+      return postsData.items.map(mapPostResponse);
     }
   }, [isGroupMode, groupPostsData, postsData]);
 
-  // Reset page to 1 when filters change (only for all posts)
+  // Reset page to 1 when filters change
   useEffect(() => {
-    if (!isGroupMode) {
-      setPage(1);
-    }
-  }, [selectedTagIds, dateRange, sortBy, isGroupMode]);
-
-  // Scroll detection for infinite loading (only for all posts, not group posts)
-  useEffect(() => {
-    if (isGroupMode) return; // Don't use infinite scroll for group posts
-
-    const handleScroll = () => {
-      // Check if user is near the bottom of the page
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-
-      // Load more when user is 200px from the bottom
-      if (
-        scrollTop + windowHeight >= documentHeight - 200 &&
-        hasNextPage &&
-        !isFetchingNextPage
-      ) {
-        fetchNextPage();
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isGroupMode, hasNextPage, isFetchingNextPage, fetchNextPage]);
+    setPage(1);
+  }, [selectedTagIds, dateRange, sortBy]);
 
   // Handle create post input click
   const handleCreatePostClick = () => {
@@ -197,38 +179,38 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     if (!isGroupMode) {
       return true;
     }
-    
+
     // If group data is not loaded yet, assume we can view (will check after loading)
     if (!groupData) {
       return true;
     }
-    
+
     // Public groups: Everyone can view
     if (!groupData.is_private) {
       return true;
     }
-    
+
     // Private groups: Only owner, active followers, and ADMIN can view
     // If not authenticated, cannot view
     if (!currentUser) {
       return false;
     }
-    
+
     // Owner can always view
     if (currentUser.id === groupData.owner_id) {
       return true;
     }
-    
+
     // Banned users cannot view
     if (followerStatus === "banned") {
       return false;
     }
-    
+
     // Active followers can view
     if (followerStatus === "active") {
       return true;
     }
-    
+
     // Pending followers and non-followers cannot view private content
     return false;
   }, [isGroupMode, groupData, currentUser, followerStatus]);
@@ -241,19 +223,19 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     if (!isGroupMode) {
       return !!currentUser;
     }
-    
+
     // For group posts, user must be:
     // 1. Authenticated
     // 2. Owner of the group OR active follower
     if (!currentUser || !groupData) {
       return false;
     }
-    
+
     // Owner can always post
     if (currentUser.id === groupData.owner_id) {
       return true;
     }
-    
+
     // Active follower can post (group is in userGroupsData)
     return userGroupIds.has(groupData.id);
   }, [isGroupMode, currentUser, groupData, userGroupIds]);
@@ -382,43 +364,43 @@ export default function PostContent({ groupId = null }: PostContentProps) {
         <Card>
           <CardContent className="py-12 text-center">
             <Lock className="w-12 h-12 mx-auto text-destructive mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
-              Content is private
-            </h3>
+            <h3 className="text-lg font-semibold mb-2">Content is private</h3>
             <p className="text-muted-foreground mb-4">
               {!currentUser
                 ? "Please log in to view this group's posts."
                 : followerStatus === "banned"
-                ? "You are banned from this group and cannot view its content."
-                : followerStatus === "pending"
-                ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
-                : "This group's posts are only visible to active members. Please follow the group to view content."}
+                  ? "You are banned from this group and cannot view its content."
+                  : followerStatus === "pending"
+                    ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
+                    : "This group's posts are only visible to active members. Please follow the group to view content."}
             </p>
-            {currentUser && followerStatus !== "banned" && followerStatus !== "pending" && (
-              <Button
-                onClick={async () => {
-                  try {
-                    await followGroupMutation.mutateAsync(groupData.id);
-                  } catch (error) {
-                    console.error("Failed to follow group:", error);
-                  }
-                }}
-                variant="default"
-                disabled={followGroupMutation.isPending}
-              >
-                {followGroupMutation.isPending ? (
-                  <>
-                    <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    Following...
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-1" />
-                    Follow Group
-                  </>
-                )}
-              </Button>
-            )}
+            {currentUser &&
+              followerStatus !== "banned" &&
+              followerStatus !== "pending" && (
+                <Button
+                  onClick={async () => {
+                    try {
+                      await followGroupMutation.mutateAsync(groupData.id);
+                    } catch (error) {
+                      console.error("Failed to follow group:", error);
+                    }
+                  }}
+                  variant="default"
+                  disabled={followGroupMutation.isPending}
+                >
+                  {followGroupMutation.isPending ? (
+                    <>
+                      <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Following...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 mr-1" />
+                      Follow Group
+                    </>
+                  )}
+                </Button>
+              )}
           </CardContent>
         </Card>
       )}
@@ -440,11 +422,12 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                   : error.message
                 : "An error occurred"}
             </p>
-            {error instanceof Error && error.message !== "Content is private" && (
-              <Button onClick={() => refetch()} variant="outline">
-                Try again
-              </Button>
-            )}
+            {error instanceof Error &&
+              error.message !== "Content is private" && (
+                <Button onClick={() => refetch()} variant="outline">
+                  Try again
+                </Button>
+              )}
           </CardContent>
         </Card>
       )}
@@ -456,7 +439,13 @@ export default function PostContent({ groupId = null }: PostContentProps) {
             // Followers/Pending/Banned List with Navigation
             <GroupFollower
               groupId={groupId!}
-              page={showPending ? pendingPage : showBanned ? bannedPage : followersPage}
+              page={
+                showPending
+                  ? pendingPage
+                  : showBanned
+                    ? bannedPage
+                    : followersPage
+              }
               pageSize={pageSize}
               onPageChange={(newPage) => {
                 if (showPending) {
@@ -467,7 +456,9 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                   setFollowersPage(newPage);
                 }
               }}
-              viewType={showPending ? "pending" : showBanned ? "banned" : "followers"}
+              viewType={
+                showPending ? "pending" : showBanned ? "banned" : "followers"
+              }
               groupOwnerId={groupData?.owner_id}
               onViewChange={(view) => {
                 setShowFollowers(view === "followers");
@@ -483,149 +474,148 @@ export default function PostContent({ groupId = null }: PostContentProps) {
               ))}
             </div>
           )}
-          
-          {/* Pagination for group posts */}
-          {isGroupMode && !showFollowers && !showPending && !showBanned && groupPostsData && groupPostsData.total_pages > 1 && (
-            <div className="flex justify-center pt-4">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (page > 1) {
-                          setPage(page - 1);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
+
+          {/* Pagination for posts (both group and all posts) */}
+          {!showFollowers &&
+            !showPending &&
+            !showBanned &&
+            ((isGroupMode && groupPostsData) || (!isGroupMode && postsData)) &&
+            ((isGroupMode && groupPostsData?.total_pages) || (!isGroupMode && postsData?.total_pages)) &&
+            ((isGroupMode ? groupPostsData!.total_pages : postsData!.total_pages) > 1) && (
+              <div className="flex justify-center pt-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page > 1) {
+                            setPage(page - 1);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
+                        }}
+                        className={
+                          page === 1
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
                         }
-                      }}
-                      className={
-                        page === 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
+                      />
+                    </PaginationItem>
+
+                    {/* Generate page numbers */}
+                    {(() => {
+                      const pages: (number | "ellipsis")[] = [];
+                      const totalPages = isGroupMode
+                        ? groupPostsData!.total_pages
+                        : postsData!.total_pages;
+
+                      // Always show first page
+                      if (totalPages > 0) {
+                        pages.push(1);
                       }
-                    />
-                  </PaginationItem>
 
-                  {/* Generate page numbers */}
-                  {(() => {
-                    const pages: (number | "ellipsis")[] = [];
-                    const totalPages = groupPostsData.total_pages;
-
-                    // Always show first page
-                    if (totalPages > 0) {
-                      pages.push(1);
-                    }
-
-                    // Show ellipsis if current page is far from start
-                    if (page > 3) {
-                      pages.push("ellipsis");
-                    }
-
-                    // Show pages around current page
-                    const start = Math.max(2, page - 1);
-                    const end = Math.min(totalPages - 1, page + 1);
-
-                    for (let i = start; i <= end; i++) {
-                      if (i !== 1 && i !== totalPages) {
-                        pages.push(i);
+                      // Show ellipsis if current page is far from start
+                      if (page > 3) {
+                        pages.push("ellipsis");
                       }
-                    }
 
-                    // Show ellipsis if current page is far from end
-                    if (page < totalPages - 2) {
-                      pages.push("ellipsis");
-                    }
+                      // Show pages around current page
+                      const start = Math.max(2, page - 1);
+                      const end = Math.min(totalPages - 1, page + 1);
 
-                    // Always show last page (if more than 1 page)
-                    if (totalPages > 1) {
-                      pages.push(totalPages);
-                    }
-
-                    // Remove duplicates and sort
-                    const uniquePages: (number | "ellipsis")[] = [];
-                    const seen = new Set<number | "ellipsis">();
-                    for (const p of pages) {
-                      if (!seen.has(p)) {
-                        uniquePages.push(p);
-                        seen.add(p);
+                      for (let i = start; i <= end; i++) {
+                        if (i !== 1 && i !== totalPages) {
+                          pages.push(i);
+                        }
                       }
-                    }
 
-                    return uniquePages.map((p, idx) => {
-                      if (p === "ellipsis") {
+                      // Show ellipsis if current page is far from end
+                      if (page < totalPages - 2) {
+                        pages.push("ellipsis");
+                      }
+
+                      // Always show last page (if more than 1 page)
+                      if (totalPages > 1) {
+                        pages.push(totalPages);
+                      }
+
+                      // Remove duplicates and sort
+                      const uniquePages: (number | "ellipsis")[] = [];
+                      let lastNum = 0;
+                      for (const p of pages) {
+                        if (p === "ellipsis") {
+                          if (
+                            uniquePages.length === 0 ||
+                            uniquePages[uniquePages.length - 1] !== "ellipsis"
+                          ) {
+                            uniquePages.push("ellipsis");
+                          }
+                        } else {
+                          if (p > lastNum) {
+                            uniquePages.push(p);
+                            lastNum = p;
+                          }
+                        }
+                      }
+
+                      return uniquePages.map((p, idx) => {
+                        if (p === "ellipsis") {
+                          return (
+                            <PaginationItem key={`ellipsis-${idx}`}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
                         return (
-                          <PaginationEllipsis key={`ellipsis-${idx}`} />
+                          <PaginationItem key={p}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setPage(p);
+                                window.scrollTo({
+                                  top: 0,
+                                  behavior: "smooth",
+                                });
+                              }}
+                              isActive={p === page}
+                              className="cursor-pointer"
+                            >
+                              {p}
+                            </PaginationLink>
+                          </PaginationItem>
                         );
-                      }
-                      return (
-                        <PaginationItem key={p}>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setPage(p);
-                              window.scrollTo({ top: 0, behavior: "smooth" });
-                            }}
-                            isActive={page === p}
-                            className="cursor-pointer"
-                          >
-                            {p}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    });
-                  })()}
+                      });
+                    })()}
 
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (page < (groupPostsData?.total_pages || 1)) {
-                          setPage(page + 1);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const totalPages = isGroupMode
+                            ? groupPostsData?.total_pages || 1
+                            : postsData?.total_pages || 1;
+                          if (page < totalPages) {
+                            setPage(page + 1);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
+                        }}
+                        className={
+                          page ===
+                          (isGroupMode
+                            ? groupPostsData?.total_pages || 1
+                            : postsData?.total_pages || 1)
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
                         }
-                      }}
-                      className={
-                        page === (groupPostsData?.total_pages || 1)
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-
-          {/* Loading indicator for fetching more (only for all posts infinite scroll) */}
-          {!isGroupMode && isFetchingNextPage && (
-            <div className="space-y-3 md:space-y-4 mt-4">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Card key={i} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="w-12 h-12 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-24" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <div className="flex gap-6 pt-2">
-                      <Skeleton className="h-5 w-16" />
-                      <Skeleton className="h-5 w-16" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
         </>
       )}
 
@@ -638,8 +628,8 @@ export default function PostContent({ groupId = null }: PostContentProps) {
               {isGroupMode
                 ? "No posts in this group yet. Be the first to share!"
                 : selectedTagIds.length > 0 || dateRange || sortBy
-                ? "No posts found with the selected filters."
-                : "No posts yet. Be the first to share!"}
+                  ? "No posts found with the selected filters."
+                  : "No posts yet. Be the first to share!"}
             </p>
             {!isGroupMode &&
               (selectedTagIds.length > 0 || dateRange || sortBy) && (

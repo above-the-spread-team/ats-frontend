@@ -21,22 +21,31 @@ import { useAllGroups, useFollowGroup, useUnfollowGroup } from "@/services/fasta
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import GroupTagFilter from "../_components/group-tag-filter";
 
 export default function SearchGroupPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 20;
-  const { data: groupsData, isLoading } = useAllGroups(page, pageSize);
+
+  // Sort tag IDs for consistent query keys
+  const sortedTagIds =
+    selectedTagIds.length > 0
+      ? [...selectedTagIds].sort((a, b) => a - b)
+      : undefined;
+
+  const { data: groupsData, isLoading } = useAllGroups(page, pageSize, sortedTagIds);
   const { data: currentUser } = useCurrentUser();
   const followGroupMutation = useFollowGroup();
   const unfollowGroupMutation = useUnfollowGroup();
   const groups = groupsData?.items || [];
 
-  // Reset to page 1 when search query changes
+  // Reset to page 1 when search query or tag filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, selectedTagIds]);
 
   // Filter groups based on search query (client-side filtering on current page)
   const filteredGroups = useMemo(() => {
@@ -111,6 +120,12 @@ export default function SearchGroupPage() {
             />
           </div>
         </div>
+
+        {/* Tag Filter */}
+        <GroupTagFilter
+          selectedTagIds={selectedTagIds}
+          onTagIdsChange={setSelectedTagIds}
+        />
 
         {/* Loading State */}
         {isLoading && (
@@ -409,10 +424,13 @@ export default function SearchGroupPage() {
         {/* Results Count */}
         {!isLoading && groupsData && (
           <div className="mt-4 text-sm text-muted-foreground text-center">
-            {searchQuery.trim() ? (
+            {searchQuery.trim() || selectedTagIds.length > 0 ? (
               <>
                 Showing {filteredGroups.length} of {groups.length} groups on
                 this page
+                {selectedTagIds.length > 0 && (
+                  <span> (filtered by {selectedTagIds.length} tag{selectedTagIds.length !== 1 ? 's' : ''})</span>
+                )}
               </>
             ) : (
               <>
