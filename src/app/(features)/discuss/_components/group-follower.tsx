@@ -157,22 +157,24 @@ export default function GroupFollower({
               <Users className="w-3 h-3 md:w-4 md:h-4" />
               <span>Followers</span>
             </button>
-            <button
-              onClick={() => {
-                setActiveView("pending");
-                onPageChange(1);
-                onViewChange?.("pending");
-              }}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
-                activeView === "pending"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Clock className="w-3 h-3 md:w-4 md:h-4" />
-              <span>Pending</span>
-            </button>
+            {canBanUsers && (
+              <button
+                onClick={() => {
+                  setActiveView("pending");
+                  onPageChange(1);
+                  onViewChange?.("pending");
+                }}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
+                  activeView === "pending"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Clock className="w-3 h-3 md:w-4 md:h-4" />
+                <span>Pending</span>
+              </button>
+            )}
             {canBanUsers && (
               <button
                 onClick={() => {
@@ -235,22 +237,24 @@ export default function GroupFollower({
               <Users className="w-3 h-3 md:w-4 md:h-4" />
               <span>Followers</span>
             </button>
-            <button
-              onClick={() => {
-                setActiveView("pending");
-                onPageChange(1);
-                onViewChange?.("pending");
-              }}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
-                activeView === "pending"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Clock className="w-3 h-3 md:w-4 md:h-4" />
-              <span>Pending</span>
-            </button>
+            {canBanUsers && (
+              <button
+                onClick={() => {
+                  setActiveView("pending");
+                  onPageChange(1);
+                  onViewChange?.("pending");
+                }}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
+                  activeView === "pending"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Clock className="w-3 h-3 md:w-4 md:h-4" />
+                <span>Pending</span>
+              </button>
+            )}
             {canBanUsers && (
               <button
                 onClick={() => {

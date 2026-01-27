@@ -17,7 +17,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Upload, Loader2, Users, Lock, Tag, X } from "lucide-react";
+import {
+  Upload,
+  Loader2,
+  Users,
+  Lock,
+  Tag,
+  X,
+  AlertCircle,
+} from "lucide-react";
 import {
   useCreateGroup,
   useUpdateGroup,
@@ -27,6 +35,7 @@ import {
 import { useTags } from "@/services/fastapi/tags";
 import Image from "next/image";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
+import Loading from "@/components/common/loading";
 
 interface CreateEditGroupProps {
   groupId?: number | null; // null for create mode, number for edit mode
@@ -279,9 +288,7 @@ export default function CreateEditGroup({
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          </div>
+          <Loading />
         </CardContent>
       </Card>
     );
@@ -291,17 +298,20 @@ export default function CreateEditGroup({
   if (isEditMode && !isLoadingGroup && !groupData) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <p className="text-destructive">Group not found</p>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/discuss")}
-              className="mt-4"
-            >
-              Back to Discussion
-            </Button>
-          </div>
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-10 h-10 mx-auto text-red-300 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Group not found</h3>
+          <p className="text-muted-foreground mb-4">
+            The group you're looking for doesn't exist or you don't have
+            permission to view it.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/discuss")}
+            className="mt-2"
+          >
+            Back to Discussion
+          </Button>
         </CardContent>
       </Card>
     );
@@ -312,12 +322,69 @@ export default function CreateEditGroup({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl md:text-2xl">
+        <CardTitle className="text-lg px-4 md:text-xl">
           {isEditMode ? "Edit Group" : "Create New Group"}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-2">
+          {/* Group Icon */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Group Icon (Optional)</Label>
+            <div className="flex items-center gap-4">
+              {previewUrl ? (
+                <div className="relative">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-border">
+                    <Image
+                      src={previewUrl}
+                      alt="Group icon preview"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    onClick={handleRemoveImage}
+                    disabled={isSubmitting}
+                  >
+                    <X className="scale-90" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                  <Users className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex-1">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  disabled={isSubmitting}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSubmitting}
+                  className="w-full md:w-auto"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {previewUrl ? "Change Icon" : "Upload Icon"}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Max 5MB. Recommended: Square image, 512x512px
+                </p>
+              </div>
+            </div>
+          </div>
           {/* Group Name */}
           <div className="space-y-2">
             <Label htmlFor="group-name" className="text-sm font-medium">
@@ -357,64 +424,6 @@ export default function CreateEditGroup({
             <p className="text-xs text-muted-foreground">
               {description.length}/1000 characters
             </p>
-          </div>
-
-          {/* Group Icon */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Group Icon (Optional)</Label>
-            <div className="flex items-center gap-4">
-              {previewUrl ? (
-                <div className="relative">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-border">
-                    <Image
-                      src={previewUrl}
-                      alt="Group icon preview"
-                      width={96}
-                      height={96}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                    onClick={handleRemoveImage}
-                    disabled={isSubmitting}
-                  >
-                    <span className="sr-only">Remove image</span>×
-                  </Button>
-                </div>
-              ) : (
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-muted border-2 border-border flex items-center justify-center">
-                  <Users className="w-10 h-10 md:w-12 md:h-12 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex-1">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                  disabled={isSubmitting}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isSubmitting}
-                  className="w-full md:w-auto"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {previewUrl ? "Change Icon" : "Upload Icon"}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Max 5MB. Recommended: Square image, 512x512px
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Tag Selection */}

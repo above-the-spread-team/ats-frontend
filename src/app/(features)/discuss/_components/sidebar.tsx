@@ -33,7 +33,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="sticky top-4">
+    <div className="sticky top-0">
       <Card className="shadow-sm">
         <CardContent className="p-4">
           {/* Navigation Section */}
@@ -49,13 +49,15 @@ export default function Sidebar() {
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <Icon
                     className={cn(
                       "w-4 h-4 flex-shrink-0",
-                      isActive ? "text-primary-foreground" : "text-muted-foreground"
+                      isActive
+                        ? "text-primary-foreground"
+                        : "text-muted-foreground",
                     )}
                   />
                   <span>{link.label}</span>
@@ -68,14 +70,19 @@ export default function Sidebar() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Users className="w-4 h-4 text-foreground" />
-              <h3 className="text-base font-semibold text-foreground">My Groups</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                My Groups
+              </h3>
             </div>
 
             {/* Loading State */}
             {isLoading && (
               <div className="space-y-2">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg">
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 p-2 rounded-lg"
+                  >
                     <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                     <div className="flex-1 space-y-1.5">
                       <Skeleton className="h-3.5 w-24" />
@@ -90,7 +97,8 @@ export default function Sidebar() {
             {!isLoading && groups.length > 0 && (
               <div className="space-y-1">
                 {groups.map((group) => {
-                  const isActive = pathname === `/discuss/group-posts/${group.id}`;
+                  const isActive =
+                    pathname === `/discuss/group-posts/${group.id}`;
                   return (
                     <Link
                       key={group.id}
@@ -99,7 +107,7 @@ export default function Sidebar() {
                         "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 group",
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm"
-                          : "hover:bg-muted"
+                          : "hover:bg-muted",
                       )}
                     >
                       {/* Group Icon */}
@@ -119,13 +127,15 @@ export default function Sidebar() {
                             "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-offset-2 ring-offset-background transition-all",
                             isActive
                               ? "bg-primary-foreground/20 ring-primary/30"
-                              : "bg-primary/10 ring-transparent group-hover:ring-primary/20"
+                              : "bg-primary/10 ring-transparent group-hover:ring-primary/20",
                           )}
                         >
                           <Users
                             className={cn(
                               "w-5 h-5",
-                              isActive ? "text-primary-foreground" : "text-primary"
+                              isActive
+                                ? "text-primary-foreground"
+                                : "text-primary",
                             )}
                           />
                         </div>
@@ -139,7 +149,7 @@ export default function Sidebar() {
                               "text-sm font-medium truncate",
                               isActive
                                 ? "text-primary-foreground"
-                                : "text-foreground"
+                                : "text-foreground",
                             )}
                           >
                             {group.name}
@@ -150,7 +160,7 @@ export default function Sidebar() {
                                 "w-3 h-3 flex-shrink-0",
                                 isActive
                                   ? "text-primary-foreground/70"
-                                  : "text-muted-foreground"
+                                  : "text-muted-foreground",
                               )}
                             />
                           )}
@@ -161,7 +171,7 @@ export default function Sidebar() {
                               "text-xs truncate",
                               isActive
                                 ? "text-primary-foreground/80"
-                                : "text-muted-foreground"
+                                : "text-muted-foreground",
                             )}
                           >
                             {group.description}

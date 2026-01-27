@@ -16,20 +16,21 @@ import {
 import {
   Users,
   Lock,
-  UserPlus,
-  Check,
-  Crown,
   MoreVertical,
   Edit,
   Trash2,
-  Clock,
-  Ban,
   MessageCircle,
   ThumbsUp,
   FileText,
   Calendar,
+  Clock,
 } from "lucide-react";
-import { useFollowGroup, useUnfollowGroup, useDeleteGroup } from "@/services/fastapi/groups";
+import StatusIcon from "./status-icon";
+import {
+  useFollowGroup,
+  useUnfollowGroup,
+  useDeleteGroup,
+} from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import type { GroupResponse } from "@/type/fastapi/groups";
 import ConfirmDialog from "@/components/common/popup";
@@ -96,7 +97,7 @@ export default function PostHeader({
 
   return (
     <>
-      <Card className="mb-4 hover:shadow-md transition-shadow">
+      <Card className="mb-4    hover:shadow-md transition-shadow">
         <CardContent className="p-4 md:p-6">
           <div className="flex items-start gap-4 justify-between">
             <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -129,15 +130,11 @@ export default function PostHeader({
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {currentUser.id === groupData.owner_id ? (
                         <>
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          <StatusIcon
+                            isOwner={true}
+                            size="md"
                             className="cursor-default"
-                            disabled
-                          >
-                            <Crown className="w-4 h-4 mr-1" />
-                            Owner
-                          </Button>
+                          />
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -151,7 +148,9 @@ export default function PostHeader({
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 onClick={() => {
-                                  router.push(`/discuss/edit-group/${groupData.id}`);
+                                  router.push(
+                                    `/discuss/edit-group/${groupData.id}`,
+                                  );
                                 }}
                               >
                                 <Edit className="w-4 h-4 mr-2" />
@@ -168,76 +167,35 @@ export default function PostHeader({
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </>
-                      ) : followerStatus === "banned" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="cursor-default"
-                          disabled
-                        >
-                          <Ban className="w-4 h-4 mr-1" />
-                          Banned
-                        </Button>
-                      ) : followerStatus === "pending" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="cursor-default"
-                          disabled
-                        >
-                          <Clock className="w-4 h-4 mr-1" />
-                          Pending
-                        </Button>
-                      ) : followerStatus === "active" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            try {
-                              await unfollowGroupMutation.mutateAsync(groupData.id);
-                            } catch (error) {
-                              console.error("Failed to unfollow group:", error);
-                            }
-                          }}
-                          disabled={unfollowGroupMutation.isPending || followGroupMutation.isPending}
-                        >
-                          {unfollowGroupMutation.isPending ? (
-                            <>
-                              <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                              Unfollowing...
-                            </>
-                          ) : (
-                            <>
-                              <Check className="w-4 h-4 mr-1" />
-                              Following
-                            </>
-                          )}
-                        </Button>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={async () => {
+                        <StatusIcon
+                          isOwner={
+                            currentUser?.id === groupData.owner_id || false
+                          }
+                          followerStatus={followerStatus}
+                          onFollow={async () => {
                             try {
-                              await followGroupMutation.mutateAsync(groupData.id);
+                              await followGroupMutation.mutateAsync(
+                                groupData.id,
+                              );
                             } catch (error) {
                               console.error("Failed to follow group:", error);
                             }
                           }}
-                          disabled={followGroupMutation.isPending || unfollowGroupMutation.isPending}
-                        >
-                          {followGroupMutation.isPending ? (
-                            <>
-                              <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                              Following...
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="w-4 h-4 mr-1" />
-                              Follow
-                            </>
-                          )}
-                        </Button>
+                          onUnfollow={async () => {
+                            try {
+                              await unfollowGroupMutation.mutateAsync(
+                                groupData.id,
+                              );
+                            } catch (error) {
+                              console.error("Failed to unfollow group:", error);
+                            }
+                          }}
+                          isFollowing={followGroupMutation.isPending}
+                          isUnfollowing={unfollowGroupMutation.isPending}
+                          size="md"
+                          className="cursor-default"
+                        />
                       )}
                     </div>
                   )}
@@ -251,11 +209,7 @@ export default function PostHeader({
                 {groupData.tags && groupData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {groupData.tags.map((tag) => (
-                      <Tag
-                        key={tag.id}
-                        name={tag.name}
-                        variant="small"
-                      />
+                      <Tag key={tag.id} name={tag.name} variant="small" />
                     ))}
                   </div>
                 )}
@@ -283,28 +237,39 @@ export default function PostHeader({
                     }`}
                   >
                     <Users className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                    <span className="font-semibold text-foreground">{groupData.member_count}</span>
-                    <span>{groupData.member_count === 1 ? "follower" : "followers"}</span>
+                    <span className="font-semibold text-foreground">
+                      {groupData.member_count}
+                    </span>
+                    <span>
+                      {groupData.member_count === 1 ? "follower" : "followers"}
+                    </span>
                   </button>
-                  {groupData.pending_count !== null && groupData.pending_count > 0 && (
-                    <button
-                      onClick={() => {
-                        onShowFollowersChange(false);
-                        onShowBannedChange(false);
-                        onShowPendingChange(!showPending);
-                        onPageChange(1);
-                      }}
-                      className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
-                        showPending && !showFollowers && !showBanned
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.pending_count}</span>
-                      <span>{groupData.pending_count === 1 ? "pending" : "pending"}</span>
-                    </button>
-                  )}
+                  {groupData.pending_count !== null &&
+                    groupData.pending_count > 0 && (
+                      <button
+                        onClick={() => {
+                          onShowFollowersChange(false);
+                          onShowBannedChange(false);
+                          onShowPendingChange(!showPending);
+                          onPageChange(1);
+                        }}
+                        className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
+                          showPending && !showFollowers && !showBanned
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                        <span className="font-semibold text-foreground">
+                          {groupData.pending_count}
+                        </span>
+                        <span>
+                          {groupData.pending_count === 1
+                            ? "pending"
+                            : "pending"}
+                        </span>
+                      </button>
+                    )}
                   <button
                     onClick={() => {
                       onShowFollowersChange(false);
@@ -319,7 +284,9 @@ export default function PostHeader({
                     }`}
                   >
                     <FileText className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                    <span className="font-semibold text-foreground">{groupData.post_count}</span>
+                    <span className="font-semibold text-foreground">
+                      {groupData.post_count}
+                    </span>
                     <span>{groupData.post_count === 1 ? "post" : "posts"}</span>
                   </button>
                 </div>
@@ -329,23 +296,35 @@ export default function PostHeader({
                   <span className="flex items-center gap-1.5">
                     <Calendar className="w-3 h-3" />
                     <span>
-                      Created {new Date(groupData.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric"
-                      })}
+                      Created{" "}
+                      {new Date(groupData.created_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
                     </span>
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.comment_count}</span>
-                      <span>{groupData.comment_count === 1 ? "comment" : "comments"}</span>
+                      <span className="font-semibold text-foreground">
+                        {groupData.comment_count}
+                      </span>
+                      <span>
+                        {groupData.comment_count === 1 ? "comment" : "comments"}
+                      </span>
                     </span>
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span className="font-semibold text-foreground">{groupData.total_likes}</span>
-                      <span>{groupData.total_likes === 1 ? "like" : "likes"}</span>
+                      <span className="font-semibold text-foreground">
+                        {groupData.total_likes}
+                      </span>
+                      <span>
+                        {groupData.total_likes === 1 ? "like" : "likes"}
+                      </span>
                     </span>
                   </div>
                 </div>
