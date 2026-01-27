@@ -77,12 +77,17 @@ export interface GroupListResponse {
   total_pages: number;
 }
 
-export interface GroupPublicListItem extends GroupBase {
+export interface GroupPublicListItem {
   id: number;
+  name: string;
+  icon_url: string | null;
+  is_private: boolean;
   owner_id: number;
   created_at: string;
   member_count: number; // Number of members in the group (included in public list)
+  post_count: number; // Number of posts in the group
   follower_status: string | null; // Current user's follower status: 'active', 'pending', 'banned', or null
+  // Note: description is NOT included in GroupPublicListItem (only in GroupResponse)
 }
 
 export interface GroupPublicListResponse {

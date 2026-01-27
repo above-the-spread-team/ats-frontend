@@ -16,7 +16,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Search, Users, Lock } from "lucide-react";
+import { Search, Users, Lock, FileText } from "lucide-react";
 import StatusIcon from "../_components/status-icon";
 import {
   useAllGroups,
@@ -197,37 +197,51 @@ export default function SearchGroupPage() {
 
                       {/* Group Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-2">
                           <h3 className="text-base font-semibold text-foreground truncate">
                             {group.name}
                           </h3>
                           {group.is_private && (
-                            <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                           )}
                         </div>
-                        {group.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                            {group.description}
-                          </p>
-                        )}
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {group.member_count}{" "}
-                            {group.member_count === 1 ? "member" : "members"}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {group.member_count}{" "}
+                              {group.member_count === 1 ? "member" : "members"}
+                            </span>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <FileText className="w-3 h-3" />
+                              {group.post_count}{" "}
+                              {group.post_count === 1 ? "post" : "posts"}
+                            </span>
+                          </div>
                           <StatusIcon
                             isOwner={
                               currentUser?.id === group.owner_id || false
                             }
-                            followerStatus={group.follower_status as
-                              | "active"
-                              | "pending"
-                              | "banned"
-                              | null
-                              | undefined}
-                            onFollow={(e) => handleFollowGroup(group.id, e || ({} as React.MouseEvent))}
-                            onUnfollow={(e) => handleFollowGroup(group.id, e || ({} as React.MouseEvent))}
+                            followerStatus={
+                              group.follower_status as
+                                | "active"
+                                | "pending"
+                                | "banned"
+                                | null
+                                | undefined
+                            }
+                            onFollow={(e) =>
+                              handleFollowGroup(
+                                group.id,
+                                e || ({} as React.MouseEvent),
+                              )
+                            }
+                            onUnfollow={(e) =>
+                              handleFollowGroup(
+                                group.id,
+                                e || ({} as React.MouseEvent),
+                              )
+                            }
                             isFollowing={followGroupMutation.isPending}
                             isUnfollowing={unfollowGroupMutation.isPending}
                             disabled={!currentUser}
