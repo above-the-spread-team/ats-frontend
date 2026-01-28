@@ -34,6 +34,7 @@ import PostCard, { mapPostResponse } from "./post-card";
 import TagFilter from "./tag-filter";
 import GroupFollower from "./group-follower";
 import PostHeader from "./post-header";
+import { useScroll } from "../_contexts/scroll-context";
 
 interface PostContentProps {
   groupId?: number | null; // null for all posts, number for specific group
@@ -134,10 +135,18 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     }
   }, [isGroupMode, groupPostsData, postsData]);
 
+  // Get scroll function from context
+  const { scrollToTop } = useScroll();
+
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [selectedTagIds, dateRange, sortBy]);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    scrollToTop();
+  }, [page, scrollToTop]);
 
   // Handle create post input click
   const handleCreatePostClick = () => {
@@ -480,8 +489,11 @@ export default function PostContent({ groupId = null }: PostContentProps) {
             !showPending &&
             !showBanned &&
             ((isGroupMode && groupPostsData) || (!isGroupMode && postsData)) &&
-            ((isGroupMode && groupPostsData?.total_pages) || (!isGroupMode && postsData?.total_pages)) &&
-            ((isGroupMode ? groupPostsData!.total_pages : postsData!.total_pages) > 1) && (
+            ((isGroupMode && groupPostsData?.total_pages) ||
+              (!isGroupMode && postsData?.total_pages)) &&
+            (isGroupMode
+              ? groupPostsData!.total_pages
+              : postsData!.total_pages) > 1 && (
               <div className="flex justify-center pt-2">
                 <Pagination>
                   <PaginationContent>
@@ -492,7 +504,6 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                           e.preventDefault();
                           if (page > 1) {
                             setPage(page - 1);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
                           }
                         }}
                         className={
@@ -574,10 +585,6 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                               onClick={(e) => {
                                 e.preventDefault();
                                 setPage(p);
-                                window.scrollTo({
-                                  top: 0,
-                                  behavior: "smooth",
-                                });
                               }}
                               isActive={p === page}
                               className="cursor-pointer"
@@ -599,7 +606,6 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                             : postsData?.total_pages || 1;
                           if (page < totalPages) {
                             setPage(page + 1);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
                           }
                         }}
                         className={

@@ -5,7 +5,15 @@ import Image from "next/image";
 import { useUserGroups } from "@/services/fastapi/groups";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Lock, MessageSquare, Plus, Search, Crown, UserPlus } from "lucide-react";
+import {
+  Users,
+  Lock,
+  MessageSquare,
+  Plus,
+  Search,
+  Crown,
+  UserPlus,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -37,8 +45,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="sticky top-0">
-      <Card className="shadow-sm">
+    <div className="sticky top-0 pb-4">
+      <Card className="shadow-sm rounded-none w-80">
         <CardContent className="p-4">
           {/* Navigation Section */}
           <nav className="flex flex-col gap-1 mb-6 pb-6 border-b border-border">
@@ -52,18 +60,11 @@ export default function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-white shadow-sm"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
-                  <Icon
-                    className={cn(
-                      "w-4 h-4 flex-shrink-0",
-                      isActive
-                        ? "text-primary-foreground"
-                        : "text-muted-foreground",
-                    )}
-                  />
+                  <Icon className={cn("w-4 h-4 flex-shrink-0")} />
                   <span>{link.label}</span>
                 </Link>
               );
@@ -112,7 +113,7 @@ export default function Sidebar() {
                         className={cn(
                           "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 group",
                           isActive
-                            ? "bg-primary text-primary-foreground shadow-sm"
+                            ? "bg-primary text-white shadow-sm"
                             : "hover:bg-muted",
                         )}
                       >
@@ -139,9 +140,7 @@ export default function Sidebar() {
                             <Users
                               className={cn(
                                 "w-5 h-5",
-                                isActive
-                                  ? "text-primary-foreground"
-                                  : "text-primary",
+                                isActive ? "text-white" : "text-primary",
                               )}
                             />
                           </div>
@@ -153,9 +152,7 @@ export default function Sidebar() {
                             <p
                               className={cn(
                                 "text-sm font-medium truncate",
-                                isActive
-                                  ? "text-primary-foreground"
-                                  : "text-foreground",
+                                isActive ? "text-white" : "text-foreground",
                               )}
                             >
                               {group.name}
@@ -165,7 +162,7 @@ export default function Sidebar() {
                                 className={cn(
                                   "w-3 h-3 flex-shrink-0",
                                   isActive
-                                    ? "text-primary-foreground/70"
+                                    ? "text-white/70"
                                     : "text-muted-foreground",
                                 )}
                               />
@@ -243,7 +240,7 @@ export default function Sidebar() {
                         className={cn(
                           "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 group",
                           isActive
-                            ? "bg-primary text-primary-foreground shadow-sm"
+                            ? "bg-primary text-white shadow-sm"
                             : "hover:bg-muted",
                         )}
                       >
