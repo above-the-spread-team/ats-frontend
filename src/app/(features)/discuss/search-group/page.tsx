@@ -61,10 +61,8 @@ export default function SearchGroupPage() {
     if (!searchQuery.trim()) return groups;
 
     const query = searchQuery.toLowerCase().trim();
-    return groups.filter(
-      (group) =>
-        group.name.toLowerCase().includes(query) ||
-        (group.description && group.description.toLowerCase().includes(query)),
+    return groups.filter((group) =>
+      group.name.toLowerCase().includes(query),
     );
   }, [groups, searchQuery]);
 
@@ -129,7 +127,7 @@ export default function SearchGroupPage() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search groups by name or description..."
+            placeholder="Search groups by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"

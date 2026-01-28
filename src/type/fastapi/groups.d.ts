@@ -62,6 +62,7 @@ export interface GroupListItem extends GroupBase {
   id: number;
   owner_id: number;
   created_at: string;
+  is_owner: boolean; // Whether the current user is the owner of this group
   // Note: GroupListItem does NOT include member_count (only in GroupResponse)
 }
 
