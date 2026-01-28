@@ -46,10 +46,10 @@ export default function Sidebar() {
 
   return (
     <div className="sticky top-0 pb-4">
-      <Card className="shadow-sm rounded-none w-80">
-        <CardContent className="p-4">
+      <Card className="shadow-lg border-border/50 bg-gradient-to-br from-card via-card to-card/95 w-80 backdrop-blur-sm">
+        <CardContent className="py-2 px-3">
           {/* Navigation Section */}
-          <nav className="flex flex-col gap-1 mb-6 pb-6 border-b border-border">
+          <nav className="flex flex-col gap-1.5 mb-4 pb-4 border-b border-border/60">
             {navigationLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -58,42 +58,59 @@ export default function Sidebar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden group",
                     isActive
-                      ? "bg-primary text-white shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-md shadow-primary/20"
+                      : "text-muted-foreground hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:text-foreground hover:shadow-sm",
                   )}
                 >
-                  <Icon className={cn("w-4 h-4 flex-shrink-0")} />
-                  <span>{link.label}</span>
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-50" />
+                  )}
+                  <Icon
+                    className={cn(
+                      "w-4 h-4 flex-shrink-0 relative z-10 transition-transform duration-300",
+                      isActive
+                        ? "text-white"
+                        : "text-muted-foreground group-hover:text-foreground group-hover:scale-110",
+                    )}
+                  />
+                  <span className="relative z-10">{link.label}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* My Groups Section */}
-          <div className="space-y-6">
+          <div className="space-y-4 ">
             {/* Owned Groups Section */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Crown className="w-4 h-4 text-foreground" />
-                <h3 className="text-base font-semibold text-foreground">
+              <div className="flex items-center gap-2.5 mb-2 px-1">
+                <div className="p-1.5 rounded-lg bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20">
+                  <Crown className="w-4 h-4 text-yellow-600 dark:text-yellow-500" />
+                </div>
+                <h3 className="text-base font-bold text-foreground tracking-tight">
                   My Groups
                 </h3>
+                {ownedGroups.length > 0 && (
+                  <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary border border-primary/20">
+                    {ownedGroups.length}
+                  </span>
+                )}
               </div>
 
               {/* Loading State */}
               {isLoading && (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {[...Array(2)].map((_, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-2 p-2 rounded-lg"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
                     >
-                      <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
-                      <div className="flex-1 space-y-1.5">
-                        <Skeleton className="h-3.5 w-24" />
-                        <Skeleton className="h-2.5 w-32" />
+                      <Skeleton className="w-11 h-11 rounded-full flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-3.5 w-28 rounded-md" />
+                        <Skeleton className="h-2.5 w-36 rounded-md" />
                       </div>
                     </div>
                   ))}
@@ -111,47 +128,59 @@ export default function Sidebar() {
                         key={group.id}
                         href={`/discuss/group-posts/${group.id}`}
                         className={cn(
-                          "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 group",
+                          "flex items-center gap-3 p-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive
-                            ? "bg-primary text-white shadow-sm"
-                            : "hover:bg-muted",
+                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25 scale-[1.02]"
+                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md hover:scale-[1.01] border border-transparent hover:border-border/50",
                         )}
                       >
+                        {isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                        )}
                         {/* Group Icon */}
                         {group.icon_url ? (
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
+                          <div
+                            className={cn(
+                              "relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
+                              isActive
+                                ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
+                            )}
+                          >
                             <Image
                               src={group.icon_url}
                               alt={group.name}
                               fill
-                              className="object-cover"
-                              sizes="40px"
+                              className="object-cover transition-transform duration-300 group-hover:scale-110"
+                              sizes="44px"
                             />
                           </div>
                         ) : (
                           <div
                             className={cn(
-                              "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-offset-2 ring-offset-background transition-all",
+                              "w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
                               isActive
-                                ? "bg-primary-foreground/20 ring-primary/30"
-                                : "bg-primary/10 ring-transparent group-hover:ring-primary/20",
+                                ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
                             )}
                           >
                             <Users
                               className={cn(
-                                "w-5 h-5",
-                                isActive ? "text-white" : "text-primary",
+                                "w-5 h-5 transition-transform duration-300",
+                                isActive
+                                  ? "text-white"
+                                  : "text-primary group-hover:scale-110",
                               )}
                             />
                           </div>
                         )}
 
                         {/* Group Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
+                        <div className="flex-1 min-w-0 relative z-10">
+                          <div className="flex items-center gap-2 mb-1">
                             <p
                               className={cn(
-                                "text-sm font-medium truncate",
+                                "text-sm font-semibold truncate transition-colors",
                                 isActive ? "text-white" : "text-foreground",
                               )}
                             >
@@ -160,10 +189,10 @@ export default function Sidebar() {
                             {group.is_private && (
                               <Lock
                                 className={cn(
-                                  "w-3 h-3 flex-shrink-0",
+                                  "w-3.5 h-3.5 flex-shrink-0 transition-colors",
                                   isActive
-                                    ? "text-white/70"
-                                    : "text-muted-foreground",
+                                    ? "text-white/80"
+                                    : "text-muted-foreground group-hover:text-foreground/70",
                                 )}
                               />
                             )}
@@ -171,10 +200,10 @@ export default function Sidebar() {
                           {group.description && (
                             <p
                               className={cn(
-                                "text-xs truncate",
+                                "text-xs truncate transition-colors",
                                 isActive
-                                  ? "text-primary-foreground/80"
-                                  : "text-muted-foreground",
+                                  ? "text-white/85"
+                                  : "text-muted-foreground group-hover:text-muted-foreground/90",
                               )}
                             >
                               {group.description}
@@ -189,12 +218,15 @@ export default function Sidebar() {
 
               {/* Empty State for Owned Groups */}
               {!isLoading && ownedGroups.length === 0 && (
-                <div className="py-4 text-center">
-                  <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-muted flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-muted-foreground" />
+                <div className="py-8 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
+                  <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20 flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-yellow-600/60 dark:text-yellow-500/60" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
                     No groups owned yet
+                  </p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Create your first group to get started
                   </p>
                 </div>
               )}
@@ -202,25 +234,32 @@ export default function Sidebar() {
 
             {/* Following Groups Section */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <UserPlus className="w-4 h-4 text-foreground" />
-                <h3 className="text-base font-semibold text-foreground">
+              <div className="flex items-center gap-2.5 mb-4 px-1">
+                <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                  <UserPlus className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-base font-bold text-foreground tracking-tight">
                   Following
                 </h3>
+                {followedGroups.length > 0 && (
+                  <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary border border-primary/20">
+                    {followedGroups.length}
+                  </span>
+                )}
               </div>
 
               {/* Loading State */}
               {isLoading && (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {[...Array(2)].map((_, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-2 p-2 rounded-lg"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
                     >
-                      <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
-                      <div className="flex-1 space-y-1.5">
-                        <Skeleton className="h-3.5 w-24" />
-                        <Skeleton className="h-2.5 w-32" />
+                      <Skeleton className="w-11 h-11 rounded-full flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-3.5 w-28 rounded-md" />
+                        <Skeleton className="h-2.5 w-36 rounded-md" />
                       </div>
                     </div>
                   ))}
@@ -238,52 +277,60 @@ export default function Sidebar() {
                         key={group.id}
                         href={`/discuss/group-posts/${group.id}`}
                         className={cn(
-                          "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 group",
+                          "flex items-center gap-3 p-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive
-                            ? "bg-primary text-white shadow-sm"
-                            : "hover:bg-muted",
+                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25 scale-[1.02]"
+                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md hover:scale-[1.01] border border-transparent hover:border-border/50",
                         )}
                       >
+                        {isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                        )}
                         {/* Group Icon */}
                         {group.icon_url ? (
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
+                          <div
+                            className={cn(
+                              "relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
+                              isActive
+                                ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
+                            )}
+                          >
                             <Image
                               src={group.icon_url}
                               alt={group.name}
                               fill
-                              className="object-cover"
-                              sizes="40px"
+                              className="object-cover transition-transform duration-300 group-hover:scale-110"
+                              sizes="44px"
                             />
                           </div>
                         ) : (
                           <div
                             className={cn(
-                              "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-offset-2 ring-offset-background transition-all",
+                              "w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
                               isActive
-                                ? "bg-primary-foreground/20 ring-primary/30"
-                                : "bg-primary/10 ring-transparent group-hover:ring-primary/20",
+                                ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
                             )}
                           >
                             <Users
                               className={cn(
-                                "w-5 h-5",
+                                "w-5 h-5 transition-transform duration-300",
                                 isActive
-                                  ? "text-primary-foreground"
-                                  : "text-primary",
+                                  ? "text-white"
+                                  : "text-primary group-hover:scale-110",
                               )}
                             />
                           </div>
                         )}
 
                         {/* Group Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
+                        <div className="flex-1 min-w-0 relative z-10">
+                          <div className="flex items-center gap-2 mb-1">
                             <p
                               className={cn(
-                                "text-sm font-medium truncate",
-                                isActive
-                                  ? "text-primary-foreground"
-                                  : "text-foreground",
+                                "text-sm font-semibold truncate transition-colors",
+                                isActive ? "text-white" : "text-foreground",
                               )}
                             >
                               {group.name}
@@ -291,10 +338,10 @@ export default function Sidebar() {
                             {group.is_private && (
                               <Lock
                                 className={cn(
-                                  "w-3 h-3 flex-shrink-0",
+                                  "w-3.5 h-3.5 flex-shrink-0 transition-colors",
                                   isActive
-                                    ? "text-primary-foreground/70"
-                                    : "text-muted-foreground",
+                                    ? "text-white/80"
+                                    : "text-muted-foreground group-hover:text-foreground/70",
                                 )}
                               />
                             )}
@@ -302,10 +349,10 @@ export default function Sidebar() {
                           {group.description && (
                             <p
                               className={cn(
-                                "text-xs truncate",
+                                "text-xs truncate transition-colors",
                                 isActive
-                                  ? "text-primary-foreground/80"
-                                  : "text-muted-foreground",
+                                  ? "text-white/85"
+                                  : "text-muted-foreground group-hover:text-muted-foreground/90",
                               )}
                             >
                               {group.description}
@@ -320,12 +367,15 @@ export default function Sidebar() {
 
               {/* Empty State for Following Groups */}
               {!isLoading && followedGroups.length === 0 && (
-                <div className="py-4 text-center">
-                  <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-muted flex items-center justify-center">
-                    <UserPlus className="w-5 h-5 text-muted-foreground" />
+                <div className="py-8 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
+                  <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center">
+                    <UserPlus className="w-6 h-6 text-primary/60" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
                     Not following any groups
+                  </p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Search for groups to join and start discussing
                   </p>
                 </div>
               )}
