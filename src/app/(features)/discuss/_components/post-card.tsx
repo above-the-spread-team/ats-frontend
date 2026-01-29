@@ -18,7 +18,9 @@ import {
   Edit,
   Trash2,
   Forward,
+  Users,
 } from "lucide-react";
+import Image from "next/image";
 import { BiLike, BiDislike, BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import {
   useLikePost,
@@ -54,6 +56,9 @@ export interface Post {
   comments: Comment[];
   userLiked?: boolean;
   userDisliked?: boolean;
+  groupId?: number | null;
+  groupName?: string | null;
+  groupIconUrl?: string | null;
 }
 
 interface PostCardProps {
@@ -99,7 +104,7 @@ export default function PostCard({
     isExpanded ? postId : null,
     1,
     20,
-    false // Only fetch top-level comments, replies loaded separately
+    false, // Only fetch top-level comments, replies loaded separately
   );
 
   // Derive state directly from post prop - React Query will update it automatically via cache
@@ -120,7 +125,7 @@ export default function PostCard({
       }
 
       const lineHeight = parseFloat(
-        window.getComputedStyle(element).lineHeight
+        window.getComputedStyle(element).lineHeight,
       );
       const maxHeight = lineHeight * 10; // 10 lines
       const actualHeight = element.scrollHeight;
@@ -206,23 +211,70 @@ export default function PostCard({
       id={`post-${post.id}`}
       className="hover:shadow-md transition-shadow  space-y-2 p-3 px-4"
     >
-      <CardHeader className="p-0  ">
-        <div className="flex items-start   justify-between gap-4">
+      <CardHeader className="p-0">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <UserIcon
-              avatarUrl={post.author.avatar}
-              name={post.author.name}
-              size="medium"
-              variant="primary"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm md:text-base font-semibold truncate">
-                {post.author.name}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {formatTimeAgo(post.createdAt)}
-              </p>
-            </div>
+            {/* Show group icon and name if post belongs to a group, otherwise show user icon and name */}
+            {post.groupId ? (
+              <>
+                <div className="flex-shrink-0 relative">
+                  {post.groupIconUrl ? (
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
+                      <Image
+                        src={post.groupIconUrl}
+                        alt={post.groupName || "Group"}
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center ring-2 ring-border/50 ring-offset-2 ring-offset-background">
+                      <Users className="w-5 h-5 text-primary" />
+                    </div>
+                  )}
+                  {/* User icon at bottom-right corner */}
+                  <div className="absolute -bottom-1 -right-2  w-[26px] h-[26px] rounded-full ring-1 ring-background overflow-hidden">
+                    <UserIcon
+                      avatarUrl={post.author.avatar}
+                      name={post.author.name}
+                      size="small"
+                      variant="primary"
+                      className="!w-[26px] !h-[26px] !text-[10px]"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm md:text-base font-semibold truncate">
+                    {post.groupName || "Group"}
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <span className="truncate text-foreground text-sm ml-1">
+                      {post.author.name}
+                    </span>
+                    <span>·</span>
+                    <span>{formatTimeAgo(post.createdAt)}</span>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <UserIcon
+                  avatarUrl={post.author.avatar}
+                  name={post.author.name}
+                  size="medium"
+                  variant="primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm md:text-base font-semibold truncate">
+                    {post.author.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatTimeAgo(post.createdAt)}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
           {isAuthor && (
             <DropdownMenu>
@@ -317,7 +369,7 @@ export default function PostCard({
                   // Store post data in sessionStorage for the post-id page
                   sessionStorage.setItem(
                     `post-${post.id}`,
-                    JSON.stringify(post)
+                    JSON.stringify(post),
                   );
                   router.push(`/discuss/${post.id}`);
                 } else {
@@ -478,5 +530,8 @@ export function mapPostResponse(post: PostResponse): Post {
     comments: [], // Comments will be fetched separately when expanded
     userLiked: post.user_reaction === true,
     userDisliked: post.user_reaction === false,
+    groupId: post.group_id ?? null,
+    groupName: post.group_name ?? null,
+    groupIconUrl: post.group_icon_url ?? null,
   };
 }

@@ -2,7 +2,13 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -320,21 +326,28 @@ export default function CreateEditGroup({
   const currentError = createGroupMutation.error || updateGroupMutation.error;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg px-4 md:text-xl">
+    <Card className="shadow-lg border-border/50 bg-gradient-to-br from-card via-card to-card/95">
+      <CardHeader className="space-y-2 px-6 pb-2 border-b border-border/60">
+        <CardTitle className="text-lg md:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           {isEditMode ? "Edit Group" : "Create New Group"}
         </CardTitle>
+        <CardDescription>
+          {isEditMode
+            ? "Update your group details and settings"
+            : "Start a new community and connect with others"}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6 mt-2">
+      <CardContent className="pt-3">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Group Icon */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Group Icon (Optional)</Label>
-            <div className="flex items-center gap-4">
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-foreground">
+              Group Icon (Optional)
+            </Label>
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
               {previewUrl ? (
-                <div className="relative">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-border">
+                <div className="relative flex-shrink-0">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden ring-4 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg">
                     <Image
                       src={previewUrl}
                       alt="Group icon preview"
@@ -346,21 +359,20 @@ export default function CreateEditGroup({
                   </div>
                   <Button
                     type="button"
-                    variant="default"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    className="absolute -top-1 -right-1 h-7 w-7 rounded-full shadow-md hover:scale-110 transition-transform"
                     onClick={handleRemoveImage}
                     disabled={isSubmitting}
                   >
-                    <X className="scale-90" />
+                    <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               ) : (
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted border-2 border-border flex items-center justify-center">
-                  <Users className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary-font/15 to-primary-font/5 border-2 border-border/50 flex items-center justify-center ring-2 ring-offset-2 ring-offset-background ring-transparent">
+                  <Users className="w-6 h-6 md:w-7 md:h-7 text-primary-font" />
                 </div>
               )}
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -374,20 +386,24 @@ export default function CreateEditGroup({
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isSubmitting}
-                  className="w-full md:w-auto"
+                  className="w-full md:w-auto rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   {previewUrl ? "Change Icon" : "Upload Icon"}
                 </Button>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   Max 5MB. Recommended: Square image, 512x512px
                 </p>
               </div>
             </div>
           </div>
+
           {/* Group Name */}
           <div className="space-y-2">
-            <Label htmlFor="group-name" className="text-sm font-medium">
+            <Label
+              htmlFor="group-name"
+              className="text-sm font-semibold text-foreground"
+            >
               Group Name <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -399,16 +415,19 @@ export default function CreateEditGroup({
               disabled={isSubmitting}
               maxLength={100}
               required
-              className="w-full"
+              className="w-full rounded-xl border-2 border-input/50 bg-gradient-to-br from-background to-muted/20 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all duration-200 hover:border-input"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground px-1">
               {name.length}/100 characters
             </p>
           </div>
 
           {/* Group Description */}
           <div className="space-y-2">
-            <Label htmlFor="group-description" className="text-sm font-medium">
+            <Label
+              htmlFor="group-description"
+              className="text-sm font-semibold text-foreground"
+            >
               Description (Optional)
             </Label>
             <Textarea
@@ -419,20 +438,22 @@ export default function CreateEditGroup({
               disabled={isSubmitting}
               maxLength={1000}
               rows={4}
-              className="resize-none"
+              className="resize-none rounded-xl border-2 border-input/50 bg-gradient-to-br from-background to-muted/20 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all duration-200 hover:border-input"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground px-1">
               {description.length}/1000 characters
             </p>
           </div>
 
           {/* Tag Selection */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Tags (optional)</Label>
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-foreground">
+              Tags (optional)
+            </Label>
+            <div className="space-y-3">
               {/* Selected tags as chips */}
               {selectedTagIds.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2 p-2 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
                   {selectedTagIds.map((tagId) => {
                     const tag = Object.values(tagsByType)
                       .flat()
@@ -447,7 +468,7 @@ export default function CreateEditGroup({
                         size="sm"
                         onClick={() => handleTagToggle(tagId)}
                         disabled={isSubmitting}
-                        className="h-7 gap-1.5 text-xs rounded-full"
+                        className="h-7 gap-2 text-xs rounded-full bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border border-primary/30 text-primary font-medium transition-all duration-200 hover:scale-105"
                       >
                         {tag.name}
                         <X className="h-3 w-3" strokeWidth={2.5} />
@@ -459,13 +480,13 @@ export default function CreateEditGroup({
 
               {/* Tag selector dropdown */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild className="rounded-full">
+                <DropdownMenuTrigger asChild>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     disabled={isSubmitting || tagsLoading}
-                    className="gap-2"
+                    className="gap-2 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                   >
                     <Tag className="h-4 w-4" />
                     <span>Add tags</span>
@@ -473,7 +494,7 @@ export default function CreateEditGroup({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="w-56 max-h-[400px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
+                  className="w-56 max-h-[400px] overflow-y-auto rounded-2xl border-2 shadow-xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
                 >
                   {TAG_TYPE_ORDER.map((type, index) => {
                     const tags = tagsByType[type];
@@ -482,7 +503,7 @@ export default function CreateEditGroup({
                     return (
                       <div key={type}>
                         <DropdownMenuGroup>
-                          <DropdownMenuLabel>
+                          <DropdownMenuLabel className="font-semibold">
                             {TAG_TYPE_LABELS[type]}
                           </DropdownMenuLabel>
                           {tags.map((tag) => {
@@ -492,6 +513,7 @@ export default function CreateEditGroup({
                                 key={tag.id}
                                 checked={isSelected}
                                 onCheckedChange={() => handleTagToggle(tag.id)}
+                                className="cursor-pointer"
                               >
                                 {tag.name}
                               </DropdownMenuCheckboxItem>
@@ -510,15 +532,18 @@ export default function CreateEditGroup({
           </div>
 
           {/* Privacy Toggle */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="space-y-0.5">
+          <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-border/50 hover:border-primary/30 transition-all duration-200">
+            <div className="space-y-1 flex-1">
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-muted-foreground" />
-                <Label htmlFor="group-private" className="text-sm font-medium">
+                <Label
+                  htmlFor="group-private"
+                  className="text-sm font-semibold text-foreground cursor-pointer"
+                >
                   Private Group
                 </Label>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground pl-6">
                 Only members can view and post in private groups
               </p>
             </div>
@@ -527,13 +552,14 @@ export default function CreateEditGroup({
               checked={isPrivate}
               onCheckedChange={setIsPrivate}
               disabled={isSubmitting}
+              className="data-[state=checked]:bg-primary"
             />
           </div>
 
           {/* Error Message */}
           {currentError && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-              <p className="text-sm text-destructive">
+            <div className="p-4 rounded-xl bg-destructive/10 border-2 border-destructive/20">
+              <p className="text-sm text-destructive font-medium">
                 {currentError instanceof Error
                   ? currentError.message
                   : `Failed to ${isEditMode ? "update" : "create"} group. Please try again.`}
@@ -542,26 +568,26 @@ export default function CreateEditGroup({
           )}
 
           {/* Submit Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 rounded-xl border-2 hover:bg-muted/50 transition-all duration-200"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || !name.trim()}
-              className="flex-1"
+              className="flex-1 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   {isEditMode ? "Updating..." : "Creating..."}
-                </>
+                </span>
               ) : isEditMode ? (
                 "Update Group"
               ) : (
