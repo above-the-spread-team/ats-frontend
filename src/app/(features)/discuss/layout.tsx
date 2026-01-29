@@ -36,7 +36,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-row h-[calc(100vh-80px)] overflow-hidden">
-      <div className="w-64 md:w-72 xl:w-80 h-full flex-shrink-0">
+      <div className="w-60 md:w-64 xl:w-72 h-full flex-shrink-0">
         <ScrollArea className="h-[calc(100vh-77px)] md:h-[calc(100vh-70px)]">
           <Sidebar />
         </ScrollArea>

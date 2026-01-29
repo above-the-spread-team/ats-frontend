@@ -33,6 +33,7 @@ export default function SearchGroupPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [page, setPage] = useState(1);
+  const [loadingGroupId, setLoadingGroupId] = useState<number | null>(null);
   const pageSize = 20;
 
   // Sort tag IDs for consistent query keys
@@ -61,13 +62,16 @@ export default function SearchGroupPage() {
     if (!searchQuery.trim()) return groups;
 
     const query = searchQuery.toLowerCase().trim();
-    return groups.filter((group) =>
-      group.name.toLowerCase().includes(query),
-    );
+    return groups.filter((group) => group.name.toLowerCase().includes(query));
   }, [groups, searchQuery]);
 
   const handleFollowGroup = async (groupId: number, e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Prevent action if another group is currently loading
+    if (loadingGroupId !== null) {
+      return;
+    }
 
     if (!currentUser) {
       router.push("/login");
@@ -90,6 +94,9 @@ export default function SearchGroupPage() {
     const isFollowing =
       followerStatus === "active" || followerStatus === "pending";
 
+    // Set loading state for this specific group
+    setLoadingGroupId(groupId);
+
     try {
       if (isFollowing) {
         // Unfollow the group
@@ -97,11 +104,6 @@ export default function SearchGroupPage() {
       } else {
         // Follow the group
         await followGroupMutation.mutateAsync(groupId);
-        // Success - user is now a member (or pending), navigate to group page if active
-        // Navigation happens after cache invalidation completes
-        setTimeout(() => {
-          router.push(`/discuss/group-posts/${groupId}`);
-        }, 100);
       }
     } catch (error) {
       console.error(
@@ -109,6 +111,9 @@ export default function SearchGroupPage() {
         error,
       );
       // Error is handled by mutation state
+    } finally {
+      // Clear loading state
+      setLoadingGroupId(null);
     }
   };
 
@@ -240,8 +245,14 @@ export default function SearchGroupPage() {
                                 e || ({} as React.MouseEvent),
                               )
                             }
-                            isFollowing={followGroupMutation.isPending}
-                            isUnfollowing={unfollowGroupMutation.isPending}
+                            isFollowing={
+                              loadingGroupId === group.id &&
+                              followGroupMutation.isPending
+                            }
+                            isUnfollowing={
+                              loadingGroupId === group.id &&
+                              unfollowGroupMutation.isPending
+                            }
                             disabled={!currentUser}
                             size="sm"
                           />

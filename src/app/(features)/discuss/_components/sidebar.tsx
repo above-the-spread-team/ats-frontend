@@ -46,7 +46,7 @@ export default function Sidebar() {
 
   return (
     <div className="sticky top-0 pb-4">
-      <Card className="shadow-lg border-border/50 rounded-none bg-gradient-to-br from-card via-card to-card/95 w-64 md:w-72 xl:w-80  backdrop-blur-sm">
+      <Card className="shadow-lg border-border/50 rounded-none bg-gradient-to-br from-card via-card to-card/95 w-60 md:w-64 xl:w-72  backdrop-blur-sm">
         <CardContent className="py-2 px-3">
           {/* Navigation Section */}
           <nav className="flex flex-col gap-1.5 mb-4 pb-4 border-b border-border/60">
@@ -128,10 +128,10 @@ export default function Sidebar() {
                         key={group.id}
                         href={`/discuss/group-posts/${group.id}`}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                          "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive
-                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25 scale-[1.02]"
-                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md hover:scale-[1.01] border border-transparent hover:border-border/50",
+                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
+                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
                         )}
                       >
                         {isActive && (
@@ -141,7 +141,7 @@ export default function Sidebar() {
                         {group.icon_url ? (
                           <div
                             className={cn(
-                              "relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
+                              "relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
                               isActive
                                 ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
                                 : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
@@ -151,14 +151,14 @@ export default function Sidebar() {
                               src={group.icon_url}
                               alt={group.name}
                               fill
-                              className="object-cover transition-transform duration-300 group-hover:scale-110"
-                              sizes="44px"
+                              className="object-cover"
+                              sizes="28px"
                             />
                           </div>
                         ) : (
                           <div
                             className={cn(
-                              "w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
+                              "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
                               isActive
                                 ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
                                 : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
@@ -166,10 +166,8 @@ export default function Sidebar() {
                           >
                             <Users
                               className={cn(
-                                "w-5 h-5 transition-transform duration-300",
-                                isActive
-                                  ? "text-white"
-                                  : "text-primary group-hover:scale-110",
+                                "w-4 h-4",
+                                isActive ? "text-white" : "text-primary",
                               )}
                             />
                           </div>
@@ -277,10 +275,10 @@ export default function Sidebar() {
                         key={group.id}
                         href={`/discuss/group-posts/${group.id}`}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                          "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive
-                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25 scale-[1.02]"
-                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md hover:scale-[1.01] border border-transparent hover:border-border/50",
+                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
+                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
                         )}
                       >
                         {isActive && (
@@ -290,7 +288,7 @@ export default function Sidebar() {
                         {group.icon_url ? (
                           <div
                             className={cn(
-                              "relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
+                              "relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
                               isActive
                                 ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
                                 : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
@@ -300,14 +298,14 @@ export default function Sidebar() {
                               src={group.icon_url}
                               alt={group.name}
                               fill
-                              className="object-cover transition-transform duration-300 group-hover:scale-110"
-                              sizes="44px"
+                              className="object-cover"
+                              sizes="28px"
                             />
                           </div>
                         ) : (
                           <div
                             className={cn(
-                              "w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
+                              "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
                               isActive
                                 ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
                                 : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
@@ -315,10 +313,8 @@ export default function Sidebar() {
                           >
                             <Users
                               className={cn(
-                                "w-5 h-5 transition-transform duration-300",
-                                isActive
-                                  ? "text-white"
-                                  : "text-primary group-hover:scale-110",
+                                "w-4 h-4",
+                                isActive ? "text-white" : "text-primary",
                               )}
                             />
                           </div>
