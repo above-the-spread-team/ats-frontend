@@ -220,7 +220,7 @@ export default function SearchGroupPage() {
                               {group.post_count}{" "}
                               {group.post_count === 1 ? "post" : "posts"}
                             </span>
-                          </div>
+                          </div>{" "}
                           <StatusIcon
                             isOwner={
                               currentUser?.id === group.owner_id || false
