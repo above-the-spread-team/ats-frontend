@@ -479,7 +479,11 @@ export default function PostContent({ groupId = null }: PostContentProps) {
             // Posts List
             <div className="space-y-3 md:space-y-4">
               {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  hideGroupInfo={isGroupMode}
+                />
               ))}
             </div>
           )}

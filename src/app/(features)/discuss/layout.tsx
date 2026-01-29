@@ -35,16 +35,16 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   }, [setScrollElement]);
 
   return (
-    <div className="flex flex-row h-[calc(100vh-70px)] overflow-hidden">
-      <div className="w-80 h-full">
-        <ScrollArea className="h-[calc(100vh-55px)]">
+    <div className="flex flex-row h-[calc(100vh-80px)] overflow-hidden">
+      <div className="w-64 md:w-72 xl:w-80 h-full flex-shrink-0">
+        <ScrollArea className="h-[calc(100vh-77px)] md:h-[calc(100vh-70px)]">
           <Sidebar />
         </ScrollArea>
       </div>
-      <div className="w-4/5 h-full flex flex-col">
+      <div className="flex-1 h-full flex flex-col min-w-0">
         <div ref={scrollContainerRef} className="h-full">
-          <ScrollArea className="h-full px-2">
-            <div className="pt-4 pb-8 px-2">{children}</div>
+          <ScrollArea className="h-full mx-0.5">
+            <div className="pt-4 pb-8 px-2 md:px-4">{children}</div>
           </ScrollArea>
         </div>
       </div>

@@ -65,12 +65,14 @@ interface PostCardProps {
   post: Post;
   initialExpanded?: boolean; // Auto-expand comments (useful for single post view)
   scrollableComments?: boolean; // Whether comments should be scrollable (default: true)
+  hideGroupInfo?: boolean; // If true, hide group icon/name and only show user info (for group pages)
 }
 
 export default function PostCard({
   post,
   initialExpanded = false,
   scrollableComments = true,
+  hideGroupInfo = false,
 }: PostCardProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
@@ -214,8 +216,26 @@ export default function PostCard({
       <CardHeader className="p-0">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Show group icon and name if post belongs to a group, otherwise show user icon and name */}
-            {post.groupId ? (
+            {/* If hideGroupInfo is true (group page), always show user icon and name */}
+            {/* Otherwise, show group icon with user badge if post belongs to a group */}
+            {hideGroupInfo || !post.groupId ? (
+              <>
+                <UserIcon
+                  avatarUrl={post.author.avatar}
+                  name={post.author.name}
+                  size="medium"
+                  variant="primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm md:text-base font-semibold truncate">
+                    {post.author.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatTimeAgo(post.createdAt)}
+                  </p>
+                </div>
+              </>
+            ) : (
               <>
                 <div className="flex-shrink-0 relative">
                   {post.groupIconUrl ? (
@@ -254,23 +274,6 @@ export default function PostCard({
                     </span>
                     <span>·</span>
                     <span>{formatTimeAgo(post.createdAt)}</span>
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <UserIcon
-                  avatarUrl={post.author.avatar}
-                  name={post.author.name}
-                  size="medium"
-                  variant="primary"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm md:text-base font-semibold truncate">
-                    {post.author.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatTimeAgo(post.createdAt)}
                   </p>
                 </div>
               </>
