@@ -1,0 +1,224 @@
+---
+alwaysApply: true
+---
+
+# Frontend Implementation Guide
+
+> 📘 **For product requirements, see [`docs/PRD.md`](../../docs/PRD.md)**  
+> 📋 **For project overview, see [`docs/PROJECT_OVERVIEW.md`](../../docs/PROJECT_OVERVIEW.md)**  
+> 🏗️ **For detailed architecture explanations, see [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md)**
+
+This guide provides quick reference patterns and code examples for implementing features in the Next.js frontend.
+
+## Architecture Patterns
+
+### 1. API Data Fetching Strategy
+
+**See [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for detailed explanations.**
+
+#### Third-Party Football API Pattern
+
+**Location**: `src/app/(features)/api/*/route.ts`
+
+```typescript
+// Example: src/app/(features)/api/fixtures/route.ts
+export async function GET(req: NextRequest) {
+  const API_KEY = process.env.API_SPORTS_KEY;
+  if (!API_KEY) {
+    return NextResponse.json({ error: "Missing API key" }, { status: 500 });
+  }
+
+  const date = req.nextUrl.searchParams.get("date");
+  const revalidateTime = 7200; // 2 hours for fixtures
+
+  const response = await fetch(
+    `https://v3.football.api-sports.io/fixtures?date=${date}`,
+    {
+      headers: { "x-apisports-key": API_KEY },
+      next: { revalidate: revalidateTime },
+    },
+  );
+
+  const data = await response.json();
+  const headers = new Headers();
+  headers.set(
+    "Cache-Control",
+    `public, s-maxage=${revalidateTime}, stale-while-revalidate=${
+      revalidateTime * 2
+    }`,
+  );
+
+  return NextResponse.json(data, { headers });
+}
+```
+
+#### FastAPI Backend Pattern
+
+**Location**: `src/services/fastapi/*.ts`
+
+### 2. File Structure
+
+**See [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for detailed structure.**
+
+Quick reference:
+
+- `src/app/(features)/api/*/route.ts` - Next.js API routes (third-party proxy)
+- `src/services/fastapi/*.ts` - FastAPI backend services with React Query hooks
+- `src/services/football-api/*.ts` - Third-party API hooks
+- `src/type/fastapi/*.d.ts` - Backend TypeScript types
+- `src/type/footballapi/*.d.ts` - Football API types
+- `src/components/ui/` - shadcn/ui components
+- `src/components/common/` - Shared components
+
+### 3. Type Definitions
+
+**Conventions**:
+
+- FastAPI types: Match backend Pydantic schemas exactly, use `| null` for nullable fields
+- Football API types: Match third-party API response structure
+- File naming: `[resource].d.ts` (e.g., `posts.d.ts`, `fixture.d.ts`)
+
+### 4. Service Layer Patterns
+
+#### FastAPI Services (`src/services/fastapi/`)
+
+```typescript
+// Pattern for FastAPI service files
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+// 1. Export async function for API call
+export async function createResource(data: CreateData): Promise<Response> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (authHeader) headers["Authorization"] = authHeader;
+
+  const response = await fetch(`${BACKEND_URL}/api/v1/resource`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    // Error handling...
+  }
+
+  return await response.json();
+}
+
+// 2. Export React Query hook
+export function useCreateResource() {
+  const queryClient = useQueryClient();
+  return useMutation<Response, Error, CreateData>({
+    mutationFn: createResource,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
+    },
+  });
+}
+```
+
+#### Football API Services (`src/services/football-api/`)
+
+```typescript
+// Pattern for football API hooks
+export function useFixtures(date?: string, timezone?: string) {
+  return useQuery<FixturesApiResponse>({
+    queryKey: ["fixtures", date, timezone],
+    queryFn: () => fetchFixtures(date, timezone),
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000, // 1 minute for live data
+    refetchOnWindowFocus: false,
+  });
+}
+```
+
+### 5. Authentication Pattern
+
+**See [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for detailed flow.**
+
+**Quick reference**: Use `getAuthHeader()` from `src/services/fastapi/token-storage.ts` in all FastAPI requests.
+
+### 6. Styling & Theming
+
+**See [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for color system and theming details.**
+
+**Quick reference**:
+
+- Use Tailwind classes with CSS variables (`text-primary`, `bg-card`, etc.)
+- Ensure dark mode compatibility
+- Use shadcn/ui components from `src/components/ui/`
+
+### 7. React Query Configuration
+
+**Stale Times**:
+
+- Live data: 30 seconds
+- Fixtures list: 2 hours
+- News: 5 minutes
+- Odds: 3 hours
+
+**Pattern**: Include all parameters in query keys, sort arrays consistently
+
+### 8. Component Patterns
+
+**Page Components**:
+
+- Use `"use client"` for client components
+- Fetch data with React Query hooks
+- Handle loading, error, and empty states
+- Use `useMemo` for derived data
+
+**UI Components**:
+
+- Use shadcn/ui as base, extend with Tailwind
+- Ensure dark mode compatibility
+- Follow accessibility best practices
+
+### 9. Best Practices Checklist
+
+**See [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for detailed best practices.**
+
+Quick checklist:
+
+- ✅ Use Next.js API routes for third-party APIs
+- ✅ Use React Query for all FastAPI requests
+- ✅ Handle 401/403/404/422 errors appropriately
+- ✅ Match backend schemas exactly in TypeScript types
+- ✅ Use `useMemo`/`useCallback` for performance
+- ✅ Ensure accessibility (ARIA labels, keyboard nav)
+
+## Common Tasks
+
+### Adding a New FastAPI Endpoint
+
+1. Add TypeScript types in `src/type/fastapi/[resource].d.ts`
+2. Create service file in `src/services/fastapi/[resource].ts`
+3. Export async function and React Query hooks
+4. Use in components via hooks
+
+### Adding a New Third-Party API Endpoint
+
+1. Add TypeScript types in `src/type/footballapi/[resource].d.ts`
+2. Create Next.js API route in `src/app/(features)/api/[endpoint]/route.ts`
+3. Set appropriate revalidation time
+4. Create React Query hook in `src/services/football-api/[resource].ts`
+5. Use hook in components
+
+### Adding a New Page
+
+1. Create page in `src/app/(features)/[feature]/page.tsx`
+2. Use React Query hooks for data fetching
+3. Implement loading, error, and empty states
+4. Use shadcn/ui components for UI
+5. Ensure dark mode compatibility
+
+## Environment Variables
+
+**See [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for complete list.**
+
+Required:
+
+- `NEXT_PUBLIC_BACKEND_URL`: FastAPI backend URL
+- `API_SPORTS_KEY` / `FOOTBALL_API_KEY`: Third-party API key

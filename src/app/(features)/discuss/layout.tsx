@@ -1,32 +1,19 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import Sidebar from "./_components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ScrollProvider, useScroll } from "./_contexts/scroll-context";
 import { useSidebar } from "./_contexts/sidebar-context";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/use-mobile";
 
 function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { setScrollElement } = useScroll();
   const { isOpen, closeSidebar } = useSidebar();
-  const [isMobile, setIsMobile] = useState(true);
-
-  // Detect screen size on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768); // md breakpoint
-    };
-
-    // Check on mount
-    checkMobile();
-
-    // Listen for resize events
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = useMobile();
 
   // Close sidebar when switching to desktop
   useEffect(() => {
@@ -65,11 +52,11 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="flex flex-row h-[calc(100vh-80px)] overflow-hidden">
+      <div className="flex flex-row h-[calc(100vh-55px)] overflow-hidden">
         {/* Desktop Sidebar - always visible */}
         {!isMobile && (
-          <div className="w-60 md:w-64 xl:w-72 h-full flex-shrink-0">
-            <ScrollArea className="h-[calc(100vh-65px)]">
+          <div className="w-60 md:w-64 xl:w-72 h-full  flex-shrink-0">
+            <ScrollArea className="h-[calc(100vh-55px)]">
               <Sidebar />
             </ScrollArea>
           </div>

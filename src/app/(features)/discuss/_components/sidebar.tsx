@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUserGroups } from "@/services/fastapi/groups";
@@ -16,15 +17,30 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "../_contexts/sidebar-context";
+import { useMobile } from "@/hooks/use-mobile";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: groupsData, isLoading } = useUserGroups();
   const groups = groupsData?.items || [];
+  const { closeSidebar } = useSidebar();
+  const isMobile = useMobile();
 
-  // Separate groups into owned and followed
-  const ownedGroups = groups.filter((group) => group.is_owner);
-  const followedGroups = groups.filter((group) => !group.is_owner);
+  // Handle link click - close sidebar on mobile
+  const handleLinkClick = () => {
+    if (isMobile) {
+      closeSidebar();
+    }
+  };
+
+  // Memoize group filtering to avoid recalculation on every render
+  const { ownedGroups, followedGroups } = useMemo(() => {
+    return {
+      ownedGroups: groups.filter((group) => group.is_owner),
+      followedGroups: groups.filter((group) => !group.is_owner),
+    };
+  }, [groups]);
 
   const navigationLinks = [
     {
@@ -45,8 +61,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="sticky top-0 ">
-      <Card className="shadow-lg pb-56 md:pb-6 border-border/50 rounded-none bg-gradient-to-br from-card via-card to-card/95 w-60 md:w-64 xl:w-72  backdrop-blur-sm">
+    <div className="sticky  top-0 ">
+      <Card className="shadow-lg bg-gradient-to-br h-[calc(100vh-45px)] md:h-[calc(100vh-55px)] from-card via-card to-card/95  pb-10 md:pb-6 border-border/50  rounded-none   w-60 md:w-64 xl:w-72  backdrop-blur-sm">
         <CardContent className="py-2 px-3">
           {/* Navigation Section */}
           <nav className="flex flex-col gap-1.5 mb-4 pb-4 border-b border-border/60">
@@ -57,6 +73,7 @@ export default function Sidebar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={handleLinkClick}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden group",
                     isActive
@@ -127,6 +144,7 @@ export default function Sidebar() {
                       <Link
                         key={group.id}
                         href={`/discuss/group-posts/${group.id}`}
+                        onClick={handleLinkClick}
                         className={cn(
                           "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive
@@ -216,17 +234,20 @@ export default function Sidebar() {
 
               {/* Empty State for Owned Groups */}
               {!isLoading && ownedGroups.length === 0 && (
-                <div className="py-8 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
-                  <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20 flex items-center justify-center">
-                    <Crown className="w-6 h-6 text-yellow-600/60 dark:text-yellow-500/60" />
+                <Link
+                  href="/discuss/create-group"
+                  onClick={handleLinkClick}
+                  className="block group"
+                >
+                  <div className="py-8 px-4 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 transition-transform duration-200 group-hover:shadow-md group-hover:scale-[1.01]">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      No groups owned yet
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Create your first group to get started
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    No groups owned yet
-                  </p>
-                  <p className="text-xs text-muted-foreground/70">
-                    Create your first group to get started
-                  </p>
-                </div>
+                </Link>
               )}
             </div>
 
@@ -274,6 +295,7 @@ export default function Sidebar() {
                       <Link
                         key={group.id}
                         href={`/discuss/group-posts/${group.id}`}
+                        onClick={handleLinkClick}
                         className={cn(
                           "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
                           isActive
@@ -363,17 +385,20 @@ export default function Sidebar() {
 
               {/* Empty State for Following Groups */}
               {!isLoading && followedGroups.length === 0 && (
-                <div className="py-8 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
-                  <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center">
-                    <UserPlus className="w-6 h-6 text-primary/60" />
+                <Link
+                  href="/discuss/search-group"
+                  onClick={handleLinkClick}
+                  className="block group"
+                >
+                  <div className="py-8 px-4 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 transition-transform duration-200 group-hover:shadow-md group-hover:scale-[1.01]">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Not following any groups
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Search for groups to join and start discussing
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Not following any groups
-                  </p>
-                  <p className="text-xs text-muted-foreground/70">
-                    Search for groups to join and start discussing
-                  </p>
-                </div>
+                </Link>
               )}
             </div>
           </div>
