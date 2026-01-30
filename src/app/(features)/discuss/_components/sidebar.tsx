@@ -62,7 +62,7 @@ export default function Sidebar() {
 
   return (
     <div className="sticky  top-0 ">
-      <Card className="shadow-lg bg-gradient-to-br h-[calc(100vh-45px)] md:h-[calc(100vh-55px)] from-card via-card to-card/95  pb-10 md:pb-6 border-border/50  rounded-none   w-60 md:w-64 xl:w-72  backdrop-blur-sm">
+      <Card className=" bg-gradient-to-br  pb-10 md:pb-6 border-border/50  rounded-none   w-60 md:w-64 xl:w-72  backdrop-blur-sm">
         <CardContent className="py-2 px-3">
           {/* Navigation Section */}
           <nav className="flex flex-col gap-1.5 mb-4 pb-4 border-b border-border/60">

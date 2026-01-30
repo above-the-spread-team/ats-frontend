@@ -21,10 +21,10 @@ import {
   useGroupPosts,
   useGroup,
   useUserGroups,
-  useGroupFollowers,
+  // useGroupFollowers,
   useAllGroups,
   useFollowGroup,
-  usePendingFollowers,
+  // usePendingFollowers,
 } from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import Image from "next/image";
@@ -372,7 +372,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
       {isGroupMode && groupData && !isLoadingGroup && !canViewPosts && (
         <Card>
           <CardContent className="py-12 text-center">
-            <Lock className="w-12 h-12 mx-auto text-destructive mb-4" />
+            <Lock className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Content is private</h3>
             <p className="text-muted-foreground mb-4">
               {!currentUser
@@ -383,33 +383,6 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                     ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
                     : "This group's posts are only visible to active members. Please follow the group to view content."}
             </p>
-            {currentUser &&
-              followerStatus !== "banned" &&
-              followerStatus !== "pending" && (
-                <Button
-                  onClick={async () => {
-                    try {
-                      await followGroupMutation.mutateAsync(groupData.id);
-                    } catch (error) {
-                      console.error("Failed to follow group:", error);
-                    }
-                  }}
-                  variant="default"
-                  disabled={followGroupMutation.isPending}
-                >
-                  {followGroupMutation.isPending ? (
-                    <>
-                      <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Following...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-1" />
-                      Follow Group
-                    </>
-                  )}
-                </Button>
-              )}
           </CardContent>
         </Card>
       )}

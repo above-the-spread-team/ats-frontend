@@ -308,8 +308,8 @@ export default function CreateEditGroup({
           <AlertCircle className="w-10 h-10 mx-auto text-red-300 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Group not found</h3>
           <p className="text-muted-foreground mb-4">
-            The group you're looking for doesn't exist or you don't have
-            permission to view it.
+            The group doesn&apos;t exist or you don&apos;t have permission to
+            view it.
           </p>
           <Button
             variant="outline"
@@ -386,7 +386,7 @@ export default function CreateEditGroup({
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isSubmitting}
-                  className="w-full md:w-auto rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+                  className="w-full text-sm   md:w-auto rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   {previewUrl ? "Change Icon" : "Upload Icon"}
@@ -532,7 +532,7 @@ export default function CreateEditGroup({
           </div>
 
           {/* Privacy Toggle */}
-          <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-border/50 hover:border-primary/30 transition-all duration-200">
+          <div className="flex items-center gap-2 justify-between p-3 md:p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-border/50 hover:border-primary/30 transition-all duration-200">
             <div className="space-y-1 flex-1">
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-muted-foreground" />

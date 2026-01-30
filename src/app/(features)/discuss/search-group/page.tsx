@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import FullPage from "@/components/common/full-page";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ import {
 } from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import GroupTagFilter from "../_components/group-tag-filter";
 
 export default function SearchGroupPage() {
@@ -119,15 +117,15 @@ export default function SearchGroupPage() {
 
   return (
     <>
-      <div className="mb-4">
-        <h1 className="text-xl md:text-2xl font-bold mb-2">Discover Groups</h1>
+      <div className="mb-2 pl-2">
+        <h1 className="text-lg md:text-xl font-bold mb-2">Discover Groups</h1>
         <p className="text-sm md:text-base text-muted-foreground">
           Find and follow groups to discuss your favorite topics
         </p>
       </div>
 
       {/* Search Input */}
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -135,7 +133,7 @@ export default function SearchGroupPage() {
             placeholder="Search groups by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 md:h-10"
           />
         </div>
       </div>
@@ -170,7 +168,7 @@ export default function SearchGroupPage() {
       {!isLoading && (
         <>
           {filteredGroups.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid  md:grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3">
               {filteredGroups.map((group) => (
                 <Card
                   key={group.id}
@@ -179,7 +177,7 @@ export default function SearchGroupPage() {
                     router.push(`/discuss/group-posts/${group.id}`)
                   }
                 >
-                  <CardContent className="p-4">
+                  <CardContent className="p-3">
                     <div className="flex items-start gap-3">
                       {/* Group Icon */}
                       {group.icon_url ? (
@@ -253,7 +251,6 @@ export default function SearchGroupPage() {
                               loadingGroupId === group.id &&
                               unfollowGroupMutation.isPending
                             }
-                            disabled={!currentUser}
                             size="sm"
                           />
                         </div>

@@ -52,11 +52,11 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="flex flex-row h-[calc(100vh-55px)] overflow-hidden">
+      <div className="flex flex-row h-[calc(100vh-80px)] overflow-hidden">
         {/* Desktop Sidebar - always visible */}
         {!isMobile && (
           <div className="w-60 md:w-64 xl:w-72 h-full  flex-shrink-0">
-            <ScrollArea className="h-[calc(100vh-55px)]">
+            <ScrollArea className="h-[calc(100vh-80px)]">
               <Sidebar />
             </ScrollArea>
           </div>
