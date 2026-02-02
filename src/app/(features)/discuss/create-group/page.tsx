@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import FullPage from "@/components/common/full-page";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useCurrentUser } from "@/services/fastapi/oauth";

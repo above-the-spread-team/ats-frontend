@@ -15,19 +15,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { MessageCircle, User, Lock, UserPlus } from "lucide-react";
+import { MessageCircle, User, Lock } from "lucide-react";
 import { usePosts } from "@/services/fastapi/posts";
 import {
   useGroupPosts,
   useGroup,
   useUserGroups,
-  // useGroupFollowers,
   useAllGroups,
-  useFollowGroup,
-  // usePendingFollowers,
 } from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
-import Image from "next/image";
 import type { PostDateFilter, PostSortOption } from "@/type/fastapi/posts";
 import CreatePost from "./create-post";
 import PostCard, { mapPostResponse } from "./post-card";
@@ -99,11 +95,11 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   const { data: userGroupsData } = useUserGroups(1, 100);
   // Get all groups to check follower_status (needed for pending/banned status)
   const { data: allGroupsData } = useAllGroups(1, 100);
-  const followGroupMutation = useFollowGroup();
 
   // Get list of group IDs the user is following (active followers only)
-  const userGroupIds = new Set<number>(
-    userGroupsData?.items.map((group) => group.id) || [],
+  const userGroupIds = useMemo(
+    () => new Set<number>(userGroupsData?.items.map((group) => group.id) || []),
+    [userGroupsData],
   );
 
   // Get follower_status for current group (if in group mode)

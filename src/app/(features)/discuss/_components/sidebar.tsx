@@ -23,9 +23,11 @@ import { useMobile } from "@/hooks/use-mobile";
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: groupsData, isLoading } = useUserGroups();
-  const groups = groupsData?.items || [];
   const { closeSidebar } = useSidebar();
   const isMobile = useMobile();
+
+  // Memoize groups extraction
+  const groups = useMemo(() => groupsData?.items || [], [groupsData]);
 
   // Handle link click - close sidebar on mobile
   const handleLinkClick = () => {
@@ -61,8 +63,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="sticky  top-0 ">
-      <Card className=" bg-gradient-to-br  pb-10 md:pb-6 border-border/50  rounded-none   w-60 md:w-64 xl:w-72  backdrop-blur-sm">
+    <div className="sticky   top-0 ">
+      <Card className=" bg-gradient-to-br  pb-10 md:pb-6 border-border/50 min-h-[calc(100vh-20px)] md:min-h-[calc(100vh-80px)]  rounded-none   w-60 md:w-64 xl:w-72  backdrop-blur-sm">
         <CardContent className="py-2 px-3">
           {/* Navigation Section */}
           <nav className="flex flex-col gap-1.5 mb-4 pb-4 border-b border-border/60">

@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, X, Calendar, ArrowUp   } from "lucide-react";
+import { ChevronDown, X, Calendar, ArrowUp } from "lucide-react";
 import { useTags } from "@/services/fastapi/tags";
 import type { TagSummary, TagType } from "@/type/fastapi/tags";
 import type { PostDateFilter, PostSortOption } from "@/type/fastapi/posts";
@@ -82,9 +82,6 @@ export default function TagFilter({
     }
   };
 
-  // Check if there are any tags
-  const hasAnyTags = Object.values(tagsByType).some((tags) => tags.length > 0);
-
   // Get selected tags count for display
   const selectedCount = selectedTagIds.length;
 
@@ -110,8 +107,6 @@ export default function TagFilter({
     <div className="mb-4 flex flex-col items-start gap-2">
       {/* Separate dropdown menus for each tag type */}
       <div className="flex flex-wrap gap-2">
-   
-
         {/* Date Range Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -124,10 +119,7 @@ export default function TagFilter({
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="w-56 rounded-2xl"
-          >
+          <DropdownMenuContent align="start" className="w-56 rounded-2xl">
             <DropdownMenuCheckboxItem
               checked={!dateRange}
               onCheckedChange={(checked) => {
@@ -157,8 +149,8 @@ export default function TagFilter({
           </DropdownMenuContent>
         </DropdownMenu>
 
-             {/* Sort Filter */}
-             <DropdownMenu>
+        {/* Sort Filter */}
+        <DropdownMenu>
           <DropdownMenuTrigger
             asChild
             className="rounded-full bg-primary !ring-0 text-white hover:bg-primary-active hover:text-white data-[state=open]:bg-primary-active"
@@ -169,10 +161,7 @@ export default function TagFilter({
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="w-56 rounded-2xl"
-          >
+          <DropdownMenuContent align="start" className="w-56 rounded-2xl">
             <DropdownMenuCheckboxItem
               checked={!sortBy}
               onCheckedChange={(checked) => {
@@ -202,7 +191,9 @@ export default function TagFilter({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {TAG_TYPE_ORDER.filter((type) => type !== "player" && type !== "team" && type !== "topic").map((type) => {
+        {TAG_TYPE_ORDER.filter(
+          (type) => type !== "player" && type !== "team" && type !== "topic",
+        ).map((type) => {
           const tags = tagsByType[type];
           if (tags.length === 0) return null;
 

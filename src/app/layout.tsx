@@ -2,7 +2,6 @@ import { Arimo } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { MyQueryClientProvider } from "@/providers/query-client";
-import BodyOverflowHandler from "@/components/layout/body-overflow-handler";
 const ff = Arimo({
   weight: ["400", "500", "600", "700"],
   variable: "--font-alan-sans",

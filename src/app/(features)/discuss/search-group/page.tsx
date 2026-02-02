@@ -48,7 +48,9 @@ export default function SearchGroupPage() {
   const { data: currentUser } = useCurrentUser();
   const followGroupMutation = useFollowGroup();
   const unfollowGroupMutation = useUnfollowGroup();
-  const groups = groupsData?.items || [];
+
+  // Memoize groups extraction
+  const groups = useMemo(() => groupsData?.items || [], [groupsData]);
 
   // Reset to page 1 when search query or tag filters change
   useEffect(() => {

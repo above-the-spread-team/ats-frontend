@@ -9,22 +9,6 @@ import { Tag } from "@/components/common/tag";
 export default function HomeNews() {
   const { data: newsData, isLoading, error } = useNews(1, 8);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return "Yesterday";
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const getFirstTag = (news: NewsResponse) => {
     return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
   };

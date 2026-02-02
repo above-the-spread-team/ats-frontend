@@ -5,7 +5,6 @@ import Sidebar from "./_components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ScrollProvider, useScroll } from "./_contexts/scroll-context";
 import { useSidebar } from "./_contexts/sidebar-context";
-import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobile } from "@/hooks/use-mobile";
 
@@ -55,8 +54,8 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="flex flex-row h-[calc(100vh-80px)] overflow-hidden">
         {/* Desktop Sidebar - always visible */}
         {!isMobile && (
-          <div className="w-60 md:w-64 xl:w-72 h-full  flex-shrink-0">
-            <ScrollArea className="h-[calc(100vh-80px)]">
+          <div className="w-60 md:w-64 xl:w-72 h-full   flex-shrink-0">
+            <ScrollArea className="h-[calc(100vh-80px)] ">
               <Sidebar />
             </ScrollArea>
           </div>
@@ -93,7 +92,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           {/* Sidebar Panel - slides in from left */}
           <div
             className={cn(
-              "fixed top-0 left-0 h-full  bg-card shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto",
+              "fixed top-0 left-0 h-full  bg-card  z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto",
               isOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >

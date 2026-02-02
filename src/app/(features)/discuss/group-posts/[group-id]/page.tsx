@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import FullPage from "@/components/common/full-page";
 import PostContent from "../../_components/post-content";
 
 export default function GroupPostsPage() {

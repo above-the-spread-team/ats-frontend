@@ -28,7 +28,6 @@ interface CreateCommentProps {
 export default function CreateComment({
   postId,
   parentCommentId = null,
-  repliedToUsername = null,
   onSuccess,
   onCancel,
   autoFocus = false,
