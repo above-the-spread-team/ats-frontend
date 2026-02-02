@@ -15,7 +15,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { MessageCircle, User, Lock } from "lucide-react";
+import { MessageCircle, User, Lock, ArrowLeft } from "lucide-react";
 import { usePosts } from "@/services/fastapi/posts";
 import {
   useGroupPosts,
@@ -249,41 +249,43 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     <>
       {/* Group Header - Show when viewing a group */}
       {isGroupMode && (
-        <PostHeader
-          groupData={groupData || null}
-          isLoading={isLoadingGroup}
-          followerStatus={followerStatus}
-          showFollowers={showFollowers}
-          showPending={showPending}
-          showBanned={showBanned}
-          onShowFollowersChange={(show) => {
-            setShowFollowers(show);
-            if (show) {
-              setShowPending(false);
-              setShowBanned(false);
-            }
-          }}
-          onShowPendingChange={(show) => {
-            setShowPending(show);
-            if (show) {
-              setShowFollowers(false);
-              setShowBanned(false);
-            }
-          }}
-          onShowBannedChange={(show) => {
-            setShowBanned(show);
-            if (show) {
-              setShowFollowers(false);
-              setShowPending(false);
-            }
-          }}
-          onPageChange={(page) => {
-            setPage(page);
-            setFollowersPage(1);
-            setPendingPage(1);
-            setBannedPage(1);
-          }}
-        />
+        <>
+          <PostHeader
+            groupData={groupData || null}
+            isLoading={isLoadingGroup}
+            followerStatus={followerStatus}
+            showFollowers={showFollowers}
+            showPending={showPending}
+            showBanned={showBanned}
+            onShowFollowersChange={(show) => {
+              setShowFollowers(show);
+              if (show) {
+                setShowPending(false);
+                setShowBanned(false);
+              }
+            }}
+            onShowPendingChange={(show) => {
+              setShowPending(show);
+              if (show) {
+                setShowFollowers(false);
+                setShowBanned(false);
+              }
+            }}
+            onShowBannedChange={(show) => {
+              setShowBanned(show);
+              if (show) {
+                setShowFollowers(false);
+                setShowPending(false);
+              }
+            }}
+            onPageChange={(page) => {
+              setPage(page);
+              setFollowersPage(1);
+              setPendingPage(1);
+              setBannedPage(1);
+            }}
+          />
+        </>
       )}
 
       {/* Create Post Input - Only show when not viewing followers/pending/banned and user can create posts */}

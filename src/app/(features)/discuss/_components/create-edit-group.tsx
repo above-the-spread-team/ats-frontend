@@ -337,7 +337,7 @@ export default function CreateEditGroup({
             : "Start a new community and connect with others"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-3">
+      <CardContent className="pt-3 p-3 md:p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Group Icon */}
           <div className="space-y-3">
