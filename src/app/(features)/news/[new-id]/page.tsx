@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   MessageCircle,
-  Heart,
   Calendar,
   User,
   ExternalLink,
@@ -64,7 +63,6 @@ export default function NewsDetailPage() {
   const userDisliked = news?.user_reaction === false;
   const likeCount = news?.likes ?? 0;
   const dislikeCount = news?.dislikes ?? 0;
-  const reactionCount = news?.reaction_count ?? 0;
 
   // Scroll to top when news ID changes
   useEffect(() => {
@@ -120,7 +118,7 @@ export default function NewsDetailPage() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Just now";
@@ -263,7 +261,10 @@ export default function NewsDetailPage() {
                     onClick={() => {
                       document
                         .getElementById("comments-section")
-                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
                     }}
                     className="flex items-center hover:text-primary-font  transition-colors cursor-pointer"
                   >
@@ -349,19 +350,34 @@ export default function NewsDetailPage() {
                 remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({ ...props }) => (
-                    <h1 className="text-3xl font-bold mb-5 mt-8 text-foreground border-b border-border pb-2" {...props} />
+                    <h1
+                      className="text-3xl font-bold mb-5 mt-8 text-foreground border-b border-border pb-2"
+                      {...props}
+                    />
                   ),
                   h2: ({ ...props }) => (
-                    <h2 className="text-2xl font-bold mb-4 mt-7 text-foreground border-b border-border pb-2" {...props} />
+                    <h2
+                      className="text-2xl font-bold mb-4 mt-7 text-foreground border-b border-border pb-2"
+                      {...props}
+                    />
                   ),
                   h3: ({ ...props }) => (
-                    <h3 className="text-xl md:text-2xl font-bold mb-4 mt-6 text-foreground" {...props} />
+                    <h3
+                      className="text-xl md:text-2xl font-bold mb-4 mt-6 text-foreground"
+                      {...props}
+                    />
                   ),
                   h4: ({ ...props }) => (
-                    <h4 className="text-lg md:text-xl font-bold mb-3 mt-5 text-foreground" {...props} />
+                    <h4
+                      className="text-lg md:text-xl font-bold mb-3 mt-5 text-foreground"
+                      {...props}
+                    />
                   ),
                   p: ({ ...props }) => (
-                    <p className="mb-4 leading-7  text-base  text-foreground" {...props} />
+                    <p
+                      className="mb-4 leading-7  text-base  text-foreground"
+                      {...props}
+                    />
                   ),
                   ul: ({ ...props }) => (
                     <ul
@@ -376,7 +392,10 @@ export default function NewsDetailPage() {
                     />
                   ),
                   li: ({ ...props }) => (
-                    <li className="pl-2 leading-7 marker:text-primary-font" {...props} />
+                    <li
+                      className="pl-2 leading-7 marker:text-primary-font"
+                      {...props}
+                    />
                   ),
                   strong: ({ ...props }) => (
                     <strong className="font-bold text-foreground" {...props} />
@@ -430,7 +449,9 @@ export default function NewsDetailPage() {
             {/* Footer Actions */}
             <div className="mt-6 pt-4 border-t flex items-center justify-between">
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="hidden md:block">Published {formatRelativeDate(news.created_at)}</span>
+                <span className="hidden md:block">
+                  Published {formatRelativeDate(news.created_at)}
+                </span>
                 {news.updated_at !== news.created_at && (
                   <span>• Updated {formatRelativeDate(news.updated_at)}</span>
                 )}

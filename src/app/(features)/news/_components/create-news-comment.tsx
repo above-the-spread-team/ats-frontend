@@ -28,7 +28,6 @@ interface CreateNewsCommentProps {
 export default function CreateNewsComment({
   newsId,
   parentCommentId = null,
-  repliedToUsername = null,
   onSuccess,
   onCancel,
   autoFocus = false,

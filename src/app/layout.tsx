@@ -15,9 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${ff.variable} font-alan-sans overflow-x-hidden antialiased pb-10 md:pb-0`}
-      >
+      <body className={`${ff.variable} font-alan-sans `}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

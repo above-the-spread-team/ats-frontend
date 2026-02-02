@@ -33,6 +33,7 @@ import type { EmojiClickData } from "emoji-picker-react";
 interface CreatePostProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  groupId?: number; // Optional group ID - if provided, post will be created in this group
 }
 
 // Only allow league tags for posts
@@ -45,7 +46,11 @@ const TAG_TYPE_LABELS: Record<TagType, string> = {
   topic: "Topics",
 };
 
-export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
+export default function CreatePost({
+  open,
+  onOpenChange,
+  groupId,
+}: CreatePostProps) {
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
@@ -219,6 +224,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
       const newPost = await createPostMutation.mutateAsync({
         content: content.trim(),
         image_url: null,
+        group_id: groupId || null,
       });
 
       // Add tags if any are selected
@@ -355,7 +361,7 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
                 "flex w-full rounded-xl border border-input bg-card px-3 py-2 text-base shadow-sm transition-colors",
                 "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-font",
                 "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none",
-                "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative  [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+                "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative  [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
               )}
             />
           </div>
@@ -364,8 +370,8 @@ export default function CreatePost({ open, onOpenChange }: CreatePostProps) {
               {createPostMutation.error instanceof Error
                 ? createPostMutation.error.message
                 : addTagsMutation.error instanceof Error
-                ? addTagsMutation.error.message
-                : "Failed to create post. Please try again."}
+                  ? addTagsMutation.error.message
+                  : "Failed to create post. Please try again."}
             </p>
           )}
 

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { usePost } from "@/services/fastapi/posts";
-import PostCard, { mapPostResponse, type Post } from "../_components/post-card";
+import PostCard, { mapPostResponse, type Post } from "../../../_components/post-card";
 
 export default function DiscussPostPage() {
   const params = useParams();
@@ -46,11 +46,7 @@ export default function DiscussPostPage() {
   const post = cachedPost || (postData ? mapPostResponse(postData) : null);
 
   const handleBackToDiscussion = () => {
-    if (postId) {
-      router.push(`/discuss#post-${postId}`);
-    } else {
-      router.push("/discuss");
-    }
+    router.back();
   };
 
   return (
@@ -59,7 +55,7 @@ export default function DiscussPostPage() {
       <Button variant="ghost" onClick={handleBackToDiscussion} className=" ">
         <ArrowLeft className="w-4 h-4 text-muted-foreground " />
         <p className="text-xs md:text-sm text-muted-foreground font-medium">
-          Back to Discussion
+          Back
         </p>
       </Button>
       <div className="px-2">
@@ -98,7 +94,7 @@ export default function DiscussPostPage() {
               </p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={handleBackToDiscussion} variant="outline">
-                  Back to Discussion
+                  Back
                 </Button>
                 <Button onClick={() => refetch()} variant="outline">
                   Try again
@@ -119,7 +115,7 @@ export default function DiscussPostPage() {
                 deleted.
               </p>
               <Button onClick={handleBackToDiscussion} variant="outline">
-                Back to Discussion
+                Back
               </Button>
             </CardContent>
           </Card>

@@ -13,16 +13,19 @@ export interface PostAuthor {
 export interface PostBase {
   content: string;
   image_url: string | null;
+  group_id: number | null;
 }
 
 export interface PostCreate {
   content: string;
   image_url?: string | null;
+  group_id?: number | null;
 }
 
 export interface PostUpdate {
   content?: string;
   image_url?: string | null;
+  group_id?: number | null;
 }
 
 export type PostDateFilter = "24h" | "week" | "month";
@@ -35,6 +38,8 @@ export interface PostResponse extends PostBase {
   author: PostAuthor;
   created_at: string;
   updated_at: string;
+  group_name?: string | null; // Group name if post belongs to a group
+  group_icon_url?: string | null; // Group icon URL if post belongs to a group
   comment_count: number;
   reaction_count: number;
   likes: number;
