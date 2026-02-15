@@ -41,7 +41,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
       if (targetRef.current) {
         // Find the viewport element inside the ScrollArea
         const viewport = targetRef.current.querySelector(
-          "[data-radix-scroll-area-viewport]"
+          "[data-radix-scroll-area-viewport]",
         ) as HTMLElement | null;
         if (viewport) {
           setScrollElement(viewport);
@@ -102,7 +102,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           {!isMobile && (
             <div ref={scrollContainerRef} className="h-full">
               <ScrollArea className="h-full px-2">
-                <div className="pt-4 pb-8 px-2">
+                <div className="pt-4 pb-10 px-2">
                   {showBackToDiscuss && (
                     <div className="mb-3">
                       <Button
@@ -126,7 +126,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           {isMobile && (
             <div ref={mobileContainerRef} className="h-full w-full">
               <ScrollArea className="h-full ">
-                <div className="pt-4 pb-32 px-2">
+                <div className="pt-4 pb-40 px-2">
                   {showBackToDiscuss && (
                     <div className="mb-2">
                       <Button
@@ -157,7 +157,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           <div
             className={cn(
               "fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300",
-              isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
             )}
             onClick={closeSidebar}
           />
@@ -165,7 +165,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           <div
             className={cn(
               "fixed top-0 left-0 h-full  bg-card  z-50 transform transition-transform duration-300 ease-in-out",
-              isOpen ? "translate-x-0" : "-translate-x-full"
+              isOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >
             <ScrollArea className="h-[calc(100vh-20px)]  w-60 md:w-64 xl:w-72">
