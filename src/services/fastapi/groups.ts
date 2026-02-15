@@ -793,11 +793,24 @@ export function useFollowGroup() {
 
   return useMutation<GroupResponse, Error, number>({
     mutationFn: (groupId) => followGroup(groupId),
-    onSuccess: (_, groupId) => {
-      // Invalidate group queries to refetch with updated followers
+    onSuccess: (updatedGroup, groupId) => {
+      const status =
+        (updatedGroup as { follower_status?: string | null }).follower_status ??
+        "active";
+      queryClient.setQueriesData<GroupPublicListResponse>(
+        { queryKey: ["allGroups"] },
+        (old) => {
+          if (!old?.items) return old;
+          return {
+            ...old,
+            items: old.items.map((g) =>
+              g.id === groupId ? { ...g, follower_status: status } : g,
+            ),
+          };
+        },
+      );
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
-      queryClient.invalidateQueries({ queryKey: ["allGroups"] });
       queryClient.invalidateQueries({ queryKey: ["group", groupId] });
       queryClient.invalidateQueries({ queryKey: ["groupFollowers", groupId] });
     },
@@ -812,11 +825,24 @@ export function useUnfollowGroup() {
 
   return useMutation<GroupResponse, Error, number>({
     mutationFn: (groupId) => unfollowGroup(groupId),
-    onSuccess: (_, groupId) => {
-      // Invalidate group queries to refetch with updated followers
+    onSuccess: (updatedGroup, groupId) => {
+      const status =
+        (updatedGroup as { follower_status?: string | null }).follower_status ??
+        null;
+      queryClient.setQueriesData<GroupPublicListResponse>(
+        { queryKey: ["allGroups"] },
+        (old) => {
+          if (!old?.items) return old;
+          return {
+            ...old,
+            items: old.items.map((g) =>
+              g.id === groupId ? { ...g, follower_status: status } : g,
+            ),
+          };
+        },
+      );
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
-      queryClient.invalidateQueries({ queryKey: ["allGroups"] });
       queryClient.invalidateQueries({ queryKey: ["group", groupId] });
       queryClient.invalidateQueries({ queryKey: ["groupFollowers", groupId] });
     },

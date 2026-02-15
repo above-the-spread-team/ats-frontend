@@ -22,7 +22,9 @@ import {
   useFollowGroup,
   useUnfollowGroup,
 } from "@/services/fastapi/groups";
+import type { GroupPublicListResponse } from "@/type/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import GroupTagFilter from "../_components/group-tag-filter";
 
@@ -40,6 +42,7 @@ export default function SearchGroupPage() {
       ? [...selectedTagIds].sort((a, b) => a - b)
       : undefined;
 
+  const queryClient = useQueryClient();
   const { data: groupsData, isLoading } = useAllGroups(
     page,
     pageSize,
@@ -94,25 +97,44 @@ export default function SearchGroupPage() {
     const isFollowing =
       followerStatus === "active" || followerStatus === "pending";
 
-    // Set loading state for this specific group
     setLoadingGroupId(groupId);
+    const queryKey = ["allGroups", page, pageSize, sortedTagIds];
 
     try {
       if (isFollowing) {
-        // Unfollow the group
-        await unfollowGroupMutation.mutateAsync(groupId);
+        const res = await unfollowGroupMutation.mutateAsync(groupId);
+        const newStatus =
+          (res as { follower_status?: string | null }).follower_status ?? null;
+        queryClient.setQueryData<GroupPublicListResponse>(queryKey, (old) => {
+          if (!old?.items) return old;
+          return {
+            ...old,
+            items: old.items.map((g) =>
+              g.id === groupId ? { ...g, follower_status: newStatus } : g,
+            ),
+          };
+        });
       } else {
-        // Follow the group
-        await followGroupMutation.mutateAsync(groupId);
+        const res = await followGroupMutation.mutateAsync(groupId);
+        const newStatus =
+          (res as { follower_status?: string | null }).follower_status ??
+          "active";
+        queryClient.setQueryData<GroupPublicListResponse>(queryKey, (old) => {
+          if (!old?.items) return old;
+          return {
+            ...old,
+            items: old.items.map((g) =>
+              g.id === groupId ? { ...g, follower_status: newStatus } : g,
+            ),
+          };
+        });
       }
     } catch (error) {
       console.error(
         `Failed to ${isFollowing ? "unfollow" : "follow"} group:`,
         error,
       );
-      // Error is handled by mutation state
     } finally {
-      // Clear loading state
       setLoadingGroupId(null);
     }
   };
@@ -201,7 +223,7 @@ export default function SearchGroupPage() {
                       {/* Group Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-base font-semibold text-foreground truncate">
+                          <h3 className="text-base font-semibold text-foreground line-clamp-2">
                             {group.name}
                           </h3>
                           {group.is_private && (
@@ -213,12 +235,18 @@ export default function SearchGroupPage() {
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Users className="w-3 h-3" />
                               {group.member_count}{" "}
-                              {group.member_count === 1 ? "member" : "members"}
+                              <span className="hidden sm:block">
+                                {group.member_count === 1
+                                  ? "member"
+                                  : "members"}
+                              </span>
                             </span>
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <FileText className="w-3 h-3" />
                               {group.post_count}{" "}
-                              {group.post_count === 1 ? "post" : "posts"}
+                              <span className="hidden sm:block">
+                                {group.post_count === 1 ? "post" : "posts"}
+                              </span>
                             </span>
                           </div>{" "}
                           <StatusIcon
