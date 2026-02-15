@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { usePost } from "@/services/fastapi/posts";
 import PostCard, { mapPostResponse, type Post } from "../_components/post-card";
 
@@ -55,13 +55,6 @@ export default function DiscussPostPage() {
 
   return (
     <>
-      {/* Back Button */}
-      <Button variant="ghost" onClick={handleBackToDiscussion} className=" ">
-        <ArrowLeft className="w-4 h-4 text-muted-foreground " />
-        <p className="text-xs md:text-sm text-muted-foreground font-medium">
-          Back to Discussion
-        </p>
-      </Button>
       <div className="px-2">
         {/* Loading State - Only show if we don't have cached post and are loading */}
         {isLoading && !cachedPost && (

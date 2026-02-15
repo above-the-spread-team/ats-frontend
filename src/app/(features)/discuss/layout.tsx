@@ -1,6 +1,9 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useLayoutEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import Sidebar from "./_components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ScrollProvider, useScroll } from "./_contexts/scroll-context";
@@ -10,9 +13,15 @@ import { useMobile } from "@/hooks/use-mobile";
 
 function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { setScrollElement } = useScroll();
+  const mobileContainerRef = useRef<HTMLDivElement>(null);
+  const { setScrollElement, scrollToTop } = useScroll();
   const { isOpen, closeSidebar } = useSidebar();
   const isMobile = useMobile();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const showBackToDiscuss =
+    typeof pathname === "string" && pathname.startsWith("/discuss/");
 
   // Close sidebar when switching to desktop
   useEffect(() => {
@@ -21,17 +30,19 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
     }
   }, [isMobile, isOpen, closeSidebar]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Only set up scroll element on desktop (md+)
-    if (isMobile) return;
+    let attempts = 0;
+    let rafId: number | null = null;
 
-    // Find the ScrollArea viewport element after mount
+    const targetRef = isMobile ? mobileContainerRef : scrollContainerRef;
+
     const findViewport = () => {
-      if (scrollContainerRef.current) {
+      if (targetRef.current) {
         // Find the viewport element inside the ScrollArea
-        const viewport = scrollContainerRef.current.querySelector(
+        const viewport = targetRef.current.querySelector(
           "[data-radix-scroll-area-viewport]",
-        ) as HTMLElement;
+        ) as HTMLElement | null;
         if (viewport) {
           setScrollElement(viewport);
           return true;
@@ -40,39 +51,100 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
       return false;
     };
 
-    // Try immediately, then retry after a short delay if needed
-    if (!findViewport()) {
-      const timeoutId = setTimeout(() => {
-        findViewport();
-      }, 200);
-      return () => clearTimeout(timeoutId);
-    }
+    const loop = () => {
+      attempts += 1;
+      if (findViewport() || attempts > 30) {
+        if (attempts > 30) {
+          // Log once to help debugging if viewport never appears
+          // (should be rare; increases robustness on slow devices)
+          // eslint-disable-next-line no-console
+          console.warn("Discuss layout: failed to find ScrollArea viewport");
+        }
+        return;
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+
+    // Try immediately then start RAF loop
+    if (!findViewport()) loop();
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [setScrollElement, isMobile]);
+
+  // Scroll to top on pathname change (navigate between pages)
+  useEffect(() => {
+    // small delay to allow ScrollArea viewport detection to run
+    const id = setTimeout(() => {
+      try {
+        scrollToTop();
+      } catch (_e) {
+        // ignore if scroll context not ready
+      }
+    }, 50);
+    return () => clearTimeout(id);
+  }, [scrollToTop, pathname]);
 
   return (
     <>
-      <div className="flex flex-row h-[calc(100vh-80px)] overflow-hidden">
+      <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
         {/* Desktop Sidebar - always visible */}
         {!isMobile && (
-          <div className="w-60 md:w-64 xl:w-72 h-full   flex-shrink-0">
-            <ScrollArea className="h-[calc(100vh-80px)] ">
+          <div className="w-60 md:w-64 xl:w-72 h-full flex-shrink-0">
+            <ScrollArea className="h-full">
               <Sidebar />
             </ScrollArea>
           </div>
         )}
-        <div className="flex-1 h-full flex flex-col min-w-0">
+        <div className="flex-1 min-h-0 flex flex-col min-w-0">
           {/* Desktop view - with ScrollArea */}
           {!isMobile && (
             <div ref={scrollContainerRef} className="h-full">
               <ScrollArea className="h-full px-2">
-                <div className="pt-4 pb-8 px-2">{children}</div>
+                <div className="pt-4 pb-10 px-2">
+                  {showBackToDiscuss && (
+                    <div className="mb-3">
+                      <Button
+                        variant="ghost"
+                        onClick={() => router.push("/discuss")}
+                        className="flex items-center gap-2 mb-2"
+                      >
+                        <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Back to Discussion
+                        </span>
+                      </Button>
+                    </div>
+                  )}
+                  {children}
+                </div>
               </ScrollArea>
             </div>
           )}
-          {/* Mobile view - no ScrollArea */}
+          {/* Mobile view - with ScrollArea */}
           {isMobile && (
-            <div className="h-full overflow-y-auto">
-              <div className="pt-4 pb-8 px-2">{children}</div>
+            <div ref={mobileContainerRef} className="h-full w-full">
+              <ScrollArea className="h-full ">
+                <div className="pt-4 pb-40 px-2">
+                  {showBackToDiscuss && (
+                    <div className="mb-2">
+                      <Button
+                        variant="ghost"
+                        onClick={() => router.push("/discuss")}
+                        tabIndex={-1}
+                        className="flex items-center gap-2 mb-2 focus:outline-none focus:ring-0"
+                      >
+                        <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Back to Discussion
+                        </span>
+                      </Button>
+                    </div>
+                  )}
+                  {children}
+                </div>
+              </ScrollArea>
             </div>
           )}
         </div>
@@ -92,11 +164,13 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           {/* Sidebar Panel - slides in from left */}
           <div
             className={cn(
-              "fixed top-0 left-0 h-full  bg-card  z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto",
+              "fixed top-0 left-0 h-full  bg-card  z-50 transform transition-transform duration-300 ease-in-out",
               isOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >
-            <Sidebar />
+            <ScrollArea className="h-[calc(100vh-20px)]  w-60 md:w-64 xl:w-72">
+              <Sidebar />
+            </ScrollArea>
           </div>
         </>
       )}

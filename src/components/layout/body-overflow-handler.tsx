@@ -1,11 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function BodyOverflowHandler() {
   const pathname = usePathname();
-  const isDiscussPage = pathname?.startsWith("/discuss") ?? false;
+  const isDiscussPageRef = useRef(pathname != null && pathname.startsWith("/discuss"));
+  if (pathname != null) {
+    isDiscussPageRef.current = pathname.startsWith("/discuss");
+  }
+  const isDiscussPage = isDiscussPageRef.current;
 
   useEffect(() => {
     if (isDiscussPage) {
@@ -14,7 +18,6 @@ export default function BodyOverflowHandler() {
       document.body.classList.remove("overflow-y-hidden");
     }
 
-    // Cleanup on unmount
     return () => {
       document.body.classList.remove("overflow-y-hidden");
     };

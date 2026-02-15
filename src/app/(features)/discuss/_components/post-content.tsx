@@ -41,7 +41,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState<PostDateFilter | undefined>(
-    undefined,
+    undefined
   );
   const [sortBy, setSortBy] = useState<PostSortOption | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -80,7 +80,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     null, // groupId (null for all posts)
     selectedTagIds.length > 0 ? selectedTagIds : undefined, // tagIds
     dateRange,
-    sortBy,
+    sortBy
   );
 
   // Use group posts if in group mode, otherwise use all posts
@@ -99,7 +99,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   // Get list of group IDs the user is following (active followers only)
   const userGroupIds = useMemo(
     () => new Set<number>(userGroupsData?.items.map((group) => group.id) || []),
-    [userGroupsData],
+    [userGroupsData]
   );
 
   // Get follower_status for current group (if in group mode)
@@ -249,41 +249,43 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     <>
       {/* Group Header - Show when viewing a group */}
       {isGroupMode && (
-        <PostHeader
-          groupData={groupData || null}
-          isLoading={isLoadingGroup}
-          followerStatus={followerStatus}
-          showFollowers={showFollowers}
-          showPending={showPending}
-          showBanned={showBanned}
-          onShowFollowersChange={(show) => {
-            setShowFollowers(show);
-            if (show) {
-              setShowPending(false);
-              setShowBanned(false);
-            }
-          }}
-          onShowPendingChange={(show) => {
-            setShowPending(show);
-            if (show) {
-              setShowFollowers(false);
-              setShowBanned(false);
-            }
-          }}
-          onShowBannedChange={(show) => {
-            setShowBanned(show);
-            if (show) {
-              setShowFollowers(false);
-              setShowPending(false);
-            }
-          }}
-          onPageChange={(page) => {
-            setPage(page);
-            setFollowersPage(1);
-            setPendingPage(1);
-            setBannedPage(1);
-          }}
-        />
+        <>
+          <PostHeader
+            groupData={groupData || null}
+            isLoading={isLoadingGroup}
+            followerStatus={followerStatus}
+            showFollowers={showFollowers}
+            showPending={showPending}
+            showBanned={showBanned}
+            onShowFollowersChange={(show) => {
+              setShowFollowers(show);
+              if (show) {
+                setShowPending(false);
+                setShowBanned(false);
+              }
+            }}
+            onShowPendingChange={(show) => {
+              setShowPending(show);
+              if (show) {
+                setShowFollowers(false);
+                setShowBanned(false);
+              }
+            }}
+            onShowBannedChange={(show) => {
+              setShowBanned(show);
+              if (show) {
+                setShowFollowers(false);
+                setShowPending(false);
+              }
+            }}
+            onPageChange={(page) => {
+              setPage(page);
+              setFollowersPage(1);
+              setPendingPage(1);
+              setBannedPage(1);
+            }}
+          />
+        </>
       )}
 
       {/* Create Post Input - Only show when not viewing followers/pending/banned and user can create posts */}
@@ -374,10 +376,10 @@ export default function PostContent({ groupId = null }: PostContentProps) {
               {!currentUser
                 ? "Please log in to view this group's posts."
                 : followerStatus === "banned"
-                  ? "You are banned from this group and cannot view its content."
-                  : followerStatus === "pending"
-                    ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
-                    : "This group's posts are only visible to active members. Please follow the group to view content."}
+                ? "You are banned from this group and cannot view its content."
+                : followerStatus === "pending"
+                ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
+                : "This group's posts are only visible to active members. Please follow the group to view content."}
             </p>
           </CardContent>
         </Card>
@@ -421,8 +423,8 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                 showPending
                   ? pendingPage
                   : showBanned
-                    ? bannedPage
-                    : followersPage
+                  ? bannedPage
+                  : followersPage
               }
               pageSize={pageSize}
               onPageChange={(newPage) => {
@@ -607,8 +609,8 @@ export default function PostContent({ groupId = null }: PostContentProps) {
               {isGroupMode
                 ? "No posts in this group yet. Be the first to share!"
                 : selectedTagIds.length > 0 || dateRange || sortBy
-                  ? "No posts found with the selected filters."
-                  : "No posts yet. Be the first to share!"}
+                ? "No posts found with the selected filters."
+                : "No posts yet. Be the first to share!"}
             </p>
             {!isGroupMode &&
               (selectedTagIds.length > 0 || dateRange || sortBy) && (
