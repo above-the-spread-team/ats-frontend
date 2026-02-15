@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 import Header from "@/components/layout/header";
 import Nav from "@/components/layout/nav";
 import ConditionalFooter from "@/components/layout/conditional-footer";
@@ -17,8 +18,15 @@ export default function FeaturesLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isDiscussPage = pathname?.startsWith("/discuss");
   const isMobile = useMobile();
+
+  // Stabilize isDiscussPage so we don't flip to the wrong header when pathname
+  // is briefly undefined during client-side navigation or hydration
+  const isDiscussPageRef = useRef(pathname != null && pathname.startsWith("/discuss"));
+  if (pathname != null) {
+    isDiscussPageRef.current = pathname.startsWith("/discuss");
+  }
+  const isDiscussPage = isDiscussPageRef.current;
 
   // Show discuss mobile header on mobile when in discuss section
   const showDiscussMobileHeader = isDiscussPage && isMobile;
