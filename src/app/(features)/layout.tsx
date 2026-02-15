@@ -31,14 +31,21 @@ export default function FeaturesLayout({
   // Show discuss mobile header on mobile when in discuss section
   const showDiscussMobileHeader = isDiscussPage && isMobile;
 
+  // On discuss: use fixed viewport so header can never be cut or disappear during navigation
+  const wrapperClass = isDiscussPage
+    ? "overflow-x-hidden antialiased flex flex-col h-dvh max-h-dvh md:h-screen md:max-h-screen"
+    : "overflow-x-hidden antialiased pb-10 md:pb-0";
+
   const content = (
-    <div className="overflow-x-hidden antialiased pb-10 md:pb-0">
+    <div className={wrapperClass}>
       <BodyOverflowHandler />
-      {/* Smooth crossfade between desktop and discuss-mobile header when on /discuss */}
+      {/* Header row: never shrink so it can't be cut */}
       {!isDiscussPage ? (
-        <Header />
+        <header className="flex-shrink-0">
+          <Header />
+        </header>
       ) : (
-        <div className="relative min-h-12 md:min-h-14">
+        <header className="flex-shrink-0 relative min-h-12 md:min-h-14">
           <div
             className={cn(
               "transition-opacity duration-200 ease-in-out",
@@ -59,11 +66,13 @@ export default function FeaturesLayout({
           >
             <DiscussMobileHeader />
           </div>
-        </div>
+        </header>
       )}
       <Nav />
-      {children}
-      <ConditionalFooter />
+      <main className={cn(isDiscussPage && "flex-1 min-h-0 flex flex-col overflow-hidden")}>
+        {children}
+      </main>
+      {!isDiscussPage && <ConditionalFooter />}
       <MobileNav />
     </div>
   );
