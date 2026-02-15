@@ -9,6 +9,7 @@ import MobileNav from "@/components/layout/mobile-nax";
 import DiscussMobileHeader from "@/components/layout/discuss-mobile-header";
 import { SidebarProvider } from "@/app/(features)/discuss/_contexts/sidebar-context";
 import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export default function FeaturesLayout({
   children,
@@ -19,13 +20,39 @@ export default function FeaturesLayout({
   const isDiscussPage = pathname?.startsWith("/discuss");
   const isMobile = useMobile();
 
-  // Hide Header and Nav on mobile when in discuss section
-  const shouldHideHeaderNav = isDiscussPage && isMobile;
+  // Show discuss mobile header on mobile when in discuss section
+  const showDiscussMobileHeader = isDiscussPage && isMobile;
 
   const content = (
     <div className="overflow-x-hidden antialiased pb-10 md:pb-0">
       <BodyOverflowHandler />
-      {!shouldHideHeaderNav ? <Header /> : <DiscussMobileHeader />}
+      {/* Smooth crossfade between desktop and discuss-mobile header when on /discuss */}
+      {!isDiscussPage ? (
+        <Header />
+      ) : (
+        <div className="relative min-h-12 md:min-h-14">
+          <div
+            className={cn(
+              "transition-opacity duration-200 ease-in-out",
+              showDiscussMobileHeader
+                ? "opacity-0 pointer-events-none absolute inset-x-0 top-0"
+                : "opacity-100",
+            )}
+          >
+            <Header />
+          </div>
+          <div
+            className={cn(
+              "transition-opacity duration-200 ease-in-out",
+              !showDiscussMobileHeader
+                ? "opacity-0 pointer-events-none absolute inset-x-0 top-0"
+                : "opacity-100",
+            )}
+          >
+            <DiscussMobileHeader />
+          </div>
+        </div>
+      )}
       <Nav />
       {children}
       <ConditionalFooter />
