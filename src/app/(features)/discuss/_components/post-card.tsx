@@ -227,7 +227,7 @@ export default function PostCard({
                   variant="primary"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm md:text-base font-semibold truncate">
+                  <p className="text-sm md:text-base font-semibold line-clamp-2">
                     {post.author.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -265,7 +265,7 @@ export default function PostCard({
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm md:text-base font-semibold truncate">
+                  <p className="text-sm md:text-base font-semibold line-clamp-2">
                     {post.groupName || "Group"}
                   </p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
