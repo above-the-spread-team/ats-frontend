@@ -239,7 +239,7 @@ export default function PostCard({
               <>
                 <div className="flex-shrink-0 relative">
                   {post.groupIconUrl ? (
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
+                    <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
                       <Image
                         src={post.groupIconUrl}
                         alt={post.groupName || "Group"}
@@ -254,7 +254,7 @@ export default function PostCard({
                     </div>
                   )}
                   {/* User icon at bottom-right corner */}
-                  <div className="absolute -bottom-1 -right-2  w-[26px] h-[26px] rounded-full ring-1 ring-background overflow-hidden">
+                  <div className="absolute -bottom-1 -right-3  w-[26px] h-[26px] rounded-full ring-1 ring-background overflow-hidden">
                     <UserIcon
                       avatarUrl={post.author.avatar}
                       name={post.author.name}
@@ -269,7 +269,7 @@ export default function PostCard({
                     {post.groupName || "Group"}
                   </p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span className="truncate text-foreground text-sm ml-1">
+                    <span className="truncate text-foreground text-sm ml-2">
                       {post.author.name}
                     </span>
                     <span>·</span>

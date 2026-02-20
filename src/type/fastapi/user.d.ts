@@ -9,6 +9,14 @@ export interface User {
   updated_at: string | null; // Optional - can be null for newly created users
 }
 
+/** Public user profile by ID (GET /api/v1/users/{user_id}). No email, role, or is_active. */
+export interface UserPublicResponse {
+  id: number;
+  username: string;
+  avatar_url: string | null;
+  created_at: string;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;
