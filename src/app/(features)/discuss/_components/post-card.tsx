@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import UserIcon from "@/components/common/user-icon";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -227,9 +228,12 @@ export default function PostCard({
                   variant="primary"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm md:text-base font-semibold line-clamp-2">
+                  <Link
+                    href={`/profile/${post.author.id}`}
+                    className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline"
+                  >
                     {post.author.name}
-                  </p>
+                  </Link>
                   <p className="text-xs text-muted-foreground">
                     {formatTimeAgo(post.createdAt)}
                   </p>
@@ -265,13 +269,19 @@ export default function PostCard({
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm md:text-base font-semibold line-clamp-2">
+                  <Link
+                    href={`/discuss/group-posts/${post.groupId}`}
+                    className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline block"
+                  >
                     {post.groupName || "Group"}
-                  </p>
+                  </Link>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span className="truncate text-foreground text-sm ml-2">
+                    <Link
+                      href={`/profile/${post.author.id}`}
+                      className="truncate text-foreground text-sm ml-2 hover:text-primary-font hover:underline focus:outline-none focus:underline"
+                    >
                       {post.author.name}
-                    </span>
+                    </Link>
                     <span>·</span>
                     <span>{formatTimeAgo(post.createdAt)}</span>
                   </p>

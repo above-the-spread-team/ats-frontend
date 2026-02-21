@@ -66,6 +66,20 @@ export interface GroupListItem extends GroupBase {
   // Note: GroupListItem does NOT include member_count (only in GroupResponse)
 }
 
+/** User profile groups list: GroupListItem with member_count and post_count. */
+export interface GroupListItemWithCounts extends GroupListItem {
+  member_count: number;
+  post_count: number;
+}
+
+export interface GroupListWithCountsResponse {
+  items: GroupListItemWithCounts[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 export interface GroupFollowerAddRequest {
   user_id: number;
 }

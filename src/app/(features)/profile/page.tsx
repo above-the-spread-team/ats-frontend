@@ -1,309 +1,124 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  User,
-  Mail,
-  CheckCircle2,
-  XCircle,
-  Upload,
-  Loader2,
-  Calendar,
-} from "lucide-react";
+import { User, Users, FileText, Bell } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useCurrentUser } from "@/services/fastapi/oauth";
-import { useUploadUserIcon } from "@/services/fastapi/user-email";
-import FullPage from "@/components/common/full-page";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useUser } from "@/services/fastapi/user";
+import { cn } from "@/lib/utils";
+import UserInfo from "@/app/(features)/profile/_components/user-info";
+import UserPosts from "@/app/(features)/profile/_components/user-posts";
+import UserGroups from "@/app/(features)/profile/_components/user-groups";
+import Notification from "@/app/(features)/profile/_components/notification";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserDetailItem from "@/app/(features)/profile/_components/user-detail-item";
-import UserDetailItemSkeleton from "@/app/(features)/profile/_components/user-detail-item-skeleton";
-import UserIcon from "@/components/common/user-icon";
+
+type ProfileTabId = "user-info" | "groups" | "posts" | "notifications";
+
+const NAV_ITEMS: {
+  id: ProfileTabId;
+  label: string;
+  /** Short label for mobile; empty = icon only on mobile */
+  shortLabel: string;
+  icon: LucideIcon;
+}[] = [
+  { id: "user-info", label: "User info", shortLabel: "Info", icon: User },
+  { id: "groups", label: "Groups", shortLabel: "Group", icon: Users },
+  { id: "posts", label: "Posts", shortLabel: "Post", icon: FileText },
+  { id: "notifications", label: "Notifications", shortLabel: "", icon: Bell },
+];
 
 export default function MePage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [activeTab, setActiveTab] = useState<ProfileTabId>("user-info");
 
-  // Fetch user data using React Query hook from service
-  // Backend reads token from HttpOnly cookie automatically
   const { data: user, isLoading, error } = useCurrentUser();
+  const { data: publicProfile } = useUser(user?.id ?? null);
 
-  // Redirect to login if not authenticated (401 error)
   useEffect(() => {
     if (error && error instanceof Error && error.message.includes("401")) {
       router.push("/login");
     }
   }, [error, router]);
 
-  // Use upload icon mutation hook
-  const uploadIconMutation = useUploadUserIcon();
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File size must be less than 5MB");
-      return;
-    }
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-    setSelectedFile(file);
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) return;
-
-    try {
-      await uploadIconMutation.mutateAsync(selectedFile);
-      // Clear preview and selected file after successful upload
-      setPreviewUrl(null);
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      // Error is handled by the mutation, but we can show an alert too
-      alert(error instanceof Error ? error.message : "Failed to upload image");
-    }
-  };
-
-  const handleCancelUpload = () => {
-    setPreviewUrl(null);
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Show loading state
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
-      <FullPage minusHeight={80}>
-        <div className="w-full mx-auto max-w-5xl px-4 py-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-7 md:h-8 w-24" />
-            <Skeleton className="h-9 w-20" />
+      <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
+        <h1 className="text-lg md:text-xl font-bold text-primary-title">
+          My Profile
+        </h1>
+        <div className="flex flex-row">
+          <div className="flex flex-col h-fit w-40 bg-card border border-border/60 rounded-l-2xl overflow-hidden">
+            {NAV_ITEMS.map((item) => (
+              <Skeleton key={item.id} className="m-2 h-10 rounded-lg" />
+            ))}
           </div>
-          {/* Avatar and Username Skeleton */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative">
-              <Skeleton className="h-20 w-20 md:h-24 md:w-24 rounded-full" />
-              <Skeleton className="absolute -bottom-1 -right-2 h-8 w-8 rounded-full" />
-            </div>
-            <div className="text-center space-y-2">
-              <Skeleton className="h-6 md:h-7 w-32 mx-auto" />
-              <Skeleton className="h-4 w-20 mx-auto" />
-            </div>
+          <div className="min-h-[700px] rounded-b-2xl rounded-r-2xl w-full border border-border/60 border-l-0 bg-card p-4">
+            <Skeleton className="h-48 w-full rounded-xl" />
           </div>
-          {/* User Details Skeleton */}
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <UserDetailItemSkeleton />
-            <UserDetailItemSkeleton />
-            <UserDetailItemSkeleton />
-            <UserDetailItemSkeleton />
-          </div>
-        </div>
-      </FullPage>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <FullPage center minusHeight={110} className="py-10">
-        <div className="w-full max-w-2xl px-4">
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl font-bold">Error</CardTitle>
-              <CardDescription>Failed to load user information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col items-center space-y-4">
-                <XCircle className="h-12 w-12 text-destructive-foreground" />
-                <p className="text-destructive-foreground text-center">
-                  {error instanceof Error
-                    ? error.message
-                    : "An unexpected error occurred"}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => router.push("/login")}
-                  className="flex-1"
-                >
-                  Go to Login
-                </Button>
-                <Button
-                  onClick={() => window.location.reload()}
-                  className="flex-1"
-                >
-                  Retry
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </FullPage>
-    );
-  }
-
-  // Show user info
-  if (!user) {
-    return null;
-  }
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  return (
-    <FullPage minusHeight={80}>
-      <div className="w-full mx-auto max-w-5xl px-4 py-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-primary-title">
-            Profile
-          </h1>
-          {/* make the logout button here */}
-        </div>
-        {/* Avatar and Username */}
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative group">
-            <div className="h-20 w-20 md:h-28 md:w-28 cursor-pointer ring-2 ring-transparent group-hover:ring-primary/20 transition-all rounded-full">
-              <UserIcon
-                avatarUrl={previewUrl || user.avatar_url}
-                name={user.username}
-                size="large"
-                variant="primary"
-                className="h-20 w-20 md:h-28 md:w-28 text-2xl md:text-3xl ring-2 ring-transparent group-hover:ring-primary/20 transition-all"
-              />
-            </div>
-            <button
-              onClick={handleAvatarClick}
-              disabled={uploadIconMutation.isPending}
-              className="absolute -bottom-1 -right-2 p-2 bg-bar-green text-white rounded-full shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Change avatar"
-            >
-              {uploadIconMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </div>
-          {previewUrl && (
-            <div className="flex gap-2 w-full max-w-xs">
-              <Button
-                onClick={handleUpload}
-                disabled={uploadIconMutation.isPending}
-                className="flex-1"
-                size="sm"
-              >
-                {uploadIconMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  "Upload"
-                )}
-              </Button>
-              <Button
-                onClick={handleCancelUpload}
-                disabled={uploadIconMutation.isPending}
-                variant="outline"
-                className="flex-1"
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-          {uploadIconMutation.error && (
-            <p className="text-sm text-destructive text-center">
-              {uploadIconMutation.error instanceof Error
-                ? uploadIconMutation.error.message
-                : "Failed to upload image"}
-            </p>
-          )}
-          <div className="text-center">
-            <h2 className="text-lg md:text-xl font-bold">{user.username}</h2>
-            {user.email_verified && (
-              <div className="flex items-center justify-center gap-1 mt-1 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-primary-font" />
-                <span>Verified</span>
-              </div>
-            )}
-          </div>
-        </div>
-        {/* User Details */}
-        <div className=" p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <UserDetailItem
-            icon={Mail}
-            label="Email"
-            value={user.email}
-            warning={!user.email_verified ? "Email not verified" : undefined}
-          />
-
-          <UserDetailItem icon={User} label="Username" value={user.username} />
-
-          <UserDetailItem
-            icon={user.is_active ? CheckCircle2 : XCircle}
-            label="Account Status"
-            value={user.is_active ? "Active" : "Inactive"}
-            valueClassName={user.is_active ? "text-bar-green" : "text-bar-red"}
-            iconClassName={user.is_active ? "text-bar-green" : "text-bar-red"}
-          />
-
-          <UserDetailItem
-            icon={Calendar}
-            label="Member Since"
-            value={formatDate(user.created_at)}
-          />
         </div>
       </div>
-    </FullPage>
+    );
+  }
+
+  return (
+    <div className="container mx-auto space-y-4  px-4 max-w-6xl  py-3 md:py-4">
+      {/* Header */}
+      <h1 className="text-lg md:text-xl font-bold text-primary-title">
+        My Profile
+      </h1>
+      {/* Main content */}
+      <div className="flex flex-col md:flex-row ">
+        {/* Left side Navigation - useState controls active tab */}
+        <div className="flex flex-row md:flex-col h-fit justify-between w-full gap-0  md:w-40 bg-card border border-border/60 rounded-t-2xl md:rounded-r-none md:rounded-l-2xl overflow-hidden">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-3 text-left text-sm transition-colors",
+                  isActive
+                    ? "bg-primary/15 text-primary-font font-medium border-b-2 md:border-b-0 md:border-r-2 border-primary-font"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                )}
+              >
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                {/* Mobile: short label or icon only (e.g. no label for Notifications) */}
+                {item.shortLabel ? (
+                  <span className="md:hidden">{item.shortLabel}</span>
+                ) : null}
+                {/* Desktop: full label */}
+                <span className="hidden md:inline">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Right side Content - render panel by activeTab */}
+        <div className="min-h-[700px] rounded-b-2xl rounded-t-none md:rounded-r-2xl w-full border border-border/60 border-l-0 bg-card p-4">
+          {activeTab === "user-info" && (
+            <UserInfo
+              user={user}
+              stats={
+                publicProfile
+                  ? {
+                      post_count: publicProfile.post_count,
+                      group_count: publicProfile.group_count,
+                      comment_count: publicProfile.comment_count,
+                      total_likes: publicProfile.total_likes,
+                    }
+                  : undefined
+              }
+            />
+          )}
+          {activeTab === "groups" && <UserGroups userId={user.id} />}
+          {activeTab === "posts" && <UserPosts userId={user.id} />}
+          {activeTab === "notifications" && <Notification />}
+        </div>
+      </div>
+    </div>
   );
 }

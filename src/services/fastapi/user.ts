@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { UserPublicResponse } from "@/type/fastapi/user";
-import type { GroupListResponse } from "@/type/fastapi/groups";
+import type { GroupListWithCountsResponse } from "@/type/fastapi/groups";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -43,7 +43,7 @@ export async function getUserGroups(
   userId: number,
   page: number = 1,
   pageSize: number = 20,
-): Promise<GroupListResponse> {
+): Promise<GroupListWithCountsResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
@@ -94,7 +94,7 @@ export function useUserGroupsByUserId(
   page: number = 1,
   pageSize: number = 20,
 ) {
-  return useQuery<GroupListResponse>({
+  return useQuery<GroupListWithCountsResponse>({
     queryKey: ["userGroupsByUserId", userId, page, pageSize],
     queryFn: () => getUserGroups(userId!, page, pageSize),
     enabled: userId != null && userId > 0,
