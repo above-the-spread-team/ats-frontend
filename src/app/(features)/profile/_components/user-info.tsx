@@ -111,7 +111,7 @@ export default function UserInfo({ user, showEmail, stats }: UserInfoProps) {
       {/* Profile header: avatar + name + badge */}
       <Card className="overflow-hidden border-border/50 bg-card shadow-sm">
         <div className="relative bg-gradient-to-br from-primary-font/5 via-transparent to-primary-font/10  px-4 py-2">
-          <div className="flex flex-col items-center py-2 md:py-0 px-2 gap-4 text-center sm:flex-row sm:items-center sm:text-left">
+          <div className="flex flex-col items-center py-2 px-2 gap-4 text-center sm:flex-row sm:items-center sm:text-left">
             <div className="relative shrink-0">
               <div className="ring-primary/20 flex overflow-hidden rounded-full ring-4 ring-offset-4 ring-offset-card">
                 <UserIcon
