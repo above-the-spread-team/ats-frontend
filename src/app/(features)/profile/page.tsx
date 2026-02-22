@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { User, Users, FileText, Bell } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useCurrentUser } from "@/services/fastapi/oauth";
@@ -28,12 +28,34 @@ const NAV_ITEMS: {
   { id: "notifications", label: "Notifications", shortLabel: "", icon: Bell },
 ];
 
+const VALID_TABS: ProfileTabId[] = [
+  "user-info",
+  "groups",
+  "posts",
+  "notifications",
+];
+
+function isValidTab(tab: string | null): tab is ProfileTabId {
+  return tab !== null && VALID_TABS.includes(tab as ProfileTabId);
+}
+
 export default function MePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<ProfileTabId>("user-info");
+  const searchParams = useSearchParams();
+
+  const activeTab: ProfileTabId = useMemo(() => {
+    const tab = searchParams.get("tab");
+    return isValidTab(tab) ? tab : "user-info";
+  }, [searchParams]);
 
   const { data: user, isLoading, error } = useCurrentUser();
   const { data: publicProfile } = useUser(user?.id ?? null);
+
+  const setActiveTab = (tab: ProfileTabId) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.push(`/profile?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => {
     if (error && error instanceof Error && error.message.includes("401")) {
@@ -69,7 +91,7 @@ export default function MePage() {
       </h1>
       {/* Main content */}
       <div className="flex flex-col md:flex-row ">
-        {/* Left side Navigation - useState controls active tab */}
+        {/* Left side Navigation - URL ?tab= controls active tab */}
         <div className="flex flex-row md:flex-col h-fit justify-between w-full gap-0  md:w-40 bg-card border border-border/60 rounded-t-2xl md:rounded-r-none md:rounded-l-2xl overflow-hidden">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;

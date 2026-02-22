@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrentUser, useLogout } from "@/services/fastapi/oauth";
 import {
   useUnreadCount,
@@ -182,19 +183,20 @@ export default function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-80 max-h-[min(70vh,400px)] overflow-hidden flex flex-col"
+              className="w-80 overflow-hidden p-0 flex flex-col"
             >
-              <div className="flex items-center justify-between px-2 py-2 border-b border-border/60">
+              <div className="flex shrink-0 items-center justify-between border-b border-border/60 px-3 py-2">
                 <span className="text-sm font-semibold text-foreground">
                   Notifications
                 </span>
-                {unreadCount > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {unreadCount} unread
-                  </span>
-                )}
+                <Link
+                  href="/profile/?tab=notifications"
+                  className="text-sm font-semibold text-foreground hover:underline"
+                >
+                  View all
+                </Link>
               </div>
-              <div className="overflow-y-auto flex-1 min-h-0">
+              <ScrollArea className="h-[min(70vh,320px)]">
                 {unreadItems.length === 0 ? (
                   <div className="px-3 py-6 text-center text-sm text-muted-foreground">
                     No unread notifications
@@ -244,17 +246,7 @@ export default function Header() {
                     })}
                   </div>
                 )}
-              </div>
-              <div className="border-t border-border/60 p-1">
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/profile"
-                    className="cursor-pointer w-full justify-center text-sm"
-                  >
-                    View all notifications
-                  </Link>
-                </DropdownMenuItem>
-              </div>
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (

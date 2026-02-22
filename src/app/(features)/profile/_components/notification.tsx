@@ -77,15 +77,13 @@ function NotificationRow({
     >
       <div className="flex-shrink-0">
         {showGroupIcon ? (
-          <div className="relative h-9 w-9 overflow-hidden rounded-full ring-2 ring-border/50">
-            <Image
-              src={item.group_avatar_url!}
-              alt="Group"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-cover"
-            />
-          </div>
+          <UserIcon
+            avatarUrl={item.group_avatar_url}
+            name="Group"
+            size="small"
+            variant="primary"
+            className="h-9 w-9"
+          />
         ) : item.sender ? (
           <UserIcon
             avatarUrl={item.sender.avatar_url}
