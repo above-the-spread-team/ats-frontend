@@ -117,16 +117,16 @@ export function useNotifications(
   });
 }
 
-const POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
+const POLL_INTERVAL_MS = 10 * 1000; // 3 minutes (use 10 * 1000 only for local dev)
 
 /**
- * Poll every 3 minutes for unread notifications from the last 3 minutes (for toasts).
+ * Poll for unread notifications (for toasts). "New" is determined on the frontend via last-seen id in localStorage.
  * Use refetchOnWindowFocus: false so we don’t double-toast on tab focus.
  */
 export function useRecentUnreadPoll(enabled: boolean = true) {
   return useQuery<NotificationListResponse>({
-    queryKey: ["notifications", "recentPoll", 1, 20, true, 3],
-    queryFn: () => listNotifications(1, 20, true, 3),
+    queryKey: ["notifications", "recentPoll", 1, 20, true],
+    queryFn: () => listNotifications(1, 20, true),
     refetchInterval: POLL_INTERVAL_MS,
     refetchOnWindowFocus: false,
     staleTime: POLL_INTERVAL_MS - 5000,

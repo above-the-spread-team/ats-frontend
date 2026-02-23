@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { FaBell } from "react-icons/fa";
@@ -81,10 +81,30 @@ export function NotificationToastContent({
   );
 }
 
-/** Shared across all NotificationBell instances so we only toast each notification once. */
-const shownToastIdsGlobal = new Set<number>();
+const NOTIFICATION_LAST_SEEN_ID_KEY = "notification_last_seen_id";
 
-/** Poll for recent unread and show toasts; mark as read only when user clicks toast. */
+function getLastSeenId(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = localStorage.getItem(NOTIFICATION_LAST_SEEN_ID_KEY);
+    if (raw == null) return 0;
+    const n = parseInt(raw, 10);
+    return Number.isNaN(n) ? 0 : n;
+  } catch {
+    return 0;
+  }
+}
+
+function setLastSeenId(id: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(NOTIFICATION_LAST_SEEN_ID_KEY, String(id));
+  } catch {
+    // ignore
+  }
+}
+
+/** Poll for unread and show toasts for items newer than last seen; mark as read only when user clicks toast. */
 function useNotificationToasts(authenticated: boolean) {
   const router = useRouter();
   const { data: recentPollData } = useRecentUnreadPoll(authenticated);
@@ -93,9 +113,17 @@ function useNotificationToasts(authenticated: boolean) {
   useEffect(() => {
     const items = recentPollData?.items ?? [];
     if (items.length === 0) return;
-    const newItems = items.filter((item) => !shownToastIdsGlobal.has(item.id));
-    if (newItems.length === 0) return;
-    newItems.forEach((item) => shownToastIdsGlobal.add(item.id));
+    const lastSeenId = getLastSeenId();
+    const newItems = items.filter((item) => item.id > lastSeenId);
+    if (newItems.length === 0) {
+      const maxId = Math.max(...items.map((i) => i.id));
+      if (maxId > lastSeenId) setLastSeenId(maxId);
+      return;
+    }
+    if (lastSeenId === 0) {
+      setLastSeenId(Math.max(...items.map((i) => i.id)));
+      return;
+    }
     newItems.forEach((item) => {
       const message = formatNotificationMessage(item);
       const link = getNotificationLink(item);
@@ -128,6 +156,7 @@ function useNotificationToasts(authenticated: boolean) {
         },
       );
     });
+    setLastSeenId(Math.max(...newItems.map((i) => i.id)));
   }, [recentPollData?.items]);
 }
 
@@ -148,9 +177,10 @@ export function NotificationBell({
   useNotificationToasts(authenticated);
 
   const { data: unreadData } = useUnreadCount();
+  // Dropdown shows all (read+unread); poll is unread-only for toasts, so we keep both queries.
   const { data: notificationsData } = useNotifications(
     1,
-    10,
+    20,
     false,
     undefined,
     authenticated,
@@ -173,7 +203,17 @@ export function NotificationBell({
   }
 
   return (
-    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+    <DropdownMenu
+      open={dropdownOpen}
+      onOpenChange={(open) => {
+        setDropdownOpen(open);
+        if (open && allItems.length > 0) {
+          const last = getLastSeenId();
+          const maxId = Math.max(...allItems.map((i) => i.id), last);
+          setLastSeenId(maxId);
+        }
+      }}
+    >
       <DropdownMenuTrigger asChild>
         <button
           type="button"
