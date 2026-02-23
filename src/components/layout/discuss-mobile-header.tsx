@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { NotificationBell } from "@/components/common/notification";
 import ConfirmDialog from "@/components/common/popup";
 import Image from "next/image";
 import Link from "next/link";
@@ -120,6 +121,7 @@ export default function Header() {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
+        <NotificationBell authenticated={authenticated} />
         {authenticated ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
