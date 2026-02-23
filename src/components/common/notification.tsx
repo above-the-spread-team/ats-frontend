@@ -81,21 +81,21 @@ export function NotificationToastContent({
   );
 }
 
+/** Shared across all NotificationBell instances so we only toast each notification once. */
+const shownToastIdsGlobal = new Set<number>();
+
 /** Poll for recent unread and show toasts; mark as read only when user clicks toast. */
 function useNotificationToasts(authenticated: boolean) {
   const router = useRouter();
   const { data: recentPollData } = useRecentUnreadPoll(authenticated);
-  const shownToastIdsRef = useRef<Set<number>>(new Set());
   const markRead = useMarkNotificationsRead();
 
   useEffect(() => {
     const items = recentPollData?.items ?? [];
     if (items.length === 0) return;
-    const newItems = items.filter(
-      (item) => !shownToastIdsRef.current.has(item.id),
-    );
+    const newItems = items.filter((item) => !shownToastIdsGlobal.has(item.id));
     if (newItems.length === 0) return;
-    newItems.forEach((item) => shownToastIdsRef.current.add(item.id));
+    newItems.forEach((item) => shownToastIdsGlobal.add(item.id));
     newItems.forEach((item) => {
       const message = formatNotificationMessage(item);
       const link = getNotificationLink(item);
@@ -150,14 +150,15 @@ export function NotificationBell({
   const { data: unreadData } = useUnreadCount();
   const { data: notificationsData } = useNotifications(
     1,
-    8,
-    true,
+    10,
+    false,
     undefined,
     authenticated,
   );
   const unreadCount = authenticated ? (unreadData?.unread_count ?? 0) : 0;
-  const unreadItems = authenticated ? (notificationsData?.items ?? []) : [];
+  const allItems = authenticated ? (notificationsData?.items ?? []) : [];
   const markRead = useMarkNotificationsRead();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   if (!authenticated) {
     return (
@@ -172,7 +173,7 @@ export function NotificationBell({
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -202,24 +203,28 @@ export function NotificationBell({
           <Link
             href="/profile/?tab=notifications"
             className="text-sm font-semibold text-primary-font hover:underline"
+            onClick={() => setDropdownOpen(false)}
           >
             View all
           </Link>
         </div>
         <ScrollArea className="h-[min(70vh,320px)]">
-          {unreadItems.length === 0 ? (
+          {allItems.length === 0 ? (
             <div className="flex items-center justify-center h-[min(70vh,320px)]">
               <p className="text-sm font-semibold text-muted-foreground">
-                No unread notifications
+                No notifications
               </p>
             </div>
           ) : (
             <div className="py-1">
-              {unreadItems.map((item) => {
+              {allItems.map((item) => {
                 const href = getNotificationLink(item);
                 const showGroupIcon = !!item.group_avatar_url;
+                const isRead = !!item.read_at;
                 const content = (
-                  <div className="px-3 py-2 flex gap-2 hover:bg-muted/50 cursor-pointer">
+                  <div
+                    className={`px-3 py-2 flex gap-2 items-center hover:bg-muted/50 cursor-pointer`}
+                  >
                     <UserIcon
                       avatarUrl={
                         showGroupIcon
@@ -236,17 +241,27 @@ export function NotificationBell({
                       className="!h-8 !w-8 ring-1 ring-border/50"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground line-clamp-2">
+                      <p
+                        className={`text-sm font-medium line-clamp-2 ${isRead ? "text-muted-foreground/80" : "text-foreground"}`}
+                      >
                         {formatNotificationMessage(item)}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {formatTimeAgo(item.created_at)}
                       </p>
                     </div>
+                    {!isRead && (
+                      <span
+                        className="h-2 w-2 flex-shrink-0 rounded-full bg-primary-font/80"
+                        aria-hidden
+                      />
+                    )}
                   </div>
                 );
-                const markThisRead = () =>
-                  markRead.mutate({ notification_ids: [item.id] });
+                const markThisRead = () => {
+                  if (!isRead) markRead.mutate({ notification_ids: [item.id] });
+                  setDropdownOpen(false);
+                };
                 if (href) {
                   return (
                     <Link key={item.id} href={href} onClick={markThisRead}>

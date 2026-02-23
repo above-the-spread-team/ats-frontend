@@ -117,7 +117,7 @@ export function useNotifications(
   });
 }
 
-const POLL_INTERVAL_MS = 5 * 1000; // 10 seconds
+const POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
 
 /**
  * Poll every 3 minutes for unread notifications from the last 3 minutes (for toasts).
