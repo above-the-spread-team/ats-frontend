@@ -212,7 +212,7 @@ export default function PostCard({
   return (
     <Card
       id={`post-${post.id}`}
-      className="hover:shadow-md transition-shadow  space-y-2 p-3 px-4"
+      className="hover:shadow-md transition-shadow  space-y-2 py-2 pl-3 pr-1"
     >
       <CardHeader className="p-0">
         <div className="flex items-start justify-between gap-4">
@@ -227,10 +227,10 @@ export default function PostCard({
                   size="medium"
                   variant="primary"
                 />
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 max-w-[245px] md:max-w-none">
                   <Link
                     href={`/profile/${post.author.id}`}
-                    className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline"
+                    className="text-sm md:text-base  truncate font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline"
                   >
                     {post.author.name}
                   </Link>
@@ -241,7 +241,7 @@ export default function PostCard({
               </>
             ) : (
               <>
-                <div className="flex-shrink-0 relative">
+                <div className="flex-shrink-0 relative  mr-1">
                   {post.groupIconUrl ? (
                     <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
                       <Image
@@ -268,17 +268,17 @@ export default function PostCard({
                     />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 max-w-[240px] md:max-w-[600px]">
                   <Link
                     href={`/discuss/group-posts/${post.groupId}`}
-                    className="text-sm md:text-base font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline block"
+                    className="text-sm truncate  md:text-base font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline block"
                   >
                     {post.groupName || "Group"}
                   </Link>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <Link
                       href={`/profile/${post.author.id}`}
-                      className="truncate text-foreground text-sm ml-2 hover:text-primary-font hover:underline focus:outline-none focus:underline"
+                      className="truncate max-w-[150px] md:max-w-none text-foreground text-sm  hover:text-primary-font hover:underline focus:outline-none focus:underline"
                     >
                       {post.author.name}
                     </Link>

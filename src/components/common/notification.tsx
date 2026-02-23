@@ -282,7 +282,7 @@ export function NotificationBell({
                     />
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`text-sm font-medium line-clamp-2 ${isRead ? "text-muted-foreground/80" : "text-foreground"}`}
+                        className={`text-sm  font-medium line-clamp-2 w-[230px] ${isRead ? "text-muted-foreground/80" : "text-foreground"}`}
                       >
                         {formatNotificationMessage(item)}
                       </p>

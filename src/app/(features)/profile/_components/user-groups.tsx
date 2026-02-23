@@ -46,7 +46,7 @@ function GroupCard({ group }: { group: GroupListItemWithCounts }) {
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="truncate font-semibold text-foreground">
+                <h3 className="text-sm md:text-base font-semibold text-foreground">
                   {group.name}
                 </h3>
                 {group.is_owner && (

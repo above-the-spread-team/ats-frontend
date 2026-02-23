@@ -413,12 +413,12 @@ export default function CreateEditGroup({
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isSubmitting}
-              maxLength={100}
+              maxLength={50}
               required
               className="w-full rounded-xl border-2 border-input/50 bg-gradient-to-br from-background to-muted/20 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all duration-200 hover:border-input"
             />
             <p className="text-xs text-muted-foreground px-1">
-              {name.length}/100 characters
+              {name.length}/50 characters
             </p>
           </div>
 
