@@ -124,6 +124,29 @@
   }
 }
 
+/* Notification toasts: card style with avatar, theme-aware */
+.notification-toast {
+  padding: 0 !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid hsl(var(--border)) !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  overflow: hidden;
+  min-width: 280px;
+  max-width: 360px;
+}
+.notification-toast .Toastify__progress-bar {
+  background: hsl(var(--primary)) !important;
+}
+.notification-toast .Toastify__close-button {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.8;
+}
+.notification-toast .Toastify__close-button:hover {
+  opacity: 1;
+}
+
 @layer utilities {
   .animate-in {
     animation: enter 0.2s ease-out;

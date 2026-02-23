@@ -1,7 +1,9 @@
 import { Arimo } from "next/font/google";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { MyQueryClientProvider } from "@/providers/query-client";
+import { ToastContainer } from "react-toastify";
 const ff = Arimo({
   weight: ["400", "500", "600", "700"],
   variable: "--font-alan-sans",
@@ -22,7 +24,19 @@ export default function RootLayout({
           enableSystem
           // disableTransitionOnChange
         >
-          <MyQueryClientProvider>{children}</MyQueryClientProvider>
+          <MyQueryClientProvider>
+            {children}
+            <ToastContainer
+              position="bottom-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              theme="light"
+              toastClassName="rounded-lg border border-border shadow-lg"
+            />
+          </MyQueryClientProvider>
         </ThemeProvider>
       </body>
     </html>

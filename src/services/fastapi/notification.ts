@@ -26,17 +26,22 @@ async function fetchNotifications(
 /**
  * List notifications for the current user.
  * GET /api/v1/notifications
+ * @param sinceMinutes - If set (1–60), only notifications created in the last N minutes (for polling recent unread).
  */
 export async function listNotifications(
   page: number = 1,
   pageSize: number = 20,
   unreadOnly: boolean = false,
+  sinceMinutes?: number,
 ): Promise<NotificationListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
     unread_only: unreadOnly.toString(),
   });
+  if (sinceMinutes != null && sinceMinutes >= 1 && sinceMinutes <= 60) {
+    params.set("since_minutes", sinceMinutes.toString());
+  }
   const response = await fetchNotifications(
     `${NOTIFICATIONS_PREFIX}?${params.toString()}`,
   );
@@ -100,13 +105,31 @@ export function useNotifications(
   page: number = 1,
   pageSize: number = 20,
   unreadOnly: boolean = false,
+  sinceMinutes?: number,
   enabled: boolean = true,
 ) {
   return useQuery<NotificationListResponse>({
-    queryKey: ["notifications", page, pageSize, unreadOnly],
-    queryFn: () => listNotifications(page, pageSize, unreadOnly),
+    queryKey: ["notifications", page, pageSize, unreadOnly, sinceMinutes],
+    queryFn: () => listNotifications(page, pageSize, unreadOnly, sinceMinutes),
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
+    enabled,
+  });
+}
+
+const POLL_INTERVAL_MS = 5 * 1000; // 10 seconds
+
+/**
+ * Poll every 3 minutes for unread notifications from the last 3 minutes (for toasts).
+ * Use refetchOnWindowFocus: false so we don’t double-toast on tab focus.
+ */
+export function useRecentUnreadPoll(enabled: boolean = true) {
+  return useQuery<NotificationListResponse>({
+    queryKey: ["notifications", "recentPoll", 1, 20, true, 3],
+    queryFn: () => listNotifications(1, 20, true, 3),
+    refetchInterval: POLL_INTERVAL_MS,
+    refetchOnWindowFocus: false,
+    staleTime: POLL_INTERVAL_MS - 5000,
     enabled,
   });
 }
@@ -117,7 +140,9 @@ export function useMarkNotificationsRead() {
     mutationFn: markNotificationsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications", "unreadCount"] });
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", "unreadCount"],
+      });
     },
   });
 }
