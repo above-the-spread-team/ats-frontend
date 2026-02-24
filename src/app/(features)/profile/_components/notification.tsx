@@ -14,6 +14,10 @@ import {
 import UserIcon from "@/components/common/user-icon";
 import type { NotificationItem } from "@/type/fastapi/notification";
 import {
+  formatNotificationMessage,
+  getNotificationLink,
+} from "@/lib/notification";
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -25,38 +29,6 @@ import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 15;
 
-function formatMessage(item: NotificationItem): string {
-  const sender = item.sender?.username ?? "Someone";
-  const type = item.notification_type;
-  switch (type) {
-    case "like":
-      return `${sender} liked your post`;
-    case "comment":
-      return `${sender} commented on your post`;
-    case "follow_request":
-      return `${sender} requested to follow a group`;
-    case "follow_approved":
-      return `You were approved to join a group`;
-    case "follow_rejected":
-      return `Your request to join a group was declined`;
-    case "banned":
-      return `You were removed from a group`;
-    case "group_deleted":
-      return `A group you were in was deleted`;
-    default:
-      return `${sender} — ${type.replace(/_/g, " ")}`;
-  }
-}
-
-function getLink(item: NotificationItem): string | null {
-  const meta = item.metadata;
-  if (!meta) return null;
-  if (typeof meta.post_id === "number") return `/discuss/${meta.post_id}`;
-  if (typeof meta.group_id === "number")
-    return `/discuss/group-posts/${meta.group_id}`;
-  return null;
-}
-
 function NotificationRow({
   item,
   onMarkRead,
@@ -64,7 +36,7 @@ function NotificationRow({
   item: NotificationItem;
   onMarkRead: (id: number) => void;
 }) {
-  const link = getLink(item);
+  const link = getNotificationLink(item);
   const showGroupIcon = !!item.group_avatar_url;
   const content = (
     <div
@@ -100,7 +72,7 @@ function NotificationRow({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground">
-          {formatMessage(item)}
+          {formatNotificationMessage(item)}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {formatTimeAgo(item.created_at)}
