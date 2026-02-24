@@ -12,7 +12,7 @@ import {
   Clock,
   CircleDot,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import UserIcon from "@/components/common/user-icon";
 import type { User, UserPublicResponse } from "@/type/fastapi/user";
 import { cn } from "@/lib/utils";

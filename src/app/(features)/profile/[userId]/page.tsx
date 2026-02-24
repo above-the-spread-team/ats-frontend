@@ -64,7 +64,6 @@ export default function ProfileByUserIdPage() {
     : isViewingSelf
       ? currentUserLoading
       : publicUserLoading;
-  const errorProfile = isViewingSelf ? currentUserError : publicUserError;
   const showEmail = !!isViewingSelf && !!currentUser;
   const showNotifications = !!isViewingSelf;
 

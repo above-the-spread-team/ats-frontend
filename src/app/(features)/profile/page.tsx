@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useUser } from "@/services/fastapi/user";
@@ -26,7 +26,27 @@ function isValidTab(tab: string | null): tab is ProfileTabId {
   return tab !== null && VALID_TABS.includes(tab as ProfileTabId);
 }
 
-export default function MePage() {
+function ProfilePageSkeleton() {
+  return (
+    <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
+      <h1 className="text-lg md:text-xl font-bold text-primary-title">
+        My Profile
+      </h1>
+      <div className="flex flex-col md:flex-row">
+        <div className="flex flex-row md:flex-col h-fit justify-between w-full gap-0 md:w-40 bg-card border border-border/60 rounded-t-2xl md:rounded-r-none md:rounded-l-2xl overflow-hidden">
+          {NAV_ITEMS.map((item) => (
+            <Skeleton key={item.id} className="m-2 h-10 rounded-lg" />
+          ))}
+        </div>
+        <div className="min-h-[700px] rounded-b-2xl rounded-t-none md:rounded-r-2xl w-full border border-border/60 border-l-0 bg-card p-4">
+          <Skeleton className="h-48 w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -102,5 +122,13 @@ export default function MePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MePage() {
+  return (
+    <Suspense fallback={<ProfilePageSkeleton />}>
+      <MePageContent />
+    </Suspense>
   );
 }

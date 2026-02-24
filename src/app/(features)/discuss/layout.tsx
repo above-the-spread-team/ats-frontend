@@ -57,7 +57,6 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
         if (attempts > 30) {
           // Log once to help debugging if viewport never appears
           // (should be rare; increases robustness on slow devices)
-          // eslint-disable-next-line no-console
           console.warn("Discuss layout: failed to find ScrollArea viewport");
         }
         return;
@@ -79,7 +78,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
     const id = setTimeout(() => {
       try {
         scrollToTop();
-      } catch (_e) {
+      } catch {
         // ignore if scroll context not ready
       }
     }, 50);

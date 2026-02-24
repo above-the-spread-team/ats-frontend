@@ -18,7 +18,6 @@ import {
   useRecentUnreadPoll,
   useMarkNotificationsRead,
 } from "@/services/fastapi/notification";
-import type { NotificationItem } from "@/type/fastapi/notification";
 import {
   formatNotificationMessage,
   getNotificationLink,
@@ -131,7 +130,7 @@ function useNotificationToasts(authenticated: boolean) {
       );
     });
     setLastSeenId(Math.max(...newItems.map((i) => i.id)));
-  }, [recentPollData?.items]);
+  }, [recentPollData?.items, markRead, router]);
 }
 
 export interface NotificationBellProps {

@@ -120,7 +120,7 @@ export default function UserGroups({ userId }: UserGroupsProps) {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useUserGroupsByUserId(userId, page, PAGE_SIZE);
 
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
   const totalPages = data?.total_pages ?? 1;
 
   const { ownedGroups, followedGroups } = useMemo(() => {
