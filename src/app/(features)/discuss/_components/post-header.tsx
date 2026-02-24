@@ -99,7 +99,7 @@ export default function PostHeader({
 
   return (
     <>
-      <Card className="mb-3    hover:shadow-md transition-shadow">
+      <Card className="mb-3 pr-2    hover:shadow-md transition-shadow">
         <CardContent className="p-3 pr-0 md:p-5 md:pr-4">
           <div className="flex flex-col items-between gap-3 flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4 w-full">
@@ -124,74 +124,6 @@ export default function PostHeader({
                   <h1 className="text-lg md:text-xl font-bold text-foreground">
                     {groupData.name}
                   </h1>
-                  {/* Follow/Unfollow/Owner Button and Actions */}
-                  {currentUser?.id === groupData.owner_id ? (
-                    <div className="flex -mr-2 items-center gap-0">
-                      <StatusIcon
-                        isOwner={true}
-                        size="sm"
-                        className="cursor-default"
-                      />
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              router.push(
-                                `/discuss/edit-group/${groupData.id}`,
-                              );
-                            }}
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit Group
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => setShowDeleteDialog(true)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Group
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  ) : (
-                    <StatusIcon
-                      isOwner={false}
-                      followerStatus={followerStatus}
-                      onFollow={async () => {
-                        if (!currentUser) {
-                          router.push("/login");
-                          return;
-                        }
-                        try {
-                          await followGroupMutation.mutateAsync(groupData.id);
-                        } catch (error) {
-                          console.error("Failed to follow group:", error);
-                        }
-                      }}
-                      onUnfollow={async () => {
-                        try {
-                          await unfollowGroupMutation.mutateAsync(groupData.id);
-                        } catch (error) {
-                          console.error("Failed to unfollow group:", error);
-                        }
-                      }}
-                      isFollowing={followGroupMutation.isPending}
-                      isUnfollowing={unfollowGroupMutation.isPending}
-                      size="sm"
-                      className="cursor-default"
-                    />
-                  )}
                 </div>
 
                 {groupData.description && (
@@ -224,21 +156,87 @@ export default function PostHeader({
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2 mb-1"></div>
             </div>
 
             {/* Group Info */}
-            <div className="flex-1 flex flex-col gap-2 min-w-0">
+            <div className="flex-1 flex flex-col gap-3 min-w-0">
               {/* Tags */}
               {groupData.tags && groupData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-3">
+                <div className="flex flex-wrap gap-1.5 mb-1">
                   {groupData.tags.map((tag) => (
                     <Tag key={tag.id} name={tag.name} variant="small" />
                   ))}
                 </div>
               )}
+              {/* Group Status */}
+              {/* Follow/Unfollow/Owner Button and Actions */}
+              {currentUser?.id === groupData.owner_id ? (
+                <div className="flex -mr-2 items-center gap-2">
+                  <StatusIcon
+                    isOwner={true}
+                    size="sm"
+                    className="cursor-default flex-1"
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 rounded-xl"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push(`/discuss/edit-group/${groupData.id}`);
+                        }}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Group
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setShowDeleteDialog(true)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Group
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : (
+                <StatusIcon
+                  isOwner={false}
+                  followerStatus={followerStatus}
+                  onFollow={async () => {
+                    if (!currentUser) {
+                      router.push("/login");
+                      return;
+                    }
+                    try {
+                      await followGroupMutation.mutateAsync(groupData.id);
+                    } catch (error) {
+                      console.error("Failed to follow group:", error);
+                    }
+                  }}
+                  onUnfollow={async () => {
+                    try {
+                      await unfollowGroupMutation.mutateAsync(groupData.id);
+                    } catch (error) {
+                      console.error("Failed to unfollow group:", error);
+                    }
+                  }}
+                  isFollowing={followGroupMutation.isPending}
+                  isUnfollowing={unfollowGroupMutation.isPending}
+                  size="sm"
+                  className="cursor-default"
+                />
+              )}
               {/* Group Stats */}
-              <div className="flex pr-1 items-center gap-4 md:gap-8 flex-wrap text-xs md:text-sm">
+              <div className="flex pr-1 items-center gap-3 md:gap-8 flex-wrap text-xs md:text-sm">
                 {groupData.is_private && (
                   <>
                     <span className="flex items-center gap-1.5 text-muted-foreground">
@@ -256,7 +254,7 @@ export default function PostHeader({
                   }}
                   className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
                     showFollowers && !showPending && !showBanned
-                      ? "text-primary bg-primary/10"
+                      ? "text-primary-font bg-primary/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >
@@ -279,7 +277,7 @@ export default function PostHeader({
                       }}
                       className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
                         showPending && !showFollowers && !showBanned
-                          ? "text-primary bg-primary/10"
+                          ? "text-primary-font bg-primary/10"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
@@ -301,7 +299,7 @@ export default function PostHeader({
                   }}
                   className={`flex items-center gap-1.5 transition-colors cursor-pointer rounded-full px-2 py-1 -mx-2 -my-1 ${
                     !showFollowers && !showPending && !showBanned
-                      ? "text-primary bg-primary/10"
+                      ? "text-primary-font bg-primary/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >

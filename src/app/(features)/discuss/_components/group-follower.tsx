@@ -15,7 +15,15 @@ import {
 } from "@/components/ui/pagination";
 import { Users, Clock, Check, X, Ban, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useGroupFollowers, usePendingFollowers, useBannedUsers, useApprovePendingFollower, useRejectPendingFollower, useBanUser, useUnbanUser } from "@/services/fastapi/groups";
+import {
+  useGroupFollowers,
+  usePendingFollowers,
+  useBannedUsers,
+  useApprovePendingFollower,
+  useRejectPendingFollower,
+  useBanUser,
+  useUnbanUser,
+} from "@/services/fastapi/groups";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { cn } from "@/lib/utils";
 
@@ -39,14 +47,16 @@ export default function GroupFollower({
   onViewChange,
 }: GroupFollowerProps) {
   const { data: currentUser } = useCurrentUser();
-  const [activeView, setActiveView] = useState<"followers" | "pending" | "banned">(viewType);
-  
+  const [activeView, setActiveView] = useState<
+    "followers" | "pending" | "banned"
+  >(viewType);
+
   const {
     data: groupFollowersData,
     isLoading: isLoadingGroupFollowers,
     error: groupFollowersError,
   } = useGroupFollowers(groupId, page, pageSize);
-  
+
   const {
     data: pendingFollowersData,
     isLoading: isLoadingPendingFollowers,
@@ -60,21 +70,40 @@ export default function GroupFollower({
   } = useBannedUsers(groupId, page, pageSize);
 
   // Use the appropriate data based on activeView
-  const data = activeView === "pending" ? pendingFollowersData : activeView === "banned" ? bannedUsersData : groupFollowersData;
-  const isLoading = activeView === "pending" ? isLoadingPendingFollowers : activeView === "banned" ? isLoadingBannedUsers : isLoadingGroupFollowers;
-  const error = activeView === "pending" ? pendingFollowersError : activeView === "banned" ? bannedUsersError : groupFollowersError;
+  const data =
+    activeView === "pending"
+      ? pendingFollowersData
+      : activeView === "banned"
+        ? bannedUsersData
+        : groupFollowersData;
+  const isLoading =
+    activeView === "pending"
+      ? isLoadingPendingFollowers
+      : activeView === "banned"
+        ? isLoadingBannedUsers
+        : isLoadingGroupFollowers;
+  const error =
+    activeView === "pending"
+      ? pendingFollowersError
+      : activeView === "banned"
+        ? bannedUsersError
+        : groupFollowersError;
 
   // Mutations
   const approveMutation = useApprovePendingFollower();
   const rejectMutation = useRejectPendingFollower();
   const banMutation = useBanUser();
   const unbanMutation = useUnbanUser();
-  
+
   // Track which follower and action is being processed
-  const [processingAction, setProcessingAction] = useState<{ userId: number; action: "approve" | "reject" | "ban" | "unban" } | null>(null);
-  
+  const [processingAction, setProcessingAction] = useState<{
+    userId: number;
+    action: "approve" | "reject" | "ban" | "unban";
+  } | null>(null);
+
   // Check if current user is owner/admin (can ban/unban users)
-  const canBanUsers = currentUser && groupOwnerId && currentUser.id === groupOwnerId;
+  const canBanUsers =
+    currentUser && groupOwnerId && currentUser.id === groupOwnerId;
 
   // Update active view when viewType prop changes
   useEffect(() => {
@@ -84,7 +113,9 @@ export default function GroupFollower({
   // Reset processing state when data changes (after successful mutation, item is removed)
   useEffect(() => {
     if (processingAction && data) {
-      const userStillInList = data.items.some(item => item.id === processingAction.userId);
+      const userStillInList = data.items.some(
+        (item) => item.id === processingAction.userId,
+      );
       if (!userStillInList) {
         setProcessingAction(null);
       }
@@ -123,12 +154,15 @@ export default function GroupFollower({
             <Users className="w-12 h-12 mx-auto text-destructive mb-4" />
           )}
           <h3 className="text-lg font-semibold mb-2">
-            Failed to load {activeView === "pending" ? "pending followers" : activeView === "banned" ? "banned users" : "followers"}
+            Failed to load{" "}
+            {activeView === "pending"
+              ? "pending followers"
+              : activeView === "banned"
+                ? "banned users"
+                : "followers"}
           </h3>
           <p className="text-muted-foreground mb-4">
-            {error instanceof Error
-              ? error.message
-              : "An error occurred"}
+            {error instanceof Error ? error.message : "An error occurred"}
           </p>
         </CardContent>
       </Card>
@@ -138,7 +172,7 @@ export default function GroupFollower({
   if (!data || data.items.length === 0) {
     return (
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-4 ">
           {/* Navigation Tabs */}
           <div className="flex gap-1 mb-4 md:mb-5 p-1 bg-muted rounded-lg">
             <button
@@ -148,10 +182,10 @@ export default function GroupFollower({
                 onViewChange?.("followers");
               }}
               className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
+                "flex-1 flex items-center  justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
                 activeView === "followers"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-background  text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Users className="w-3 h-3 md:w-4 md:h-4" />
@@ -168,7 +202,7 @@ export default function GroupFollower({
                   "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
                   activeView === "pending"
                     ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Clock className="w-3 h-3 md:w-4 md:h-4" />
@@ -186,7 +220,7 @@ export default function GroupFollower({
                   "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
                   activeView === "banned"
                     ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Ban className="w-3 h-3 md:w-4 md:h-4" />
@@ -206,8 +240,8 @@ export default function GroupFollower({
               {activeView === "pending"
                 ? "No pending followers at this time."
                 : activeView === "banned"
-                ? "No banned users at this time."
-                : "No followers in this group yet."}
+                  ? "No banned users at this time."
+                  : "No followers in this group yet."}
             </p>
           </div>
         </CardContent>
@@ -230,8 +264,8 @@ export default function GroupFollower({
               className={cn(
                 "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
                 activeView === "followers"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-background text-primary-font shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Users className="w-3 h-3 md:w-4 md:h-4" />
@@ -247,8 +281,8 @@ export default function GroupFollower({
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
                   activeView === "pending"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-background text-primary-font shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Clock className="w-3 h-3 md:w-4 md:h-4" />
@@ -265,8 +299,8 @@ export default function GroupFollower({
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs md:text-sm font-medium transition-colors",
                   activeView === "banned"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-background text-primary-font shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Ban className="w-3 h-3 md:w-4 md:h-4" />
@@ -278,18 +312,23 @@ export default function GroupFollower({
             {data.items.map((follower) => (
               <div
                 key={follower.id}
-                className="flex items-center gap-3 pb-3 md:pb-4 border-b border-border last:border-b-0 last:pb-0"
+                className={cn(
+                  "flex justify-between items-center gap-3 pb-3 md:pb-4 border-b border-border last:border-b-0 last:pb-0",
+                  activeView === "pending" && "flex-col md:flex-row",
+                )}
               >
-                <UserIcon
-                  avatarUrl={follower.avatar_url}
-                  name={follower.username}
-                  size="medium"
-                  variant="primary"
-                />
-                <div className="flex-1">
-                  <p className="font-semibold text-foreground">
-                    {follower.username}
-                  </p>
+                <div className="flex items-center justify-start  gap-3">
+                  <UserIcon
+                    avatarUrl={follower.avatar_url}
+                    name={follower.username}
+                    size="medium"
+                    variant="primary"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">
+                      {follower.username}
+                    </p>
+                  </div>
                 </div>
                 {activeView === "followers" && canBanUsers && (
                   <div className="flex items-center gap-2">
@@ -297,7 +336,10 @@ export default function GroupFollower({
                       size="sm"
                       variant="outline"
                       onClick={async () => {
-                        setProcessingAction({ userId: follower.id, action: "ban" });
+                        setProcessingAction({
+                          userId: follower.id,
+                          action: "ban",
+                        });
                         try {
                           await banMutation.mutateAsync({
                             groupId,
@@ -311,7 +353,9 @@ export default function GroupFollower({
                       disabled={processingAction !== null}
                       className="h-7 px-3 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
-                      {processingAction?.userId === follower.id && processingAction?.action === "ban" && banMutation.isPending ? (
+                      {processingAction?.userId === follower.id &&
+                      processingAction?.action === "ban" &&
+                      banMutation.isPending ? (
                         <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
@@ -328,7 +372,10 @@ export default function GroupFollower({
                       size="sm"
                       variant="default"
                       onClick={async () => {
-                        setProcessingAction({ userId: follower.id, action: "unban" });
+                        setProcessingAction({
+                          userId: follower.id,
+                          action: "unban",
+                        });
                         try {
                           await unbanMutation.mutateAsync({
                             groupId,
@@ -342,7 +389,9 @@ export default function GroupFollower({
                       disabled={processingAction !== null}
                       className="h-7 px-3 text-xs"
                     >
-                      {processingAction?.userId === follower.id && processingAction?.action === "unban" && unbanMutation.isPending ? (
+                      {processingAction?.userId === follower.id &&
+                      processingAction?.action === "unban" &&
+                      unbanMutation.isPending ? (
                         <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
@@ -359,7 +408,10 @@ export default function GroupFollower({
                       size="sm"
                       variant="default"
                       onClick={async () => {
-                        setProcessingAction({ userId: follower.id, action: "approve" });
+                        setProcessingAction({
+                          userId: follower.id,
+                          action: "approve",
+                        });
                         try {
                           await approveMutation.mutateAsync({
                             groupId,
@@ -373,7 +425,9 @@ export default function GroupFollower({
                       disabled={processingAction !== null}
                       className="h-7 px-3 text-xs"
                     >
-                      {processingAction?.userId === follower.id && processingAction?.action === "approve" && approveMutation.isPending ? (
+                      {processingAction?.userId === follower.id &&
+                      processingAction?.action === "approve" &&
+                      approveMutation.isPending ? (
                         <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
@@ -386,7 +440,10 @@ export default function GroupFollower({
                       size="sm"
                       variant="outline"
                       onClick={async () => {
-                        setProcessingAction({ userId: follower.id, action: "reject" });
+                        setProcessingAction({
+                          userId: follower.id,
+                          action: "reject",
+                        });
                         try {
                           await rejectMutation.mutateAsync({
                             groupId,
@@ -400,7 +457,9 @@ export default function GroupFollower({
                       disabled={processingAction !== null}
                       className="h-7 px-3 text-xs"
                     >
-                      {processingAction?.userId === follower.id && processingAction?.action === "reject" && rejectMutation.isPending ? (
+                      {processingAction?.userId === follower.id &&
+                      processingAction?.action === "reject" &&
+                      rejectMutation.isPending ? (
                         <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
