@@ -2,25 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { User, Users, FileText, Bell } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useUser } from "@/services/fastapi/user";
-import { cn } from "@/lib/utils";
+import {
+  UserNav,
+  type ProfileTabId,
+  NAV_ITEMS,
+} from "@/app/(features)/profile/_components/user-nav";
 import UserInfo from "@/app/(features)/profile/_components/user-info";
 import UserPosts from "@/app/(features)/profile/_components/user-posts";
 import UserGroups from "@/app/(features)/profile/_components/user-groups";
 import Notification from "@/app/(features)/profile/_components/notification";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type ProfileTabId = "user-info" | "groups" | "posts" | "notifications";
-
-const NAV_ITEMS: { id: ProfileTabId; label: string; icon: LucideIcon }[] = [
-  { id: "user-info", label: "User info", icon: User },
-  { id: "groups", label: "Groups", icon: Users },
-  { id: "posts", label: "Posts", icon: FileText },
-  { id: "notifications", label: "Notifications", icon: Bell },
-];
 
 export default function ProfileByUserIdPage() {
   const router = useRouter();
@@ -29,12 +22,22 @@ export default function ProfileByUserIdPage() {
 
   const userIdParam = params.userId as string | undefined;
   const isMe = userIdParam === "me";
-  const userIdFromUrl = isMe ? null : (userIdParam ? parseInt(userIdParam, 10) : NaN);
+  const userIdFromUrl = isMe
+    ? null
+    : userIdParam
+      ? parseInt(userIdParam, 10)
+      : NaN;
 
-  const { data: currentUser, isLoading: currentUserLoading, error: currentUserError } = useCurrentUser();
-  const { data: publicUser, isLoading: publicUserLoading, error: publicUserError } = useUser(
-    isMe ? null : (Number.isNaN(userIdFromUrl) ? null : userIdFromUrl),
-  );
+  const {
+    data: currentUser,
+    isLoading: currentUserLoading,
+    error: currentUserError,
+  } = useCurrentUser();
+  const {
+    data: publicUser,
+    isLoading: publicUserLoading,
+    error: publicUserError,
+  } = useUser(isMe ? null : Number.isNaN(userIdFromUrl) ? null : userIdFromUrl);
 
   // "me" -> redirect to /profile
   useEffect(() => {
@@ -66,7 +69,11 @@ export default function ProfileByUserIdPage() {
   const showNotifications = !!isViewingSelf;
 
   useEffect(() => {
-    if (currentUserError && currentUserError instanceof Error && currentUserError.message.includes("401")) {
+    if (
+      currentUserError &&
+      currentUserError instanceof Error &&
+      currentUserError.message.includes("401")
+    ) {
       router.push("/login");
     }
   }, [currentUserError, router]);
@@ -94,14 +101,17 @@ export default function ProfileByUserIdPage() {
   }
 
   if (isLoadingProfile || !profileUser) {
+    const skeletonNavItems = NAV_ITEMS.filter(
+      (item) => showNotifications || item.id !== "notifications",
+    );
     return (
       <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
         <h1 className="text-lg md:text-xl font-bold text-primary-title">
           Profile
         </h1>
-        <div className="flex flex-row">
-          <div className="flex flex-col h-fit w-40 bg-card border border-border/60 rounded-l-2xl overflow-hidden">
-            {NAV_ITEMS.filter((item) => showNotifications || item.id !== "notifications").map((item) => (
+        <div className="flex flex-col md:flex-row">
+          <div className="flex flex-row md:flex-col h-fit justify-between w-full gap-0 md:w-40 bg-card border border-border/60 rounded-t-2xl md:rounded-r-none md:rounded-l-2xl overflow-hidden">
+            {skeletonNavItems.map((item) => (
               <Skeleton key={item.id} className="m-2 h-10 rounded-lg" />
             ))}
           </div>
@@ -113,38 +123,17 @@ export default function ProfileByUserIdPage() {
     );
   }
 
-  const navItemsToShow = showNotifications
-    ? NAV_ITEMS
-    : NAV_ITEMS.filter((item) => item.id !== "notifications");
-
   return (
     <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
       <h1 className="text-lg md:text-xl font-bold text-primary-title">
         {isViewingSelf ? "My Profile" : "Profile"}
       </h1>
-      <div className="flex flex-row ">
-        <div className="flex flex-col h-fit w-40 bg-card border border-border/60 rounded-l-2xl overflow-hidden">
-          {navItemsToShow.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-left text-sm transition-colors",
-                  isActive
-                    ? "bg-primary/15 text-primary-font font-medium border-r-2 border-primary-font"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                )}
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex flex-col md:flex-row">
+        <UserNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          showNotifications={showNotifications}
+        />
         <div className="min-h-[700px] rounded-b-2xl rounded-r-2xl w-full border border-border/60 border-l-0 bg-card p-4">
           {activeTab === "user-info" && (
             <UserInfo
@@ -164,7 +153,9 @@ export default function ProfileByUserIdPage() {
           )}
           {activeTab === "groups" && <UserGroups userId={profileUser.id} />}
           {activeTab === "posts" && <UserPosts userId={profileUser.id} />}
-          {activeTab === "notifications" && showNotifications && <Notification />}
+          {activeTab === "notifications" && showNotifications && (
+            <Notification />
+          )}
         </div>
       </div>
     </div>

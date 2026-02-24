@@ -30,7 +30,7 @@ export const registerSchema = z
       .string()
       .min(1, "Name is required")
       .min(3, "Name must be at least 3 characters")
-      .max(50, "Name must be at most 50 characters")
+      .max(30, "Name must be at most 30 characters")
       .regex(
         /^[a-zA-Z0-9_-]+$/,
         "Name can only contain letters, numbers, underscores, and hyphens"

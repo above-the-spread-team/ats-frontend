@@ -131,11 +131,21 @@
   border: 1px solid hsl(var(--border)) !important;
   background: hsl(var(--card)) !important;
   color: hsl(var(--card-foreground)) !important;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
   overflow: hidden;
   min-width: 280px;
-  max-width: 360px;
+  max-width: 300px;
+  margin: 0.5rem !important;
 }
+@media (min-width: 768px) {
+  .notification-toast {
+    margin-top: 0 !important;
+    max-width: 360px !important;
+  }
+}
+
 .notification-toast .Toastify__progress-bar {
   background: hsl(var(--primary)) !important;
 }
@@ -220,7 +230,9 @@
 .theme-toggle-icon {
   grid-column: 1 / 1;
   grid-row: 1 / 1;
-  transition: transform 500ms, color 200ms;
+  transition:
+    transform 500ms,
+    color 200ms;
   line-height: 0.1;
   width: 20px;
   height: 20px;
@@ -247,7 +259,10 @@
   content: "";
   grid-area: 1/1;
   --c: radial-gradient(farthest-side, hsl(168 42% 64%) 92%, transparent);
-  background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%,
+  background:
+    var(--c) 50% 0,
+    var(--c) 50% 100%,
+    var(--c) 100% 50%,
     var(--c) 0 50%;
   background-size: 11px 11px;
   background-repeat: no-repeat;
