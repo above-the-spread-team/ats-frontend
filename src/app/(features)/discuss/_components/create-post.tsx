@@ -480,11 +480,6 @@ export default function CreatePost({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || !content.trim()}
-            onTouchEnd={(e) => {
-              // Prevent double-tap on mobile Safari
-              e.preventDefault();
-              e.stopPropagation();
-            }}
           >
             {isSubmitting ? "Posting..." : "Post"}
           </Button>

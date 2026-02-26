@@ -41,7 +41,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState<PostDateFilter | undefined>(
-    undefined
+    undefined,
   );
   const [sortBy, setSortBy] = useState<PostSortOption | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -80,7 +80,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
     null, // groupId (null for all posts)
     selectedTagIds.length > 0 ? selectedTagIds : undefined, // tagIds
     dateRange,
-    sortBy
+    sortBy,
   );
 
   // Use group posts if in group mode, otherwise use all posts
@@ -99,7 +99,7 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   // Get list of group IDs the user is following (active followers only)
   const userGroupIds = useMemo(
     () => new Set<number>(userGroupsData?.items.map((group) => group.id) || []),
-    [userGroupsData]
+    [userGroupsData],
   );
 
   // Get follower_status for current group (if in group mode)
@@ -376,10 +376,10 @@ export default function PostContent({ groupId = null }: PostContentProps) {
               {!currentUser
                 ? "Please log in to view this group's posts."
                 : followerStatus === "banned"
-                ? "You are banned from this group and cannot view its content."
-                : followerStatus === "pending"
-                ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
-                : "This group's posts are only visible to active members. Please follow the group to view content."}
+                  ? "You are banned from this group and cannot view its content."
+                  : followerStatus === "pending"
+                    ? "Your request to join this group is pending approval. Once approved, you'll be able to view and post content."
+                    : "This group's posts are only visible to active members. Please follow the group to view content."}
             </p>
           </CardContent>
         </Card>
@@ -423,8 +423,8 @@ export default function PostContent({ groupId = null }: PostContentProps) {
                 showPending
                   ? pendingPage
                   : showBanned
-                  ? bannedPage
-                  : followersPage
+                    ? bannedPage
+                    : followersPage
               }
               pageSize={pageSize}
               onPageChange={(newPage) => {
@@ -464,11 +464,12 @@ export default function PostContent({ groupId = null }: PostContentProps) {
             !showPending &&
             !showBanned &&
             ((isGroupMode && groupPostsData) || (!isGroupMode && postsData)) &&
-            ((isGroupMode && groupPostsData?.total_pages) ||
-              (!isGroupMode && postsData?.total_pages)) &&
-            (isGroupMode
-              ? groupPostsData!.total_pages
-              : postsData!.total_pages) > 1 && (
+            (() => {
+              const totalPages = isGroupMode
+                ? groupPostsData?.total_pages ?? 0
+                : postsData?.total_pages ?? 0;
+              return totalPages > 0 && totalPages > 1;
+            })() && (
               <div className="flex justify-center pt-2">
                 <Pagination>
                   <PaginationContent>
@@ -609,8 +610,8 @@ export default function PostContent({ groupId = null }: PostContentProps) {
               {isGroupMode
                 ? "No posts in this group yet. Be the first to share!"
                 : selectedTagIds.length > 0 || dateRange || sortBy
-                ? "No posts found with the selected filters."
-                : "No posts yet. Be the first to share!"}
+                  ? "No posts found with the selected filters."
+                  : "No posts yet. Be the first to share!"}
             </p>
             {!isGroupMode &&
               (selectedTagIds.length > 0 || dateRange || sortBy) && (

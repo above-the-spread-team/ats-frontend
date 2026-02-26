@@ -67,7 +67,7 @@ function groupFixturesByLeague(fixtures: FixtureResponseItem[]): LeagueGroup[] {
       fixtures: [...group.fixtures].sort(
         (a, b) =>
           new Date(a.fixture.date).getTime() -
-          new Date(b.fixture.date).getTime()
+          new Date(b.fixture.date).getTime(),
       ),
     }))
     .sort((a, b) => a.leagueName.localeCompare(b.leagueName));
@@ -102,18 +102,18 @@ function FixturesContent() {
   });
   // Get timezone from browser. Fallback when Safari/M2 low-power or similar
   // fails to resolve (see https://bugs.webkit.org/show_bug.cgi?id=197769).
-  const timezone = useMemo(() => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (tz?.trim()) return tz;
-      return "UTC";
-    } catch {
-      return "UTC";
-    }
-  }, []);
+  // const timezone = useMemo(() => {
+  //   try {
+  //     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  //     if (tz?.trim()) return tz;
+  //     return "UTC";
+  //   } catch {
+  //     return "UTC";
+  //   }
+  // }, []);
 
   // set the timezone to UTC
-  // const timezone = "UTC";
+  const timezone = "UTC";
   // Use React Query to fetch fixtures
   const {
     data: fixturesData,
@@ -123,7 +123,7 @@ function FixturesContent() {
 
   const fixtures = useMemo(
     () => fixturesData?.response ?? [],
-    [fixturesData?.response]
+    [fixturesData?.response],
   );
   const meta = fixturesData
     ? {
@@ -135,8 +135,8 @@ function FixturesContent() {
     queryError instanceof Error
       ? queryError.message
       : fixturesData?.errors && fixturesData.errors.length > 0
-      ? fixturesData.errors.join("\n")
-      : null;
+        ? fixturesData.errors.join("\n")
+        : null;
 
   // Track if we're updating URL to prevent loops
   const isUpdatingUrl = useRef(false);
@@ -183,7 +183,7 @@ function FixturesContent() {
 
   const groupedFixtures = useMemo(
     () => groupFixturesByLeague(fixtures),
-    [fixtures]
+    [fixtures],
   );
 
   return (
@@ -255,12 +255,12 @@ function FixturesContent() {
                 </Link>
                 {group.fixtures.map((fixture) => {
                   const statusInfo = getFixtureStatus(
-                    fixture.fixture.status.short
+                    fixture.fixture.status.short,
                   );
                   const isInPlay = statusInfo.type === "In Play";
                   const hasStarted = isInPlay || statusInfo.type === "Finished";
                   const kickoffTime = new Date(
-                    fixture.fixture.date
+                    fixture.fixture.date,
                   ).toLocaleTimeString(undefined, {
                     hour: "2-digit",
                     minute: "2-digit",
