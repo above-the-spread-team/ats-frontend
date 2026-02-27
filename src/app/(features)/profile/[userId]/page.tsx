@@ -138,6 +138,7 @@ export default function ProfileByUserIdPage() {
             <UserInfo
               user={profileUser}
               showEmail={showEmail}
+              canEditAvatar={isViewingSelf}
               stats={
                 isViewingSelf && publicUser
                   ? {

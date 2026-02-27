@@ -102,3 +102,10 @@ export function useUserGroupsByUserId(
     refetchOnWindowFocus: false,
   });
 }
+
+/** Re-export upload user icon/avatar API (implementation in user-email.ts). */
+export {
+  uploadUserIcon,
+  useUploadUserIcon,
+} from "./user-email";
+export type { UploadIconResponse } from "./user-email";

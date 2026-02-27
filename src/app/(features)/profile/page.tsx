@@ -104,6 +104,7 @@ function MePageContent() {
           {activeTab === "user-info" && (
             <UserInfo
               user={user}
+              canEditAvatar
               stats={
                 publicProfile
                   ? {

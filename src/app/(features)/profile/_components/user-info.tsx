@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import {
   Mail,
   Calendar,
@@ -11,10 +12,13 @@ import {
   Shield,
   Clock,
   CircleDot,
+  Camera,
+  Plus,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import UserIcon from "@/components/common/user-icon";
 import type { User, UserPublicResponse } from "@/type/fastapi/user";
+import { useUploadUserIcon } from "@/services/fastapi/user";
 import { cn } from "@/lib/utils";
 
 function formatDate(iso: string) {
@@ -55,6 +59,8 @@ export interface UserInfoProps {
   showEmail?: boolean;
   /** Optional counts (e.g. from GET /users/{id}) when showing full User so "my profile" can show stats. */
   stats?: UserStats;
+  /** When true, show upload avatar control (only for current user's profile). */
+  canEditAvatar?: boolean;
 }
 
 function isFullUser(user: User | UserPublicResponse): user is User {
@@ -94,7 +100,14 @@ function InfoRow({
   );
 }
 
-export default function UserInfo({ user, showEmail, stats }: UserInfoProps) {
+export default function UserInfo({
+  user,
+  showEmail,
+  stats,
+  canEditAvatar = false,
+}: UserInfoProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadIcon = useUploadUserIcon();
   const fullUser = isFullUser(user) ? user : null;
   const publicUser = "post_count" in user ? user : null;
   const statsToShow = publicUser ?? stats;
@@ -106,6 +119,19 @@ export default function UserInfo({ user, showEmail, stats }: UserInfoProps) {
       ? fullUser.email_verified
       : undefined;
 
+  const handleAvatarClick = () => {
+    if (!canEditAvatar || uploadIcon.isPending) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadIcon.mutate(file);
+    }
+    e.target.value = "";
+  };
+
   return (
     <div className="space-y-6">
       {/* Profile header: avatar + name + badge */}
@@ -113,20 +139,63 @@ export default function UserInfo({ user, showEmail, stats }: UserInfoProps) {
         <div className="relative bg-gradient-to-br from-primary-font/40 via-transparent to-primary-font/20  px-4 py-2">
           <div className="flex flex-col items-center py-2 px-2 gap-4 text-center sm:flex-row sm:items-center sm:text-left">
             <div className="relative shrink-0">
-              <div className="ring-primary/20 flex overflow-hidden rounded-full ring-4 ring-offset-4 ring-offset-card">
-                <UserIcon
-                  avatarUrl={user.avatar_url}
-                  name={user.username}
-                  size="large"
-                  variant="primary"
-                  className="h-16 w-16 sm:h-28 sm:w-28"
-                />
-              </div>
-              {fullUser && "is_active" in fullUser && fullUser.is_active && (
-                <span
-                  className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-card"
-                  title="Active"
-                />
+              {canEditAvatar ? (
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={uploadIcon.isPending}
+                  className="ring-primary/20 flex overflow-hidden rounded-full ring-4 ring-offset-4 ring-offset-card cursor-pointer hover:ring-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label="Upload profile photo"
+                >
+                  <UserIcon
+                    avatarUrl={user.avatar_url}
+                    name={user.username}
+                    size="large"
+                    variant="primary"
+                    className={cn(
+                      "h-16 w-16 sm:h-28 sm:w-28",
+                      uploadIcon.isPending && "opacity-60",
+                    )}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="sr-only"
+                    aria-hidden
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity hover:opacity-100 focus-within:opacity-100">
+                    <Camera className="h-8 w-8 text-white sm:h-5 sm:w-6" />
+                  </span>
+                </button>
+              ) : (
+                <div className="ring-primary/20 flex overflow-hidden rounded-full ring-4 ring-offset-4 ring-offset-card">
+                  <UserIcon
+                    avatarUrl={user.avatar_url}
+                    name={user.username}
+                    size="large"
+                    variant="primary"
+                    className="h-16 w-16 sm:h-28 sm:w-28"
+                  />
+                </div>
+              )}
+              {canEditAvatar && (
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={uploadIcon.isPending}
+                  aria-label="Upload profile photo"
+                  className={cn(
+                    "absolute -bottom-1 -right-1 bg-primary-font/70 text-white h-5 w-5 rounded-full flex items-center justify-center transition-opacity",
+                    uploadIcon.isPending
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer hover:bg-primary-font/90",
+                  )}
+                  title="Upload profile photo"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
               )}
             </div>
             <div className="sm:pb-1">

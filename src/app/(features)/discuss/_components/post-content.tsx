@@ -601,8 +601,12 @@ export default function PostContent({ groupId = null }: PostContentProps) {
         </>
       )}
 
-      {/* Empty State */}
-      {!isLoading && !error && !showFollowers && posts.length === 0 && (
+      {/* Empty State - only when user can view posts (in group mode hide when content is private) */}
+      {!isLoading &&
+        !error &&
+        !showFollowers &&
+        posts.length === 0 &&
+        (!isGroupMode || canViewPosts) && (
         <Card>
           <CardContent className="py-12 text-center">
             <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
