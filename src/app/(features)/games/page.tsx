@@ -102,18 +102,18 @@ function FixturesContent() {
   });
   // Get timezone from browser. Fallback when Safari/M2 low-power or similar
   // fails to resolve (see https://bugs.webkit.org/show_bug.cgi?id=197769).
-  // const timezone = useMemo(() => {
-  //   try {
-  //     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  //     if (tz?.trim()) return tz;
-  //     return "UTC";
-  //   } catch {
-  //     return "UTC";
-  //   }
-  // }, []);
+  const timezone = useMemo(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz?.trim()) return tz;
+      return "UTC";
+    } catch {
+      return "UTC";
+    }
+  }, []);
 
   // set the timezone to UTC
-  const timezone = "UTC";
+  // const timezone = "UTC";
   // Use React Query to fetch fixtures
   const {
     data: fixturesData,
