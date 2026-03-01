@@ -19,7 +19,6 @@ import type { TeamResponseItem } from "@/type/footballapi/teams-info";
 import SeasonSelect from "../_components/season-select";
 import Statistic from "./_components/statistic";
 import Squad from "./_components/squad";
-import { calculateSeason } from "@/lib/utils";
 
 type TabType = "statistics" | "squad";
 
@@ -29,10 +28,14 @@ export default function TeamPage() {
   const leagueId = params["league-id"] as string;
   const teamId = params["team-id"] as string;
 
+  const [teamSeasons, setTeamSeasons] = useState<number[] | null>(null);
+
   const seasonParam = searchParams.get("season");
+  const latestTeamSeason =
+    teamSeasons?.length ? Math.max(...teamSeasons) : undefined;
   const season = seasonParam
     ? parseInt(seasonParam, 10)
-    : calculateSeason();
+    : latestTeamSeason ?? new Date().getFullYear();
 
   // Get tab from URL or default to statistics
   const tabParam = searchParams.get("tab") as TabType;
@@ -81,6 +84,20 @@ export default function TeamPage() {
     return () => {
       controller.abort();
     };
+  }, [teamId]);
+
+  // Fetch team seasons: default to latest season from API (no calculateSeason)
+  useEffect(() => {
+    if (!teamId || Number.isNaN(Number(teamId))) return;
+    const controller = new AbortController();
+    fetch(`/api/team-seasons?team=${teamId}`, { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) =>
+        Array.isArray(data?.response) ? data.response : null,
+      )
+      .then(setTeamSeasons)
+      .catch(() => setTeamSeasons(null));
+    return () => controller.abort();
   }, [teamId]);
 
   if (isLoadingTeam) {
@@ -207,6 +224,7 @@ export default function TeamPage() {
                 leagueId={leagueId}
                 season={season}
                 activeTab="teams"
+                availableSeasons={teamSeasons?.map((year) => ({ year }))}
               />
             </div>
           ) : (
