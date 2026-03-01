@@ -15,7 +15,6 @@ import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { calculateSeason } from "@/lib/utils";
 import type { PlayerStatisticsApiResponse } from "@/type/footballapi/player-statistics";
 
 export default function PlayerPage() {
@@ -25,10 +24,7 @@ export default function PlayerPage() {
   const pathname = usePathname();
   const playerId = params["player-id"] as string;
 
-  // Get season from URL or use calculated season as default
   const seasonParam = searchParams.get("season");
-  const defaultSeason = calculateSeason();
-  const season = seasonParam ? parseInt(seasonParam, 10) : defaultSeason;
   const teamId = searchParams.get("teamId");
   const leagueId = searchParams.get("leagueId");
 
@@ -39,6 +35,13 @@ export default function PlayerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Season: URL param > latest from player-seasons API > current year
+  const latestFromApi =
+    availableSeasons.length > 0 ? Math.max(...availableSeasons) : undefined;
+  const season = seasonParam
+    ? parseInt(seasonParam, 10)
+    : latestFromApi ?? new Date().getFullYear();
 
   // Fetch available seasons for the player
   useEffect(() => {

@@ -10,10 +10,21 @@ import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
 import Leader from "./_components/leader";
 import Teams from "./_components/teams";
-import type { LeagueResponseItem } from "@/type/footballapi/league";
-import { calculateSeason } from "@/lib/utils";
+import type {
+  LeagueResponseItem,
+  LeagueSeason,
+} from "@/type/footballapi/league";
 
 type TabType = "standings" | "leaders" | "teams";
+
+/** Default season from API: current flag or latest year. */
+function getDefaultSeasonFromApi(seasons: LeagueSeason[]): number | undefined {
+  if (!seasons?.length) return undefined;
+  const current = seasons.find((s) => s.current);
+  if (current) return current.year;
+  const sorted = [...seasons].sort((a, b) => b.year - a.year);
+  return sorted[0]?.year;
+}
 
 export default function LeagueStatsPage() {
   const params = useParams();
@@ -23,7 +34,6 @@ export default function LeagueStatsPage() {
   const [league, setLeague] = useState<LeagueResponseItem | null>(null);
   const [isLoadingLeague, setIsLoadingLeague] = useState(true);
 
-  // Get tab from URL or default to standings
   const tabParam = searchParams.get("tab") as TabType;
   const [activeTab, setActiveTab] = useState<TabType>(
     tabParam && ["standings", "leaders", "teams"].includes(tabParam)
@@ -31,11 +41,14 @@ export default function LeagueStatsPage() {
       : "standings"
   );
 
-  // Get season from URL query params, default to calculated current season
+  // Season: URL param > API seasons (current or latest) > current year fallback
   const seasonParam = searchParams.get("season");
+  const defaultFromApi = league?.seasons?.length
+    ? getDefaultSeasonFromApi(league.seasons)
+    : undefined;
   const selectedSeason = seasonParam
     ? parseInt(seasonParam, 10)
-    : calculateSeason();
+    : defaultFromApi ?? new Date().getFullYear();
 
   // Fetch league information
   useEffect(() => {
@@ -146,12 +159,13 @@ export default function LeagueStatsPage() {
             </div>
           )}
 
-          {/* Season Selector */}
+          {/* Season Selector - options from API (GET leagues?id=X returns full seasons) */}
           <div className="flex w-full justify-end md:justify-start md:w-auto">
             <SeasonSelect
               leagueId={leagueId}
               season={selectedSeason}
               activeTab={activeTab}
+              availableSeasons={league?.seasons}
             />
           </div>
         </div>

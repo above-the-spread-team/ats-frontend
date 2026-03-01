@@ -31,18 +31,19 @@ export default function TeamPage() {
   const [teamSeasons, setTeamSeasons] = useState<number[] | null>(null);
 
   const seasonParam = searchParams.get("season");
-  const latestTeamSeason =
-    teamSeasons?.length ? Math.max(...teamSeasons) : undefined;
+  const latestTeamSeason = teamSeasons?.length
+    ? Math.max(...teamSeasons)
+    : undefined;
   const season = seasonParam
     ? parseInt(seasonParam, 10)
-    : latestTeamSeason ?? new Date().getFullYear();
+    : (latestTeamSeason ?? new Date().getFullYear());
 
   // Get tab from URL or default to statistics
   const tabParam = searchParams.get("tab") as TabType;
   const [activeTab, setActiveTab] = useState<TabType>(
     tabParam && ["statistics", "squad"].includes(tabParam)
       ? tabParam
-      : "statistics"
+      : "statistics",
   );
 
   const [teamInfo, setTeamInfo] = useState<TeamResponseItem | null>(null);
@@ -92,9 +93,7 @@ export default function TeamPage() {
     const controller = new AbortController();
     fetch(`/api/team-seasons?team=${teamId}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) =>
-        Array.isArray(data?.response) ? data.response : null,
-      )
+      .then((data) => (Array.isArray(data?.response) ? data.response : null))
       .then(setTeamSeasons)
       .catch(() => setTeamSeasons(null));
     return () => controller.abort();
@@ -165,7 +164,7 @@ export default function TeamPage() {
       <div className="container mx-auto max-w-6xl space-y-1 md:space-y-2  px-4 md:px-6 pb-4 ">
         {/* Header */}
         <Link
-          href={`/stats/${leagueId}?season=${season}&tab=teams`}
+          href={`/stats/${leagueId}?tab=teams`}
           className="flex items-center my-4 gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -176,13 +175,13 @@ export default function TeamPage() {
           <div className="flex items-center gap-3">
             {teamInfo?.team.logo && (
               <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
-                  <Image
-                    src={teamInfo.team.logo}
-                    alt={teamInfo.team.name}
-                    fill
-                    className="object-contain dark:p-1 dark:bg-white dark:rounded-xl"
-                    sizes="(max-width: 768px) 80px, 96px"
-                  />
+                <Image
+                  src={teamInfo.team.logo}
+                  alt={teamInfo.team.name}
+                  fill
+                  className="object-contain dark:p-1 dark:bg-white dark:rounded-xl"
+                  sizes="(max-width: 768px) 80px, 96px"
+                />
               </div>
             )}
             <div className="flex flex-col">

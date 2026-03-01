@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LEAGUE_IDS } from "@/data/league-ids";
-import { calculateSeason } from "@/lib/utils";
 import type {
   LeaguesApiResponse,
   LeagueResponseItem,
@@ -30,19 +29,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Get optional season parameter
-  const seasonParam = req.nextUrl.searchParams.get("season");
-
-  // Calculate season based on current date if not provided
-  const season = seasonParam ? parseInt(seasonParam, 10) : calculateSeason();
-
+  // Do not send season when listing all leagues: API returns each league with full "seasons" array.
+  // Use GET leagues?id=X (no season) to get "all the seasons available for a league/cup".
   const leagues: LeagueResponseItem[] = [];
   const errors: Record<string, string> = {};
 
   for (const leagueId of LEAGUE_IDS) {
     const params = new URLSearchParams({
       id: leagueId.toString(),
-      season: season.toString(),
     });
 
     try {
@@ -83,7 +77,6 @@ export async function GET(req: NextRequest) {
     get: "leagues",
     parameters: {
       id: LEAGUE_IDS.join(","),
-      season,
     },
     results: leagues.length,
     errors: errorMessages,

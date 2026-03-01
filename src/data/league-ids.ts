@@ -5,7 +5,7 @@ export interface LeagueInfo {
   logo: string;
 }
 
-export const LEAGUE_IDS = [2, 3, 848, 39, 140, 135, 78, 61] as const;
+export const LEAGUE_IDS = [2, 3, 848, 39, 140, 135, 78, 61, 1] as const;
 
 export type LeagueId = (typeof LEAGUE_IDS)[number];
 
@@ -58,6 +58,12 @@ export const LEAGUE_INFO: Record<LeagueId, LeagueInfo> = {
     type: "League",
     logo: "https://media.api-sports.io/football/leagues/61.png",
   },
+  1: {
+    id: 1,
+    name: "World Cup",
+    type: "Cup",
+    logo: "https://media.api-sports.io/football/leagues/1.png",
+  },
 };
 
 // Helper functions
@@ -84,7 +90,7 @@ export function isCup(leagueId: LeagueId): boolean {
 // Get all leagues filtered by type
 export function getLeaguesByType(type: "League" | "Cup"): LeagueInfo[] {
   return LEAGUE_IDS.filter((id) => LEAGUE_INFO[id].type === type).map(
-    (id) => LEAGUE_INFO[id]
+    (id) => LEAGUE_INFO[id],
   );
 }
 

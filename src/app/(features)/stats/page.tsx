@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, Suspense } from "react";
 import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Nav from "@/components/common/nav-stats";
-import { calculateSeason } from "@/lib/utils";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
 import StatsSkeleton from "./_components/skeleton";
@@ -19,14 +18,20 @@ function TablesContent() {
   const [leagues, setLeagues] = useState<LeagueResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Calculate season based on current date
-  const [selectedSeason, setSelectedSeason] = useState<number>(() =>
-    calculateSeason()
-  );
+  const [retryCount, setRetryCount] = useState(0);
   const [selectedType, setSelectedType] = useState<LeagueType>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const minusHeight = 250;
+
+  /** Per league: use API "current" season or latest by year (no global season state). */
+  const getCurrentSeasonData = (league: LeagueResponseItem) => {
+    if (!league.seasons?.length) return undefined;
+    const current = league.seasons.find((s) => s.current);
+    if (current) return current;
+    const sorted = [...league.seasons].sort((a, b) => b.year - a.year);
+    return sorted[0];
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,7 +71,7 @@ function TablesContent() {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [retryCount]);
 
   // Group and filter leagues
   const groupedLeagues = useMemo(() => {
@@ -75,7 +80,7 @@ function TablesContent() {
     // Filter by type
     if (selectedType !== "all") {
       filtered = filtered.filter(
-        (league) => league.league.type?.toLowerCase() === selectedType
+        (league) => league.league.type?.toLowerCase() === selectedType,
       );
     }
 
@@ -85,7 +90,7 @@ function TablesContent() {
       filtered = filtered.filter(
         (league) =>
           league.league.name.toLowerCase().includes(query) ||
-          league.country.name.toLowerCase().includes(query)
+          league.country.name.toLowerCase().includes(query),
       );
     }
 
@@ -117,14 +122,6 @@ function TablesContent() {
     return grouped;
   }, [leagues, selectedType, searchQuery]);
 
-  const getCurrentSeasonData = (league: LeagueResponseItem) => {
-    return (
-      league.seasons.find((s) => s.year === selectedSeason) ||
-      league.seasons.find((s) => s.current) ||
-      league.seasons[league.seasons.length - 1]
-    );
-  };
-
   const totalFilteredCount = useMemo(() => {
     return (
       groupedLeagues.league.length +
@@ -136,13 +133,13 @@ function TablesContent() {
   // Always show total counts from original unfiltered data
   const totalLeaguesCount = useMemo(() => {
     return leagues.filter(
-      (league) => league.league.type?.toLowerCase() === "league"
+      (league) => league.league.type?.toLowerCase() === "league",
     ).length;
   }, [leagues]);
 
   const totalCupsCount = useMemo(() => {
     return leagues.filter(
-      (league) => league.league.type?.toLowerCase() === "cup"
+      (league) => league.league.type?.toLowerCase() === "cup",
     ).length;
   }, [leagues]);
 
@@ -151,11 +148,13 @@ function TablesContent() {
   }, [totalLeaguesCount, totalCupsCount]);
 
   const renderLeagueCard = (league: LeagueResponseItem) => {
+    const seasonData = getCurrentSeasonData(league);
+    const season = seasonData?.year ?? new Date().getFullYear();
     return (
       <LeagueCard
         key={league.league.id}
         league={league}
-        season={selectedSeason}
+        season={season}
         getCurrentSeasonData={getCurrentSeasonData}
       />
     );
@@ -225,7 +224,7 @@ function TablesContent() {
           <div className="text-center space-y-4">
             <p className="text-lg font-semibold text-destructive">{error}</p>
             <button
-              onClick={() => setSelectedSeason(selectedSeason)}
+              onClick={() => setRetryCount((c) => c + 1)}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
             >
               Retry

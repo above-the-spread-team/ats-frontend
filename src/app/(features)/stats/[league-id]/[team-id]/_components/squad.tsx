@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
-import { Users, Calendar } from "lucide-react";
+import { Users } from "lucide-react";
 import type { SquadsApiResponse, SquadPlayer } from "@/type/footballapi/squads";
-import { calculateSeason } from "@/lib/utils";
 
 interface SquadProps {
   teamId: string;
@@ -60,13 +58,8 @@ function PlayerImage({
 }
 
 export default function Squad({ teamId, leagueId }: SquadProps) {
-  const searchParams = useSearchParams();
-  const seasonParam = searchParams.get("season");
-  const currentSeasonYear = calculateSeason();
-  const season = seasonParam ? parseInt(seasonParam, 10) : currentSeasonYear;
-
   const [squad, setSquad] = useState<SquadsApiResponse["response"][0] | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -160,7 +153,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
   if (isLoading) {
     return (
       <div className="space-y-5 md:space-y-6 px-1 md:px-0">
-        {/* Total Players and Season Skeleton */}
+        {/* Total Players Skeleton */}
         <div className="flex items-center justify-between px-2 rounded-2xl">
           <div className="flex items-center gap-2">
             <Skeleton className="w-6 h-6 md:w-7 md:h-7 rounded-md" />
@@ -209,7 +202,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
       <FullPage center minusHeight={300}>
         <NoDate
           message={error || "No squad data available"}
-          helpText="Squad information may not be available for this team or season."
+          helpText="Squad information may not be available for this team."
         />
       </FullPage>
     );
@@ -217,7 +210,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
 
   return (
     <div className="space-y-5 md:space-y-6 px-1 md:px-0">
-      {/* Total Players and Season */}
+      {/* Total Players (squad API has no season) */}
       <div className="flex items-center justify-between px-2 rounded-2xl">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-primary/10 rounded-md">
@@ -230,19 +223,6 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
             </span>
             <span className="text-[10px] md:text-xs text-muted-foreground">
               Total squad members
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-primary/10 rounded-md">
-            <Calendar className="w-3 h-3 md:w-4 md:h-4 text-primary" />
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-xs md:text-sm font-semibold text-foreground">
-              Season {currentSeasonYear}
-            </span>
-            <span className="text-[10px] md:text-xs text-muted-foreground">
-              Current season
             </span>
           </div>
         </div>
@@ -263,7 +243,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
             {players.map((player) => (
               <Link
                 key={player.id}
-                href={`/stats/player/${player.id}?season=${season}&teamId=${teamId}&leagueId=${leagueId}`}
+                href={`/stats/player/${player.id}?teamId=${teamId}&leagueId=${leagueId}`}
                 className="flex flex-col items-center gap-2 py-1 md:py-2 px-2 bg-gradient-to-br from-card to-card/90 border border-border/50 rounded-xl shadow-sm transition-all duration-300 group hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 hover:bg-gradient-to-br hover:from-card hover:via-card/98 hover:to-card/95"
               >
                 <div className="transition-transform duration-300 group-hover:scale-105">

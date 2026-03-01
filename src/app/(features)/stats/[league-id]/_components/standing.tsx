@@ -256,9 +256,10 @@ export default function Standings({ leagueId, season }: StandingsProps) {
               </TableRow>
             </TableHeader>
             <TableBody className="">
-              {sortedStandings.map((standing) => {
+              {sortedStandings.map((standing, index) => {
+                const rowKey = `${standing.group ?? ""}-${standing.rank}-${standing.team.id}-${index}`;
                 return (
-                  <TableRow key={standing.team.id} className="">
+                  <TableRow key={rowKey} className="">
                     <StandingCell>
                       <span className="font-bold pl-1 text-foreground text-[10px] md:text-sm">
                         {standing.rank}
