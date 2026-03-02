@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUserGroups } from "@/services/fastapi/groups";
+import { getStoredToken } from "@/services/fastapi/token-storage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -25,6 +26,18 @@ export default function Sidebar() {
   const { data: groupsData, isLoading } = useUserGroups();
   const { closeSidebar } = useSidebar();
   const isMobile = useMobile();
+
+  // When user has no stored token (not logged in), show empty state immediately
+  // instead of waiting for the user-groups API to fail. Avoids long loading for guests.
+  const [skipLoadingForUnauthenticated, setSkipLoadingForUnauthenticated] =
+    useState(false);
+  useEffect(() => {
+    if (!getStoredToken()) {
+      setSkipLoadingForUnauthenticated(true);
+    }
+  }, []);
+
+  const showLoading = isLoading && !skipLoadingForUnauthenticated;
 
   // Memoize groups extraction
   const groups = useMemo(() => groupsData?.items || [], [groupsData]);
@@ -119,7 +132,7 @@ export default function Sidebar() {
               </div>
 
               {/* Loading State */}
-              {isLoading && (
+              {showLoading && (
                 <div className="space-y-1">
                   {[...Array(2)].map((_, i) => (
                     <div
@@ -137,7 +150,7 @@ export default function Sidebar() {
               )}
 
               {/* Owned Groups List */}
-              {!isLoading && ownedGroups.length > 0 && (
+              {!showLoading && ownedGroups.length > 0 && (
                 <div className="space-y-1">
                   {ownedGroups.map((group) => {
                     const isActive =
@@ -235,7 +248,7 @@ export default function Sidebar() {
               )}
 
               {/* Empty State for Owned Groups */}
-              {!isLoading && ownedGroups.length === 0 && (
+              {!showLoading && ownedGroups.length === 0 && (
                 <Link
                   href="/discuss/create-group"
                   onClick={handleLinkClick}
@@ -270,7 +283,7 @@ export default function Sidebar() {
               </div>
 
               {/* Loading State */}
-              {isLoading && (
+              {showLoading && (
                 <div className="space-y-1">
                   {[...Array(2)].map((_, i) => (
                     <div
@@ -288,7 +301,7 @@ export default function Sidebar() {
               )}
 
               {/* Following Groups List */}
-              {!isLoading && followedGroups.length > 0 && (
+              {!showLoading && followedGroups.length > 0 && (
                 <div className="space-y-1">
                   {followedGroups.map((group) => {
                     const isActive =
@@ -386,7 +399,7 @@ export default function Sidebar() {
               )}
 
               {/* Empty State for Following Groups */}
-              {!isLoading && followedGroups.length === 0 && (
+              {!showLoading && followedGroups.length === 0 && (
                 <Link
                   href="/discuss/search-group"
                   onClick={handleLinkClick}

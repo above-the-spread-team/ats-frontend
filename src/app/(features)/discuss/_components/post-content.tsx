@@ -601,10 +601,12 @@ export default function PostContent({ groupId = null }: PostContentProps) {
         </>
       )}
 
-      {/* Empty State - only when user can view posts (in group mode hide when content is private) */}
+      {/* Empty State - only when user can view posts and not on followers/pending/banned tabs */}
       {!isLoading &&
         !error &&
         !showFollowers &&
+        !showPending &&
+        !showBanned &&
         posts.length === 0 &&
         (!isGroupMode || canViewPosts) && (
         <Card>

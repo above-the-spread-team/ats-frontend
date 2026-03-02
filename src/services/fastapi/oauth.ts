@@ -209,6 +209,10 @@ export function useLogout() {
         queryKey: ["currentUser"],
         refetchType: "active",
       });
+
+      // Clear user-specific data so sidebar and other components don't show
+      // the previous user's groups after account switch / logout
+      queryClient.removeQueries({ queryKey: ["userGroups"] });
     },
   });
 }

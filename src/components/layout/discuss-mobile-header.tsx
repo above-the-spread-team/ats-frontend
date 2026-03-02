@@ -75,6 +75,9 @@ export default function Header() {
         queryKey: ["currentUser"],
         refetchType: "active",
       });
+
+      // Clear user groups so sidebar shows correct data after account switch
+      queryClient.removeQueries({ queryKey: ["userGroups"] });
     };
 
     window.addEventListener("logout", handleLogout);
