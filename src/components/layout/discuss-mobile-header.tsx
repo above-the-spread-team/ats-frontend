@@ -76,8 +76,9 @@ export default function Header() {
         refetchType: "active",
       });
 
-      // Clear user groups so sidebar shows correct data after account switch
+      // Clear all user-specific cached data on logout / account switch
       queryClient.removeQueries({ queryKey: ["userGroups"] });
+      queryClient.removeQueries({ queryKey: ["notifications"] });
     };
 
     window.addEventListener("logout", handleLogout);

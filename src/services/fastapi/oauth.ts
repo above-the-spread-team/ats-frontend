@@ -105,46 +105,16 @@ export async function logout(): Promise<void> {
   try {
     const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
       method: "POST",
-      credentials: "include", // Include HttpOnly cookie
+      credentials: "include",
     });
 
     if (!response.ok) {
-      console.warn(
-        "Logout response not OK:",
-        response.status,
-        response.statusText
-      );
-    }
-
-    // Verify cookie was cleared by checking /me endpoint
-    // This helps debug if cookie deletion worked
-    // Note: We don't include Authorization header here since we're testing logout
-    const verifyResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (verifyResponse.ok) {
-      console.warn(
-        "Warning: Cookie may not have been cleared. /api/auth/me still returns 200"
-      );
-    } else {
-      console.log(
-        "Cookie cleared successfully. /api/auth/me returns",
-        verifyResponse.status
-      );
+      console.warn("Logout response not OK:", response.status, response.statusText);
     }
   } catch (error) {
     console.error("Logout error:", error);
   } finally {
-    // Clear stored token (for Safari compatibility)
     clearStoredToken();
-
-    // Dispatch custom event to notify components of logout
-    // Backend clears the HttpOnly cookie, so no localStorage cleanup needed
     window.dispatchEvent(new Event("logout"));
   }
 }
@@ -210,9 +180,9 @@ export function useLogout() {
         refetchType: "active",
       });
 
-      // Clear user-specific data so sidebar and other components don't show
-      // the previous user's groups after account switch / logout
+      // Clear all user-specific cached data on logout / account switch
       queryClient.removeQueries({ queryKey: ["userGroups"] });
+      queryClient.removeQueries({ queryKey: ["notifications"] });
     },
   });
 }

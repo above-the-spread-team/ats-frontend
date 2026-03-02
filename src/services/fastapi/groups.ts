@@ -911,12 +911,13 @@ export function useGroupPosts(
  * React Query hook to list all groups for the current user
  * Supports pagination
  */
-export function useUserGroups(page: number = 1, pageSize: number = 20) {
+export function useUserGroups(page: number = 1, pageSize: number = 20, enabled: boolean = true) {
   return useQuery<GroupListResponse>({
     queryKey: ["userGroups", page, pageSize],
     queryFn: () => listUserGroups(page, pageSize),
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
+    enabled,
   });
 }
 

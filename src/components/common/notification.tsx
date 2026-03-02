@@ -99,9 +99,8 @@ function useNotificationToasts(authenticated: boolean) {
       setLastSeenId(Math.max(...items.map((i) => i.id)));
       return;
     }
-    // Keep unread count and dropdown list in sync when we show toasts
+    // Prefix invalidation covers list, unread count, and poll in one call
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    queryClient.invalidateQueries({ queryKey: ["notifications", "unreadCount"] });
     newItems.forEach((item) => {
       const message = formatNotificationMessage(item);
       const link = getNotificationLink(item);

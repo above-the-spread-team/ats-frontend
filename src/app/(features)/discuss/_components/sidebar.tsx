@@ -23,21 +23,19 @@ import { useMobile } from "@/hooks/use-mobile";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { data: groupsData, isLoading } = useUserGroups();
   const { closeSidebar } = useSidebar();
   const isMobile = useMobile();
 
-  // When user has no stored token (not logged in), show empty state immediately
-  // instead of waiting for the user-groups API to fail. Avoids long loading for guests.
-  const [skipLoadingForUnauthenticated, setSkipLoadingForUnauthenticated] =
-    useState(false);
+  // Synchronously check for a stored token so we can skip the API call entirely
+  // when the user is not logged in. Avoids a wasted 401 request on every page load.
+  const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
-    if (!getStoredToken()) {
-      setSkipLoadingForUnauthenticated(true);
-    }
+    setHasToken(!!getStoredToken());
   }, []);
 
-  const showLoading = isLoading && !skipLoadingForUnauthenticated;
+  const { data: groupsData, isLoading } = useUserGroups(1, 20, hasToken);
+
+  const showLoading = isLoading && hasToken;
 
   // Memoize groups extraction
   const groups = useMemo(() => groupsData?.items || [], [groupsData]);
