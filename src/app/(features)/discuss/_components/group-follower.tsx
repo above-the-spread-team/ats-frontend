@@ -13,7 +13,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Users, Clock, Check, X, Ban, ShieldCheck } from "lucide-react";
+import { Users, Clock, Check, X, Ban, ShieldCheck, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useGroupFollowers,
@@ -325,12 +325,17 @@ export default function GroupFollower({
                     variant="primary"
                   />
                   <div className="flex-1">
-                    <p className="font-semibold text-foreground">
-                      {follower.username}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-semibold text-foreground">
+                        {follower.username}
+                      </p>
+                      {follower.id === groupOwnerId && (
+                        <Crown className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
+                      )}
+                    </div>
                   </div>
                 </div>
-                {activeView === "followers" && canBanUsers && (
+                {activeView === "followers" && canBanUsers && follower.id !== groupOwnerId && (
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"

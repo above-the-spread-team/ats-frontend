@@ -34,9 +34,10 @@ import { useScroll } from "../_contexts/scroll-context";
 
 interface PostContentProps {
   groupId?: number | null; // null for all posts, number for specific group
+  initialView?: "pending" | "followers" | "banned"; // open a specific tab directly (e.g. from notification link)
 }
 
-export default function PostContent({ groupId = null }: PostContentProps) {
+export default function PostContent({ groupId = null, initialView }: PostContentProps) {
   const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
@@ -48,9 +49,9 @@ export default function PostContent({ groupId = null }: PostContentProps) {
   const [followersPage, setFollowersPage] = useState(1);
   const [pendingPage, setPendingPage] = useState(1);
   const [bannedPage, setBannedPage] = useState(1);
-  const [showFollowers, setShowFollowers] = useState(false);
-  const [showPending, setShowPending] = useState(false);
-  const [showBanned, setShowBanned] = useState(false);
+  const [showFollowers, setShowFollowers] = useState(initialView === "followers");
+  const [showPending, setShowPending] = useState(initialView === "pending");
+  const [showBanned, setShowBanned] = useState(initialView === "banned");
   const pageSize = 20;
 
   // Use group posts if groupId is provided, otherwise use all posts

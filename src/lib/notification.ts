@@ -32,12 +32,16 @@ export function formatNotificationMessage(item: NotificationItem): string {
 
 /**
  * Returns the app route for a notification (post page, group page, or null).
+ * follow_request goes straight to the pending tab so owners can act immediately.
  */
 export function getNotificationLink(item: NotificationItem): string | null {
   const meta = item.metadata;
   if (!meta) return null;
   if (typeof meta.post_id === "number") return `/discuss/${meta.post_id}`;
-  if (typeof meta.group_id === "number")
-    return `/discuss/group-posts/${meta.group_id}`;
+  if (typeof meta.group_id === "number") {
+    const base = `/discuss/group-posts/${meta.group_id}`;
+    if (item.notification_type === "follow_request") return `${base}?view=pending`;
+    return base;
+  }
   return null;
 }
