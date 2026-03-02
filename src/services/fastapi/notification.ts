@@ -10,6 +10,9 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const NOTIFICATIONS_PREFIX = `${BACKEND_URL}/api/v1/notifications`;
 
+/** Single source for notification timing: 3 minutes. Used for poll interval (toasts), stale time (list, unread count, poll). */
+const NOTIFICATION_STALE_TIME_MS = 3 * 60 * 1000;
+
 async function fetchNotifications(
   url: string,
   options: RequestInit = {},
@@ -111,13 +114,11 @@ export function useNotifications(
   return useQuery<NotificationListResponse>({
     queryKey: ["notifications", page, pageSize, unreadOnly, sinceMinutes],
     queryFn: () => listNotifications(page, pageSize, unreadOnly, sinceMinutes),
-    staleTime: 30 * 1000,
+    staleTime: NOTIFICATION_STALE_TIME_MS,
     refetchOnWindowFocus: true,
     enabled,
   });
 }
-
-const POLL_INTERVAL_MS = 10 * 1000; // 3 minutes (use 10 * 1000 only for local dev)
 
 /**
  * Poll for unread notifications (for toasts). "New" is determined on the frontend via last-seen id in localStorage.
@@ -127,9 +128,9 @@ export function useRecentUnreadPoll(enabled: boolean = true) {
   return useQuery<NotificationListResponse>({
     queryKey: ["notifications", "recentPoll", 1, 20, true],
     queryFn: () => listNotifications(1, 20, true),
-    refetchInterval: POLL_INTERVAL_MS,
+    refetchInterval: NOTIFICATION_STALE_TIME_MS,
     refetchOnWindowFocus: false,
-    staleTime: POLL_INTERVAL_MS - 5000,
+    staleTime: NOTIFICATION_STALE_TIME_MS,
     enabled,
   });
 }
@@ -151,7 +152,7 @@ export function useUnreadCount() {
   return useQuery<UnreadCountResponse>({
     queryKey: ["notifications", "unreadCount"],
     queryFn: getUnreadCount,
-    staleTime: 30 * 1000,
+    staleTime: NOTIFICATION_STALE_TIME_MS,
     refetchOnWindowFocus: true,
   });
 }

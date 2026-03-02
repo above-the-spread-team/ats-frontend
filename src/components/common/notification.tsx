@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useUnreadCount,
   useNotifications,
@@ -80,6 +81,7 @@ function setLastSeenId(id: number): void {
 /** Poll for unread and show toasts for items newer than last seen; mark as read only when user clicks toast. */
 function useNotificationToasts(authenticated: boolean) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: recentPollData } = useRecentUnreadPoll(authenticated);
   const markRead = useMarkNotificationsRead();
 
@@ -97,6 +99,9 @@ function useNotificationToasts(authenticated: boolean) {
       setLastSeenId(Math.max(...items.map((i) => i.id)));
       return;
     }
+    // Keep unread count and dropdown list in sync when we show toasts
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications", "unreadCount"] });
     newItems.forEach((item) => {
       const message = formatNotificationMessage(item);
       const link = getNotificationLink(item);
@@ -130,7 +135,7 @@ function useNotificationToasts(authenticated: boolean) {
       );
     });
     setLastSeenId(Math.max(...newItems.map((i) => i.id)));
-  }, [recentPollData?.items, markRead, router]);
+  }, [recentPollData?.items, markRead, router, queryClient]);
 }
 
 export interface NotificationBellProps {
