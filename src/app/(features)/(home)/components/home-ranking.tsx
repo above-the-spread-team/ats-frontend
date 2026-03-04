@@ -29,7 +29,7 @@ export default function HomeRanking() {
       try {
         const response = await fetch(
           `/api/standings?league=${leagueId}&season=${season}`,
-          { signal: controller.signal }
+          { signal: controller.signal },
         );
 
         if (!response.ok) {
@@ -121,10 +121,10 @@ export default function HomeRanking() {
               standing.rank === 1
                 ? "text-yellow-600 dark:text-yellow-400"
                 : standing.rank === 2
-                ? "text-gray-500 dark:text-gray-400"
-                : standing.rank === 3
-                ? "text-orange-600 dark:text-orange-400"
-                : "text-muted-foreground";
+                  ? "text-gray-500 dark:text-gray-400"
+                  : standing.rank === 3
+                    ? "text-orange-600 dark:text-orange-400"
+                    : "text-muted-foreground";
 
             return (
               <Link
@@ -176,9 +176,7 @@ export default function HomeRanking() {
                   >
                     {standing.points}
                   </span>
-                  <span className="text-xs text-muted-foreground ">
-                    pts
-                  </span>
+                  <span className="text-xs text-muted-foreground ">pts</span>
                 </div>
               </Link>
             );
