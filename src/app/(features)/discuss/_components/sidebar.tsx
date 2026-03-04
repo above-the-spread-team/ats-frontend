@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUserGroups } from "@/services/fastapi/groups";
-import { getStoredToken } from "@/services/fastapi/token-storage";
+import { useCurrentUser } from "@/services/fastapi/oauth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,16 +26,15 @@ export default function Sidebar() {
   const { closeSidebar } = useSidebar();
   const isMobile = useMobile();
 
-  // Synchronously check for a stored token so we can skip the API call entirely
-  // when the user is not logged in. Avoids a wasted 401 request on every page load.
-  const [hasToken, setHasToken] = useState(false);
-  useEffect(() => {
-    setHasToken(!!getStoredToken());
-  }, []);
+  // Use cached currentUser as the auth gate — automatically false after logout
+  // without any extra network request (staleTime: 5 min, already fetched by header).
+  const { data: currentUser } = useCurrentUser();
+  const isAuthenticated = !!currentUser;
 
-  const { data: groupsData, isLoading } = useUserGroups(1, 20, hasToken);
+  const { data: groupsData, isLoading } = useUserGroups(1, 20, isAuthenticated);
 
-  const showLoading = isLoading && hasToken;
+  // Show skeleton only when we know the user is logged in and groups are loading
+  const showLoading = isAuthenticated && isLoading;
 
   // Memoize groups extraction
   const groups = useMemo(() => groupsData?.items || [], [groupsData]);
