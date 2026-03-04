@@ -5,7 +5,9 @@
 //   logo: string;
 // }
 
-export const LEAGUE_IDS = [2, 3, 848, 39, 140, 135, 78, 61, 1] as const;
+export const LEAGUE_IDS = [
+  1, 2, 3, 848, 39, 140, 135, 78, 61, 81, 82, 83, 84, 85, 86, 87,
+] as const;
 
 // export type LeagueId = (typeof LEAGUE_IDS)[number];
 
