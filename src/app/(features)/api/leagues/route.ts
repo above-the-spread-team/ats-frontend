@@ -25,44 +25,36 @@ export async function GET(req: NextRequest) {
         error:
           "Missing API key. Please set API_SPORTS_KEY or FOOTBALL_API_KEY.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
   // Do not send season when listing all leagues: API returns each league with full "seasons" array.
   // Use GET leagues?id=X (no season) to get "all the seasons available for a league/cup".
+  // Sequential fetching avoids bursting the football API rate limit (10 req/min on free plans).
+  // The 4-hour revalidate means this loop only runs ~6 times per day per deployment.
   const leagues: LeagueResponseItem[] = [];
   const errors: Record<string, string> = {};
 
   for (const leagueId of LEAGUE_IDS) {
-    const params = new URLSearchParams({
-      id: leagueId.toString(),
-    });
-
     try {
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
-        headers: {
-          "x-apisports-key": API_KEY,
+      const res = await fetch(
+        `${API_URL}?${new URLSearchParams({ id: leagueId.toString() })}`,
+        {
+          headers: { "x-apisports-key": API_KEY },
+          next: { revalidate: 14400 }, // 4 hours — league data changes very rarely
         },
-        next: { revalidate: 14400 }, // 4 hours revalidation for league data
-      });
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          `Fetch failed with status ${response.status} ${response.statusText}`
-        );
-      }
+      if (!res.ok)
+        throw new Error(`Fetch failed with status ${res.status} ${res.statusText}`);
 
-      const data = (await response.json()) as LeaguesApiResponse;
+      const data = (await res.json()) as LeaguesApiResponse;
 
-      if (!data || !Array.isArray(data.response)) {
+      if (!data || !Array.isArray(data.response))
         throw new Error("Unexpected payload structure");
-      }
 
-      // Add all leagues from the response (usually 1 per ID)
-      for (const league of data.response) {
-        leagues.push(league);
-      }
+      leagues.push(...data.response);
     } catch (error) {
       errors[leagueId.toString()] =
         error instanceof Error ? error.message : "Unknown error";
@@ -70,7 +62,7 @@ export async function GET(req: NextRequest) {
   }
 
   const errorMessages = Object.entries(errors).map(
-    ([leagueId, message]) => `League ${leagueId}: ${message}`
+    ([leagueId, message]) => `League ${leagueId}: ${message}`,
   );
 
   return NextResponse.json({
