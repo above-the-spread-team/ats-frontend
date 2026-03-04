@@ -54,6 +54,10 @@ export async function GET(req: NextRequest) {
       if (!data || !Array.isArray(data.response))
         throw new Error("Unexpected payload structure");
 
+      // Treat an empty response as an error so it surfaces rather than silently disappearing
+      if (data.response.length === 0)
+        throw new Error("API returned empty response for this league");
+
       leagues.push(...data.response);
     } catch (error) {
       errors[leagueId.toString()] =

@@ -17,7 +17,8 @@ type LeagueType = "all" | "league" | "cup";
 function TablesContent() {
   const [leagues, setLeagues] = useState<LeagueResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // fatal: no leagues at all
+  const [partialError, setPartialError] = useState<string | null>(null); // non-fatal: some leagues missing
   const [retryCount, setRetryCount] = useState(0);
   const [selectedType, setSelectedType] = useState<LeagueType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,6 +40,7 @@ function TablesContent() {
     const fetchLeagues = async () => {
       setIsLoading(true);
       setError(null);
+      setPartialError(null);
 
       try {
         const response = await fetch(`/api/leagues`, {
@@ -50,10 +52,18 @@ function TablesContent() {
         }
 
         const data = (await response.json()) as LeaguesApiResponse;
+        const fetched = data.response ?? [];
 
-        setLeagues(data.response ?? []);
+        setLeagues(fetched);
+
         if (data.errors && data.errors.length > 0) {
-          setError(data.errors.join("\n"));
+          if (fetched.length === 0) {
+            // No leagues at all — show the full error state
+            setError(data.errors.join("\n"));
+          } else {
+            // Some leagues loaded — show a non-blocking warning, keep the list visible
+            setPartialError(`Some leagues could not be loaded: ${data.errors.join(", ")}`);
+          }
         }
       } catch (err) {
         if (controller.signal.aborted) return;
@@ -260,6 +270,13 @@ function TablesContent() {
             )}
           </div>
         </FullPage>
+      )}
+
+      {/* Partial error banner — some leagues failed but others loaded fine */}
+      {!isLoading && partialError && (
+        <div className="mt-4 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-700 dark:text-yellow-400">
+          {partialError}
+        </div>
       )}
 
       {/* Leagues Content */}
