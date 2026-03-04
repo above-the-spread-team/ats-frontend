@@ -18,6 +18,11 @@ const API_KEY =
   process.env.NEXT_PUBLIC_FOOTBALL_API_KEY ||
   "";
 
+// Cache the entire route response for 4 hours at the CDN/edge level.
+// Individual fetch() calls below must NOT use next: { revalidate } so that
+// retries always hit the real API rather than a stale per-URL Next.js cache.
+export const revalidate = 14400;
+
 export async function GET(req: NextRequest) {
   if (!API_KEY) {
     return NextResponse.json(
@@ -39,7 +44,7 @@ export async function GET(req: NextRequest) {
       `${API_URL}?${new URLSearchParams({ id: leagueId.toString() })}`,
       {
         headers: { "x-apisports-key": API_KEY },
-        next: { revalidate: 14400 }, // 4 hours — league data changes very rarely
+        cache: "no-store", // route-level revalidate handles caching; per-fetch cache would trap empty responses
       },
     );
     if (!res.ok)
