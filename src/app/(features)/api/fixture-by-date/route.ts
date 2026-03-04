@@ -76,41 +76,44 @@ export async function GET(req: NextRequest) {
 
   const season = calculateSeason(dateParam);
 
-  const results = await Promise.all(
-    LEAGUE_IDS.map(async (leagueId) => {
-      const params = new URLSearchParams({
-        date: dateParam,
-        league: leagueId.toString(),
-        season: season.toString(),
-        timezone,
+  // Sequential fetching to avoid bursting the football API rate limit (10 req/min on free
+  // plans). Fixture requests are per-date so the Next.js cache only helps for repeated
+  // requests on the same date; new dates always trigger real API calls.
+  const results: {
+    leagueId: (typeof LEAGUE_IDS)[number];
+    data: FixtureResponseItem[];
+    error: string | null;
+  }[] = [];
+
+  for (const leagueId of LEAGUE_IDS) {
+    const params = new URLSearchParams({
+      date: dateParam,
+      league: leagueId.toString(),
+      season: season.toString(),
+      timezone,
+    });
+    try {
+      const response = await fetchWithTimeout(
+        `${API_URL}?${params.toString()}`,
+        {
+          headers: { "x-apisports-key": API_KEY },
+          next: { revalidate: CACHE_SECONDS },
+        },
+      );
+      if (!response.ok)
+        throw new Error(`Fetch failed ${response.status} ${response.statusText}`);
+      const data = (await response.json()) as FixturesApiResponse;
+      if (!data || !Array.isArray(data.response))
+        throw new Error("Unexpected payload structure");
+      results.push({ leagueId, data: data.response, error: null });
+    } catch (error) {
+      results.push({
+        leagueId,
+        data: [],
+        error: error instanceof Error ? error.message : "Unknown error",
       });
-      try {
-        const response = await fetchWithTimeout(
-          `${API_URL}?${params.toString()}`,
-          {
-            headers: { "x-apisports-key": API_KEY },
-            next: { revalidate: CACHE_SECONDS },
-          }
-        );
-        if (!response.ok) {
-          throw new Error(
-            `Fetch failed ${response.status} ${response.statusText}`
-          );
-        }
-        const data = (await response.json()) as FixturesApiResponse;
-        if (!data || !Array.isArray(data.response)) {
-          throw new Error("Unexpected payload structure");
-        }
-        return { leagueId, data: data.response, error: null as string | null };
-      } catch (error) {
-        return {
-          leagueId,
-          data: [] as FixtureResponseItem[],
-          error: error instanceof Error ? error.message : "Unknown error",
-        };
-      }
-    })
-  );
+    }
+  }
 
   const fixtures = results.flatMap((r) => r.data);
   const errors: Record<string, string> = {};
