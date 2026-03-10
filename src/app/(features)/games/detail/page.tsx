@@ -24,6 +24,7 @@ import Predictions from "./_components/tips";
 import Odds from "./_components/odds";
 import { useFixture } from "@/services/football-api/fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
+import { useUserTimezone } from "@/hooks/use-user-timezone";
 
 type TabType =
   | "lineups"
@@ -105,25 +106,18 @@ function GameDetailContent() {
   const tabParam = searchParams.get("tab") as TabType;
   const allValidTabs = useMemo<TabType[]>(
     () => ["lineups", "statistics", "events", "players", "predictions", "odds"],
-    []
+    [],
   );
 
   // Initial tab state - will be adjusted after fixture loads
   const [activeTab, setActiveTab] = useState<TabType>(
-    tabParam && allValidTabs.includes(tabParam) ? tabParam : "predictions"
+    tabParam && allValidTabs.includes(tabParam) ? tabParam : "predictions",
   );
 
   // Ref to track the last user-selected tab (prevents flickering)
   const lastUserSelectedTab = useRef<TabType | null>(null);
 
-  const timezone = useMemo(() => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return tz?.trim() ? tz : "UTC";
-    } catch {
-      return "UTC";
-    }
-  }, []);
+  const timezone = useUserTimezone();
 
   // Use React Query to fetch fixture
   const {
@@ -184,10 +178,10 @@ function GameDetailContent() {
     queryError instanceof Error
       ? queryError.message
       : fixtureData?.errors && fixtureData.errors.length > 0
-      ? fixtureData.errors.join("\n")
-      : !fixtureId
-      ? "Missing required parameter: id"
-      : null;
+        ? fixtureData.errors.join("\n")
+        : !fixtureId
+          ? "Missing required parameter: id"
+          : null;
 
   if (
     error ||
@@ -244,32 +238,44 @@ function GameDetailContent() {
   return (
     <FullPage minusHeight={10}>
       {/* Fixture Detail - Always visible at top */}
-      <div
-        className="bg-gradient-to-r 
-  from-[#0d3030] via-[#1b4d53] to-[#0d3030] pb-10 md:pb-12"
-      >
-        <div className="flex items-center  justify-between mb-2 container mx-auto max-w-4xl px-4">
-          <button
-            onClick={() => {
-              // Preserve date parameter when going back
-              if (dateParam) {
-                router.push(`/games?date=${dateParam}`);
-              } else {
-                router.back();
-              }
-            }}
-            className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-white hover:text-muted-foreground transition-colors w-fit"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-white">
-            <Clock8 className="w-4 h-4" />
-            <p>{timezone}</p>
+      <div className="relative overflow-hidden pb-10 md:pb-12">
+        {/* Background stadium image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://images.unsplash.com/photo-1731312084255-6b38e3ea2484?w=1600&q=80&auto=format&fit=crop"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Dark overlay keeping the original teal tint */}
+        {/* <div className="absolute inset-0 bg-gradient-to-r from-[#0d3030]/40 via-[#1b4d53]/80 to-[#0d3030]/90" /> */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80" />
+
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
+            <button
+              onClick={() => {
+                // Preserve date parameter when going back
+                if (dateParam) {
+                  router.push(`/games?date=${dateParam}`);
+                } else {
+                  router.back();
+                }
+              }}
+              className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-white hover:text-muted-foreground transition-colors w-fit"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+            <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-white">
+              <Clock8 className="w-4 h-4" />
+              <p>{timezone}</p>
+            </div>
           </div>
-        </div>
-        <div className="container mx-auto max-w-5xl px-1">
-          <FixtureDetail fixture={fixture} />
+          <div className="container mx-auto max-w-5xl px-1">
+            <FixtureDetail fixture={fixture} />
+          </div>
         </div>
       </div>
       {/* Tab Navigation */}

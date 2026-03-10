@@ -1,5 +1,5 @@
 import WorldCupNav from "./components/nav";
-
+import WorldCupHeader from "./components/header";
 export default function WorldCupLayout({
   children,
 }: {
@@ -7,8 +7,9 @@ export default function WorldCupLayout({
 }) {
   return (
     <div className="min-h-screen">
+      <WorldCupHeader />
       <WorldCupNav />
-      <main>{children}</main>
+      <main className="container mx-auto max-w-6xl">{children}</main>
     </div>
   );
 }

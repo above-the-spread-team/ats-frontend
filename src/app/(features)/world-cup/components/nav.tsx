@@ -36,23 +36,22 @@ export default function WorldCupNav() {
   const pathname = usePathname();
 
   return (
-    <div className="sticky  top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto max-w-6xl ">
-        <nav
-          className="flex justify-center items-end gap-0.5 md:gap-1 overflow-x-auto scrollbar-none"
-          aria-label="World Cup sections"
-        >
-          {tabs.map(({ label, href, icon: Icon, exact }) => {
-            const isActive = exact
-              ? pathname === href
-              : pathname.startsWith(href);
+    <div className="container mx-auto bg-background/95 backdrop-blur-sm border-b border-border">
+      <nav
+        className="flex justify-center items-end gap-0.5 md:gap-1 overflow-x-auto scrollbar-none"
+        aria-label="World Cup sections"
+      >
+        {tabs.map(({ label, href, icon: Icon, exact }) => {
+          const isActive = exact
+            ? pathname === href
+            : pathname.startsWith(href);
 
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`
-                  relative flex items-center gap-1.5 px-3 sm:px-4 py-3 text-sm font-semibold
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`
+                  relative flex items-center gap-1.5 px-2 sm:px-4 py-3 text-sm font-semibold
                   whitespace-nowrap transition-colors duration-200 flex-shrink-0
                   ${
                     isActive
@@ -60,21 +59,20 @@ export default function WorldCupNav() {
                       : "text-muted-foreground hover:text-foreground"
                   }
                 `}
-              >
-                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                {label}
-                {/* Active underline */}
-                <span
-                  className={`
+            >
+              <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+              {label}
+              {/* Active underline */}
+              <span
+                className={`
                     absolute bottom-0 left-0 right-0 h-0.5 rounded-full transition-all duration-200
                     ${isActive ? "bg-primary-font opacity-100" : "opacity-0"}
                   `}
-                />
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+              />
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

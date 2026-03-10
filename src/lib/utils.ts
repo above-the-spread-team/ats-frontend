@@ -14,6 +14,23 @@ export function cn(...inputs: ClassValue[]) {
  * @param date - Optional date to calculate season for. If not provided, uses current date.
  * @returns The season year (e.g., 2025 for 2024-2025 season)
  */
+/**
+ * Returns the browser's IANA timezone string, falling back to "UTC".
+ * Guards against Safari low-power mode where Intl can fail to resolve
+ * (https://bugs.webkit.org/show_bug.cgi?id=197769).
+ *
+ * NOTE: Only call this on the client (inside useEffect / event handlers).
+ * Use the `useUserTimezone` hook for SSR-safe access in components.
+ */
+export function getUserTimezone(): string {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz?.trim() ? tz : "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
 export function calculateSeason(date?: Date | string): number {
   const dateObj = date
     ? typeof date === "string"
