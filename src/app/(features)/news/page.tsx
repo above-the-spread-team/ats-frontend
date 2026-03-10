@@ -44,7 +44,7 @@ export default function News() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Just now";
@@ -162,11 +162,12 @@ export default function News() {
                         />
                       ) : (
                         // Fallback: No image available
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                          <span className="text-4xl md:text-5xl opacity-50">
-                            ⚽
-                          </span>
-                        </div>
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
+                          alt="Soccer stadium"
+                          className="w-full h-full object-cover "
+                        />
                       )}
                       <div className="absolute top-2 left-2">
                         <Tag name={getFirstTag(article)} variant="medium" />

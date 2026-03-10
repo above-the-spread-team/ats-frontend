@@ -15,6 +15,7 @@ import type { FixtureResponseItem } from "@/type/footballapi/fixture";
 import TeamInfo from "./_components/team";
 import { Switch } from "@/components/ui/switch";
 import { useFixtures } from "@/services/football-api/fixtures";
+import { useUserTimezone } from "@/hooks/use-user-timezone";
 
 interface LeagueGroup {
   leagueId: number;
@@ -100,17 +101,7 @@ function FixturesContent() {
     }
     return false;
   });
-  // Get timezone from browser. Fallback when Safari/M2 low-power or similar
-  // fails to resolve (see https://bugs.webkit.org/show_bug.cgi?id=197769).
-  const timezone = useMemo(() => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (tz?.trim()) return tz;
-      return "UTC";
-    } catch {
-      return "UTC";
-    }
-  }, []);
+  const timezone = useUserTimezone();
 
   // set the timezone to UTC
   // const timezone = "UTC";

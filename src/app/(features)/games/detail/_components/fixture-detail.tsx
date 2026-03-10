@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { FixtureResponseItem } from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 import TeamInfo from "../../_components/team";
+import { useUserTimezone } from "@/hooks/use-user-timezone";
 
 function formatGoals(value: number | null): string {
   if (value === null || Number.isNaN(value)) {
@@ -42,15 +43,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
   const isFinished = statusInfo.type === "Finished";
   const hasStarted = isInPlay || isFinished;
 
-  // Get user's timezone (UTC fallback when browser fails to resolve, e.g. Safari low‑power)
-  const userTimezone = (() => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return tz?.trim() ? tz : "UTC";
-    } catch {
-      return "UTC";
-    }
-  })();
+  const userTimezone = useUserTimezone();
 
   return (
     <div className="space-y-0 flex flex-col items-center justify-center gap-1 md:gap-2">

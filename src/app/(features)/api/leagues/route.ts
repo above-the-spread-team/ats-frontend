@@ -23,7 +23,7 @@ const API_KEY =
 // retries always hit the real API rather than a stale per-URL Next.js cache.
 export const revalidate = 14400;
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   if (!API_KEY) {
     return NextResponse.json(
       {

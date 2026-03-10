@@ -113,7 +113,7 @@ export function ScrollNews() {
             <CarouselItem key={news.id}>
               <div className="p-1 w-full">
                 <Link href={`/news/${news.id}`}>
-                  <Card className="rounded-2xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
+                  <Card className="rounded-none overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                     <CardContent className="p-0  relative aspect-[4/3] overflow-hidden">
                       {isMatchPreview(news) ? (
                         <PreviewImage
@@ -134,11 +134,12 @@ export function ScrollNews() {
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                          <span className="text-5xl md:text-6xl opacity-60">
-                            ⚽
-                          </span>
-                        </div>
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
+                          alt="Soccer stadium"
+                          className="w-full h-full object-cover "
+                        />
                       )}
                       {/* Tag badge */}
                       <div className="absolute top-2 left-4 z-20 rounded-full">
