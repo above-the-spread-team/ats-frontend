@@ -65,7 +65,7 @@ export default function SeasonSelect({
     return Array.from({ length: 5 }, (_, i) =>
       toOption(currentSeasonYear - i),
     );
-  }, [availableSeasons, leagueId, isTournamentStyle, season]);
+  }, [availableSeasons, isTournamentStyle, season]);
 
   const seasons = seasonOptions;
 

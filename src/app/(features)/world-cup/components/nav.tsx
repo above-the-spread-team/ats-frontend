@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaCalendarAlt, FaUsers } from "react-icons/fa";
-import { IoBarChart, IoNewspaper } from "react-icons/io5";
-import { GiTrophyCup } from "react-icons/gi";
+import { FaUsers } from "react-icons/fa";
+
 import { RiCalendarScheduleFill } from "react-icons/ri";
-import { PiRanking, PiRankingFill } from "react-icons/pi";
+import { PiRanking } from "react-icons/pi";
 import { IoNewspaperOutline } from "react-icons/io5";
 
 const tabs = [
