@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navItems } from "@/data/nav";
+import { mobileNavItems } from "@/data/nav";
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -10,7 +10,7 @@ export default function MobileNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-primary  z-50">
       <div className="grid grid-cols-5 h-11">
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             item.href === "/"

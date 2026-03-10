@@ -113,7 +113,7 @@ export function ScrollNews() {
             <CarouselItem key={news.id}>
               <div className="p-1 w-full">
                 <Link href={`/news/${news.id}`}>
-                  <Card className="rounded-2xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
+                  <Card className="rounded-none overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                     <CardContent className="p-0  relative aspect-[4/3] overflow-hidden">
                       {isMatchPreview(news) ? (
                         <PreviewImage
