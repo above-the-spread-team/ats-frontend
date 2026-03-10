@@ -23,13 +23,13 @@ const tabs = [
     icon: PiRanking,
     exact: false,
   },
-  { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
   {
     label: "News",
     href: "/world-cup/news",
     icon: IoNewspaperOutline,
     exact: false,
   },
+  { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
 ];
 
 export default function WorldCupNav() {

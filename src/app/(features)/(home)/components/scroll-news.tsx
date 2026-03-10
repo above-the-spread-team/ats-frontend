@@ -134,11 +134,12 @@ export function ScrollNews() {
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                          <span className="text-5xl md:text-6xl opacity-60">
-                            ⚽
-                          </span>
-                        </div>
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
+                          alt="Soccer stadium"
+                          className="w-full h-full object-cover "
+                        />
                       )}
                       {/* Tag badge */}
                       <div className="absolute top-2 left-4 z-20 rounded-full">
