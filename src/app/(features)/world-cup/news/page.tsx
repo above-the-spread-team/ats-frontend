@@ -20,7 +20,7 @@ import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../../news/components/preview-image";
 import { Tag } from "@/components/common/tag";
 
-const WORLD_CUP_TAG_ID = 274;
+const WORLD_CUP_TAG_ID = 104;
 const PAGE_SIZE = 15;
 
 export default function WorldCupNews() {
@@ -34,7 +34,7 @@ export default function WorldCupNews() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Just now";
@@ -209,7 +209,9 @@ export default function WorldCupNews() {
                     }
                   }}
                   className={
-                    page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                    page === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
                   }
                 />
               </PaginationItem>
@@ -262,7 +264,7 @@ export default function WorldCupNews() {
                         {p}
                       </PaginationLink>
                     </PaginationItem>
-                  )
+                  ),
                 );
               })()}
 
