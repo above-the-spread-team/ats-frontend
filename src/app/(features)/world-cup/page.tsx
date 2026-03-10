@@ -1,3 +1,3 @@
-export default function WorldCup() {
-  return <div>WorldCup</div>;
+export default function Fixtures() {
+  return <div>Fixtures</div>;
 }
