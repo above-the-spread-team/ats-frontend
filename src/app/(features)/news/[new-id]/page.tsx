@@ -471,19 +471,19 @@ export default function NewsDetailPage() {
                   ),
                   ul: ({ ...props }) => (
                     <ul
-                      className="list-disc list-outside mb-5 ml-6 space-y-3 text-foreground"
+                      className="list-disc list-outside mb-5 ml-1 space-y-2 text-foreground"
                       {...props}
                     />
                   ),
                   ol: ({ ...props }) => (
                     <ol
-                      className="list-decimal list-outside mb-5 ml-6 space-y-3 text-foreground"
+                      className="list-decimal list-outside mb-5 ml-1 space-y-2 text-foreground"
                       {...props}
                     />
                   ),
                   li: ({ ...props }) => (
                     <li
-                      className="pl-2 leading-7 marker:text-primary-font"
+                      className=" leading-1 marker:text-primary-font"
                       {...props}
                     />
                   ),
