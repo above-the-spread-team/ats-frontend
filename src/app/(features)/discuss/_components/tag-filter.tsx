@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Lock, X, Calendar, ArrowUp } from "lucide-react";
+import { ChevronDown, X, Calendar, ArrowUp } from "lucide-react";
 import { useTags } from "@/services/fastapi/tags";
 import type { TagSummary, TagType } from "@/type/fastapi/tags";
 import type { PostDateFilter, PostSortOption } from "@/type/fastapi/posts";
@@ -22,8 +22,6 @@ interface TagFilterProps {
   sortBy?: PostSortOption;
   onSortByChange: (sortBy: PostSortOption | undefined) => void;
 }
-
-const SPORT_TYPES = new Set<TagType>(["league", "team", "player"]);
 
 const TAG_TYPE_ORDER: TagType[] = ["league"];
 
@@ -78,40 +76,18 @@ export default function TagFilter({
     [tagsByType],
   );
 
-  // Which sport category is currently active?
-  const activeSportType = useMemo<TagType | null>(() => {
-    for (const id of selectedTagIds) {
-      const tag = allTagsFlat.find((t) => t.id === id);
-      if (tag && SPORT_TYPES.has(tag.type)) return tag.type;
-    }
-    return null;
-  }, [selectedTagIds, allTagsFlat]);
-
   const handleTagToggle = (tag: TagSummary) => {
-    const isSport = SPORT_TYPES.has(tag.type);
-
     if (selectedTagIds.includes(tag.id)) {
-      // Deselect
       onTagIdsChange(selectedTagIds.filter((id) => id !== tag.id));
-    } else if (isSport) {
-      // Replace any existing sport tag; keep topic
-      const topicIds = selectedTagIds.filter((id) => {
-        const t = allTagsFlat.find((t2) => t2.id === id);
-        return t?.type === "topic";
-      });
-      onTagIdsChange([...topicIds, tag.id]);
     } else {
-      // Topic: replace existing topic; keep sport tag
-      const sportIds = selectedTagIds.filter((id) => {
+      // Single-select per type — replace any existing tag of the same type
+      const next = selectedTagIds.filter((id) => {
         const t = allTagsFlat.find((t2) => t2.id === id);
-        return t && SPORT_TYPES.has(t.type);
+        return t?.type !== tag.type;
       });
-      onTagIdsChange([...sportIds, tag.id]);
+      onTagIdsChange([...next, tag.id]);
     }
   };
-
-  const isTypeDisabled = (type: TagType) =>
-    SPORT_TYPES.has(type) && activeSportType !== null && activeSportType !== type;
 
   const getSelectedTagForType = (type: TagType) =>
     allTagsFlat.find(
@@ -214,27 +190,22 @@ export default function TagFilter({
           const tags = tagsByType[type];
           if (tags.length === 0) return null;
 
-          const disabled = isTypeDisabled(type);
           const selectedTag = getSelectedTagForType(type);
           const hasSelection = selectedTag !== null;
 
           return (
             <DropdownMenu key={type}>
-              <DropdownMenuTrigger asChild disabled={disabled}>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={disabled}
                   className={[
                     "gap-1 rounded-full transition-all !ring-0",
-                    disabled
-                      ? "opacity-40 cursor-not-allowed bg-muted text-muted-foreground border-border"
-                      : hasSelection
+                    hasSelection
                       ? "bg-primary-font text-white border-primary-font hover:bg-primary-font/90 hover:text-white"
                       : "bg-primary text-white border-primary hover:bg-primary-active hover:text-white data-[state=open]:bg-primary-active",
                   ].join(" ")}
                 >
-                  {disabled && <Lock className="h-3 w-3 flex-shrink-0" />}
                   <span className="max-w-[100px] truncate">
                     {hasSelection ? selectedTag!.name : TAG_TYPE_LABELS[type]}
                   </span>
@@ -267,14 +238,6 @@ export default function TagFilter({
           );
         })}
       </div>
-
-      {/* Hint when a sport type is locked */}
-      {activeSportType && (
-        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-          <Lock className="h-3 w-3" />
-          Deselect <strong>{getSelectedTagForType(activeSportType)?.name}</strong> to switch sport category.
-        </p>
-      )}
 
       {/* Active filter chips */}
       {hasChips && (

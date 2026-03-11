@@ -37,7 +37,10 @@ interface PostContentProps {
   initialView?: "pending" | "followers" | "banned"; // open a specific tab directly (e.g. from notification link)
 }
 
-export default function PostContent({ groupId = null, initialView }: PostContentProps) {
+export default function PostContent({
+  groupId = null,
+  initialView,
+}: PostContentProps) {
   const router = useRouter();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
@@ -49,7 +52,9 @@ export default function PostContent({ groupId = null, initialView }: PostContent
   const [followersPage, setFollowersPage] = useState(1);
   const [pendingPage, setPendingPage] = useState(1);
   const [bannedPage, setBannedPage] = useState(1);
-  const [showFollowers, setShowFollowers] = useState(initialView === "followers");
+  const [showFollowers, setShowFollowers] = useState(
+    initialView === "followers",
+  );
   const [showPending, setShowPending] = useState(initialView === "pending");
   const [showBanned, setShowBanned] = useState(initialView === "banned");
   const pageSize = 20;
@@ -326,18 +331,19 @@ export default function PostContent({ groupId = null, initialView }: PostContent
             groupId={groupId || undefined}
           />
 
-          {/* Tag Filter - Only show for all posts, not group posts */}
-          {!isGroupMode && (
-            <TagFilter
-              selectedTagIds={selectedTagIds}
-              onTagIdsChange={setSelectedTagIds}
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              sortBy={sortBy}
-              onSortByChange={setSortBy}
-            />
-          )}
         </>
+      )}
+
+      {/* Tag Filter - Always visible for all-posts view (not group mode), regardless of auth */}
+      {!isGroupMode && !showFollowers && !showPending && !showBanned && (
+        <TagFilter
+          selectedTagIds={selectedTagIds}
+          onTagIdsChange={setSelectedTagIds}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+        />
       )}
 
       {/* Loading State - Only show if user can view posts */}
@@ -467,8 +473,8 @@ export default function PostContent({ groupId = null, initialView }: PostContent
             ((isGroupMode && groupPostsData) || (!isGroupMode && postsData)) &&
             (() => {
               const totalPages = isGroupMode
-                ? groupPostsData?.total_pages ?? 0
-                : postsData?.total_pages ?? 0;
+                ? (groupPostsData?.total_pages ?? 0)
+                : (postsData?.total_pages ?? 0);
               return totalPages > 0 && totalPages > 1;
             })() && (
               <div className="flex justify-center pt-2">
@@ -610,34 +616,34 @@ export default function PostContent({ groupId = null, initialView }: PostContent
         !showBanned &&
         posts.length === 0 &&
         (!isGroupMode || canViewPosts) && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              {isGroupMode
-                ? "No posts in this group yet. Be the first to share!"
-                : selectedTagIds.length > 0 || dateRange || sortBy
-                  ? "No posts found with the selected filters."
-                  : "No posts yet. Be the first to share!"}
-            </p>
-            {!isGroupMode &&
-              (selectedTagIds.length > 0 || dateRange || sortBy) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedTagIds([]);
-                    setDateRange(undefined);
-                    setSortBy(undefined);
-                  }}
-                  className="mt-4"
-                >
-                  Clear filters
-                </Button>
-              )}
-          </CardContent>
-        </Card>
-      )}
+          <Card>
+            <CardContent className="py-12 text-center">
+              <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">
+                {isGroupMode
+                  ? "No posts in this group yet. Be the first to share!"
+                  : selectedTagIds.length > 0 || dateRange || sortBy
+                    ? "No posts found with the selected filters."
+                    : "No posts yet. Be the first to share!"}
+              </p>
+              {!isGroupMode &&
+                (selectedTagIds.length > 0 || dateRange || sortBy) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedTagIds([]);
+                      setDateRange(undefined);
+                      setSortBy(undefined);
+                    }}
+                    className="mt-4"
+                  >
+                    Clear filters
+                  </Button>
+                )}
+            </CardContent>
+          </Card>
+        )}
     </>
   );
 }

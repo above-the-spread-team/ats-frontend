@@ -28,9 +28,10 @@ const TAG_TYPE_LABELS: Record<TagType, string> = {
 
 const TAG_TYPE_BADGE: Record<TagType, string> = {
   league: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25",
-  team:   "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25",
-  player: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25",
-  topic:  "bg-primary-font/10 text-primary-font border-primary-font/25",
+  team: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25",
+  player:
+    "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25",
+  topic: "bg-primary-font/10 text-primary-font border-primary-font/25",
 };
 
 export default function NewsFilter({
@@ -41,7 +42,10 @@ export default function NewsFilter({
 
   const tagsByType = useMemo(() => {
     const grouped: Record<TagType, TagSummary[]> = {
-      league: [], team: [], player: [], topic: [],
+      league: [],
+      team: [],
+      player: [],
+      topic: [],
     };
     (tagsData?.items ?? []).forEach((tag) => {
       if (grouped[tag.type]) grouped[tag.type].push(tag);
@@ -55,7 +59,8 @@ export default function NewsFilter({
   );
 
   const getSelectedTagForType = (type: TagType) =>
-    allTagsFlat.find((t) => t.type === type && selectedTagIds.includes(t.id)) ?? null;
+    allTagsFlat.find((t) => t.type === type && selectedTagIds.includes(t.id)) ??
+    null;
 
   const handleTagToggle = (tag: TagSummary) => {
     if (selectedTagIds.includes(tag.id)) {
@@ -64,19 +69,16 @@ export default function NewsFilter({
       return;
     }
 
-    // Keep all ids except those of the same type (single-select per category)
-    let next = selectedTagIds.filter((id) => {
-      const t = allTagsFlat.find((t2) => t2.id === id);
-      return t?.type !== tag.type;
-    });
+    const SPORT_TYPES = new Set<TagType>(["league", "team", "player"]);
+    const isSport = SPORT_TYPES.has(tag.type);
 
-    // Selecting a League also clears any selected Team / Player
-    if (tag.type === "league") {
-      next = next.filter((id) => {
-        const t = allTagsFlat.find((t2) => t2.id === id);
-        return t?.type !== "team" && t?.type !== "player";
-      });
-    }
+    // Selecting any sport tag clears all other sport tags (league/team/player mutually exclusive).
+    // Selecting a topic only clears the previous topic.
+    const next = selectedTagIds.filter((id) => {
+      const t = allTagsFlat.find((t2) => t2.id === id);
+      if (!t) return false;
+      return isSport ? !SPORT_TYPES.has(t.type) : t.type !== tag.type;
+    });
 
     onTagIdsChange([...next, tag.id]);
   };
@@ -88,7 +90,10 @@ export default function NewsFilter({
     return (
       <div className="mb-4 flex gap-2">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-8 w-24 animate-pulse rounded-full bg-muted" />
+          <div
+            key={i}
+            className="h-8 w-24 animate-pulse rounded-full bg-muted"
+          />
         ))}
       </div>
     );
@@ -132,7 +137,9 @@ export default function NewsFilter({
               >
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   {TAG_TYPE_LABELS[type]}
-                  <span className="ml-1 font-normal normal-case">(select one)</span>
+                  <span className="ml-1 font-normal normal-case">
+                    (select one)
+                  </span>
                 </div>
                 {tags.map((tag) => (
                   <DropdownMenuCheckboxItem
