@@ -17,7 +17,11 @@ import {
   User,
   ExternalLink,
   ChevronLeft,
+  Newspaper,
+  BookOpen,
+  MessageSquare,
 } from "lucide-react";
+import AskLogin from "@/components/common/ask-login";
 import { BiLike, BiDislike, BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import {
   useNewsById,
@@ -54,7 +58,7 @@ export default function NewsDetailPage() {
     refetch: refetchComments,
   } = useNewsComments(newsId && !isNaN(newsId) ? newsId : null, 1, 20, false);
 
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser, isLoading: isAuthLoading } = useCurrentUser();
   const likeNewsMutation = useLikeNews();
   const dislikeNewsMutation = useDislikeNews();
 
@@ -135,6 +139,92 @@ export default function NewsDetailPage() {
   const isMatchPreview = (news: NewsResponse) => {
     return !!(news.home_team_logo && news.away_team_logo);
   };
+
+  // While resolving session, show a neutral skeleton
+  if (isAuthLoading) {
+    return (
+      <FullPage>
+        <div className="container mx-auto max-w-4xl px-4 py-6 space-y-4">
+          <Skeleton className="h-9 w-24 rounded-full" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </FullPage>
+    );
+  }
+
+  // Not authenticated — show blurred preview + login gate
+  if (!currentUser) {
+    return (
+      <FullPage>
+        <div className="container mx-auto max-w-4xl px-4 py-4 mb-8">
+          {/* Back button still works */}
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="mb-4 text-primary-font rounded-full hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </Button>
+
+          {/* Blurred article preview */}
+          <div className="relative rounded-2xl overflow-hidden">
+            <div className="blur-[3px] pointer-events-none select-none space-y-4">
+              <Skeleton className="h-48 sm:h-64 w-full rounded-xl" />
+              <div className="bg-card rounded-xl border border-border p-5 sm:p-8 space-y-4">
+                <Skeleton className="h-7 w-3/4" />
+                <div className="flex gap-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="pt-2 space-y-2.5">
+                  {[
+                    " w-full",
+                    " w-full",
+                    " w-5/6",
+                    " w-full",
+                    " w-4/5",
+                    " w-full",
+                    " w-3/4",
+                  ].map((w, i) => (
+                    <Skeleton key={i} className={`h-4${w}`} />
+                  ))}
+                </div>
+                <div className="pt-2 space-y-2.5">
+                  {[" w-full", " w-5/6", " w-full"].map((w, i) => (
+                    <Skeleton key={i} className={`h-4${w}`} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom gradient fade */}
+            <div className="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none" />
+
+            {/* Login gate */}
+            <div className="absolute inset-x-0 top-24 md:top-36 flex justify-center pb-6 sm:pb-10 px-4">
+              <AskLogin
+                description="Sign in to read full articles, join discussions, and access exclusive football analysis."
+                features={[
+                  { icon: Newspaper, label: "Full articles" },
+                  { icon: BookOpen, label: "In-depth analysis" },
+                  { icon: MessageSquare, label: "Comment & discuss" },
+                ]}
+                ctaLabel="Sign in to read"
+                backHref="/news"
+                backLabel="← Back to News"
+                className="max-w-sm sm:max-w-md"
+              />
+            </div>
+          </div>
+        </div>
+      </FullPage>
+    );
+  }
 
   if (isLoading) {
     return (

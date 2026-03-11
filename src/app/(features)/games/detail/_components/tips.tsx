@@ -5,6 +5,10 @@ import Image from "next/image";
 import type { PredictionsApiResponse } from "@/type/footballapi/predictions";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
+import { useCurrentUser } from "@/services/fastapi/oauth";
+import { TrendingUp, BarChart2 } from "lucide-react";
+import AskLogin from "@/components/common/ask-login";
+import { Sparkles } from "lucide-react";
 
 import {
   Trophy,
@@ -45,6 +49,9 @@ interface PredictionsProps {
 }
 
 export default function Predictions({ fixtureId }: PredictionsProps) {
+  const { data: currentUser, isLoading: isAuthLoading } = useCurrentUser();
+  const isLoggedIn = !!currentUser;
+
   const [predictionsData, setPredictionsData] =
     useState<PredictionsApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,6 +59,12 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
   const [shouldAnimate, setShouldAnimate] = useState(false);
 
   useEffect(() => {
+    // Don't fetch until we know the auth state, and never fetch if not logged in
+    if (isAuthLoading || !isLoggedIn) {
+      setIsLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
 
     const fetchPredictions = async () => {
@@ -94,7 +107,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
     return () => {
       controller.abort();
     };
-  }, [fixtureId]);
+  }, [fixtureId, isAuthLoading, isLoggedIn]);
 
   // Trigger animation after data is loaded
   useEffect(() => {
@@ -108,6 +121,76 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       setShouldAnimate(false);
     }
   }, [isLoading, predictionsData]);
+
+  // Auth loading — show a brief neutral skeleton while we resolve the session
+  if (isAuthLoading) {
+    return (
+      <div className="space-y-3 md:space-y-4 animate-pulse">
+        <Skeleton className="h-8 w-48 mx-auto" />
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  // Not logged in — show blurred preview + login gate
+  if (!isLoggedIn) {
+    return (
+      <div className="relative rounded-2xl overflow-hidden min-h-[420px] sm:min-h-[480px]">
+        {/* Blurred skeleton preview */}
+        <div className="blur-[3px] pointer-events-none select-none space-y-3 md:space-y-4 p-1">
+          <div className="flex items-center gap-2 justify-center py-2">
+            <Skeleton className="w-4 h-4 md:w-5 md:h-5" />
+            <Skeleton className="h-4 md:h-5 w-32 md:w-40" />
+          </div>
+          <div className="bg-card rounded-xl p-4 md:p-6 space-y-4 shadow-sm">
+            <div className="grid grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="text-center space-y-2">
+                  <Skeleton className="h-3 w-12 mx-auto" />
+                  <Skeleton className="h-20 w-full rounded-lg" />
+                  <Skeleton className="h-3 w-8 mx-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="bg-card rounded-xl p-4 md:p-6 space-y-3 shadow-sm">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex justify-between items-center">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ))}
+          </div>
+          <div className="bg-card rounded-xl p-4 md:p-6 space-y-3 shadow-sm">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex justify-between items-center">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-12" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Gradient fade */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
+
+        {/* Login gate */}
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <AskLogin
+            description="Sign in to unlock AI-powered match predictions, win probabilities, and in-depth tips."
+            features={[
+              { icon: Sparkles, label: "AI Match Prediction" },
+              { icon: TrendingUp, label: "Win Probabilities" },
+              { icon: BarChart2, label: "In-depth Stats & Tips" },
+            ]}
+            ctaLabel="Sign in to view"
+            className="max-w-xs sm:max-w-sm"
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
