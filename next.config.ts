@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Lower default quality reduces bandwidth; logos are small and don't need high fidelity
+    qualities: [50, 75],
     remotePatterns: [
       {
         protocol: "https",

@@ -5,6 +5,7 @@ import HomeRanking from "./components/home-ranking";
 import HomeNews from "./components/home-news";
 import HomeDiscuss from "./components/home-discuss";
 import Promotion from "./components/promotion";
+import VoteResult from "./components/vote-result";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
             <HomeRanking />
           </div>
         </div>
+        <VoteResult />
         <Promotion />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
           <div className="md:col-span-2">
