@@ -74,8 +74,6 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const season = calculateSeason(dateParam);
-
   // Sequential fetching to avoid bursting the football API rate limit (10 req/min on free
   // plans). Fixture requests are per-date so the Next.js cache only helps for repeated
   // requests on the same date; new dates always trigger real API calls.
@@ -86,6 +84,8 @@ export async function GET(req: NextRequest) {
   }[] = [];
 
   for (const leagueId of LEAGUE_IDS) {
+    // Each league may belong to a different season (e.g. World Cup 2026 vs regular 2025)
+    const season = calculateSeason(leagueId);
     const params = new URLSearchParams({
       date: dateParam,
       league: leagueId.toString(),
@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(
     {
       get: "fixtures",
-      parameters: { date: dateParam, season, timezone, leagues: [...LEAGUE_IDS] },
+      parameters: { date: dateParam, timezone, leagues: [...LEAGUE_IDS] },
       results: uniqueFixtures.length,
       errors: errorMessages,
       paging: { current: 1, total: 1 },

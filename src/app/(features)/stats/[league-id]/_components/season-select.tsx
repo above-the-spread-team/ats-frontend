@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { calculateSeason } from "@/lib/utils";
+import { isTournamentLeague } from "@/data/league-ids";
 
 type TabType = "standings" | "leaders" | "teams";
 
@@ -43,13 +44,12 @@ export default function SeasonSelect({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const isTournamentStyle =
-    leagueId && parseInt(leagueId, 10) === 1; // World Cup
-
   const seasonOptions = useMemo(() => {
     const toOption = (year: number) => ({
       value: year.toString(),
-      label: isTournamentStyle ? `${year}` : `${year}/${year + 1}`,
+      label: leagueId && isTournamentLeague(leagueId, year)
+        ? `${year}`
+        : `${year}/${year + 1}`,
     });
     if (availableSeasons?.length) {
       const sorted = [...availableSeasons].sort((a, b) => b.year - a.year);
@@ -61,11 +61,9 @@ export default function SeasonSelect({
       }
       return options;
     }
-    const currentSeasonYear = calculateSeason();
-    return Array.from({ length: 5 }, (_, i) =>
-      toOption(currentSeasonYear - i),
-    );
-  }, [availableSeasons, isTournamentStyle, season]);
+    const currentSeasonYear = calculateSeason(leagueId);
+    return Array.from({ length: 5 }, (_, i) => toOption(currentSeasonYear - i));
+  }, [availableSeasons, leagueId, season]);
 
   const seasons = seasonOptions;
 

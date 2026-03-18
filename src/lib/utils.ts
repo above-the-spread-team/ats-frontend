@@ -1,23 +1,14 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { SEASON_CONFIG } from "@/config/season-config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Calculate the football season year based on a given date.
- * Football seasons typically run from August/September to May.
- * If month is after May (June onwards), use current year as season.
- * Otherwise (January to May), use previous year as season.
- *
- * @param date - Optional date to calculate season for. If not provided, uses current date.
- * @returns The season year (e.g., 2025 for 2024-2025 season)
- */
-/**
  * Returns the browser's IANA timezone string, falling back to "UTC".
- * Guards against Safari low-power mode where Intl can fail to resolve
- * (https://bugs.webkit.org/show_bug.cgi?id=197769).
+ * Guards against Safari low-power mode where Intl can fail to resolve.
  *
  * NOTE: Only call this on the client (inside useEffect / event handlers).
  * Use the `useUserTimezone` hook for SSR-safe access in components.
@@ -31,13 +22,25 @@ export function getUserTimezone(): string {
   }
 }
 
-export function calculateSeason(date?: Date | string): number {
-  const dateObj = date
-    ? typeof date === "string"
-      ? new Date(date)
-      : date
-    : new Date();
-  const year = dateObj.getFullYear();
-  const month = dateObj.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
-  return month > 6 ? year : year - 1;
+/**
+ * Returns the season year for a given league by looking it up in SEASON_CONFIG.
+ * If the league is not found in any configured season, returns the most recent
+ * season year in the config as a safe default.
+ */
+export function calculateSeason(leagueId?: number | string | null): number {
+  if (leagueId != null) {
+    const id =
+      typeof leagueId === "string" ? parseInt(leagueId, 10) : leagueId;
+    if (!Number.isNaN(id)) {
+      for (const [seasonYear, ids] of Object.entries(SEASON_CONFIG)) {
+        if (ids.includes(id)) {
+          return parseInt(seasonYear, 10);
+        }
+      }
+    }
+  }
+
+  // Default: the most recent season defined in the config
+  const years = Object.keys(SEASON_CONFIG).map(Number);
+  return Math.max(...years);
 }

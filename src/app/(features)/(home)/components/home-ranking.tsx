@@ -17,7 +17,7 @@ export default function HomeRanking() {
   const [leagueName, setLeagueName] = useState<string>("");
 
   const leagueId = 2;
-  const season = calculateSeason();
+  const season = calculateSeason(leagueId);
 
   useEffect(() => {
     const controller = new AbortController();
