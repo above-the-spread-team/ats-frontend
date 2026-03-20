@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -61,11 +61,21 @@ export default function NewsDetailPage() {
   const likeNewsMutation = useLikeNews();
   const dislikeNewsMutation = useDislikeNews();
 
-  // Use news prop directly - React Query will update it automatically via cache
-  const userLiked = news?.user_reaction === true;
-  const userDisliked = news?.user_reaction === false;
-  const likeCount = news?.likes ?? 0;
-  const dislikeCount = news?.dislikes ?? 0;
+  const [optimistic, setOptimistic] = useState<{
+    liked: boolean;
+    disliked: boolean;
+    likeCount: number;
+    dislikeCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setOptimistic(null);
+  }, [news?.user_reaction, news?.likes, news?.dislikes]);
+
+  const userLiked = optimistic?.liked ?? (news?.user_reaction === true);
+  const userDisliked = optimistic?.disliked ?? (news?.user_reaction === false);
+  const likeCount = optimistic?.likeCount ?? (news?.likes ?? 0);
+  const dislikeCount = optimistic?.dislikeCount ?? (news?.dislikes ?? 0);
 
   // Scroll to top when news ID changes
   useEffect(() => {
@@ -78,10 +88,19 @@ export default function NewsDetailPage() {
       return;
     }
     if (!newsId) return;
+
+    setOptimistic(
+      userLiked
+        ? { liked: false, disliked: false, likeCount: likeCount - 1, dislikeCount }
+        : userDisliked
+          ? { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount: dislikeCount - 1 }
+          : { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount },
+    );
+
     try {
       await likeNewsMutation.mutateAsync(newsId);
-      // State will be updated automatically via React Query cache
     } catch (error) {
+      setOptimistic(null);
       console.error("Error liking news:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -95,10 +114,19 @@ export default function NewsDetailPage() {
       return;
     }
     if (!newsId) return;
+
+    setOptimistic(
+      userDisliked
+        ? { liked: false, disliked: false, likeCount, dislikeCount: dislikeCount - 1 }
+        : userLiked
+          ? { liked: false, disliked: true, likeCount: likeCount - 1, dislikeCount: dislikeCount + 1 }
+          : { liked: false, disliked: true, likeCount, dislikeCount: dislikeCount + 1 },
+    );
+
     try {
       await dislikeNewsMutation.mutateAsync(newsId);
-      // State will be updated automatically via React Query cache
     } catch (error) {
+      setOptimistic(null);
       console.error("Error disliking news:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -366,11 +394,7 @@ export default function NewsDetailPage() {
                   <div className="flex items-center gap-2 ml-auto">
                     <button
                       onClick={handleLikeNews}
-                      disabled={
-                        likeNewsMutation.isPending ||
-                        dislikeNewsMutation.isPending
-                      }
-                      className={`flex items-center gap-1 text-sm hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`flex items-center gap-1 text-sm hover:text-heart-hover transition-colors ${
                         userLiked ? "text-heart" : "text-muted-foreground"
                       }`}
                       aria-label={
@@ -386,11 +410,7 @@ export default function NewsDetailPage() {
                     </button>
                     <button
                       onClick={handleDislikeNews}
-                      disabled={
-                        likeNewsMutation.isPending ||
-                        dislikeNewsMutation.isPending
-                      }
-                      className={`flex items-center gap-1 text-sm hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`flex items-center gap-1 text-sm hover:text-heart-hover transition-colors ${
                         userDisliked ? "text-heart" : "text-muted-foreground"
                       }`}
                       aria-label={

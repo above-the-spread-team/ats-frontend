@@ -147,12 +147,21 @@ export default function NewsCommentItem({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
 
-  // Derive state directly from comment prop - React Query will update it automatically via cache
-  // This matches the pattern used in news detail page and post-card
-  const userLiked = comment.userLiked ?? false;
-  const userDisliked = comment.userDisliked ?? false;
-  const likeCount = comment.likeCount ?? 0;
-  const dislikeCount = comment.dislikeCount ?? 0;
+  const [optimistic, setOptimistic] = useState<{
+    liked: boolean;
+    disliked: boolean;
+    likeCount: number;
+    dislikeCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setOptimistic(null);
+  }, [comment.userLiked, comment.userDisliked, comment.likeCount, comment.dislikeCount]);
+
+  const userLiked = optimistic?.liked ?? comment.userLiked ?? false;
+  const userDisliked = optimistic?.disliked ?? comment.userDisliked ?? false;
+  const likeCount = optimistic?.likeCount ?? comment.likeCount ?? 0;
+  const dislikeCount = optimistic?.dislikeCount ?? comment.dislikeCount ?? 0;
 
   const likeCommentMutation = useLikeNewsComment();
   const dislikeCommentMutation = useDislikeNewsComment();
@@ -206,10 +215,18 @@ export default function NewsCommentItem({
     const commentId = parseInt(comment.id);
     if (isNaN(commentId)) return;
 
+    setOptimistic(
+      userLiked
+        ? { liked: false, disliked: false, likeCount: likeCount - 1, dislikeCount }
+        : userDisliked
+          ? { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount: dislikeCount - 1 }
+          : { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount },
+    );
+
     try {
-      // Call API - React Query will update the cache automatically
       await likeCommentMutation.mutateAsync(commentId);
     } catch (error) {
+      setOptimistic(null);
       console.error("Error liking comment:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -226,10 +243,18 @@ export default function NewsCommentItem({
     const commentId = parseInt(comment.id);
     if (isNaN(commentId)) return;
 
+    setOptimistic(
+      userDisliked
+        ? { liked: false, disliked: false, likeCount, dislikeCount: dislikeCount - 1 }
+        : userLiked
+          ? { liked: false, disliked: true, likeCount: likeCount - 1, dislikeCount: dislikeCount + 1 }
+          : { liked: false, disliked: true, likeCount, dislikeCount: dislikeCount + 1 },
+    );
+
     try {
-      // Call API - React Query will update the cache automatically
       await dislikeCommentMutation.mutateAsync(commentId);
     } catch (error) {
+      setOptimistic(null);
       console.error("Error disliking comment:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -356,11 +381,7 @@ export default function NewsCommentItem({
           <div className="flex items-center gap-4">
             <button
               onClick={handleLike}
-              disabled={
-                likeCommentMutation.isPending ||
-                dislikeCommentMutation.isPending
-              }
-              className={`flex items-center gap-1.5 text-xs hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`flex items-center gap-1.5 text-xs hover:text-heart-hover transition-colors ${
                 userLiked ? "text-heart" : "text-muted-foreground"
               }`}
             >
@@ -373,11 +394,7 @@ export default function NewsCommentItem({
             </button>
             <button
               onClick={handleDislike}
-              disabled={
-                likeCommentMutation.isPending ||
-                dislikeCommentMutation.isPending
-              }
-              className={`flex items-center gap-1.5 text-xs hover:text-heart-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`flex items-center gap-1.5 text-xs hover:text-heart-hover transition-colors ${
                 userDisliked ? "text-heart" : "text-muted-foreground"
               }`}
             >

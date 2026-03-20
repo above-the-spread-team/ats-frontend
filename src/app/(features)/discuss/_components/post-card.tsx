@@ -110,12 +110,21 @@ export default function PostCard({
     false, // Only fetch top-level comments, replies loaded separately
   );
 
-  // Derive state directly from post prop - React Query will update it automatically via cache
-  // This matches the pattern used in the news detail page
-  const userLiked = post.userLiked ?? false;
-  const userDisliked = post.userDisliked ?? false;
-  const likeCount = post.likeCount ?? 0;
-  const dislikeCount = post.dislikeCount ?? 0;
+  const [optimistic, setOptimistic] = useState<{
+    liked: boolean;
+    disliked: boolean;
+    likeCount: number;
+    dislikeCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setOptimistic(null);
+  }, [post.userLiked, post.userDisliked, post.likeCount, post.dislikeCount]);
+
+  const userLiked = optimistic?.liked ?? post.userLiked ?? false;
+  const userDisliked = optimistic?.disliked ?? post.userDisliked ?? false;
+  const likeCount = optimistic?.likeCount ?? post.likeCount ?? 0;
+  const dislikeCount = optimistic?.dislikeCount ?? post.dislikeCount ?? 0;
 
   // Check if content exceeds 10 lines
   useEffect(() => {
@@ -160,10 +169,18 @@ export default function PostCard({
     const postId = parseInt(post.id);
     if (isNaN(postId)) return;
 
+    setOptimistic(
+      userLiked
+        ? { liked: false, disliked: false, likeCount: likeCount - 1, dislikeCount }
+        : userDisliked
+          ? { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount: dislikeCount - 1 }
+          : { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount },
+    );
+
     try {
-      // Call API - React Query will update the cache automatically
       await likePostMutation.mutateAsync(postId);
     } catch (error) {
+      setOptimistic(null);
       console.error("Error liking post:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -180,10 +197,18 @@ export default function PostCard({
     const postId = parseInt(post.id);
     if (isNaN(postId)) return;
 
+    setOptimistic(
+      userDisliked
+        ? { liked: false, disliked: false, likeCount, dislikeCount: dislikeCount - 1 }
+        : userLiked
+          ? { liked: false, disliked: true, likeCount: likeCount - 1, dislikeCount: dislikeCount + 1 }
+          : { liked: false, disliked: true, likeCount, dislikeCount: dislikeCount + 1 },
+    );
+
     try {
-      // Call API - React Query will update the cache automatically
       await dislikePostMutation.mutateAsync(postId);
     } catch (error) {
+      setOptimistic(null);
       console.error("Error disliking post:", error);
       if (error instanceof Error && error.message.includes("401")) {
         router.push("/login");
@@ -342,10 +367,7 @@ export default function PostCard({
           <div className="flex items-center gap-4 md:gap-6">
             <button
               onClick={handleLike}
-              disabled={
-                likePostMutation.isPending || dislikePostMutation.isPending
-              }
-              className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`flex items-center gap-2 text-sm transition-colors ${
                 userLiked
                   ? "text-heart"
                   : "text-muted-foreground hover:text-heart-hover"
@@ -360,10 +382,7 @@ export default function PostCard({
             </button>
             <button
               onClick={handleDislike}
-              disabled={
-                likePostMutation.isPending || dislikePostMutation.isPending
-              }
-              className={`flex items-center gap-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`flex items-center gap-2 text-sm transition-colors ${
                 userDisliked
                   ? "text-heart"
                   : "text-muted-foreground hover:text-heart-hover"
