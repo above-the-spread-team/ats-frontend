@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAvailableFixtures, useVote } from "@/services/fastapi/vote";
 import type { FixtureSummary, VoteChoice } from "@/type/fastapi/vote";
@@ -256,7 +255,7 @@ const DAY_TABS: { label: string; day: "today" | "tomorrow" }[] = [
   { label: "Tomorrow", day: "tomorrow" },
 ];
 
-function VotePopupContent({ onClose }: { onClose: () => void }) {
+function VotePopupContent({ onClose: _onClose }: { onClose: () => void }) {
   const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
   const { data, isLoading, error } = useAvailableFixtures(selectedDay);
 
@@ -378,7 +377,8 @@ function VotePopupContent({ onClose }: { onClose: () => void }) {
         </div>
         <span className="text-4xl">⚽</span>
         <p className="text-sm font-medium text-foreground">
-          No fixtures scheduled {selectedDay === "tomorrow" ? "for tomorrow" : "today"}
+          No fixtures scheduled{" "}
+          {selectedDay === "tomorrow" ? "for tomorrow" : "today"}
         </p>
         <p className="text-xs">
           {selectedDay === "tomorrow"

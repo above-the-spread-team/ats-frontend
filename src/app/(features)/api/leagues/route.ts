@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { LEAGUE_IDS } from "@/data/league-ids";
 import type {
   LeaguesApiResponse,
@@ -23,7 +23,7 @@ const API_KEY =
 // retries always hit the real API rather than a stale per-URL Next.js cache.
 export const revalidate = 14400;
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   if (!API_KEY) {
     return NextResponse.json(
       {
