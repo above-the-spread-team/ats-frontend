@@ -16,6 +16,10 @@
     --heart: 0 61% 58%;
     --heart-hover: 0 79% 67%;
 
+    --vote-blue: 224 78% 58%;
+    --vote-red: 0 89% 71% / 0.79;
+    --vote-yellow: 50 92% 60%;
+
     --background: 184 15% 96%;
 
     --foreground: 0 0% 6.5%;
@@ -70,6 +74,10 @@
     --foreground: 0 0% 93.5%;
     --primary-title: 0 0% 80%;
     --primary-font: 172 47% 76%;
+
+    --vote-blue: 224 78% 58%;
+    --vote-red: 0 89% 71% / 0.79;
+    --vote-yellow: 50 92% 60%;
 
     --card: 184 15% 12%;
 

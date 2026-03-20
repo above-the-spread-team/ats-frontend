@@ -28,16 +28,16 @@ const VOTE_META: {
   {
     key: "home",
     label: "1",
-    bg: "bg-bar-green",
-    activeBorder: "ring-bar-green",
+    bg: "bg-vote-blue",
+    activeBorder: "ring-vote-blue",
   },
   {
     key: "draw",
     label: "X",
-    bg: "bg-bar-yellow",
-    activeBorder: "ring-bar-yellow",
+    bg: "bg-vote-yellow",
+    activeBorder: "ring-vote-yellow",
   },
-  { key: "away", label: "2", bg: "bg-bar-red", activeBorder: "ring-bar-red" },
+  { key: "away", label: "2", bg: "bg-vote-red", activeBorder: "ring-vote-red" },
 ];
 
 // ── team logo ──────────────────────────────────────────────────────────────
@@ -237,8 +237,14 @@ function LeagueGroup({
 
 // ── popup content ──────────────────────────────────────────────────────────
 
+const DAY_TABS: { label: string; day: "today" | "tomorrow" }[] = [
+  { label: "Today", day: "today" },
+  { label: "Tomorrow", day: "tomorrow" },
+];
+
 function VotePopupContent({ onClose }: { onClose: () => void }) {
-  const { data, isLoading, error } = useAvailableFixtures();
+  const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
+  const { data, isLoading, error } = useAvailableFixtures(selectedDay);
   const { data: currentUser } = useCurrentUser();
   const isLoggedIn = !!currentUser;
   const [votedMap, setVotedMap] = useState<Record<number, VoteChoice>>({});
@@ -330,35 +336,79 @@ function VotePopupContent({ onClose }: { onClose: () => void }) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground text-center px-6">
+      <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground text-center px-6">
+        {/* Day tabs still visible even in empty state */}
+        <div className="w-full flex justify-center mb-2">
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
+            {DAY_TABS.map((tab) => (
+              <button
+                key={tab.day}
+                onClick={() => setSelectedDay(tab.day)}
+                className={[
+                  "text-xs px-4 py-1 rounded-md font-medium transition-colors",
+                  selectedDay === tab.day
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                ].join(" ")}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <span className="text-4xl">⚽</span>
         <p className="text-sm font-medium text-foreground">
-          No matches available
+          No matches available {selectedDay === "tomorrow" ? "tomorrow" : "today"}
         </p>
-        <p className="text-xs">Check back later for upcoming fixtures</p>
+        <p className="text-xs">
+          {selectedDay === "tomorrow"
+            ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC"
+            : "Check back later for upcoming fixtures"}
+        </p>
       </div>
     );
   }
 
   return (
     <>
-      {/* Progress bar */}
-      {totalAvailable > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-muted/30">
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-            <span>Your predictions</span>
-            <span className="font-medium text-foreground">
-              {totalVoted} / {totalAvailable}
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary-font rounded-full transition-all duration-500"
-              style={{ width: `${(totalVoted / totalAvailable) * 100}%` }}
-            />
-          </div>
+      {/* Day tabs + progress bar */}
+      <div className="px-4 py-2.5 border-b border-border bg-muted/30 space-y-2.5">
+        {/* Tabs */}
+        <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
+          {DAY_TABS.map((tab) => (
+            <button
+              key={tab.day}
+              onClick={() => setSelectedDay(tab.day)}
+              className={[
+                "text-xs px-4 py-1 rounded-md font-medium transition-colors",
+                selectedDay === tab.day
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      )}
+
+        {/* Progress bar */}
+        {totalAvailable > 0 && (
+          <div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+              <span>Your predictions</span>
+              <span className="font-medium text-foreground">
+                {totalVoted} / {totalAvailable}
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary-font rounded-full transition-all duration-500"
+                style={{ width: `${(totalVoted / totalAvailable) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Fixture list */}
       <div className="divide-y divide-border">

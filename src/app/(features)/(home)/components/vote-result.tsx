@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 // ── constants ──────────────────────────────────────────────────────────────
 
 const VOTE_META: { key: VoteChoice; color: string; textColor: string }[] = [
-  { key: "home", color: "bg-bar-green", textColor: "text-foreground" },
-  { key: "draw", color: "bg-bar-yellow", textColor: "text-foreground" },
-  { key: "away", color: "bg-bar-red", textColor: "text-foreground" },
+  { key: "home", color: "bg-vote-blue", textColor: "text-foreground" },
+  { key: "draw", color: "bg-vote-yellow", textColor: "text-foreground" },
+  { key: "away", color: "bg-vote-red", textColor: "text-foreground" },
 ];
 
+// date_offset: -1 = tomorrow, 0 = today, 1 = yesterday, … (backend supports -1 to 7)
 const DATE_TABS = [
+  { label: "Tomorrow", offset: -1 },
   { label: "Today", offset: 0 },
   { label: "Yesterday", offset: 1 },
   { label: "2 days ago", offset: 2 },
@@ -274,15 +276,15 @@ export default function VoteResult() {
         <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm p-10 text-center">
           <p className="text-4xl mb-2">⚽</p>
           <p className="text-sm md:text-base font-medium text-foreground">
-            No fixtures
-            {dateOffset === 0
-              ? " today"
-              : ` ${DATE_TABS.find((t) => t.offset === dateOffset)?.label.toLowerCase()}`}
+            No fixtures{" "}
+            {DATE_TABS.find((t) => t.offset === dateOffset)?.label.toLowerCase()}
           </p>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            {dateOffset === 0
-              ? "Check back later!"
-              : "No data available for this day."}
+            {dateOffset === -1
+              ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC."
+              : dateOffset === 0
+                ? "Check back later!"
+                : "No data available for this day."}
           </p>
         </div>
       ) : (

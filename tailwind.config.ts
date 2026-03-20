@@ -29,6 +29,11 @@ export default {
           DEFAULT: "hsl(var(--heart))",
           hover: "hsl(var(--heart-hover))",
         },
+        vote: {
+          blue: "hsl(var(--vote-blue))",
+          red: "hsl(var(--vote-red))",
+          yellow: "hsl(var(--vote-yellow))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

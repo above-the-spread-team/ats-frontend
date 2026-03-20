@@ -81,13 +81,17 @@ export async function fetchFixtures(
 }
 
 /**
- * GET /api/v1/votes/available
+ * GET /api/v1/votes/available?day={today|tomorrow}
  * Fully public endpoint — no auth required.
- * Returns ALL NS (Not Started) fixtures for today, regardless of the user's
- * votes. Users may browse and change their vote before kickoff.
+ * Returns ALL NS (Not Started) fixtures for the target day.
+ * day: 'today' (default) | 'tomorrow' (pre-fetched at 12:20 UTC)
  */
-export async function fetchAvailableFixtures(): Promise<FixtureSummary[]> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/votes/available`);
+export async function fetchAvailableFixtures(
+  day: "today" | "tomorrow" = "today",
+): Promise<FixtureSummary[]> {
+  const res = await fetch(
+    `${BACKEND_URL}/api/v1/votes/available?day=${day}`,
+  );
   return handleResponse<FixtureSummary[]>(res);
 }
 
@@ -112,8 +116,8 @@ export async function fetchFixtureVotes(
 
 /**
  * Fixtures with vote percentages for a given day.
- * dateOffset 0 = today, 1 = yesterday, … max 7.
- * Public — no login required. Refetches every 60 s for live status updates.
+ * dateOffset: -1 = tomorrow, 0 = today, 1 = yesterday, … max 7.
+ * Public — no login required. Refetches every 3 min for live status updates.
  */
 export function useFixtures(dateOffset: number = 0) {
   return useQuery<FixtureVotesResult[], VoteError>({
@@ -131,14 +135,14 @@ export function useTodayVotes() {
 }
 
 /**
- * All NS fixtures available for voting today.
+ * All NS fixtures available for voting on a given day.
+ * day: 'today' (default) | 'tomorrow'
  * Fully public — no auth sent, no user-based filtering.
- * Refetches on every mount so the list is always fresh.
  */
-export function useAvailableFixtures() {
+export function useAvailableFixtures(day: "today" | "tomorrow" = "today") {
   return useQuery<FixtureSummary[], VoteError>({
-    queryKey: ["votes", "available"],
-    queryFn: fetchAvailableFixtures,
+    queryKey: ["votes", "available", day],
+    queryFn: () => fetchAvailableFixtures(day),
     staleTime: 3 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -170,6 +174,7 @@ export function useSubmitVote() {
     onSuccess: (data) => {
       // Invalidate all date-offset variants of the fixtures results
       queryClient.invalidateQueries({ queryKey: ["votes", "fixtures"] });
+      // Invalidate both day variants of the available fixtures list
       queryClient.invalidateQueries({ queryKey: ["votes", "available"] });
       queryClient.invalidateQueries({
         queryKey: ["votes", "fixture", data.fixture_id],

@@ -5,6 +5,7 @@ import { useNews } from "@/services/fastapi/news";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
+import { getNewsPreview } from "@/lib/news-content";
 
 export default function HomeNews() {
   const { data: newsData, isLoading, error } = useNews(1, 8);
@@ -89,8 +90,7 @@ export default function HomeNews() {
                     </div>
 
                     <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
-                      {article.content.substring(0, 150)}
-                      {article.content.length > 150 ? "..." : ""}
+                      {getNewsPreview(article.content)}
                     </p>
                   </div>
                 </div>
