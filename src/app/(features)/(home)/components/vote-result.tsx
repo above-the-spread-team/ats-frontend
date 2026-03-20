@@ -236,10 +236,19 @@ export default function VoteResult() {
   return (
     <div className="w-full space-y-3">
       {/* Header + date tabs */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-lg md:text-xl font-bold text-primary-font">
-          User&apos;s votes
-        </h2>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 ">
+        <div className="flex w-full md:w-auto items-center justify-between">
+          <h2 className="text-lg md:text-xl  font-bold text-primary-font">
+            User&apos;s votes
+          </h2>
+          <div className="block md:hidden">
+            <VoteDialog>
+              <Button variant="default" className="rounded-full h-7">
+                Vote
+              </Button>
+            </VoteDialog>
+          </div>
+        </div>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           {DATE_TABS.map((tab) => (
             <button
@@ -256,11 +265,13 @@ export default function VoteResult() {
             </button>
           ))}
         </div>
-        <VoteDialog>
-          <Button variant="default" className="rounded-full h-7">
-            Vote
-          </Button>
-        </VoteDialog>
+        <div className="hidden md:block">
+          <VoteDialog>
+            <Button variant="default" className="rounded-full h-7">
+              Vote
+            </Button>
+          </VoteDialog>
+        </div>
       </div>
 
       {/* Content */}
@@ -277,7 +288,9 @@ export default function VoteResult() {
           <p className="text-4xl mb-2">⚽</p>
           <p className="text-sm md:text-base font-medium text-foreground">
             No fixtures{" "}
-            {DATE_TABS.find((t) => t.offset === dateOffset)?.label.toLowerCase()}
+            {DATE_TABS.find(
+              (t) => t.offset === dateOffset,
+            )?.label.toLowerCase()}
           </p>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
             {dateOffset === -1
