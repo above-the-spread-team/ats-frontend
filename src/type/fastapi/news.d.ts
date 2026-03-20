@@ -10,10 +10,41 @@ export interface NewsAuthor {
   avatar_url: string | null;
 }
 
+// ── Structured JSON content schemas ──────────────────────────────────────────
+
+export interface NewsSource {
+  title: string;
+  url: string;
+}
+
+export interface NewsEvent {
+  headline: string;
+  paragraphs: string[];
+  sources: NewsSource[];
+}
+
+export interface GeneralNewsContent {
+  type: "general_news";
+  league: string;
+  date: string; // YYYY-MM-DD
+  events: NewsEvent[];
+}
+
+export interface MatchPreviewContent {
+  type: "match_preview";
+  paragraphs: string[];
+  betting_tips: string[];
+  sources: NewsSource[];
+}
+
+export type ParsedNewsContent = GeneralNewsContent | MatchPreviewContent;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface NewsResponse {
   id: number;
   title: string;
-  content: string; // Markdown format
+  content: string; // JSON string — parse with parseNewsContent() from @/lib/news-content
   image_url: string | null; // For General News
   fixture_id: number | null; // For Match Preview
   home_team_logo: string | null; // For Match Preview only

@@ -4,9 +4,8 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import FullPage from "@/components/common/full-page";
+import NewsContentRenderer from "../components/news-content-renderer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -435,106 +434,7 @@ export default function NewsDetailPage() {
             </div>
 
             {/* Article Content */}
-            <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-a:text-primary-font prose-a:no-underline hover:prose-a:underline prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  h1: ({ ...props }) => (
-                    <h1
-                      className="text-3xl font-bold mb-5 mt-8 text-foreground border-b border-border pb-2"
-                      {...props}
-                    />
-                  ),
-                  h2: ({ ...props }) => (
-                    <h2
-                      className="text-2xl font-bold mb-4 mt-7 text-foreground border-b border-border pb-2"
-                      {...props}
-                    />
-                  ),
-                  h3: ({ ...props }) => (
-                    <h3
-                      className="text-xl md:text-2xl font-bold mb-4 mt-6 text-foreground"
-                      {...props}
-                    />
-                  ),
-                  h4: ({ ...props }) => (
-                    <h4
-                      className="text-lg md:text-xl font-bold mb-3 mt-5 text-foreground"
-                      {...props}
-                    />
-                  ),
-                  p: ({ ...props }) => (
-                    <p
-                      className="mb-4 leading-7  text-base  text-foreground"
-                      {...props}
-                    />
-                  ),
-                  ul: ({ ...props }) => (
-                    <ul
-                      className="list-disc list-outside mb-5 ml-1 space-y-2 text-foreground"
-                      {...props}
-                    />
-                  ),
-                  ol: ({ ...props }) => (
-                    <ol
-                      className="list-decimal list-outside mb-5 ml-1 space-y-2 text-foreground"
-                      {...props}
-                    />
-                  ),
-                  li: ({ ...props }) => (
-                    <li
-                      className=" leading-1 marker:text-primary-font"
-                      {...props}
-                    />
-                  ),
-                  strong: ({ ...props }) => (
-                    <strong className="font-bold text-foreground" {...props} />
-                  ),
-                  em: ({ ...props }) => (
-                    <em className="italic text-foreground" {...props} />
-                  ),
-                  a: ({ ...props }) => (
-                    <a
-                      className="text-primary-font hover:underline font-medium break-words"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      {...props}
-                    />
-                  ),
-                  blockquote: ({ ...props }) => (
-                    <blockquote
-                      className="border-l-4 border-primary pl-4 italic my-6 text-muted-foreground bg-muted/30 py-2 rounded-r"
-                      {...props}
-                    />
-                  ),
-                  code: ({
-                    inline,
-                    ...props
-                  }: React.ComponentPropsWithoutRef<"code"> & {
-                    inline?: boolean;
-                  }) =>
-                    inline ? (
-                      <code
-                        className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground"
-                        {...props}
-                      />
-                    ) : (
-                      <code
-                        className="block bg-muted p-4 rounded-lg text-sm font-mono overflow-x-auto my-4 text-foreground"
-                        {...props}
-                      />
-                    ),
-                  pre: ({ ...props }) => (
-                    <pre
-                      className="bg-muted p-4 rounded-lg overflow-x-auto my-4"
-                      {...props}
-                    />
-                  ),
-                }}
-              >
-                {news.content}
-              </ReactMarkdown>
-            </div>
+            <NewsContentRenderer content={news.content} />
 
             {/* Footer Actions */}
             <div className="mt-6 pt-4 border-t flex items-center justify-between">

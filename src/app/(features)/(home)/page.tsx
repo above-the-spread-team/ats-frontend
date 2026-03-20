@@ -5,6 +5,7 @@ import HomeRanking from "./components/home-ranking";
 import HomeNews from "./components/home-news";
 import HomeDiscuss from "./components/home-discuss";
 import Promotion from "./components/promotion";
+import VoteResult from "./components/vote-result";
 
 export default function Home() {
   return (
@@ -18,6 +19,9 @@ export default function Home() {
           <div className="lg:col-span-2 ">
             <HomeRanking />
           </div>
+        </div>
+        <div className="max-w-4xl mx-auto">
+          <VoteResult />
         </div>
         <Promotion />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
