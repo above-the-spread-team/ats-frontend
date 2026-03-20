@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -10,10 +9,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAvailableFixtures, useVote } from "@/services/fastapi/vote";
-import { useCurrentUser } from "@/services/fastapi/oauth";
 import type { FixtureSummary, VoteChoice } from "@/type/fastapi/vote";
 import { CheckCircle2, Vote as VoteIcon } from "lucide-react";
 
@@ -85,9 +82,9 @@ function FixtureVoteRow({
   fixture: FixtureSummary;
   canVote: boolean;
   voted: VoteChoice | null;
-  onVoted: (choice: VoteChoice) => void;
+  onVoted: (choice: VoteChoice | null) => void;
 }) {
-  const { vote, isPending } = useVote();
+  const { vote } = useVote();
   const [error, setError] = useState<string | null>(null);
 
   const matchTime = new Date(fixture.match_date).toLocaleTimeString([], {
@@ -97,13 +94,22 @@ function FixtureVoteRow({
 
   const handleVote = async (choice: VoteChoice) => {
     setError(null);
+    onVoted(choice); // optimistic — show locked state immediately
     try {
       await vote(fixture.fixture_id, choice);
-      onVoted(choice);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to submit");
+      onVoted(null); // revert on failure
+      const msg = e instanceof Error ? e.message : "Failed to submit";
+      if (msg.toLowerCase().includes("already voted")) return;
+      if (msg.toLowerCase().includes("rate limit")) {
+        setError("Too many votes. Please wait a moment and try again.");
+        return;
+      }
+      setError(msg);
     }
   };
+
+  const votedMeta = voted ? VOTE_META.find((v) => v.key === voted) : null;
 
   return (
     <div className="px-4 py-3 space-y-3 hover:bg-muted/20 transition-colors">
@@ -139,19 +145,26 @@ function FixtureVoteRow({
         </div>
       </div>
 
-      {/* Voted confirmation */}
-      {voted ? (
-        <div className="flex items-center justify-center gap-2 py-1">
-          <CheckCircle2 className="w-4 h-4 text-primary-font flex-shrink-0" />
-          <span className="text-sm text-muted-foreground">
-            Voted{" "}
-            <span className={"font-semibold text-primary-font"}>
+      {voted && votedMeta ? (
+        /* Locked — vote is final */
+        <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/40 border border-border">
+          <span
+            className={`w-8 h-8 rounded-full ${votedMeta.bg} flex items-center justify-center flex-shrink-0`}
+          >
+            <CheckCircle2 className="w-4 h-4 text-white" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] text-muted-foreground">Your prediction</p>
+            <p className="text-sm font-semibold text-foreground truncate">
               {voted === "home"
                 ? fixture.home_team
                 : voted === "away"
                   ? fixture.away_team
                   : "Draw"}
-            </span>
+            </p>
+          </div>
+          <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex-shrink-0">
+            Final
           </span>
         </div>
       ) : (
@@ -160,12 +173,12 @@ function FixtureVoteRow({
           {VOTE_META.map((v) => (
             <button
               key={v.key}
-              disabled={!canVote || isPending}
+              disabled={!canVote}
               onClick={() => handleVote(v.key)}
               className={[
                 "rounded-lg py-2 text-xs sm:text-sm font-bold text-white transition-all truncate px-1",
                 v.bg,
-                !canVote || isPending
+                !canVote
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:brightness-110 active:scale-95",
               ].join(" ")}
@@ -196,7 +209,7 @@ function LeagueGroup({
   fixtures: FixtureSummary[];
   canVote: boolean;
   votedMap: Record<number, VoteChoice>;
-  onVoted: (fixtureId: number, choice: VoteChoice) => void;
+  onVoted: (fixtureId: number, choice: VoteChoice | null) => void;
 }) {
   return (
     <div>
@@ -242,15 +255,40 @@ const DAY_TABS: { label: string; day: "today" | "tomorrow" }[] = [
   { label: "Tomorrow", day: "tomorrow" },
 ];
 
-function VotePopupContent({ onClose }: { onClose: () => void }) {
+function VotePopupContent({ onClose: _onClose }: { onClose: () => void }) {
   const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
   const { data, isLoading, error } = useAvailableFixtures(selectedDay);
-  const { data: currentUser } = useCurrentUser();
-  const isLoggedIn = !!currentUser;
-  const [votedMap, setVotedMap] = useState<Record<number, VoteChoice>>({});
 
-  const handleVoted = (fixtureId: number, choice: VoteChoice) => {
-    setVotedMap((prev) => ({ ...prev, [fixtureId]: choice }));
+  // In-session votes (immediate UI feedback before next refetch)
+  const [localVotedMap, setLocalVotedMap] = useState<
+    Record<number, VoteChoice>
+  >({});
+
+  // Server-side votes from user_vote field (populated via X-Voter-Id)
+  const serverVotedMap = useMemo<Record<number, VoteChoice>>(() => {
+    if (!data) return {};
+    return Object.fromEntries(
+      data
+        .filter((f) => f.user_vote !== null)
+        .map((f) => [f.fixture_id, f.user_vote as VoteChoice]),
+    );
+  }, [data]);
+
+  // Merged: local in-session overrides server (for instant feedback)
+  const votedMap = useMemo(
+    () => ({ ...serverVotedMap, ...localVotedMap }),
+    [serverVotedMap, localVotedMap],
+  );
+
+  const handleVoted = (fixtureId: number, choice: VoteChoice | null) => {
+    setLocalVotedMap((prev) => {
+      if (choice === null) {
+        const next = { ...prev };
+        delete next[fixtureId];
+        return next;
+      }
+      return { ...prev, [fixtureId]: choice };
+    });
   };
 
   const leagueGroups = useMemo(() => {
@@ -315,25 +353,6 @@ function VotePopupContent({ onClose }: { onClose: () => void }) {
     );
   }
 
-  if (!isLoggedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 gap-4 px-6 text-center">
-        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-          <VoteIcon className="w-7 h-7 text-primary" />
-        </div>
-        <div>
-          <p className="font-semibold text-base">Sign in to vote</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Create a free account to predict match outcomes
-          </p>
-        </div>
-        <Link href="/login" onClick={onClose}>
-          <Button className="mt-1">Sign in</Button>
-        </Link>
-      </div>
-    );
-  }
-
   if (!data || data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground text-center px-6">
@@ -358,12 +377,13 @@ function VotePopupContent({ onClose }: { onClose: () => void }) {
         </div>
         <span className="text-4xl">⚽</span>
         <p className="text-sm font-medium text-foreground">
-          No matches available {selectedDay === "tomorrow" ? "tomorrow" : "today"}
+          No fixtures scheduled{" "}
+          {selectedDay === "tomorrow" ? "for tomorrow" : "today"}
         </p>
         <p className="text-xs">
           {selectedDay === "tomorrow"
             ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC"
-            : "Check back later for upcoming fixtures"}
+            : "No matches available yet — check back later"}
         </p>
       </div>
     );
@@ -418,7 +438,7 @@ function VotePopupContent({ onClose }: { onClose: () => void }) {
             leagueName={group.leagueName}
             leagueLogo={group.leagueLogo}
             fixtures={group.fixtures}
-            canVote={isLoggedIn}
+            canVote={true}
             votedMap={votedMap}
             onVoted={handleVoted}
           />
