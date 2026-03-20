@@ -5,7 +5,7 @@ export interface FixtureVoteCreate {
   vote_choice: VoteChoice;
 }
 
-/** Returned after submitting / updating a vote (POST /api/v1/votes) */
+/** Returned after submitting a one-time vote (POST /api/v1/votes) */
 export interface FixtureVoteResponse {
   id: number;
   fixture_id: number;
@@ -51,6 +51,7 @@ export interface FixtureSummary {
   league_name: string | null;
   league_logo: string | null;
   match_date: string;
+  user_vote: VoteChoice | null; // populated when X-Voter-Id header is sent
 }
 
 /** Response from manual fixture sync (POST /sync) */
