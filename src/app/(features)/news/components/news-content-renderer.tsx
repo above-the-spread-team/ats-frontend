@@ -5,28 +5,29 @@ import type {
   NewsSource,
 } from "@/type/fastapi/news";
 import { parseNewsContent } from "@/lib/news-content";
+import Link from "next/link";
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
 function SourcesList({ sources }: { sources: NewsSource[] }) {
   if (!sources || sources.length === 0) return null;
   return (
-    <div className="mt-4 pt-3 border-t border-border">
+    <div className="pt-2 pb-4 border-t border-border">
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
         Sources
       </p>
       <ul className="space-y-1">
         {sources.map((s, i) => (
           <li key={i}>
-            <a
+            <Link
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-primary-font hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs md:text-sm text-primary-font hover:underline"
             >
-              <ExternalLink className="h-3 w-3 flex-shrink-0" />
+              <ExternalLink className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               {s.title}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -46,10 +47,7 @@ function GeneralNewsRenderer({ content }: { content: GeneralNewsContent }) {
           </h3>
           <div className="space-y-3">
             {event.paragraphs.map((para, j) => (
-              <p
-                key={j}
-                className="leading-7 text-base text-foreground"
-              >
+              <p key={j} className="leading-7 text-base text-foreground">
                 {para}
               </p>
             ))}
