@@ -355,9 +355,9 @@ function VotePopupContent({ onClose: _onClose }: { onClose: () => void }) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground text-center px-6">
+      <div className=" flex-col items-center justify-center pt-3 pb-12 gap-2 text-muted-foreground text-center px-6">
         {/* Day tabs still visible even in empty state */}
-        <div className="w-full flex justify-center mb-2">
+        <div className="w-full flex justify-start mb-10">
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             {DAY_TABS.map((tab) => (
               <button
@@ -375,16 +375,22 @@ function VotePopupContent({ onClose: _onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
-        <span className="text-4xl">⚽</span>
-        <p className="text-sm font-medium text-foreground">
-          No fixtures scheduled{" "}
-          {selectedDay === "tomorrow" ? "for tomorrow" : "today"}
-        </p>
-        <p className="text-xs">
-          {selectedDay === "tomorrow"
-            ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC"
-            : "No matches available yet — check back later"}
-        </p>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <span className="text-4xl">⚽</span>
+          <p className="text-md font-medium text-foreground">
+            {selectedDay === "tomorrow"
+              ? "No fixtures scheduled for tomorrow"
+              : "No fixtures available today"}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            🕐 All fixture times are displayed in UTC
+          </p>
+          <p className="text-xs">
+            {selectedDay === "tomorrow"
+              ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC"
+              : "All matches have finished or none were scheduled — check back tomorrow"}
+          </p>
+        </div>
       </div>
     );
   }

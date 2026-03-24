@@ -254,13 +254,13 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
                   />
                 </div>
                 <div className="w-full text-center space-y-1.5">
-                  <p className="text-[11px] md:text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors duration-300">
+                  <p className="text-[11px] md:text-xs font-semibold text-foreground truncate group-hover:text-primary-font transition-colors duration-300">
                     {player.name}
                   </p>
                   <div className="flex items-center justify-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground">
                     {player.number !== null && (
                       <>
-                        <span className="font-medium bg-gradient-to-br from-muted/80 to-muted/60 px-2 py-0.5 rounded-md border border-border/30 group-hover:bg-primary/20 group-hover:text-primary group-hover:border-primary/30 transition-all duration-300">
+                        <span className="font-medium bg-gradient-to-br from-muted/80 to-muted/60 px-2 py-0.5 rounded-md border border-border/30 group-hover:bg-primary/20 group-hover:text-primary-font group-hover:border-primary/30 transition-all duration-300">
                           #{player.number}
                         </span>
                         <span className="text-muted-foreground/50">•</span>

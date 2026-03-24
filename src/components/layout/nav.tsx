@@ -22,7 +22,7 @@ export default function Nav() {
             href={item.href}
             className={`flex items-center gap-2  h-8 px-6 transition-all duration-300 cursor-pointer ${
               isActive
-                ? "bg-primary text-white/80"
+                ? "bg-primary text-white"
                 : "text-mygray hover:bg-neutral-800/30 hover:text-white/80"
             }`}
           >

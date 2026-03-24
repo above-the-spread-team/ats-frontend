@@ -46,7 +46,9 @@ export default function NoData({
     <div
       className={`flex flex-col items-center justify-center gap-3 ${className}`}
     >
-      <div className="text-4xl md:text-5xl text-primary">{renderIcon()}</div>
+      <div className="text-4xl md:text-5xl text-primary-title">
+        {renderIcon()}
+      </div>
       <h2
         className={`text-base md:text-lg font-semibold ${
           date ? "text-foreground" : "text-muted-foreground"

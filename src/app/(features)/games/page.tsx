@@ -200,7 +200,7 @@ function FixturesContent() {
               checked={hideScores}
               onCheckedChange={setHideScores}
               aria-label={hideScores ? "Show scores" : "Hide scores"}
-              className="data-[state=unchecked]:bg-primary/50"
+              className="data-[state=unchecked]:bg-primary-font/50 data-[state=checked]:bg-primary-font"
             />
           </div>
         </div>

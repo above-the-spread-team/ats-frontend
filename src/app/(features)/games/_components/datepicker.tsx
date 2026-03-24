@@ -132,7 +132,7 @@ export default function Datepicker({
   };
 
   const [currentMonthYear, setCurrentMonthYear] = useState(
-    getMonthYear(selectedDate)
+    getMonthYear(selectedDate),
   );
 
   // Add debouncing to prevent rapid updates
@@ -172,7 +172,7 @@ export default function Datepicker({
       const visibilityRatio =
         Math.min(
           cardRect.width,
-          carouselRect.width - Math.max(0, cardRect.left - carouselRect.left)
+          carouselRect.width - Math.max(0, cardRect.left - carouselRect.left),
         ) / cardRect.width;
 
       if (distance < minDistance && visibilityRatio > 0.5) {
@@ -183,7 +183,7 @@ export default function Datepicker({
 
     if (closestCard) {
       const dateIndex = parseInt(
-        (closestCard as HTMLElement).getAttribute("data-date-index") || "0"
+        (closestCard as HTMLElement).getAttribute("data-date-index") || "0",
       );
       const date = dates[dateIndex];
       if (date) {
@@ -237,7 +237,7 @@ export default function Datepicker({
           if (bestEntry) {
             const target = bestEntry.target as HTMLElement;
             const dateIndex = parseInt(
-              target.getAttribute("data-date-index") || "0"
+              target.getAttribute("data-date-index") || "0",
             );
             const date = dates[dateIndex];
             if (date) {
@@ -256,7 +256,7 @@ export default function Datepicker({
         {
           root: null, // Use viewport as root
           threshold: [0.6, 0.7, 0.8, 0.9, 1.0], // Higher thresholds for more stability
-        }
+        },
       );
 
       // Observe all date cards
@@ -311,7 +311,7 @@ export default function Datepicker({
         {selectedDate.toDateString() !== todayString ? (
           <Button
             onClick={selectToday}
-            className="   h-6 w-12 md:text-base font-bold rounded-xl"
+            className="bg-primary-font   h-6 w-12 md:text-base font-bold rounded-xl"
           >
             <p className="text-xs  scale-95">Today</p>
           </Button>

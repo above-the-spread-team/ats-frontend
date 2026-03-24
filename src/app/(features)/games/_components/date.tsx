@@ -18,7 +18,7 @@ export default function DateCard({
   return (
     <div
       className={`${
-        isSelected ? "bg-primary text-white hover:bg-primary" : ""
+        isSelected ? "bg-primary-font text-white hover:bg-primary-font" : ""
       } flex flex-col w-12 justify-center items-center mx-1 py-1 hover:bg-icon-hover rounded-xl transition-colors duration-150`}
     >
       <p className="text-xs font-medium">{isToday ? "Today" : day}</p>

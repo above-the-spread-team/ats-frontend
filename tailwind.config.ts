@@ -43,6 +43,7 @@ export default {
           active: "hsl(var(--primary-active))",
           font: "hsl(var(--primary-font))",
           title: "hsl(var(--primary-title))",
+          hero: "hsl(var(--primary-hero))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

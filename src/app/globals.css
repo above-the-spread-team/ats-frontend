@@ -5,11 +5,12 @@
 @layer base {
   :root {
     --mygray: 0 0% 80%;
-    --primary: 184 72% 27%;
-    --primary-title: 184 72% 27%;
-    --primary-font: 184 72% 27%;
+    --primary: 220 51% 18%;
+    --primary-title: 220 51% 18%;
+    --primary-font: 220 51% 18%;
+    --primary-hero: 220 100% 62%;
 
-    --primary-active: 196 75% 22%;
+    --primary-active: 216 60% 10%;
     --bar-green: 172 56% 38% / 0.6;
     --bar-red: 0 51% 61% / 0.6;
     --bar-yellow: 45 77% 59% / 0.6;
@@ -73,7 +74,7 @@
 
     --foreground: 0 0% 93.5%;
     --primary-title: 0 0% 80%;
-    --primary-font: 172 47% 76%;
+    --primary-font: 220 66% 64%;
 
     --vote-blue: 224 78% 58%;
     --vote-red: 0 89% 71% / 0.79;
@@ -287,7 +288,7 @@
 .custom-loader::after {
   content: "";
   grid-area: 1/1;
-  --c: radial-gradient(farthest-side, hsl(168 42% 64%) 92%, transparent);
+  --c: radial-gradient(farthest-side, hsl(220 72% 43%) 92%, transparent);
   background:
     var(--c) 50% 0,
     var(--c) 50% 100%,
@@ -300,7 +301,7 @@
 
 .custom-loader::before {
   margin: 4px;
-  --c: radial-gradient(farthest-side, hsl(var(--primary)) 92%, transparent);
+  --c: radial-gradient(farthest-side, hsl(220 73% 59%) 92%, transparent);
   background-size: 7px 7px;
   animation-timing-function: linear;
 }
