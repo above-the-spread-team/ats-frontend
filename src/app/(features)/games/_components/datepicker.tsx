@@ -325,7 +325,7 @@ export default function Datepicker({
           onClick={() => setShowCalendar(true)}
           className="p-1.5 hover:bg-icon-hover rounded-xl transition-colors"
         >
-          <IoCalendar className="w-5 h-5 text-primary" />
+          <IoCalendar className="w-5 h-5 text-primary-font" />
         </button>
       </div>
       <div className="relative w-full max-w-4xl">

@@ -15,10 +15,10 @@ export default function Calendar({
   onClose,
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(
-    selectedDate.getMonth()
+    selectedDate.getMonth(),
   );
   const [currentYear, setCurrentYear] = React.useState(
-    selectedDate.getFullYear()
+    selectedDate.getFullYear(),
   );
 
   const months = [
@@ -115,10 +115,10 @@ export default function Calendar({
               onClick={() => navigateMonth("prev")}
               className="p-2  rounded-full transition-colors text-foreground hover:bg-icon-hover"
             >
-              <ChevronLeft className="w-5 h-5 text-primary" />
+              <ChevronLeft className="w-5 h-5 text-primary-font" />
             </button>
 
-            <h2 className="text-md font-bold  w-40 text-center text-primary">
+            <h2 className="text-md font-bold  w-40 text-center text-primary-font">
               {months[currentMonth]} {currentYear}
             </h2>
 
@@ -126,7 +126,7 @@ export default function Calendar({
               onClick={() => navigateMonth("next")}
               className="p-2  rounded-full transition-colors text-foreground hover:bg-icon-hover"
             >
-              <ChevronRight className="w-5 h-5 text-primary" />
+              <ChevronRight className="w-5 h-5 text-primary-font" />
             </button>
           </div>
           {/* exit button */}
@@ -134,7 +134,7 @@ export default function Calendar({
             onClick={onClose}
             className="p-2  rounded-full transition-colors text-foreground hover:bg-icon-hover"
           >
-            <X className="w-5 h-5 text-primary" />
+            <X className="w-5 h-5 text-primary-font" />
           </button>
         </div>
 
@@ -159,10 +159,10 @@ export default function Calendar({
                 day === null
                   ? ""
                   : isSelected(day)
-                  ? "bg-primary text-white font-semibold shadow-md scale-105"
-                  : isToday(day)
-                  ? "bg-accent text-accent-foreground border-2 border-primary font-semibold"
-                  : "hover:bg-icon-hover"
+                    ? "bg-primary-font text-white font-semibold shadow-md scale-105"
+                    : isToday(day)
+                      ? "bg-accent text-accent-foreground border-2 border-primary font-semibold"
+                      : "hover:bg-icon-hover"
               }`}
               onClick={() => day && handleDateClick(day)}
             >
