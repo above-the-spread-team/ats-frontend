@@ -82,12 +82,7 @@ export default function SearchGroupPage() {
     }
 
     const group = groups.find((g) => g.id === groupId);
-    const followerStatus = group?.follower_status as
-      | "active"
-      | "pending"
-      | "banned"
-      | null
-      | undefined;
+    const followerStatus = group?.follower_status;
 
     // Banned users cannot follow or unfollow
     if (followerStatus === "banned") {
@@ -102,9 +97,8 @@ export default function SearchGroupPage() {
 
     try {
       if (isFollowing) {
-        const res = await unfollowGroupMutation.mutateAsync(groupId);
-        const newStatus =
-          (res as { follower_status?: string | null }).follower_status ?? null;
+        await unfollowGroupMutation.mutateAsync(groupId);
+        const newStatus = null;
         queryClient.setQueryData<GroupPublicListResponse>(queryKey, (old) => {
           if (!old?.items) return old;
           return {
@@ -116,9 +110,9 @@ export default function SearchGroupPage() {
         });
       } else {
         const res = await followGroupMutation.mutateAsync(groupId);
-        const newStatus =
-          (res as { follower_status?: string | null }).follower_status ??
-          "active";
+        const newStatus: "active" | "pending" = res.is_private
+          ? "pending"
+          : "active";
         queryClient.setQueryData<GroupPublicListResponse>(queryKey, (old) => {
           if (!old?.items) return old;
           return {

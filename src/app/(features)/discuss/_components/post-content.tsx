@@ -114,14 +114,7 @@ export default function PostContent({
       return null;
     }
     const group = allGroupsData.items.find((g) => g.id === groupId);
-    return (
-      (group?.follower_status as
-        | "active"
-        | "pending"
-        | "banned"
-        | null
-        | undefined) || null
-    );
+    return group?.follower_status ?? null;
   }, [isGroupMode, groupId, allGroupsData]);
 
   // Map posts to frontend format
@@ -330,7 +323,6 @@ export default function PostContent({
             onOpenChange={setIsCreatePostOpen}
             groupId={groupId || undefined}
           />
-
         </>
       )}
 
@@ -377,9 +369,9 @@ export default function PostContent({
       {isGroupMode && groupData && !isLoadingGroup && !canViewPosts && (
         <Card>
           <CardContent className="py-12 text-center">
-            <Lock className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Content is private</h3>
-            <p className="text-muted-foreground mb-4">
+            <Lock className="w-8 h-8 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-base font-semibold mb-2">Content is private</h3>
+            <p className="text-muted-foreground text-sm mb-4">
               {!currentUser
                 ? "Please log in to view this group's posts."
                 : followerStatus === "banned"
@@ -396,13 +388,13 @@ export default function PostContent({
       {error && !isLoading && canViewPosts && (
         <Card>
           <CardContent className="py-12 text-center">
-            <MessageCircle className="w-12 h-12 mx-auto text-destructive mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
+            <MessageCircle className="w-8 h-8 mx-auto text-destructive mb-4" />
+            <h3 className="text-base font-semibold mb-2">
               {error instanceof Error && error.message === "Content is private"
                 ? "Content is private"
                 : "Failed to load posts"}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground text-sm mb-4">
               {error instanceof Error
                 ? error.message === "Content is private"
                   ? "This group's posts are only visible to active members. Please follow the group to view content."
@@ -618,8 +610,8 @@ export default function PostContent({
         (!isGroupMode || canViewPosts) && (
           <Card>
             <CardContent className="py-12 text-center">
-              <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
+              <MessageCircle className="w-8 h-8 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-sm">
                 {isGroupMode
                   ? "No posts in this group yet. Be the first to share!"
                   : selectedTagIds.length > 0 || dateRange || sortBy
