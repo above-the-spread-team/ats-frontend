@@ -26,11 +26,6 @@ export interface GroupUpdate {
   tag_ids?: number[]; // Optional list of tag IDs to associate with the group (replaces existing tags)
 }
 
-export interface GroupFollowerResponse {
-  user_id: number;
-  joined_at: string;
-}
-
 export interface GroupFollowerItem {
   id: number; // User ID
   username: string; // Follower username
@@ -101,7 +96,7 @@ export interface GroupPublicListItem {
   created_at: string;
   member_count: number; // Number of members in the group (included in public list)
   post_count: number; // Number of posts in the group
-  follower_status: string | null; // Current user's follower status: 'active', 'pending', 'banned', or null
+  follower_status: "active" | "pending" | "banned" | null; // Current user's follower status
   // Note: description is NOT included in GroupPublicListItem (only in GroupResponse)
 }
 

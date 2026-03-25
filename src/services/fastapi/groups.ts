@@ -794,9 +794,7 @@ export function useFollowGroup() {
   return useMutation<GroupResponse, Error, number>({
     mutationFn: (groupId) => followGroup(groupId),
     onSuccess: (updatedGroup, groupId) => {
-      const status =
-        (updatedGroup as { follower_status?: string | null }).follower_status ??
-        "active";
+      const status = updatedGroup.is_private ? "pending" : "active";
       queryClient.setQueriesData<GroupPublicListResponse>(
         { queryKey: ["allGroups"] },
         (old) => {
@@ -825,10 +823,8 @@ export function useUnfollowGroup() {
 
   return useMutation<GroupResponse, Error, number>({
     mutationFn: (groupId) => unfollowGroup(groupId),
-    onSuccess: (updatedGroup, groupId) => {
-      const status =
-        (updatedGroup as { follower_status?: string | null }).follower_status ??
-        null;
+    onSuccess: (_, groupId) => {
+      const status = null;
       queryClient.setQueriesData<GroupPublicListResponse>(
         { queryKey: ["allGroups"] },
         (old) => {
