@@ -1,15 +1,15 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./_components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ScrollProvider, useScroll } from "./_contexts/scroll-context";
 import { useSidebar } from "./_contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, shouldShowDiscussRightSidebar } from "@/lib/utils";
 import { useMobile } from "@/hooks/use-mobile";
+import RightSidebar from "./_components/right-sidebar";
+import BackToDiscussion from "@/components/common/back-to-discussion";
 
 function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -18,7 +18,24 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   const { isOpen, closeSidebar } = useSidebar();
   const isMobile = useMobile();
   const pathname = usePathname();
-  const router = useRouter();
+
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
+
+  useLayoutEffect(() => {
+    const update = () =>
+      setShowRightSidebar(shouldShowDiscussRightSidebar(window.innerWidth));
+    update();
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(update, 100);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   const showBackToDiscuss =
     typeof pathname === "string" && pathname.startsWith("/discuss/");
@@ -96,24 +113,16 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
             </ScrollArea>
           </div>
         )}
+        {/* Main content */}
         <div className="flex-1 min-h-0 flex flex-col min-w-0">
           {/* Desktop view - with ScrollArea */}
           {!isMobile && (
             <div ref={scrollContainerRef} className="h-full">
               <ScrollArea className="h-full px-2">
-                <div className="pt-4 pb-10 px-2">
+                <div className="pt-4  px-2">
                   {showBackToDiscuss && (
-                    <div className="mb-3">
-                      <Button
-                        variant="ghost"
-                        onClick={() => router.push("/discuss")}
-                        className="flex items-center gap-2 mb-2"
-                      >
-                        <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Back to Discussion
-                        </span>
-                      </Button>
+                    <div className="">
+                      <BackToDiscussion className="mb-2" />
                     </div>
                   )}
                   {children}
@@ -125,21 +134,12 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           {isMobile && (
             <div ref={mobileContainerRef} className="h-full w-full">
               <ScrollArea className="h-full ">
-                <div className="pt-4 pb-40 px-2">
+                <div className="py-2 pb-40 px-2">
                   {showBackToDiscuss && (
-                    <div className="mb-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() => router.push("/discuss")}
-                        tabIndex={-1}
-                        className="flex items-center gap-2 mb-2 focus:outline-none focus:ring-0"
-                      >
-                        <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Back to Discussion
-                        </span>
-                      </Button>
-                    </div>
+                    <BackToDiscussion
+                      tabIndex={-1}
+                      className=" focus:outline-none focus:ring-0"
+                    />
                   )}
                   {children}
                 </div>
@@ -147,6 +147,8 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
         </div>
+        {/* Right sidebar: desktop only, hidden below 960px */}
+        {!isMobile && showRightSidebar && <RightSidebar />}
       </div>
 
       {/* Mobile Sidebar Overlay */}

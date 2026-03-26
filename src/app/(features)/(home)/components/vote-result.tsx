@@ -7,6 +7,7 @@ import { useFixtures } from "@/services/fastapi/vote";
 import { VoteDialog } from "./vote";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { Button } from "@/components/ui/button";
+import VoteColor from "@/components/common/vote-color";
 
 // ── constants ──────────────────────────────────────────────────────────────
 
@@ -16,12 +17,13 @@ const VOTE_META: { key: VoteChoice; color: string; textColor: string }[] = [
   { key: "away", color: "bg-vote-red", textColor: "text-foreground" },
 ];
 
-// date_offset: -1 = tomorrow, 0 = today, 1 = yesterday, … (backend supports -1 to 7)
+// backend contract: day=yesterday|today|tomorrow
+// we keep the UI `dateOffset` mapping:
+// -1 => tomorrow, 0 => today, 1 => yesterday
 const DATE_TABS = [
   { label: "Tomorrow", offset: -1 },
   { label: "Today", offset: 0 },
   { label: "Yesterday", offset: 1 },
-  { label: "2 days ago", offset: 2 },
 ];
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -273,6 +275,7 @@ export default function VoteResult() {
           </VoteDialog>
         </div>
       </div>
+      <VoteColor />
 
       {/* Content */}
       {isLoading ? (
@@ -297,7 +300,7 @@ export default function VoteResult() {
               ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC."
               : dateOffset === 0
                 ? "Check back later!"
-                : "No data available for this day."}
+                : "Yesterday's fixtures are available for review."}
           </p>
         </div>
       ) : (

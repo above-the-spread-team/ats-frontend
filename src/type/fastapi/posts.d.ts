@@ -40,6 +40,10 @@ export interface PostResponse extends PostBase {
   updated_at: string;
   group_name?: string | null; // Group name if post belongs to a group
   group_icon_url?: string | null; // Group icon URL if post belongs to a group
+  /** `"user"` | `"fixture"` | null for standalone posts */
+  group_type?: "user" | "fixture" | null;
+  /** API-Football fixture id — deep link to match; only when group_type === "fixture" */
+  fixture_api_id?: number | null;
   comment_count: number;
   reaction_count: number;
   likes: number;
@@ -54,6 +58,60 @@ export interface PostListResponse {
   page: number;
   page_size: number;
   total_pages: number;
+}
+
+/**
+ * Nested comment tree on discuss post cards (camelCase UI model).
+ * Align with mapCommentResponse in comment-item.tsx.
+ */
+export interface PostComment {
+  id: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  replyCount: number;
+  replies?: PostComment[];
+  userLiked?: boolean;
+  userDisliked?: boolean;
+  parentCommentId?: number | null;
+  repliedToUser?: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  } | null;
+}
+
+/**
+ * Client-side post model for discuss UI (camelCase, string ids).
+ * Built from PostResponse via mapPostResponse in post-card.tsx.
+ */
+export interface Post {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  commentCount: number;
+  viewCount: number;
+  comments: PostComment[];
+  userLiked?: boolean;
+  userDisliked?: boolean;
+  groupId?: number | null;
+  groupName?: string | null;
+  groupIconUrl?: string | null;
+  groupType?: "user" | "fixture" | null;
+  fixtureApiId?: number | null;
 }
 
 export interface PostError {

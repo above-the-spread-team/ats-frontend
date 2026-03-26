@@ -13,6 +13,8 @@ import { getVoterId } from "@/lib/voter-id";
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
+export type FixtureStatusFilter = "upcoming" | "in_play" | "finished";
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -58,16 +60,33 @@ export async function submitVote(
 }
 
 /**
- * GET /api/v1/votes/fixtures?date_offset={n}
+ * GET /api/v1/votes/fixtures?day=yesterday|today|tomorrow
  * Public. Returns fixtures + vote percentages for a given day.
- * date_offset: -1 = tomorrow, 0 = today, 1 = yesterday … max 7.
+ * UI translation:
+ * -1 => tomorrow
+ *  0 => today
+ *  1+ => yesterday (backend supports yesterday/today/tomorrow)
  * Sends X-Voter-Id so user_vote is populated for the anonymous voter.
  */
 export async function fetchFixtures(
   dateOffset: number = 0,
+  statusFilters?: FixtureStatusFilter[],
 ): Promise<FixtureVotesResult[]> {
+  // Backend contract now uses `day=yesterday|today|tomorrow`.
+  // We keep the existing `dateOffset` UI API and translate:
+  // -1 => tomorrow
+  //  0 => today
+  //  1+ => yesterday (backend only supports yesterday/today/tomorrow)
+  const day: "yesterday" | "today" | "tomorrow" =
+    dateOffset === -1 ? "tomorrow" : dateOffset === 0 ? "today" : "yesterday";
+
+  const params = new URLSearchParams({ day });
+  if (statusFilters && statusFilters.length > 0) {
+    for (const status of statusFilters) params.append("status", status);
+  }
+
   const res = await fetch(
-    `${BACKEND_URL}/api/v1/votes/fixtures?date_offset=${dateOffset}`,
+    `${BACKEND_URL}/api/v1/votes/fixtures?${params.toString()}`,
     { headers: voterIdHeader() },
   );
   return handleResponse<FixtureVotesResult[]>(res);
@@ -82,10 +101,9 @@ export async function fetchFixtures(
 export async function fetchAvailableFixtures(
   day: "today" | "tomorrow" = "today",
 ): Promise<FixtureSummary[]> {
-  const res = await fetch(
-    `${BACKEND_URL}/api/v1/votes/available?day=${day}`,
-    { headers: voterIdHeader() },
-  );
+  const res = await fetch(`${BACKEND_URL}/api/v1/votes/available?day=${day}`, {
+    headers: voterIdHeader(),
+  });
   return handleResponse<FixtureSummary[]>(res);
 }
 
@@ -109,13 +127,29 @@ export async function fetchFixtureVotes(
 
 /**
  * Fixtures with vote percentages for a given day.
- * dateOffset: -1 = tomorrow, 0 = today, 1 = yesterday, … max 7.
+ * dateOffset UI contract:
+ * -1 => tomorrow
+ *  0 => today
+ *  1+ => yesterday (backend supports yesterday/today/tomorrow)
  * Public — no login required. Refetches every 3 min for live status updates.
  */
-export function useFixtures(dateOffset: number = 0) {
+export function useFixtures(
+  dateOffset: number = 0,
+  statusFilters?: FixtureStatusFilter[],
+) {
+  const normalizedStatusFilters = statusFilters
+    ? [...statusFilters].sort().join(",")
+    : undefined;
+
   return useQuery<FixtureVotesResult[], VoteError>({
-    queryKey: ["votes", "fixtures", dateOffset],
-    queryFn: () => fetchFixtures(dateOffset),
+    queryKey: ["votes", "fixtures", dateOffset, normalizedStatusFilters],
+    queryFn: () =>
+      fetchFixtures(
+        dateOffset,
+        normalizedStatusFilters
+          ? (normalizedStatusFilters.split(",") as FixtureStatusFilter[])
+          : undefined,
+      ),
     staleTime: 3 * 60 * 1000,
     refetchInterval: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -154,6 +188,8 @@ export function useFixtureVotes(fixtureId: number | null) {
     staleTime: 3 * 60 * 1000,
     refetchInterval: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
+    // Fixture may not exist in the voting service (404) — avoid noisy retries.
+    retry: false,
   });
 }
 

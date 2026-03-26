@@ -3,6 +3,22 @@
  */
 import type { TagSummary } from "./tags";
 
+/** User-created vs auto-created fixture discussion group */
+export type GroupType = "user" | "fixture";
+
+/** Embedded on GroupResponse for `group_type === "fixture"` */
+export interface FixtureMeta {
+  api_fixture_id: number;
+  home_team: string;
+  away_team: string;
+  home_team_logo: string | null;
+  away_team_logo: string | null;
+  league_name: string | null;
+  league_logo: string | null;
+  match_date: string;
+  status: string;
+}
+
 export interface GroupBase {
   name: string;
   description: string | null;
@@ -42,7 +58,9 @@ export interface GroupFollowerListResponse {
 
 export interface GroupResponse extends GroupBase {
   id: number;
-  owner_id: number;
+  owner_id: number | null;
+  group_type: GroupType;
+  fixture_id: number | null;
   created_at: string;
   member_count: number; // Number of members in the group (backend returns this, not members array)
   total_likes: number; // Total likes on all group posts
@@ -51,11 +69,13 @@ export interface GroupResponse extends GroupBase {
   comment_count: number; // Number of comments on group posts
   pending_count: number | null; // Number of pending followers (owner/admin only, null for regular users)
   tags: TagSummary[]; // Associated tags
+  fixture_meta: FixtureMeta | null;
 }
 
 export interface GroupListItem extends GroupBase {
   id: number;
-  owner_id: number;
+  owner_id: number | null;
+  group_type: GroupType;
   created_at: string;
   is_owner: boolean; // Whether the current user is the owner of this group
   // Note: GroupListItem does NOT include member_count (only in GroupResponse)
@@ -92,7 +112,8 @@ export interface GroupPublicListItem {
   name: string;
   icon_url: string | null;
   is_private: boolean;
-  owner_id: number;
+  owner_id: number | null;
+  group_type: GroupType;
   created_at: string;
   member_count: number; // Number of members in the group (included in public list)
   post_count: number; // Number of posts in the group

@@ -28,45 +28,80 @@ import {
   useDislikePost,
   useDeletePost,
 } from "@/services/fastapi/posts";
+import { useFixtureVotes } from "@/services/fastapi/vote";
 import { useComments } from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import ConfirmDialog from "@/components/common/popup";
 import CreateComment from "./create-comment";
 import EditPost from "./edit-post";
-import CommentItem, {
-  type Comment,
-  mapCommentResponse,
-  formatTimeAgo,
-} from "./comment-item";
-import type { PostResponse } from "@/type/fastapi/posts";
-
-// Frontend Post type (simplified, without title)
-export interface Post {
-  id: string;
-  content: string;
-  author: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
-  createdAt: string;
-  likeCount: number;
-  dislikeCount: number;
-  commentCount: number;
-  viewCount: number;
-  comments: Comment[];
-  userLiked?: boolean;
-  userDisliked?: boolean;
-  groupId?: number | null;
-  groupName?: string | null;
-  groupIconUrl?: string | null;
-}
+import CommentItem, { mapCommentResponse, formatTimeAgo } from "./comment-item";
+import type { Post, PostResponse } from "@/type/fastapi/posts";
 
 interface PostCardProps {
   post: Post;
   initialExpanded?: boolean; // Auto-expand comments (useful for single post view)
   scrollableComments?: boolean; // Whether comments should be scrollable (default: true)
   hideGroupInfo?: boolean; // If true, hide group icon/name and only show user info (for group pages)
+}
+
+function FixtureDualTeamIcon({
+  fixtureApiId,
+  fallbackName,
+}: {
+  fixtureApiId: number | null | undefined;
+  fallbackName: string | null | undefined;
+}) {
+  const { data: fixtureData } = useFixtureVotes(fixtureApiId ?? null);
+
+  const splitFromName = (() => {
+    if (!fallbackName) return { home: "HM", away: "AW" };
+    const normalized = fallbackName.replace(/\s+vs\.?\s+/i, "|");
+    const [left, right] = normalized.split("|");
+    return {
+      home: left?.trim() || "HM",
+      away: right?.trim() || "AW",
+    };
+  })();
+
+  const homeName = fixtureData?.home_team ?? splitFromName.home;
+  const awayName = fixtureData?.away_team ?? splitFromName.away;
+  const homeLogo = fixtureData?.home_team_logo ?? null;
+  const awayLogo = fixtureData?.away_team_logo ?? null;
+
+  return (
+    <div className="relative flex items-center pr-1" aria-hidden>
+      <div className="relative z-[2] w-8 h-8 md:w-10 md:h-10 rounded-full     overflow-hidden">
+        {homeLogo ? (
+          <Image
+            src={homeLogo}
+            alt=""
+            fill
+            className="object-contain object-center"
+            sizes="40px"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-muted-foreground bg-muted">
+            {homeName.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <div className="relative z-[1] w-8 h-8 md:w-10 md:h-10 rounded-full  overflow-hidden -ml-3 md:-ml-4">
+        {awayLogo ? (
+          <Image
+            src={awayLogo}
+            alt=""
+            fill
+            className="object-contain object-center"
+            sizes="40px"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-muted-foreground bg-muted">
+            {awayName.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function PostCard({
@@ -171,10 +206,25 @@ export default function PostCard({
 
     setOptimistic(
       userLiked
-        ? { liked: false, disliked: false, likeCount: likeCount - 1, dislikeCount }
+        ? {
+            liked: false,
+            disliked: false,
+            likeCount: likeCount - 1,
+            dislikeCount,
+          }
         : userDisliked
-          ? { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount: dislikeCount - 1 }
-          : { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount },
+          ? {
+              liked: true,
+              disliked: false,
+              likeCount: likeCount + 1,
+              dislikeCount: dislikeCount - 1,
+            }
+          : {
+              liked: true,
+              disliked: false,
+              likeCount: likeCount + 1,
+              dislikeCount,
+            },
     );
 
     try {
@@ -199,10 +249,25 @@ export default function PostCard({
 
     setOptimistic(
       userDisliked
-        ? { liked: false, disliked: false, likeCount, dislikeCount: dislikeCount - 1 }
+        ? {
+            liked: false,
+            disliked: false,
+            likeCount,
+            dislikeCount: dislikeCount - 1,
+          }
         : userLiked
-          ? { liked: false, disliked: true, likeCount: likeCount - 1, dislikeCount: dislikeCount + 1 }
-          : { liked: false, disliked: true, likeCount, dislikeCount: dislikeCount + 1 },
+          ? {
+              liked: false,
+              disliked: true,
+              likeCount: likeCount - 1,
+              dislikeCount: dislikeCount + 1,
+            }
+          : {
+              liked: false,
+              disliked: true,
+              likeCount,
+              dislikeCount: dislikeCount + 1,
+            },
     );
 
     try {
@@ -240,7 +305,7 @@ export default function PostCard({
       className="hover:shadow-md transition-shadow  space-y-2 py-2 pl-3 pr-1"
     >
       <CardHeader className="p-0">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-1">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* If hideGroupInfo is true (group page), always show user icon and name */}
             {/* Otherwise, show group icon with user badge if post belongs to a group */}
@@ -267,7 +332,12 @@ export default function PostCard({
             ) : (
               <>
                 <div className="flex-shrink-0 relative  mr-1">
-                  {post.groupIconUrl ? (
+                  {post.groupType === "fixture" ? (
+                    <FixtureDualTeamIcon
+                      fixtureApiId={post.fixtureApiId}
+                      fallbackName={post.groupName}
+                    />
+                  ) : post.groupIconUrl ? (
                     <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
                       <Image
                         src={post.groupIconUrl}
@@ -303,7 +373,7 @@ export default function PostCard({
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <Link
                       href={`/profile/${post.author.id}`}
-                      className="truncate max-w-[150px] md:max-w-none text-foreground text-sm  hover:text-primary-font hover:underline focus:outline-none focus:underline"
+                      className="truncate max-w-[150px] md:max-w-none text-foreground text-sm  hover:text-primary-font hover:underline focus:outline-none line-clamp-1 focus:underline"
                     >
                       {post.author.name}
                     </Link>
@@ -565,5 +635,7 @@ export function mapPostResponse(post: PostResponse): Post {
     groupId: post.group_id ?? null,
     groupName: post.group_name ?? null,
     groupIconUrl: post.group_icon_url ?? null,
+    groupType: post.group_type ?? null,
+    fixtureApiId: post.fixture_api_id ?? null,
   };
 }

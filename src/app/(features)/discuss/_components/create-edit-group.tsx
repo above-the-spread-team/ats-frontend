@@ -311,13 +311,6 @@ export default function CreateEditGroup({
             The group doesn&apos;t exist or you don&apos;t have permission to
             view it.
           </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/discuss")}
-            className="mt-2"
-          >
-            Back to Discussion
-          </Button>
         </CardContent>
       </Card>
     );

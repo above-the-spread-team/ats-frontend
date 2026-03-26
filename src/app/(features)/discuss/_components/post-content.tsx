@@ -30,6 +30,7 @@ import PostCard, { mapPostResponse } from "./post-card";
 import TagFilter from "./tag-filter";
 import GroupFollower from "./group-follower";
 import PostHeader from "./post-header";
+import FixturePostHeader from "./fixture-post-header";
 import { useScroll } from "../_contexts/scroll-context";
 
 interface PostContentProps {
@@ -200,8 +201,8 @@ export default function PostContent({
       return false;
     }
 
-    // Owner can always view
-    if (currentUser.id === groupData.owner_id) {
+    // Owner can always view (user groups only; fixture groups have no owner)
+    if (groupData.owner_id != null && currentUser.id === groupData.owner_id) {
       return true;
     }
 
@@ -230,13 +231,18 @@ export default function PostContent({
 
     // For group posts, user must be:
     // 1. Authenticated
-    // 2. Owner of the group OR active follower
+    // 2. Fixture groups: any logged-in user (no membership)
+    // 3. User groups: owner OR active follower
     if (!currentUser || !groupData) {
       return false;
     }
 
+    if (groupData.group_type === "fixture") {
+      return true;
+    }
+
     // Owner can always post
-    if (currentUser.id === groupData.owner_id) {
+    if (groupData.owner_id != null && currentUser.id === groupData.owner_id) {
       return true;
     }
 
@@ -249,41 +255,84 @@ export default function PostContent({
       {/* Group Header - Show when viewing a group */}
       {isGroupMode && (
         <>
-          <PostHeader
-            groupData={groupData || null}
-            isLoading={isLoadingGroup}
-            followerStatus={followerStatus}
-            showFollowers={showFollowers}
-            showPending={showPending}
-            showBanned={showBanned}
-            onShowFollowersChange={(show) => {
-              setShowFollowers(show);
-              if (show) {
-                setShowPending(false);
-                setShowBanned(false);
-              }
-            }}
-            onShowPendingChange={(show) => {
-              setShowPending(show);
-              if (show) {
-                setShowFollowers(false);
-                setShowBanned(false);
-              }
-            }}
-            onShowBannedChange={(show) => {
-              setShowBanned(show);
-              if (show) {
-                setShowFollowers(false);
-                setShowPending(false);
-              }
-            }}
-            onPageChange={(page) => {
-              setPage(page);
-              setFollowersPage(1);
-              setPendingPage(1);
-              setBannedPage(1);
-            }}
-          />
+          {isLoadingGroup ? (
+            <PostHeader
+              groupData={null}
+              isLoading
+              followerStatus={followerStatus}
+              showFollowers={showFollowers}
+              showPending={showPending}
+              showBanned={showBanned}
+              onShowFollowersChange={(show) => {
+                setShowFollowers(show);
+                if (show) {
+                  setShowPending(false);
+                  setShowBanned(false);
+                }
+              }}
+              onShowPendingChange={(show) => {
+                setShowPending(show);
+                if (show) {
+                  setShowFollowers(false);
+                  setShowBanned(false);
+                }
+              }}
+              onShowBannedChange={(show) => {
+                setShowBanned(show);
+                if (show) {
+                  setShowFollowers(false);
+                  setShowPending(false);
+                }
+              }}
+              onPageChange={(page) => {
+                setPage(page);
+                setFollowersPage(1);
+                setPendingPage(1);
+                setBannedPage(1);
+              }}
+            />
+          ) : groupData?.group_type === "fixture" ? (
+            <FixturePostHeader
+              groupData={groupData}
+              isLoading={false}
+            />
+          ) : (
+            <PostHeader
+              groupData={groupData || null}
+              isLoading={false}
+              followerStatus={followerStatus}
+              showFollowers={showFollowers}
+              showPending={showPending}
+              showBanned={showBanned}
+              onShowFollowersChange={(show) => {
+                setShowFollowers(show);
+                if (show) {
+                  setShowPending(false);
+                  setShowBanned(false);
+                }
+              }}
+              onShowPendingChange={(show) => {
+                setShowPending(show);
+                if (show) {
+                  setShowFollowers(false);
+                  setShowBanned(false);
+                }
+              }}
+              onShowBannedChange={(show) => {
+                setShowBanned(show);
+                if (show) {
+                  setShowFollowers(false);
+                  setShowPending(false);
+                }
+              }}
+              onPageChange={(page) => {
+                setPage(page);
+                setFollowersPage(1);
+                setPendingPage(1);
+                setBannedPage(1);
+              }}
+            />
+          )}
         </>
       )}
 
@@ -438,7 +487,7 @@ export default function PostContent({
               viewType={
                 showPending ? "pending" : showBanned ? "banned" : "followers"
               }
-              groupOwnerId={groupData?.owner_id}
+              groupOwnerId={groupData?.owner_id ?? undefined}
               onViewChange={(view) => {
                 setShowFollowers(view === "followers");
                 setShowPending(view === "pending");
