@@ -40,16 +40,25 @@ function DualTeamLogos({
   awayLogo,
   homeName,
   awayName,
+  isActive = false,
 }: {
   homeLogo: string | null;
   awayLogo: string | null;
   homeName: string;
   awayName: string;
+  isActive?: boolean;
 }) {
   return (
     <div className="flex items-center flex-shrink-0" aria-hidden>
       <div className="relative flex items-center">
-        <div className="relative z-[2] w-8 h-8 rounded-full ring-2 ring-background overflow-hidden bg-muted shadow-sm">
+        <div
+          className={cn(
+            "relative z-[2] w-8 h-8 rounded-full ring-2 overflow-hidden shadow-sm transition-all duration-300",
+            isActive
+              ? "ring-white/30 ring-offset-2 ring-offset-primary"
+              : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30",
+          )}
+        >
           {homeLogo ? (
             <Image
               src={homeLogo}
@@ -64,7 +73,14 @@ function DualTeamLogos({
             </span>
           )}
         </div>
-        <div className="relative z-[1] w-8 h-8 rounded-full ring-2 ring-background overflow-hidden bg-muted shadow-sm -ml-3">
+        <div
+          className={cn(
+            "relative z-[1] w-8 h-8 rounded-full ring-2 overflow-hidden shadow-sm -ml-3 transition-all duration-300",
+            isActive
+              ? "ring-white/30 ring-offset-2 ring-offset-primary"
+              : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30",
+          )}
+        >
           {awayLogo ? (
             <Image
               src={awayLogo}
@@ -397,34 +413,57 @@ export default function Sidebar() {
                                   href={`/discuss/group-posts/${group.id}`}
                                   onClick={handleLinkClick}
                                   className={cn(
-                                    "flex items-center gap-2.5 px-2 py-1.5 transition-colors",
+                                    "flex items-center gap-2.5 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
                                     isActive
-                                      ? "bg-sky-500/15 border-l-[3px] border-l-sky-500"
-                                      : "border-l-[3px] border-l-transparent hover:bg-muted/50",
+                                      ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
+                                      : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
                                   )}
                                 >
+                                  {isActive && (
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                                  )}
                                   <DualTeamLogos
                                     homeLogo={homeLogo}
                                     awayLogo={awayLogo}
                                     homeName={homeName}
                                     awayName={awayName}
+                                    isActive={isActive}
                                   />
-                                  <div className="flex-1 min-w-0">
+                                  <div className="flex-1 min-w-0 relative z-10">
                                     <p
                                       className={cn(
                                         "text-[11px] font-semibold leading-snug line-clamp-2",
                                         isActive
-                                          ? "text-sky-900 dark:text-sky-100"
+                                          ? "text-white"
                                           : "text-foreground",
                                       )}
                                     >
-                                      <span className="text-foreground/90">
+                                      <span
+                                        className={cn(
+                                          isActive
+                                            ? "text-white"
+                                            : "text-foreground/90 group-hover:text-foreground",
+                                        )}
+                                      >
                                         {homeName}
                                       </span>
-                                      <span className="text-muted-foreground font-medium mx-0.5">
+                                      <span
+                                        className={cn(
+                                          "font-medium mx-0.5",
+                                          isActive
+                                            ? "text-white/80"
+                                            : "text-muted-foreground group-hover:text-foreground/70",
+                                        )}
+                                      >
                                         vs
                                       </span>
-                                      <span className="text-foreground/90">
+                                      <span
+                                        className={cn(
+                                          isActive
+                                            ? "text-white"
+                                            : "text-foreground/90 group-hover:text-foreground",
+                                        )}
+                                      >
                                         {awayName}
                                       </span>
                                     </p>

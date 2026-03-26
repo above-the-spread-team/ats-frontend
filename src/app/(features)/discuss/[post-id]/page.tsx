@@ -9,6 +9,7 @@ import { MessageCircle } from "lucide-react";
 import { usePost } from "@/services/fastapi/posts";
 import PostCard, { mapPostResponse } from "../_components/post-card";
 import type { Post } from "@/type/fastapi/posts";
+import BackToDiscussion from "@/components/common/back-to-discussion";
 
 export default function DiscussPostPage() {
   const params = useParams();
@@ -91,9 +92,10 @@ export default function DiscussPostPage() {
                 {error instanceof Error ? error.message : "An error occurred"}
               </p>
               <div className="flex gap-2 justify-center">
-                <Button onClick={handleBackToDiscussion} variant="outline">
-                  Back to Discussion
-                </Button>
+                <BackToDiscussion
+                  variant="outline"
+                  onClick={handleBackToDiscussion}
+                />
                 <Button onClick={() => refetch()} variant="outline">
                   Try again
                 </Button>
@@ -112,9 +114,10 @@ export default function DiscussPostPage() {
                 The post you&apos;re looking for doesn&apos;t exist or has been
                 deleted.
               </p>
-              <Button onClick={handleBackToDiscussion} variant="outline">
-                Back to Discussion
-              </Button>
+              <BackToDiscussion
+                variant="outline"
+                onClick={handleBackToDiscussion}
+              />
             </CardContent>
           </Card>
         )}

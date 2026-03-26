@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import BackToDiscussion from "@/components/common/back-to-discussion";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useGroup } from "@/services/fastapi/groups";
 import CreateEditGroup from "../../_components/create-edit-group";
@@ -58,16 +58,7 @@ export default function EditGroupPage() {
   if (isLoadingGroup || !validGroupId) {
     return (
       <>
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/discuss")}
-          className="mb-0 hover:bg-muted/50 transition-all duration-200 rounded-xl"
-        >
-          <ArrowLeft className="w-4 h-4 text-muted-foreground mr-2" />
-          <p className="text-sm text-muted-foreground font-medium">
-            Back to Discussion
-          </p>
-        </Button>
+        <BackToDiscussion className="" />
         <div className="flex items-center justify-center py-8">
           <p className="text-muted-foreground">Loading...</p>
         </div>
@@ -79,16 +70,7 @@ export default function EditGroupPage() {
   if (!groupData || (currentUser && currentUser.id !== groupData.owner_id)) {
     return (
       <>
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/discuss")}
-          className="mb-0 hover:bg-muted/50 transition-all duration-200 rounded-xl"
-        >
-          <ArrowLeft className="w-4 h-4 text-muted-foreground mr-2" />
-          <p className="text-sm text-muted-foreground font-medium">
-            Back to Discussion
-          </p>
-        </Button>
+        <BackToDiscussion className="" />
         <div className="text-center py-8">
           <p className="text-destructive font-medium">
             {!groupData
@@ -109,18 +91,6 @@ export default function EditGroupPage() {
 
   return (
     <>
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => router.push(`/discuss/group-posts/${validGroupId}`)}
-        className="mb-0 hover:bg-muted/50 transition-all duration-200 rounded-xl"
-      >
-        <ArrowLeft className="w-4 h-4 text-muted-foreground mr-2" />
-        <p className="text-sm text-muted-foreground font-medium">
-          Back to Group
-        </p>
-      </Button>
-
       {/* Edit Group Form */}
       <CreateEditGroup groupId={validGroupId} />
     </>

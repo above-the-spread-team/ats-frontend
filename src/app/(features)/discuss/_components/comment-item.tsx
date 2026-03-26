@@ -46,7 +46,7 @@ export function formatTimeAgo(dateString: string): string {
 
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
+      return `${diffInMinutes} min${diffInMinutes > 1 ? "s" : ""} ago`;
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
@@ -136,7 +136,12 @@ export default function CommentItem({
 
   useEffect(() => {
     setOptimistic(null);
-  }, [comment.userLiked, comment.userDisliked, comment.likeCount, comment.dislikeCount]);
+  }, [
+    comment.userLiked,
+    comment.userDisliked,
+    comment.likeCount,
+    comment.dislikeCount,
+  ]);
 
   const userLiked = optimistic?.liked ?? comment.userLiked ?? false;
   const userDisliked = optimistic?.disliked ?? comment.userDisliked ?? false;
@@ -158,7 +163,6 @@ export default function CommentItem({
     refetch: refetchReplies,
   } = useCommentReplies(isExpanded && commentId ? commentId : null, 1, 20);
 
-
   // Check if content exceeds 4 lines
   useEffect(() => {
     if (contentRef.current && !isContentExpanded) {
@@ -170,7 +174,7 @@ export default function CommentItem({
       }
 
       const lineHeight = parseFloat(
-        window.getComputedStyle(element).lineHeight
+        window.getComputedStyle(element).lineHeight,
       );
       const maxHeight = lineHeight * 4; // 4 lines
       const actualHeight = element.scrollHeight;
@@ -197,10 +201,25 @@ export default function CommentItem({
 
     setOptimistic(
       userLiked
-        ? { liked: false, disliked: false, likeCount: likeCount - 1, dislikeCount }
+        ? {
+            liked: false,
+            disliked: false,
+            likeCount: likeCount - 1,
+            dislikeCount,
+          }
         : userDisliked
-          ? { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount: dislikeCount - 1 }
-          : { liked: true, disliked: false, likeCount: likeCount + 1, dislikeCount },
+          ? {
+              liked: true,
+              disliked: false,
+              likeCount: likeCount + 1,
+              dislikeCount: dislikeCount - 1,
+            }
+          : {
+              liked: true,
+              disliked: false,
+              likeCount: likeCount + 1,
+              dislikeCount,
+            },
     );
 
     try {
@@ -225,10 +244,25 @@ export default function CommentItem({
 
     setOptimistic(
       userDisliked
-        ? { liked: false, disliked: false, likeCount, dislikeCount: dislikeCount - 1 }
+        ? {
+            liked: false,
+            disliked: false,
+            likeCount,
+            dislikeCount: dislikeCount - 1,
+          }
         : userLiked
-          ? { liked: false, disliked: true, likeCount: likeCount - 1, dislikeCount: dislikeCount + 1 }
-          : { liked: false, disliked: true, likeCount, dislikeCount: dislikeCount + 1 },
+          ? {
+              liked: false,
+              disliked: true,
+              likeCount: likeCount - 1,
+              dislikeCount: dislikeCount + 1,
+            }
+          : {
+              liked: false,
+              disliked: true,
+              likeCount,
+              dislikeCount: dislikeCount + 1,
+            },
     );
 
     try {

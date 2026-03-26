@@ -7,6 +7,7 @@ import { useFixtures } from "@/services/fastapi/vote";
 import { VoteDialog } from "./vote";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { Button } from "@/components/ui/button";
+import VoteColor from "@/components/common/vote-color";
 
 // ── constants ──────────────────────────────────────────────────────────────
 
@@ -274,6 +275,7 @@ export default function VoteResult() {
           </VoteDialog>
         </div>
       </div>
+      <VoteColor />
 
       {/* Content */}
       {isLoading ? (

@@ -101,10 +101,9 @@ export async function fetchFixtures(
 export async function fetchAvailableFixtures(
   day: "today" | "tomorrow" = "today",
 ): Promise<FixtureSummary[]> {
-  const res = await fetch(
-    `${BACKEND_URL}/api/v1/votes/available?day=${day}`,
-    { headers: voterIdHeader() },
-  );
+  const res = await fetch(`${BACKEND_URL}/api/v1/votes/available?day=${day}`, {
+    headers: voterIdHeader(),
+  });
   return handleResponse<FixtureSummary[]>(res);
 }
 
@@ -148,9 +147,7 @@ export function useFixtures(
       fetchFixtures(
         dateOffset,
         normalizedStatusFilters
-          ? (normalizedStatusFilters.split(
-              ",",
-            ) as FixtureStatusFilter[])
+          ? (normalizedStatusFilters.split(",") as FixtureStatusFilter[])
           : undefined,
       ),
     staleTime: 3 * 60 * 1000,
@@ -191,6 +188,8 @@ export function useFixtureVotes(fixtureId: number | null) {
     staleTime: 3 * 60 * 1000,
     refetchInterval: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
+    // Fixture may not exist in the voting service (404) — avoid noisy retries.
+    retry: false,
   });
 }
 
