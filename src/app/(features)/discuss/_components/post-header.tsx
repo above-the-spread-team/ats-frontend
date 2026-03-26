@@ -170,7 +170,12 @@ export default function PostHeader({
               )}
               {/* Group Status */}
               {/* Follow/Unfollow/Owner Button and Actions */}
-              {currentUser?.id === groupData.owner_id ? (
+              {groupData.group_type === "fixture" ? (
+                <p className="text-xs text-muted-foreground">
+                  Public match discussion — sign in to post. Follow is not
+                  available for match chats.
+                </p>
+              ) : currentUser?.id === groupData.owner_id ? (
                 <div className="flex -mr-2 items-center gap-2">
                   <StatusIcon
                     isOwner={true}

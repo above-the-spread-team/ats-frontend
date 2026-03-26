@@ -6,6 +6,37 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Discuss layout: right column is hidden below this width (px). */
+export const DISCUSS_RIGHT_SIDEBAR_MIN_WIDTH_PX = 960;
+
+/**
+ * Whether the discuss **right** sidebar should be hidden for this viewport width.
+ * Use on the client with `window.innerWidth` (e.g. resize listener).
+ */
+export function shouldHideDiscussRightSidebar(viewportWidth: number): boolean {
+  return viewportWidth < DISCUSS_RIGHT_SIDEBAR_MIN_WIDTH_PX;
+}
+
+/**
+ * Whether the discuss **right** sidebar should be shown for this viewport width.
+ */
+export function shouldShowDiscussRightSidebar(viewportWidth: number): boolean {
+  return !shouldHideDiscussRightSidebar(viewportWidth);
+}
+
+/** Discuss sidebar: show "Match chats" only when width is <= this value (px). */
+export const DISCUSS_MATCH_CHATS_MAX_WIDTH_PX = DISCUSS_RIGHT_SIDEBAR_MIN_WIDTH_PX;
+
+/**
+ * Whether the discuss **left sidebar** should show the "Match chats" section.
+ * Requirement: hide when screen width is over 960px.
+ */
+export function shouldShowDiscussMatchChatsInSidebar(
+  viewportWidth: number,
+): boolean {
+  return viewportWidth <= DISCUSS_RIGHT_SIDEBAR_MIN_WIDTH_PX;
+}
+
 /**
  * Returns the browser's IANA timezone string, falling back to "UTC".
  * Guards against Safari low-power mode where Intl can fail to resolve.

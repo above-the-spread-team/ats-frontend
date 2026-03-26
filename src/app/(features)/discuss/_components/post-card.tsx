@@ -34,33 +34,10 @@ import ConfirmDialog from "@/components/common/popup";
 import CreateComment from "./create-comment";
 import EditPost from "./edit-post";
 import CommentItem, {
-  type Comment,
   mapCommentResponse,
   formatTimeAgo,
 } from "./comment-item";
-import type { PostResponse } from "@/type/fastapi/posts";
-
-// Frontend Post type (simplified, without title)
-export interface Post {
-  id: string;
-  content: string;
-  author: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
-  createdAt: string;
-  likeCount: number;
-  dislikeCount: number;
-  commentCount: number;
-  viewCount: number;
-  comments: Comment[];
-  userLiked?: boolean;
-  userDisliked?: boolean;
-  groupId?: number | null;
-  groupName?: string | null;
-  groupIconUrl?: string | null;
-}
+import type { Post, PostResponse } from "@/type/fastapi/posts";
 
 interface PostCardProps {
   post: Post;
@@ -565,5 +542,7 @@ export function mapPostResponse(post: PostResponse): Post {
     groupId: post.group_id ?? null,
     groupName: post.group_name ?? null,
     groupIconUrl: post.group_icon_url ?? null,
+    groupType: post.group_type ?? null,
+    fixtureApiId: post.fixture_api_id ?? null,
   };
 }

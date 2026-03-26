@@ -28,30 +28,10 @@ import CreateComment from "./create-comment";
 import EditComment from "./edit-comment";
 import ConfirmDialog from "@/components/common/popup";
 import type { CommentResponse } from "@/type/fastapi/comments";
+import type { PostComment } from "@/type/fastapi/posts";
 
-// Comment interface (shared with page.tsx)
-export interface Comment {
-  id: string;
-  author: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
-  content: string;
-  createdAt: string;
-  likeCount: number;
-  dislikeCount: number;
-  replyCount: number;
-  replies?: Comment[];
-  userLiked?: boolean;
-  userDisliked?: boolean;
-  parentCommentId?: number | null;
-  repliedToUser?: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  } | null;
-}
+/** Discuss comment row — same shape as PostComment (re-export for existing imports). */
+export type Comment = PostComment;
 
 // formatTimeAgo helper function
 export function formatTimeAgo(dateString: string): string {

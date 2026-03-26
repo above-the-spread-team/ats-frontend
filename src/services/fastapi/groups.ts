@@ -263,6 +263,51 @@ export async function getGroup(groupId: number): Promise<GroupResponse> {
 }
 
 /**
+ * Get the discussion group for a fixture by API-Football fixture ID.
+ * Public — optional auth (same headers as getGroup).
+ * 404 if the fixture or its group does not exist.
+ */
+export async function getFixtureGroup(
+  apiFixtureId: number
+): Promise<GroupResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/groups/fixture/${apiFixtureId}`,
+    {
+      method: "GET",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: GroupError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to fetch fixture group" };
+
+    if (response.status === 404) {
+      throw new Error(error.detail || "Fixture group not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to fetch fixture group. Please try again."
+    );
+  }
+
+  const group: GroupResponse = await response.json();
+  return group;
+}
+
+/**
  * Delete a group
  * Requires authentication - only the group owner can delete
  */
@@ -926,6 +971,19 @@ export function useGroup(groupId: number | null) {
     queryFn: () => getGroup(groupId!),
     enabled: !!groupId,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Fetch discussion group by API-Football fixture id (not internal DB id).
+ */
+export function useFixtureGroup(apiFixtureId: number | null) {
+  return useQuery<GroupResponse>({
+    queryKey: ["fixtureGroup", apiFixtureId],
+    queryFn: () => getFixtureGroup(apiFixtureId!),
+    enabled: apiFixtureId != null && !Number.isNaN(apiFixtureId) && apiFixtureId > 0,
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
   });
 }

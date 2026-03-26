@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect } from "react";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -8,8 +8,9 @@ import Sidebar from "./_components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ScrollProvider, useScroll } from "./_contexts/scroll-context";
 import { useSidebar } from "./_contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, shouldShowDiscussRightSidebar } from "@/lib/utils";
 import { useMobile } from "@/hooks/use-mobile";
+import RightSidebar from "./_components/right-sidebar";
 
 function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -19,6 +20,24 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
   const isMobile = useMobile();
   const pathname = usePathname();
   const router = useRouter();
+
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
+
+  useLayoutEffect(() => {
+    const update = () =>
+      setShowRightSidebar(shouldShowDiscussRightSidebar(window.innerWidth));
+    update();
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(update, 100);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   const showBackToDiscuss =
     typeof pathname === "string" && pathname.startsWith("/discuss/");
@@ -96,6 +115,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
             </ScrollArea>
           </div>
         )}
+        {/* Main content */}
         <div className="flex-1 min-h-0 flex flex-col min-w-0">
           {/* Desktop view - with ScrollArea */}
           {!isMobile && (
@@ -147,6 +167,8 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
         </div>
+        {/* Right sidebar: desktop only, hidden below 960px */}
+        {!isMobile && showRightSidebar && <RightSidebar />}
       </div>
 
       {/* Mobile Sidebar Overlay */}

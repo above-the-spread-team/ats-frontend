@@ -200,8 +200,8 @@ export default function PostContent({
       return false;
     }
 
-    // Owner can always view
-    if (currentUser.id === groupData.owner_id) {
+    // Owner can always view (user groups only; fixture groups have no owner)
+    if (groupData.owner_id != null && currentUser.id === groupData.owner_id) {
       return true;
     }
 
@@ -230,13 +230,18 @@ export default function PostContent({
 
     // For group posts, user must be:
     // 1. Authenticated
-    // 2. Owner of the group OR active follower
+    // 2. Fixture groups: any logged-in user (no membership)
+    // 3. User groups: owner OR active follower
     if (!currentUser || !groupData) {
       return false;
     }
 
+    if (groupData.group_type === "fixture") {
+      return true;
+    }
+
     // Owner can always post
-    if (currentUser.id === groupData.owner_id) {
+    if (groupData.owner_id != null && currentUser.id === groupData.owner_id) {
       return true;
     }
 
@@ -438,7 +443,7 @@ export default function PostContent({
               viewType={
                 showPending ? "pending" : showBanned ? "banned" : "followers"
               }
-              groupOwnerId={groupData?.owner_id}
+              groupOwnerId={groupData?.owner_id ?? undefined}
               onViewChange={(view) => {
                 setShowFollowers(view === "followers");
                 setShowPending(view === "pending");

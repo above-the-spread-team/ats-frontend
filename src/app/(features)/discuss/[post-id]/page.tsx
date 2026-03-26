@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle } from "lucide-react";
 import { usePost } from "@/services/fastapi/posts";
-import PostCard, { mapPostResponse, type Post } from "../_components/post-card";
+import PostCard, { mapPostResponse } from "../_components/post-card";
+import type { Post } from "@/type/fastapi/posts";
 
 export default function DiscussPostPage() {
   const params = useParams();
