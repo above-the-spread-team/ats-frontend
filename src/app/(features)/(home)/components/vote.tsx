@@ -255,7 +255,7 @@ const DAY_TABS: { label: string; day: "today" | "tomorrow" }[] = [
   { label: "Tomorrow", day: "tomorrow" },
 ];
 
-function VotePopupContent({ onClose: _onClose }: { onClose: () => void }) {
+function VotePopupContent() {
   const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
   const { data, isLoading, error } = useAvailableFixtures(selectedDay);
 
@@ -476,7 +476,7 @@ export function VoteDialog({ children }: { children: React.ReactNode }) {
         </DialogHeader>
 
         <div className="overflow-y-auto flex-1 min-h-0">
-          <VotePopupContent onClose={() => setOpen(false)} />
+          <VotePopupContent />
         </div>
       </DialogContent>
     </Dialog>

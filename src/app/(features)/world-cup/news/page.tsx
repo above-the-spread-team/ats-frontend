@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/pagination";
 import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
+import { getNewsPreview } from "@/lib/news-content";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../../news/components/preview-image";
 import { Tag } from "@/components/common/tag";
@@ -108,87 +109,86 @@ export default function WorldCupNews() {
         </p>
       )}
 
-      {/* News Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+      {/* News Articles */}
+      <div className="space-y-3 md:space-y-4">
         {publishedNews.map((article) => (
           <Link key={article.id} href={`/news/${article.id}`}>
-            <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer h-full group">
-              {/* Thumbnail */}
-              <div className="relative h-28 md:h-40 bg-muted">
-                {isMatchPreview(article) ? (
-                  <PreviewImage
-                    homeTeamLogo={article.home_team_logo}
-                    awayTeamLogo={article.away_team_logo}
-                    variant="grid"
-                    tagName={getFirstTag(article)}
-                  />
-                ) : article.image_url ? (
-                  <Image
-                    src={getOptimizedNewsImage(article.image_url, 500)}
-                    alt={article.title}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
-                    alt="Soccer stadium"
-                    className="w-full h-full object-cover"
-                  />
-                )}
+            <article className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer group">
+              <div className="flex flex-col md:flex-row">
+                <div className="relative h-44 md:h-auto md:w-72 lg:w-80 bg-muted md:flex-shrink-0">
+                  {isMatchPreview(article) ? (
+                    <PreviewImage
+                      homeTeamLogo={article.home_team_logo}
+                      awayTeamLogo={article.away_team_logo}
+                      variant="grid"
+                      tagName={getFirstTag(article)}
+                    />
+                  ) : article.image_url ? (
+                    <Image
+                      src={getOptimizedNewsImage(article.image_url, 700)}
+                      alt={article.title}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
+                      alt="Soccer stadium"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
 
-                <div className="absolute top-2 left-2">
-                  <Tag name={getFirstTag(article)} variant="medium" />
+                  <div className="absolute top-2 left-2">
+                    <Tag name={getFirstTag(article)} variant="medium" />
+                  </div>
+
+                  {isMatchPreview(article) && (
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        Preview
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {isMatchPreview(article) && (
-                  <div className="absolute top-2 right-2">
-                    <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      Preview
+                <div className="p-3 md:p-4 flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                    {article.author && (
+                      <>
+                        <span className="font-semibold truncate max-w-[120px] md:max-w-none">
+                          {article.author.username}
+                        </span>
+                        <span className="flex-shrink-0">•</span>
+                      </>
+                    )}
+                    <span className="flex-shrink-0">
+                      {formatDate(article.created_at)}
                     </span>
                   </div>
-                )}
-              </div>
 
-              {/* Body */}
-              <div className="p-2.5 md:p-4">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
-                  {article.author && (
-                    <>
-                      <span className="font-semibold truncate max-w-[60px] md:max-w-none">
-                        {article.author.username}
-                      </span>
-                      <span className="flex-shrink-0">•</span>
-                    </>
-                  )}
-                  <span className="flex-shrink-0">
-                    {formatDate(article.created_at)}
-                  </span>
-                </div>
+                  <h3 className="font-bold text-sm md:text-lg mb-2 line-clamp-2 group-hover:text-primary-font transition-colors duration-150">
+                    {article.title}
+                  </h3>
 
-                <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2 group-hover:text-primary-font transition-colors duration-150">
-                  {article.title}
-                </h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-3 md:line-clamp-4">
+                    {getNewsPreview(article.content)}
+                  </p>
 
-                <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">
-                  {article.content.substring(0, 150)}
-                  {article.content.length > 150 ? "..." : ""}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate mr-2 max-w-[140px]">
-                    {article.comment_count > 0 && (
-                      <span>{article.comment_count} comments</span>
-                    )}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="text-muted-foreground">
+                      {article.comment_count > 0
+                        ? `${article.comment_count} comments`
+                        : "No comments yet"}
+                    </div>
+                    <span className="text-primary-font font-semibold hover:underline">
+                      Read article →
+                    </span>
                   </div>
-                  <span className="text-primary-font font-semibold text-xs hover:underline flex-shrink-0">
-                    Read →
-                  </span>
                 </div>
               </div>
-            </div>
+            </article>
           </Link>
         ))}
       </div>

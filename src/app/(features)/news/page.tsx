@@ -135,16 +135,16 @@ export default function News() {
           onTagIdsChange={setSelectedTagIds}
         />
 
-        {/* News Grid */}
+        {/* News Articles */}
         {publishedNews.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+            <div className="space-y-3 md:space-y-4">
               {publishedNews.map((article) => (
                 <Link key={article.id} href={`/news/${article.id}`}>
-                  <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
-                    <div className="relative h-28 md:h-40 bg-muted">
+                  <article className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer group">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="relative h-44 md:h-auto md:w-72 lg:w-80 bg-muted md:flex-shrink-0">
                       {isMatchPreview(article) ? (
-                        // Match Preview: Use PreviewImage component with team logos
                         <PreviewImage
                           homeTeamLogo={article.home_team_logo}
                           awayTeamLogo={article.away_team_logo}
@@ -152,22 +152,21 @@ export default function News() {
                           tagName={getFirstTag(article)}
                         />
                       ) : article.image_url ? (
-                        // General News: Backend uploads images to Cloudinary
-                        // Frontend adds transformations (width, format, quality) to Cloudinary URLs
                         <Image
-                          src={getOptimizedNewsImage(article.image_url, 500)} // 500px for grid cards
+                          src={getOptimizedNewsImage(article.image_url, 700)}
                           alt={article.title}
                           fill
                           className="object-cover"
-                          unoptimized // Cloudinary handles optimization, so Next.js Image optimization is disabled
+                          unoptimized
                         />
                       ) : (
-                        // Fallback: No image available
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
                           alt="Soccer stadium"
-                          className="w-full h-full object-cover "
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 320px"
+                          unoptimized
                         />
                       )}
                       <div className="absolute top-2 left-2">
@@ -180,41 +179,43 @@ export default function News() {
                           </span>
                         </div>
                       )}
-                    </div>
-                    <div className="p-2.5 md:p-4">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
-                        {article.author && (
-                          <>
-                            <span className="font-semibold truncate max-w-[60px] md:max-w-none">
-                              {article.author.username}
-                            </span>
-                            <span className="flex-shrink-0">•</span>
-                          </>
-                        )}
-                        <span className="flex-shrink-0">
-                          {formatDate(article.created_at)}
-                        </span>
                       </div>
-                      <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2">
-                        {article.title}
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3 line-clamp-2">
-                        {getNewsPreview(article.content)}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate mr-2 max-w-[140px]">
-                          {article.comment_count > 0 && (
+                      <div className="p-3 md:p-4 flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                          {article.author && (
                             <>
-                              <span>{article.comment_count} comments</span>
+                              <span className="font-semibold truncate max-w-[120px] md:max-w-none">
+                                {article.author.username}
+                              </span>
+                              <span className="flex-shrink-0">•</span>
                             </>
                           )}
+                          <span className="flex-shrink-0">
+                            {formatDate(article.created_at)}
+                          </span>
                         </div>
-                        <span className="text-primary font-semibold text-xs hover:underline flex-shrink-0">
-                          Read →
-                        </span>
+
+                        <h3 className="font-bold text-sm md:text-lg mb-2 line-clamp-2 group-hover:text-primary-font transition-colors">
+                          {article.title}
+                        </h3>
+
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-3 md:line-clamp-4">
+                          {getNewsPreview(article.content)}
+                        </p>
+
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="text-muted-foreground">
+                            {article.comment_count > 0
+                              ? `${article.comment_count} comments`
+                              : "No comments yet"}
+                          </div>
+                          <span className="text-primary font-semibold hover:underline">
+                            Read article →
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 </Link>
               ))}
             </div>

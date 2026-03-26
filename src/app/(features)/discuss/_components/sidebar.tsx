@@ -18,7 +18,6 @@ import {
   Search,
   Crown,
   UserPlus,
-  Calendar,
 } from "lucide-react";
 import type { FixtureVotesResult } from "@/type/fastapi/vote";
 import type { GroupResponse } from "@/type/fastapi/groups";
@@ -391,12 +390,6 @@ export default function Sidebar() {
                             {rows.map(({ fx, group }) => {
                               const isActive =
                                 pathname === `/discuss/group-posts/${group.id}`;
-                              const kickoff = new Date(
-                                fx.match_date,
-                              ).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              });
                               const homeName =
                                 group.fixture_meta?.home_team ?? fx.home_team;
                               const awayName =
