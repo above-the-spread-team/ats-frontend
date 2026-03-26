@@ -138,49 +138,49 @@ export default function News() {
         {/* News Articles */}
         {publishedNews.length > 0 && (
           <>
-            <div className="space-y-3 md:space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {publishedNews.map((article) => (
                 <Link key={article.id} href={`/news/${article.id}`}>
-                  <article className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer group">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="relative h-44 md:h-auto md:w-72 lg:w-80 bg-muted md:flex-shrink-0">
-                      {isMatchPreview(article) ? (
-                        <PreviewImage
-                          homeTeamLogo={article.home_team_logo}
-                          awayTeamLogo={article.away_team_logo}
-                          variant="grid"
-                          tagName={getFirstTag(article)}
-                        />
-                      ) : article.image_url ? (
-                        <Image
-                          src={getOptimizedNewsImage(article.image_url, 700)}
-                          alt={article.title}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <Image
-                          src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
-                          alt="Soccer stadium"
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 320px"
-                          unoptimized
-                        />
-                      )}
-                      <div className="absolute top-2 left-2">
-                        <Tag name={getFirstTag(article)} variant="medium" />
-                      </div>
-                      {isMatchPreview(article) && (
-                        <div className="absolute top-2 right-2">
-                          <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                            Preview
-                          </span>
+                  <article className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer group">
+                    <div className="flex h-full flex-col">
+                      <div className="relative h-44 bg-muted">
+                        {isMatchPreview(article) ? (
+                          <PreviewImage
+                            homeTeamLogo={article.home_team_logo}
+                            awayTeamLogo={article.away_team_logo}
+                            variant="grid"
+                            tagName={getFirstTag(article)}
+                          />
+                        ) : article.image_url ? (
+                          <Image
+                            src={getOptimizedNewsImage(article.image_url, 700)}
+                            alt={article.title}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <Image
+                            src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
+                            alt="Soccer stadium"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 320px"
+                            unoptimized
+                          />
+                        )}
+                        <div className="absolute top-2 left-2">
+                          <Tag name={getFirstTag(article)} variant="medium" />
                         </div>
-                      )}
+                        {isMatchPreview(article) && (
+                          <div className="absolute top-2 right-2">
+                            <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              Preview
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="p-3 md:p-4 flex-1 min-w-0">
+                      <div className="p-3 md:p-4 flex-1 min-w-0 flex flex-col">
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
                           {article.author && (
                             <>
@@ -195,22 +195,22 @@ export default function News() {
                           </span>
                         </div>
 
-                        <h3 className="font-bold text-sm md:text-lg mb-2 line-clamp-2 group-hover:text-primary-font transition-colors">
+                        <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2 group-hover:text-primary-font transition-colors">
                           {article.title}
                         </h3>
 
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-3 md:line-clamp-4">
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
                           {getNewsPreview(article.content)}
                         </p>
 
-                        <div className="flex items-center justify-between text-xs">
+                        <div className="mt-auto flex items-center justify-between text-xs">
                           <div className="text-muted-foreground">
                             {article.comment_count > 0
                               ? `${article.comment_count} comments`
                               : "No comments yet"}
                           </div>
                           <span className="text-primary font-semibold hover:underline">
-                            Read article →
+                            Read →
                           </span>
                         </div>
                       </div>
