@@ -9,6 +9,7 @@ import type {
   VoteError,
 } from "@/type/fastapi/vote";
 import { getVoterId } from "@/lib/voter-id";
+import { getAuthHeader } from "./token-storage";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -19,13 +20,22 @@ export type FixtureStatusFilter = "upcoming" | "in_play" | "finished";
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Returns { "X-Voter-Id": "<uuid>" } when running in the browser.
- * Returns {} on the server (SSR) — all voting endpoints are client-side only.
- */
-function voterIdHeader(): HeadersInit {
+/** Auth cookie (credentials) + optional Bearer; X-Voter-Id when anonymous (ignored when logged in). */
+function voteHeaders(includeContentTypeJson = false): HeadersInit {
+  const headers: Record<string, string> = {};
+  if (includeContentTypeJson) headers["Content-Type"] = "application/json";
   const id = getVoterId();
-  return id ? { "X-Voter-Id": id } : {};
+  if (id) headers["X-Voter-Id"] = id;
+  const auth = getAuthHeader();
+  if (auth) headers["Authorization"] = auth;
+  return headers;
+}
+
+function voteFetchInit(includeContentTypeJson = false): RequestInit {
+  return {
+    headers: voteHeaders(includeContentTypeJson),
+    credentials: "include",
+  };
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
@@ -45,15 +55,15 @@ async function handleResponse<T>(res: Response): Promise<T> {
 /**
  * POST /api/v1/votes
  * Submit a one-time vote. Votes are final — cannot be changed after submission.
- * No login required — identity via X-Voter-Id UUID.
- * Throws with detail "Already voted" (409) if this voter already voted on the fixture.
+ * Logged-in users: auth cookie or Bearer (X-Voter-Id ignored). Anonymous: X-Voter-Id required.
+ * 400 if already voted, voting closed, or missing/invalid X-Voter-Id when anonymous.
  */
 export async function submitVote(
   payload: FixtureVoteCreate,
 ): Promise<FixtureVoteResponse> {
   const res = await fetch(`${BACKEND_URL}/api/v1/votes`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...voterIdHeader() },
+    ...voteFetchInit(true),
     body: JSON.stringify(payload),
   });
   return handleResponse<FixtureVoteResponse>(res);
@@ -66,7 +76,7 @@ export async function submitVote(
  * -1 => tomorrow
  *  0 => today
  *  1+ => yesterday (backend supports yesterday/today/tomorrow)
- * Sends X-Voter-Id so user_vote is populated for the anonymous voter.
+ * Sends credentials + Bearer when present; X-Voter-Id for anonymous so user_vote is filled.
  */
 export async function fetchFixtures(
   dateOffset: number = 0,
@@ -87,22 +97,21 @@ export async function fetchFixtures(
 
   const res = await fetch(
     `${BACKEND_URL}/api/v1/votes/fixtures?${params.toString()}`,
-    { headers: voterIdHeader() },
+    voteFetchInit(),
   );
   return handleResponse<FixtureVotesResult[]>(res);
 }
 
 /**
  * GET /api/v1/votes/available?day={today|tomorrow}
- * Public. Returns ALL NS fixtures for the target day.
- * Sending X-Voter-Id populates user_vote on already-voted fixtures so the
- * popup can show the voter's current pick and let them change it.
+ * Public. Returns NS fixtures for the target day.
+ * Identity headers populate user_vote so the UI can disable voting for fixtures already voted (votes are final).
  */
 export async function fetchAvailableFixtures(
   day: "today" | "tomorrow" = "today",
 ): Promise<FixtureSummary[]> {
   const res = await fetch(`${BACKEND_URL}/api/v1/votes/available?day=${day}`, {
-    headers: voterIdHeader(),
+    ...voteFetchInit(),
   });
   return handleResponse<FixtureSummary[]>(res);
 }
@@ -110,13 +119,12 @@ export async function fetchAvailableFixtures(
 /**
  * GET /api/v1/votes/:fixture_id
  * Public. Detailed voting results for a single fixture.
- * Sends X-Voter-Id so user_vote is populated for the anonymous voter.
  */
 export async function fetchFixtureVotes(
   fixtureId: number,
 ): Promise<FixtureVotesResult> {
   const res = await fetch(`${BACKEND_URL}/api/v1/votes/${fixtureId}`, {
-    headers: voterIdHeader(),
+    ...voteFetchInit(),
   });
   return handleResponse<FixtureVotesResult>(res);
 }
@@ -131,7 +139,7 @@ export async function fetchFixtureVotes(
  * -1 => tomorrow
  *  0 => today
  *  1+ => yesterday (backend supports yesterday/today/tomorrow)
- * Public — no login required. Refetches every 3 min for live status updates.
+ * Refetches every 3 min for live status updates.
  */
 export function useFixtures(
   dateOffset: number = 0,
@@ -163,9 +171,7 @@ export function useTodayVotes() {
 
 /**
  * All NS fixtures for a given day (today or tomorrow).
- * Always sends X-Voter-Id so user_vote is populated on each fixture.
- * Already-voted fixtures are included — the popup uses user_vote to show
- * the voter's current pick and let them change it.
+ * Uses the same identity headers as other vote endpoints so user_vote is set per fixture.
  */
 export function useAvailableFixtures(day: "today" | "tomorrow" = "today") {
   return useQuery<FixtureSummary[], VoteError>({
@@ -178,7 +184,7 @@ export function useAvailableFixtures(day: "today" | "tomorrow" = "today") {
 }
 
 /**
- * Voting results for a single fixture. Public — no login required.
+ * Voting results for a single fixture.
  */
 export function useFixtureVotes(fixtureId: number | null) {
   return useQuery<FixtureVotesResult, VoteError>({
@@ -194,8 +200,8 @@ export function useFixtureVotes(fixtureId: number | null) {
 }
 
 /**
- * Submit or update a vote.
- * Invalidates all fixtures queries and available fixtures on success.
+ * Submit a one-time vote (no updates — backend rejects duplicate POST for same identity).
+ * Invalidates fixtures, available, and single-fixture queries on success.
  */
 export function useSubmitVote() {
   const queryClient = useQueryClient();
@@ -238,6 +244,23 @@ export async function syncFixtures(
   secretKey: string,
 ): Promise<SyncFixturesResponse> {
   const res = await fetch(`${BACKEND_URL}/api/v1/votes/sync`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Fixture-Secret": secretKey,
+    },
+  });
+  return handleResponse<SyncFixturesResponse>(res);
+}
+
+/**
+ * POST /api/v1/votes/sync/tomorrow
+ * Same as syncFixtures but for tomorrow's fixtures (dev/admin).
+ */
+export async function syncTomorrowFixtures(
+  secretKey: string,
+): Promise<SyncFixturesResponse> {
+  const res = await fetch(`${BACKEND_URL}/api/v1/votes/sync/tomorrow`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

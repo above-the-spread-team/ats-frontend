@@ -76,6 +76,8 @@ export interface GroupListItem extends GroupBase {
   id: number;
   owner_id: number | null;
   group_type: GroupType;
+  /** Internal fixture row id when `group_type === "fixture"`; null for user groups */
+  fixture_id: number | null;
   created_at: string;
   is_owner: boolean; // Whether the current user is the owner of this group
   // Note: GroupListItem does NOT include member_count (only in GroupResponse)
