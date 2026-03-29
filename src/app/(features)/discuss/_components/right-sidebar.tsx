@@ -163,12 +163,8 @@ export default function RightSidebar() {
       }));
   }, [data]);
 
-  const displayedFixtures = useMemo(() => {
-    return leagueSections.slice(0, 3).flatMap((s) => s.fixtures.slice(0, 4));
-  }, [leagueSections]);
-
   return (
-    <div className="w-60 md:w-72 xl:w-80 2xl:w-96 h-full flex-shrink-0 flex flex-col p-2 gap-3 bg-card/60 border-l border-border/60">
+    <div className="w-60 md:w-72 xl:w-80 2xl:w-96 h-full flex-shrink-0 flex flex-col px-2 pt-2 gap-3 bg-card/60 border-l border-border/60">
       <div className="px-1.5 pt-2 pb-1">
         <h3 className="text-base font-bold text-foreground">Match Threads</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -240,8 +236,7 @@ export default function RightSidebar() {
                           fixture={fixture}
                           href={href}
                           isActive={
-                            pathname === href ||
-                            pathname.startsWith(href + "/")
+                            pathname === href || pathname.startsWith(href + "/")
                           }
                         />
                       );
