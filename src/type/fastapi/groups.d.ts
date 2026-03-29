@@ -42,14 +42,14 @@ export interface GroupUpdate {
   tag_ids?: number[]; // Optional list of tag IDs to associate with the group (replaces existing tags)
 }
 
-export interface GroupFollowerItem {
+export interface GroupMemberItem {
   id: number; // User ID
-  username: string; // Follower username
-  avatar_url: string | null; // Follower avatar URL
+  username: string; // Member username
+  avatar_url: string | null; // Member avatar URL
 }
 
-export interface GroupFollowerListResponse {
-  items: GroupFollowerItem[];
+export interface GroupMemberListResponse {
+  items: GroupMemberItem[];
   total: number;
   page: number;
   page_size: number;
@@ -76,13 +76,23 @@ export interface GroupListItem extends GroupBase {
   id: number;
   owner_id: number | null;
   group_type: GroupType;
+  /** Internal fixture row id when `group_type === "fixture"`; null for user groups */
+  fixture_id: number | null;
   created_at: string;
   is_owner: boolean; // Whether the current user is the owner of this group
   // Note: GroupListItem does NOT include member_count (only in GroupResponse)
 }
 
-/** User profile groups list: GroupListItem with member_count and post_count. */
-export interface GroupListItemWithCounts extends GroupListItem {
+/** User profile groups list: no description or fixture_id (backend GroupListItemWithCounts does not extend GroupListItem). */
+export interface GroupListItemWithCounts {
+  id: number;
+  name: string;
+  icon_url: string | null;
+  is_private: boolean;
+  owner_id: number | null;
+  group_type: GroupType;
+  created_at: string;
+  is_owner: boolean;
   member_count: number;
   post_count: number;
 }
@@ -95,7 +105,7 @@ export interface GroupListWithCountsResponse {
   total_pages: number;
 }
 
-export interface GroupFollowerAddRequest {
+export interface GroupMemberAddRequest {
   user_id: number;
 }
 

@@ -9,8 +9,8 @@ import type {
   GroupResponse,
   GroupListResponse,
   GroupPublicListResponse,
-  GroupFollowerAddRequest,
-  GroupFollowerListResponse,
+  GroupMemberAddRequest,
+  GroupMemberListResponse,
   GroupError,
 } from "@/type/fastapi/groups";
 import type { PostListResponse } from "@/type/fastapi/posts";
@@ -475,7 +475,7 @@ export async function unfollowGroup(groupId: number): Promise<GroupResponse> {
  */
 export async function addGroupFollower(
   groupId: number,
-  data: GroupFollowerAddRequest
+  data: GroupMemberAddRequest
 ): Promise<GroupResponse> {
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
@@ -600,7 +600,7 @@ export async function listGroupFollowers(
   groupId: number,
   page: number = 1,
   pageSize: number = 20
-): Promise<GroupFollowerListResponse> {
+): Promise<GroupMemberListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
@@ -647,7 +647,7 @@ export async function listGroupFollowers(
     );
   }
 
-  const result: GroupFollowerListResponse = await response.json();
+  const result: GroupMemberListResponse = await response.json();
   return result;
 }
 
@@ -899,7 +899,7 @@ export function useAddGroupFollower() {
   return useMutation<
     GroupResponse,
     Error,
-    { groupId: number; data: GroupFollowerAddRequest }
+    { groupId: number; data: GroupMemberAddRequest }
   >({
     mutationFn: ({ groupId, data }) => addGroupFollower(groupId, data),
     onSuccess: (_, variables) => {
@@ -1122,7 +1122,7 @@ export async function listPendingFollowers(
   groupId: number,
   page: number = 1,
   pageSize: number = 20
-): Promise<GroupFollowerListResponse> {
+): Promise<GroupMemberListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
@@ -1169,7 +1169,7 @@ export async function listPendingFollowers(
     );
   }
 
-  const result: GroupFollowerListResponse = await response.json();
+  const result: GroupMemberListResponse = await response.json();
   return result;
 }
 
@@ -1402,7 +1402,7 @@ export function usePendingFollowers(
   page: number = 1,
   pageSize: number = 20
 ) {
-  return useQuery<GroupFollowerListResponse>({
+  return useQuery<GroupMemberListResponse>({
     queryKey: ["pendingFollowers", groupId, page, pageSize],
     queryFn: () => listPendingFollowers(groupId!, page, pageSize),
     enabled: !!groupId,
@@ -1420,7 +1420,7 @@ export async function listBannedUsers(
   groupId: number,
   page: number = 1,
   pageSize: number = 20
-): Promise<GroupFollowerListResponse> {
+): Promise<GroupMemberListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
@@ -1467,7 +1467,7 @@ export async function listBannedUsers(
     );
   }
 
-  const result: GroupFollowerListResponse = await response.json();
+  const result: GroupMemberListResponse = await response.json();
   return result;
 }
 
@@ -1481,7 +1481,7 @@ export function useGroupFollowers(
   page: number = 1,
   pageSize: number = 20
 ) {
-  return useQuery<GroupFollowerListResponse>({
+  return useQuery<GroupMemberListResponse>({
     queryKey: ["groupFollowers", groupId, page, pageSize],
     queryFn: () => listGroupFollowers(groupId!, page, pageSize),
     enabled: !!groupId,
@@ -1500,7 +1500,7 @@ export function useBannedUsers(
   page: number = 1,
   pageSize: number = 20
 ) {
-  return useQuery<GroupFollowerListResponse>({
+  return useQuery<GroupMemberListResponse>({
     queryKey: ["bannedUsers", groupId, page, pageSize],
     queryFn: () => listBannedUsers(groupId!, page, pageSize),
     enabled: !!groupId,
