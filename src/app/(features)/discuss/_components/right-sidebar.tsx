@@ -3,13 +3,10 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useQueries } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFixtures } from "@/services/fastapi/vote";
-import { getFixtureGroup } from "@/services/fastapi/groups";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
-import type { GroupResponse } from "@/type/fastapi/groups";
 import { usePathname } from "next/navigation";
 
 const VOTE_META: { key: VoteChoice; color: string }[] = [
@@ -170,37 +167,6 @@ export default function RightSidebar() {
     return leagueSections.slice(0, 3).flatMap((s) => s.fixtures.slice(0, 4));
   }, [leagueSections]);
 
-  const fixtureIds = useMemo(
-    () => displayedFixtures.map((f) => f.fixture_id),
-    [displayedFixtures],
-  );
-
-  const fixtureGroupQueries = useQueries({
-    queries: fixtureIds.map((apiFixtureId) => ({
-      queryKey: ["fixtureGroup", apiFixtureId] as const,
-      queryFn: async (): Promise<GroupResponse | null> => {
-        try {
-          return await getFixtureGroup(apiFixtureId);
-        } catch {
-          return null;
-        }
-      },
-      staleTime: 5 * 60 * 1000,
-      retry: false,
-      refetchOnWindowFocus: false,
-    })),
-  });
-
-  const fixtureHrefById = useMemo(() => {
-    const map = new Map<number, string>();
-    displayedFixtures.forEach((fx, i) => {
-      const group = fixtureGroupQueries[i]?.data ?? null;
-      if (!group || group.group_type !== "fixture") return;
-      map.set(fx.fixture_id, `/discuss/group-posts/${group.id}`);
-    });
-    return map;
-  }, [displayedFixtures, fixtureGroupQueries]);
-
   return (
     <div className="w-60 md:w-72 xl:w-80 2xl:w-96 h-full flex-shrink-0 flex flex-col p-2 gap-3 bg-card/60 border-l border-border/60">
       <div className="px-1.5 pt-2 pb-1">
@@ -267,17 +233,15 @@ export default function RightSidebar() {
                   </div>
                   <div className="space-y-2">
                     {section.fixtures.slice(0, 4).map((fixture) => {
-                      const href =
-                        fixtureHrefById.get(fixture.fixture_id) ?? null;
+                      const href = `/discuss/fixture/${fixture.fixture_id}`;
                       return (
                         <FixtureRow
                           key={fixture.fixture_id}
                           fixture={fixture}
                           href={href}
                           isActive={
-                            href != null &&
-                            (pathname === href ||
-                              pathname.startsWith(href + "/"))
+                            pathname === href ||
+                            pathname.startsWith(href + "/")
                           }
                         />
                       );
