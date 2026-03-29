@@ -17,6 +17,7 @@ import { useFixtureVotes, useVote } from "@/services/fastapi/vote";
 import VoteColor from "@/components/common/vote-color";
 import type { GroupResponse } from "@/type/fastapi/groups";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
+import { isFixtureNotStartedStatus } from "@/data/fixture-status";
 
 const VOTE_BAR_META: { key: VoteChoice; color: string }[] = [
   { key: "home", color: "bg-vote-blue" },
@@ -155,9 +156,11 @@ function FixtureVoteResultBlock({ voteFixtureId }: { voteFixtureId: number }) {
 function FixtureVoteButton({
   voteFixtureId,
   teamLabels,
+  fixtureStatusShort,
 }: {
   voteFixtureId: number;
   teamLabels: { home: string; away: string };
+  fixtureStatusShort: string | null;
 }) {
   const { data } = useFixtureVotes(voteFixtureId);
   const { vote, isPending } = useVote();
@@ -165,7 +168,8 @@ function FixtureVoteButton({
   const [error, setError] = useState<string | null>(null);
 
   const yourVote = data?.user_vote ?? null;
-  const canVote = yourVote == null;
+  const votingOpen = isFixtureNotStartedStatus(fixtureStatusShort);
+  const triggerDisabled = yourVote != null || !votingOpen;
 
   const subtitle = useMemo(() => {
     if (!data) return null;
@@ -194,18 +198,28 @@ function FixtureVoteButton({
     }
   }
 
+  const triggerTitle =
+    yourVote != null
+      ? "You already voted"
+      : !votingOpen
+        ? "Voting is only available before kickoff"
+        : "Vote on this fixture";
+
+  const triggerLabel =
+    yourVote != null ? "Voted" : !votingOpen ? "Voting closed" : "Vote";
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           size="sm"
           variant="outline"
-          className="h-8 rounded-xl text-xs md:text-sm border-white/45 bg-white/10 text-white hover:bg-white/15 hover:text-white"
-          disabled={!canVote}
-          title={canVote ? "Vote on this fixture" : "You already voted"}
+          className="h-8 rounded-xl text-xs md:text-sm border-white/45 bg-white/10 text-white hover:bg-white/15 hover:text-white disabled:opacity-50"
+          disabled={triggerDisabled}
+          title={triggerTitle}
         >
           <VoteIcon className="w-4 h-4 mr-2" />
-          {canVote ? "Vote" : "Voted"}
+          {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
@@ -432,6 +446,7 @@ export default function FixturePostHeader({
                 <FixtureVoteButton
                   voteFixtureId={voteFixtureId}
                   teamLabels={{ home: homeName, away: awayName }}
+                  fixtureStatusShort={fx?.status ?? null}
                 />
               </div>
             ) : null}

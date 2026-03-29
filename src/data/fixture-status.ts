@@ -178,3 +178,12 @@ export function getFixtureStatus(shortCode: string): FixtureStatusMeta {
     }
   );
 }
+
+/** Fan vote UI is only allowed before kickoff (API-Football short status `NS`). */
+export function isFixtureNotStartedStatus(
+  statusShort: string | null | undefined,
+): boolean {
+  const code = statusShort?.trim().toUpperCase();
+  if (!code) return false;
+  return code === "NS";
+}
