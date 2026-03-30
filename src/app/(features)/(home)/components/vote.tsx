@@ -145,49 +145,50 @@ function FixtureVoteRow({
         </div>
       </div>
 
-      {voted && votedMeta ? (
-        /* Locked — vote is final */
-        <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/40 border border-border">
-          <span
-            className={`w-8 h-8 rounded-full ${votedMeta.bg} flex items-center justify-center flex-shrink-0`}
-          >
-            <CheckCircle2 className="w-4 h-4 text-white" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] text-muted-foreground">Your prediction</p>
-            <p className="text-sm font-semibold text-foreground truncate">
-              {voted === "home"
-                ? fixture.home_team
-                : voted === "away"
-                  ? fixture.away_team
-                  : "Draw"}
-            </p>
+      <div className="rounded-lg border border-border bg-muted/30 px-2 py-1.5">
+        {voted && votedMeta ? (
+          <div className="flex w-full justify-center items-center min-h-8 sm:min-h-9">
+            <div className="flex items-center gap-2 min-w-0 max-w-full">
+              <span
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${votedMeta.bg} flex items-center justify-center flex-shrink-0`}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+              </span>
+              <div className="min-w-0 flex flex-col justify-center leading-tight">
+                <p className="text-[10px] text-muted-foreground">
+                  Your prediction
+                </p>
+                <p className="text-xs sm:text-sm font-semibold text-foreground truncate max-w-[40vw] sm:max-w-[14rem]">
+                  {voted === "home"
+                    ? fixture.home_team
+                    : voted === "away"
+                      ? fixture.away_team
+                      : "Draw"}
+                </p>
+              </div>
+            </div>
           </div>
-          <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex-shrink-0">
-            Final
-          </span>
-        </div>
-      ) : (
-        /* Vote buttons */
-        <div className="grid grid-cols-3 gap-2">
-          {VOTE_META.map((v) => (
-            <button
-              key={v.key}
-              disabled={!canVote}
-              onClick={() => handleVote(v.key)}
-              className={[
-                "rounded-lg py-2 text-xs sm:text-sm font-bold text-white transition-all truncate px-1",
-                v.bg,
-                !canVote
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:brightness-110 active:scale-95",
-              ].join(" ")}
-            >
-              {v.key === "home" ? "Home" : v.key === "away" ? "Away" : "Draw"}
-            </button>
-          ))}
-        </div>
-      )}
+        ) : (
+          <div className="grid w-full min-h-8 sm:min-h-9 grid-cols-3 gap-1.5 items-stretch">
+            {VOTE_META.map((v) => (
+              <button
+                key={v.key}
+                disabled={!canVote}
+                onClick={() => handleVote(v.key)}
+                className={[
+                  "flex h-full min-h-0 items-center justify-center rounded-md py-1 text-[11px] sm:text-xs font-bold text-white transition-all truncate px-0.5",
+                  v.bg,
+                  !canVote
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:brightness-110 active:scale-95",
+                ].join(" ")}
+              >
+                {v.key === "home" ? "Home" : v.key === "away" ? "Away" : "Draw"}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {error && <p className="text-xs text-destructive text-center">{error}</p>}
     </div>

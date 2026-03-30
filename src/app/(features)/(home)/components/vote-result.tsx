@@ -93,7 +93,12 @@ function FixtureRow({ fixture }: { fixture: FixtureVotesResult }) {
 
       {/* Vote bar + percentages (bar always shows three colors; empty = equal thirds; 0% still gets a minimum slice) */}
       <div className="space-y-1">
-        <VotingBar fixture={fixture} segmentStyle="flat" />
+        <VotingBar
+          fixture={fixture}
+          segmentStyle="flat"
+          size="sm"
+          mdSize="md"
+        />
         <div className="flex justify-between text-[11px] md:text-xs">
           {VOTE_META.map((v) => (
             <span key={v.key} className={`${v.textColor} font-medium`}>
@@ -125,7 +130,6 @@ function LeagueGroup({
   return (
     <div>
       <div className="flex items-center px-4 py-2 bg-muted/50 border-b border-border">
-        <span className="flex-1" />
         <div className="flex items-center gap-2 flex-shrink-0">
           {leagueLogo && (
             <Image
@@ -137,7 +141,7 @@ function LeagueGroup({
               className="w-5 h-5 md:w-6 md:h-6 object-contain flex-shrink-0"
             />
           )}
-          <span className="hidden md:block md:text-base font-semibold text-foreground">
+          <span className=" text-xs md:text-base font-semibold text-foreground line-clamp-1">
             {leagueName}
           </span>
         </div>
