@@ -386,24 +386,31 @@ export default function PostContent({
 
       {/* Loading State - Only show if user can view posts */}
       {isLoading && canViewPosts && (
-        <div className="space-y-3 max-w-2xl mx-auto md:space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <Card key={i} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3 px-4">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="w-12 h-12 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-24" />
+        <div className="space-y-3 w-[92%] md:w-full max-w-lg md:max-w-3xl md:mx-auto md:space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} className="py-2 pl-3 pr-1">
+              <CardHeader className="p-0">
+                <div className="flex items-start justify-between gap-1">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full flex-shrink-0" />
+                    <div className="flex flex-col gap-1.5">
+                      <Skeleton className="h-3.5 w-28 md:w-36" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
                   </div>
+                  <Skeleton className="w-7 h-7 rounded-md mr-1" />
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <div className="flex gap-6 pt-2">
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
+              <CardContent className="p-0 pt-3 pr-2">
+                <div className="space-y-2">
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3.5 w-3/4" />
+                </div>
+                <div className="flex items-center gap-3 mt-4">
+                  <Skeleton className="h-7 w-14 rounded-md" />
+                  <Skeleton className="h-7 w-14 rounded-md" />
+                  <Skeleton className="h-7 w-16 rounded-md" />
                 </div>
               </CardContent>
             </Card>
