@@ -15,15 +15,11 @@ import {
 import { CheckCircle2, MessageCircle, Vote as VoteIcon } from "lucide-react";
 import { useFixtureVotes, useVote } from "@/services/fastapi/vote";
 import VoteColor from "@/components/common/vote-color";
+import { VotingBar } from "@/components/common/voting-bar";
 import type { GroupResponse } from "@/type/fastapi/groups";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { isFixtureNotStartedStatus } from "@/data/fixture-status";
-
-const VOTE_BAR_META: { key: VoteChoice; color: string }[] = [
-  { key: "home", color: "bg-vote-blue" },
-  { key: "draw", color: "bg-vote-yellow" },
-  { key: "away", color: "bg-vote-red" },
-];
+const VOTE_SEGMENTS: VoteChoice[] = ["home", "draw", "away"];
 
 const VOTE_BUTTONS: {
   key: VoteChoice;
@@ -82,9 +78,6 @@ function FixtureVoteResultBlock({ voteFixtureId }: { voteFixtureId: number }) {
 
   const hasVotes = data.total_votes > 0;
   const yourVote = data.user_vote;
-  const highlightHome = yourVote === "home";
-  const highlightDraw = yourVote === "draw";
-  const highlightAway = yourVote === "away";
 
   return (
     <div className="space-y-1.5 pt-1 border-t border-white/20">
@@ -101,54 +94,39 @@ function FixtureVoteResultBlock({ voteFixtureId }: { voteFixtureId: number }) {
       </div>
       <VoteColor className="pb-0.5" textClassName="text-white/75" />
 
-      {hasVotes ? (
-        <>
-          <div className="flex w-full rounded-full overflow-hidden h-2 bg-white/20">
-            {VOTE_BAR_META.map((v) => {
-              const w = pct(data, v.key);
-              const isHighlighted =
-                (v.key === "home" && highlightHome) ||
-                (v.key === "draw" && highlightDraw) ||
-                (v.key === "away" && highlightAway);
-              return (
-                <div
-                  key={v.key}
-                  style={{ width: `${w}%` }}
-                  className={[
-                    v.color,
-                    "min-w-0 transition-all duration-500",
-                    isHighlighted ? "opacity-100" : "opacity-85",
-                  ].join(" ")}
-                />
-              );
-            })}
-          </div>
-          <div className="flex justify-between gap-1 text-[11px] md:text-xs tabular-nums">
-            {VOTE_BAR_META.map((v) => (
-              <span
-                key={v.key}
-                className="font-medium text-white min-w-0 truncate"
-              >
-                {pct(data, v.key).toFixed(0)}%
-              </span>
-            ))}
-          </div>
-          {yourVote ? (
-            <p className="text-xs text-right text-white/75">
-              Your pick:{" "}
-              <span className="font-semibold text-white">
-                {yourVote === "home"
-                  ? data.home_team
-                  : yourVote === "away"
-                    ? data.away_team
-                    : "Draw"}
-              </span>
-            </p>
-          ) : null}
-        </>
-      ) : (
-        <p className="text-[11px] text-white/75">No votes yet</p>
-      )}
+      <>
+        <VotingBar
+          fixture={data}
+          trackClassName="bg-white/20"
+          segmentStyle="emphasize-pick"
+          userVote={yourVote}
+        />
+        <div className="flex justify-between gap-1 text-[11px] md:text-xs tabular-nums">
+          {VOTE_SEGMENTS.map((key) => (
+            <span
+              key={key}
+              className="font-medium text-white min-w-0 truncate"
+            >
+              {pct(data, key).toFixed(0)}%
+            </span>
+          ))}
+        </div>
+        {!hasVotes && (
+          <p className="text-[11px] text-white/75">No votes yet</p>
+        )}
+        {yourVote ? (
+          <p className="text-xs text-right text-white/75">
+            Your pick:{" "}
+            <span className="font-semibold text-white">
+              {yourVote === "home"
+                ? data.home_team
+                : yourVote === "away"
+                  ? data.away_team
+                  : "Draw"}
+            </span>
+          </p>
+        ) : null}
+      </>
     </div>
   );
 }

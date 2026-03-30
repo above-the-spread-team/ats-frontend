@@ -7,21 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFixtures } from "@/services/fastapi/vote";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
+import { VotingBar } from "@/components/common/voting-bar";
 import { usePathname } from "next/navigation";
-
-const VOTE_META: { key: VoteChoice; color: string }[] = [
-  { key: "home", color: "bg-vote-blue" },
-  { key: "draw", color: "bg-vote-yellow" },
-  { key: "away", color: "bg-vote-red" },
-];
-
-function pct(fixture: FixtureVotesResult, key: VoteChoice) {
-  return key === "home"
-    ? fixture.home_percentage
-    : key === "draw"
-      ? fixture.draw_percentage
-      : fixture.away_percentage;
-}
 
 function TeamLogo({ src, name }: { src: string | null; name: string }) {
   if (src) {
@@ -57,7 +44,6 @@ function FixtureRow({
 
   const yourVote: VoteChoice | null = fixture.user_vote;
   const highlightHome = yourVote === "home";
-  const highlightDraw = yourVote === "draw";
   const highlightAway = yourVote === "away";
 
   const content = (
@@ -99,32 +85,18 @@ function FixtureRow({
         </div>
       </div>
 
-      {hasVotes ? (
-        <div className="mt-2 space-y-1">
-          <div className="flex w-full rounded-full overflow-hidden h-1.5 bg-muted/30">
-            {VOTE_META.map((v) => {
-              const w = pct(fixture, v.key);
-              const isHighlighted =
-                (v.key === "home" && highlightHome) ||
-                (v.key === "draw" && highlightDraw) ||
-                (v.key === "away" && highlightAway);
-              return (
-                <div
-                  key={v.key}
-                  style={{ width: `${w}%` }}
-                  className={[
-                    v.color,
-                    "transition-all duration-500",
-                    isHighlighted ? "opacity-100" : "opacity-85",
-                  ].join(" ")}
-                />
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <p className="mt-2 text-[11px] text-muted-foreground">No votes yet</p>
-      )}
+      <div className="mt-2 space-y-1">
+        <VotingBar
+          fixture={fixture}
+          size="sm"
+          trackClassName="bg-muted/30"
+          segmentStyle="emphasize-pick"
+          userVote={yourVote}
+        />
+        {!hasVotes && (
+          <p className="text-[11px] text-muted-foreground">No votes yet</p>
+        )}
+      </div>
     </div>
   );
 

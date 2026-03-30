@@ -8,6 +8,7 @@ import { VoteDialog } from "./vote";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { Button } from "@/components/ui/button";
 import VoteColor from "@/components/common/vote-color";
+import { VotingBar } from "@/components/common/voting-bar";
 
 // ── constants ──────────────────────────────────────────────────────────────
 
@@ -90,35 +91,22 @@ function FixtureRow({ fixture }: { fixture: FixtureVotesResult }) {
         </div>
       </div>
 
-      {/* Vote bar + percentages */}
-      {hasVotes ? (
-        <div className="space-y-1">
-          <div className="flex w-full rounded-full overflow-hidden h-2">
-            {VOTE_META.map((v) => (
-              <div
-                key={v.key}
-                style={{ width: `${pct(fixture, v.key)}%` }}
-                className={`${v.color} transition-all duration-500`}
-              />
-            ))}
-          </div>
-          <div className="flex justify-between text-[11px] md:text-xs">
-            {VOTE_META.map((v) => (
-              <span key={v.key} className={`${v.textColor} font-medium`}>
-                {v.key === "home"
-                  ? `${pct(fixture, v.key).toFixed(0)}%`
-                  : v.key === "draw"
-                    ? `${pct(fixture, v.key).toFixed(0)}%`
-                    : `${pct(fixture, v.key).toFixed(0)}%`}
-              </span>
-            ))}
-          </div>
+      {/* Vote bar + percentages (bar always shows three colors; empty = equal thirds; 0% still gets a minimum slice) */}
+      <div className="space-y-1">
+        <VotingBar fixture={fixture} segmentStyle="flat" />
+        <div className="flex justify-between text-[11px] md:text-xs">
+          {VOTE_META.map((v) => (
+            <span key={v.key} className={`${v.textColor} font-medium`}>
+              {`${pct(fixture, v.key).toFixed(0)}%`}
+            </span>
+          ))}
         </div>
-      ) : (
-        <p className="text-[11px] md:text-xs text-muted-foreground text-center">
-          No votes yet
-        </p>
-      )}
+        {!hasVotes && (
+          <p className="text-[11px] md:text-xs text-muted-foreground text-center pt-0.5">
+            No votes yet
+          </p>
+        )}
+      </div>
     </div>
   );
 }
