@@ -28,7 +28,6 @@ import {
   useDislikePost,
   useDeletePost,
 } from "@/services/fastapi/posts";
-import { useFixtureVotes } from "@/services/fastapi/vote";
 import { useComments } from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import ConfirmDialog from "@/components/common/popup";
@@ -45,14 +44,14 @@ interface PostCardProps {
 }
 
 function FixtureDualTeamIcon({
-  fixtureApiId,
   fallbackName,
+  homeTeamLogo,
+  awayTeamLogo,
 }: {
-  fixtureApiId: number | null | undefined;
   fallbackName: string | null | undefined;
+  homeTeamLogo: string | null | undefined;
+  awayTeamLogo: string | null | undefined;
 }) {
-  const { data: fixtureData } = useFixtureVotes(fixtureApiId ?? null);
-
   const splitFromName = (() => {
     if (!fallbackName) return { home: "HM", away: "AW" };
     const normalized = fallbackName.replace(/\s+vs\.?\s+/i, "|");
@@ -63,10 +62,10 @@ function FixtureDualTeamIcon({
     };
   })();
 
-  const homeName = fixtureData?.home_team ?? splitFromName.home;
-  const awayName = fixtureData?.away_team ?? splitFromName.away;
-  const homeLogo = fixtureData?.home_team_logo ?? null;
-  const awayLogo = fixtureData?.away_team_logo ?? null;
+  const homeName = splitFromName.home;
+  const awayName = splitFromName.away;
+  const homeLogo = homeTeamLogo ?? null;
+  const awayLogo = awayTeamLogo ?? null;
 
   return (
     <div className="relative flex items-center pr-1" aria-hidden>
@@ -85,7 +84,7 @@ function FixtureDualTeamIcon({
           </span>
         )}
       </div>
-      <div className="relative z-[1] w-8 h-8 md:w-10 md:h-10 rounded-full  overflow-hidden -ml-3 md:-ml-4">
+      <div className="relative  w-8 h-8 md:w-10 md:h-10 rounded-full  overflow-hidden -ml-3 md:-ml-4">
         {awayLogo ? (
           <Image
             src={awayLogo}
@@ -334,8 +333,9 @@ export default function PostCard({
                 <div className="flex-shrink-0 relative  mr-1">
                   {post.groupType === "fixture" ? (
                     <FixtureDualTeamIcon
-                      fixtureApiId={post.fixtureApiId}
                       fallbackName={post.groupName}
+                      homeTeamLogo={post.homeTeamLogo}
+                      awayTeamLogo={post.awayTeamLogo}
                     />
                   ) : post.groupIconUrl ? (
                     <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
@@ -637,5 +637,7 @@ export function mapPostResponse(post: PostResponse): Post {
     groupIconUrl: post.group_icon_url ?? null,
     groupType: post.group_type ?? null,
     fixtureApiId: post.fixture_api_id ?? null,
+    homeTeamLogo: post.home_team_logo ?? null,
+    awayTeamLogo: post.away_team_logo ?? null,
   };
 }

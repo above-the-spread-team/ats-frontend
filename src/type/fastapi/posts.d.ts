@@ -38,12 +38,12 @@ export interface PostResponse extends PostBase {
   author: PostAuthor;
   created_at: string;
   updated_at: string;
-  group_name?: string | null; // Group name if post belongs to a group
-  group_icon_url?: string | null; // Group icon URL if post belongs to a group
-  /** `"user"` | `"fixture"` | null for standalone posts */
+  group_name?: string | null;
+  group_icon_url?: string | null;
   group_type?: "user" | "fixture" | null;
-  /** API-Football fixture id — deep link to match; only when group_type === "fixture" */
   fixture_api_id?: number | null;
+  home_team_logo?: string | null;
+  away_team_logo?: string | null;
   comment_count: number;
   reaction_count: number;
   likes: number;
@@ -112,6 +112,8 @@ export interface Post {
   groupIconUrl?: string | null;
   groupType?: "user" | "fixture" | null;
   fixtureApiId?: number | null;
+  homeTeamLogo?: string | null;
+  awayTeamLogo?: string | null;
 }
 
 export interface PostError {
