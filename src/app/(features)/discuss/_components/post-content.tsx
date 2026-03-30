@@ -386,7 +386,7 @@ export default function PostContent({
 
       {/* Loading State - Only show if user can view posts */}
       {isLoading && canViewPosts && (
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-3 max-w-2xl mx-auto md:space-y-4">
           {[...Array(5)].map((_, i) => (
             <Card key={i} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3 px-4">

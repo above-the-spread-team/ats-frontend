@@ -17,7 +17,13 @@ import {
   Search,
   Crown,
   UserPlus,
+  ChevronDown,
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import type { FixtureVotesResult } from "@/type/fastapi/vote";
 import { usePathname } from "next/navigation";
 import { cn, shouldShowDiscussMatchChatsInSidebar } from "@/lib/utils";
@@ -133,6 +139,10 @@ export default function Sidebar() {
       clearTimeout(timeoutId);
     };
   }, []);
+
+  const [matchThreadsOpen, setMatchThreadsOpen] = useState(true);
+  const [myGroupsOpen, setMyGroupsOpen] = useState(true);
+  const [followingOpen, setFollowingOpen] = useState(true);
 
   const { data: groupsData, isLoading } = useUserGroups(1, 20, isAuthenticated);
 
@@ -263,9 +273,13 @@ export default function Sidebar() {
           {showMatchChatsInSidebar && (
             <>
               {/* Fixture match discussions — grouped by league, dual team crests */}
-              <div className="mb-4 pb-4 border-b border-border/60">
-                <div className="flex items-center gap-2.5 mb-2.5 px-1">
-                  <div className="min-w-0 flex-1">
+              <Collapsible
+                open={matchThreadsOpen}
+                onOpenChange={setMatchThreadsOpen}
+                className="mb-4 pb-2 border-b border-border/60"
+              >
+                <CollapsibleTrigger className="flex items-center gap-2.5 mb-2.5 px-1 w-full group/trigger">
+                  <div className="min-w-0 flex-1 text-left">
                     <h3 className="text-base font-bold text-foreground tracking-tight leading-tight">
                       Match Threads
                     </h3>
@@ -275,139 +289,148 @@ export default function Sidebar() {
                       {mergedVoteFixtures.length}
                     </span>
                   )}
-                </div>
+                  <ChevronDown
+                    className={cn(
+                      "w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-300 group-hover/trigger:text-foreground",
+                      matchThreadsOpen ? "rotate-0" : "-rotate-90",
+                    )}
+                  />
+                </CollapsibleTrigger>
 
-                {fixturesFeedLoading && (
-                  <div className="space-y-1">
-                    {[...Array(3)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
-                      >
-                        <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-3.5 w-full rounded-md" />
-                          <Skeleton className="h-2.5 w-24 rounded-md" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {!fixturesFeedLoading && fixtureSectionsByLeague.length > 0 && (
-                  <div className="space-y-3">
-                    {fixtureSectionsByLeague.map(
-                      ({ leagueName, leagueLogo, fixtures }) => (
-                        <div key={leagueName} className="overflow-hidden">
-                          <div className="flex items-center gap-2">
-                            <div className="relative w-6 h-6 rounded-md overflow-hidden bg-background/80 flex-shrink-0 ring-1 ring-border/50">
-                              {leagueLogo ? (
-                                <Image
-                                  src={leagueLogo}
-                                  alt=""
-                                  fill
-                                  className="object-contain p-0.5"
-                                  sizes="24px"
-                                />
-                              ) : (
-                                <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-muted-foreground">
-                                  {leagueName.slice(0, 2).toUpperCase()}
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-[11px] font-bold uppercase tracking-wide text-foreground truncate">
-                              {leagueName}
-                            </span>
+                <CollapsibleContent>
+                  {fixturesFeedLoading && (
+                    <div className="space-y-1">
+                      {[...Array(3)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
+                        >
+                          <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-3.5 w-full rounded-md" />
+                            <Skeleton className="h-2.5 w-24 rounded-md" />
                           </div>
-                          <div className="divide-y divide-border/50">
-                            {fixtures.map((fx) => {
-                              const href = `/discuss/fixture/${fx.fixture_id}`;
-                              const isActive = pathname === href;
-                              return (
-                                <Link
-                                  key={fx.fixture_id}
-                                  href={href}
-                                  onClick={handleLinkClick}
-                                  className={cn(
-                                    "flex items-center gap-2.5 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
-                                    isActive
-                                      ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
-                                      : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!fixturesFeedLoading &&
+                    fixtureSectionsByLeague.length > 0 && (
+                      <div className="space-y-3">
+                        {fixtureSectionsByLeague.map(
+                          ({ leagueName, leagueLogo, fixtures }) => (
+                            <div key={leagueName} className="overflow-hidden">
+                              <div className="flex items-center gap-2">
+                                <div className="relative w-6 h-6 rounded-md overflow-hidden bg-background/80 flex-shrink-0 ring-1 ring-border/50">
+                                  {leagueLogo ? (
+                                    <Image
+                                      src={leagueLogo}
+                                      alt=""
+                                      fill
+                                      className="object-contain p-0.5"
+                                      sizes="24px"
+                                    />
+                                  ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                                      {leagueName.slice(0, 2).toUpperCase()}
+                                    </div>
                                   )}
-                                >
-                                  {isActive && (
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                                  )}
-                                  <DualTeamLogos
-                                    homeLogo={fx.home_team_logo}
-                                    awayLogo={fx.away_team_logo}
-                                    homeName={fx.home_team}
-                                    awayName={fx.away_team}
-                                    isActive={isActive}
-                                  />
-                                  <div className="flex-1 min-w-0 relative z-10">
-                                    <p
+                                </div>
+                                <span className="text-[11px] font-bold uppercase tracking-wide text-foreground truncate">
+                                  {leagueName}
+                                </span>
+                              </div>
+                              <div className="divide-y divide-border/50">
+                                {fixtures.map((fx) => {
+                                  const href = `/discuss/fixture/${fx.fixture_id}`;
+                                  const isActive = pathname === href;
+                                  return (
+                                    <Link
+                                      key={fx.fixture_id}
+                                      href={href}
+                                      onClick={handleLinkClick}
                                       className={cn(
-                                        "text-[11px] font-semibold leading-snug line-clamp-2",
+                                        "flex items-center gap-2.5 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
                                         isActive
-                                          ? "text-white"
-                                          : "text-foreground",
+                                          ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
+                                          : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
                                       )}
                                     >
-                                      <span
-                                        className={cn(
-                                          isActive
-                                            ? "text-white"
-                                            : "text-foreground/90 group-hover:text-foreground",
-                                        )}
-                                      >
-                                        {fx.home_team}
-                                      </span>
-                                      <span
-                                        className={cn(
-                                          "font-medium mx-0.5",
-                                          isActive
-                                            ? "text-white/80"
-                                            : "text-muted-foreground group-hover:text-foreground/70",
-                                        )}
-                                      >
-                                        vs
-                                      </span>
-                                      <span
-                                        className={cn(
-                                          isActive
-                                            ? "text-white"
-                                            : "text-foreground/90 group-hover:text-foreground",
-                                        )}
-                                      >
-                                        {fx.away_team}
-                                      </span>
-                                    </p>
-                                  </div>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ),
+                                      {isActive && (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                                      )}
+                                      <DualTeamLogos
+                                        homeLogo={fx.home_team_logo}
+                                        awayLogo={fx.away_team_logo}
+                                        homeName={fx.home_team}
+                                        awayName={fx.away_team}
+                                        isActive={isActive}
+                                      />
+                                      <div className="flex-1 min-w-0 relative z-10">
+                                        <p
+                                          className={cn(
+                                            "text-[11px] font-semibold leading-snug line-clamp-2",
+                                            isActive
+                                              ? "text-white"
+                                              : "text-foreground",
+                                          )}
+                                        >
+                                          <span
+                                            className={cn(
+                                              isActive
+                                                ? "text-white"
+                                                : "text-foreground/90 group-hover:text-foreground",
+                                            )}
+                                          >
+                                            {fx.home_team}
+                                          </span>
+                                          <span
+                                            className={cn(
+                                              "font-medium mx-0.5",
+                                              isActive
+                                                ? "text-white/80"
+                                                : "text-muted-foreground group-hover:text-foreground/70",
+                                            )}
+                                          >
+                                            vs
+                                          </span>
+                                          <span
+                                            className={cn(
+                                              isActive
+                                                ? "text-white"
+                                                : "text-foreground/90 group-hover:text-foreground",
+                                            )}
+                                          >
+                                            {fx.away_team}
+                                          </span>
+                                        </p>
+                                      </div>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
 
-                {!fixturesFeedLoading && mergedVoteFixtures.length === 0 && (
-                  <p className="text-xs text-muted-foreground px-1 py-2">
-                    No matches in the feed right now.
-                  </p>
-                )}
-              </div>
+                  {!fixturesFeedLoading && mergedVoteFixtures.length === 0 && (
+                    <p className="text-xs text-muted-foreground px-1 py-2">
+                      No matches in the feed right now.
+                    </p>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
             </>
           )}
 
           {/* My Groups Section */}
           <div className="space-y-4 ">
             {/* Owned Groups Section */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-2 px-1">
+            <Collapsible open={myGroupsOpen} onOpenChange={setMyGroupsOpen}>
+              <CollapsibleTrigger className="flex items-center gap-2.5 mb-2 px-1 w-full group/trigger">
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20">
                   <Crown className="w-4 h-4 text-yellow-600 dark:text-yellow-500" />
                 </div>
@@ -419,146 +442,154 @@ export default function Sidebar() {
                     {ownedGroups.length}
                   </span>
                 )}
-              </div>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-300 group-hover/trigger:text-foreground",
+                    myGroupsOpen ? "rotate-0" : "-rotate-90",
+                  )}
+                />
+              </CollapsibleTrigger>
 
-              {/* Loading State */}
-              {showLoading && (
-                <div className="space-y-1">
-                  {[...Array(2)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
-                    >
-                      <Skeleton className="w-11 h-11 rounded-full flex-shrink-0" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-3.5 w-28 rounded-md" />
-                        <Skeleton className="h-2.5 w-36 rounded-md" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Owned Groups List */}
-              {!showLoading && ownedGroups.length > 0 && (
-                <div className="space-y-1">
-                  {ownedGroups.map((group) => {
-                    const isActive =
-                      pathname === `/discuss/group-posts/${group.id}`;
-                    return (
-                      <Link
-                        key={group.id}
-                        href={`/discuss/group-posts/${group.id}`}
-                        onClick={handleLinkClick}
-                        className={cn(
-                          "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
-                          isActive
-                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
-                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
-                        )}
+              <CollapsibleContent>
+                {/* Loading State */}
+                {showLoading && (
+                  <div className="space-y-1">
+                    {[...Array(2)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
                       >
-                        {isActive && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                        )}
-                        {/* Group Icon */}
-                        {group.icon_url ? (
-                          <div
-                            className={cn(
-                              "relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
-                              isActive
-                                ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
-                                : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
-                            )}
-                          >
-                            <Image
-                              src={group.icon_url}
-                              alt={group.name}
-                              fill
-                              className="object-cover"
-                              sizes="28px"
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            className={cn(
-                              "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
-                              isActive
-                                ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
-                                : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
-                            )}
-                          >
-                            <Users
-                              className={cn(
-                                "w-4 h-4",
-                                isActive ? "text-white" : "text-primary",
-                              )}
-                            />
-                          </div>
-                        )}
+                        <Skeleton className="w-11 h-11 rounded-full flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-3.5 w-28 rounded-md" />
+                          <Skeleton className="h-2.5 w-36 rounded-md" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                        {/* Group Info */}
-                        <div className="flex-1 min-w-0 relative z-10">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p
+                {/* Owned Groups List */}
+                {!showLoading && ownedGroups.length > 0 && (
+                  <div className="space-y-1">
+                    {ownedGroups.map((group) => {
+                      const isActive =
+                        pathname === `/discuss/group-posts/${group.id}`;
+                      return (
+                        <Link
+                          key={group.id}
+                          href={`/discuss/group-posts/${group.id}`}
+                          onClick={handleLinkClick}
+                          className={cn(
+                            "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                            isActive
+                              ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
+                              : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
+                          )}
+                        >
+                          {isActive && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                          )}
+                          {/* Group Icon */}
+                          {group.icon_url ? (
+                            <div
                               className={cn(
-                                "text-sm font-semibold truncate transition-colors",
-                                isActive ? "text-white" : "text-foreground",
+                                "relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
+                                isActive
+                                  ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                  : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
                               )}
                             >
-                              {group.name}
-                            </p>
-                            {group.is_private && (
-                              <Lock
+                              <Image
+                                src={group.icon_url}
+                                alt={group.name}
+                                fill
+                                className="object-cover"
+                                sizes="28px"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              className={cn(
+                                "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
+                                isActive
+                                  ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                  : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
+                              )}
+                            >
+                              <Users
                                 className={cn(
-                                  "w-3.5 h-3.5 flex-shrink-0 transition-colors",
-                                  isActive
-                                    ? "text-white/80"
-                                    : "text-muted-foreground group-hover:text-foreground/70",
+                                  "w-4 h-4",
+                                  isActive ? "text-white" : "text-primary",
                                 )}
                               />
+                            </div>
+                          )}
+
+                          {/* Group Info */}
+                          <div className="flex-1 min-w-0 relative z-10">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p
+                                className={cn(
+                                  "text-sm font-semibold truncate transition-colors",
+                                  isActive ? "text-white" : "text-foreground",
+                                )}
+                              >
+                                {group.name}
+                              </p>
+                              {group.is_private && (
+                                <Lock
+                                  className={cn(
+                                    "w-3.5 h-3.5 flex-shrink-0 transition-colors",
+                                    isActive
+                                      ? "text-white/80"
+                                      : "text-muted-foreground group-hover:text-foreground/70",
+                                  )}
+                                />
+                              )}
+                            </div>
+                            {group.description && (
+                              <p
+                                className={cn(
+                                  "text-xs truncate transition-colors",
+                                  isActive
+                                    ? "text-white/85"
+                                    : "text-muted-foreground group-hover:text-muted-foreground/90",
+                                )}
+                              >
+                                {group.description}
+                              </p>
                             )}
                           </div>
-                          {group.description && (
-                            <p
-                              className={cn(
-                                "text-xs truncate transition-colors",
-                                isActive
-                                  ? "text-white/85"
-                                  : "text-muted-foreground group-hover:text-muted-foreground/90",
-                              )}
-                            >
-                              {group.description}
-                            </p>
-                          )}
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Empty State for Owned Groups */}
-              {!showLoading && ownedGroups.length === 0 && (
-                <Link
-                  href="/discuss/create-group"
-                  onClick={handleLinkClick}
-                  className="block group"
-                >
-                  <div className="py-8 px-4 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 transition-transform duration-200 group-hover:shadow-md group-hover:scale-[1.01]">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
-                      No groups owned yet
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      Create your first group to get started
-                    </p>
+                        </Link>
+                      );
+                    })}
                   </div>
-                </Link>
-              )}
-            </div>
+                )}
+
+                {/* Empty State for Owned Groups */}
+                {!showLoading && ownedGroups.length === 0 && (
+                  <Link
+                    href="/discuss/create-group"
+                    onClick={handleLinkClick}
+                    className="block group"
+                  >
+                    <div className="py-8 px-4 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 transition-transform duration-200 group-hover:shadow-md group-hover:scale-[1.01]">
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        No groups owned yet
+                      </p>
+                      <p className="text-xs text-muted-foreground/70">
+                        Create your first group to get started
+                      </p>
+                    </div>
+                  </Link>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* Following Groups Section */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-4 px-1">
+            <Collapsible open={followingOpen} onOpenChange={setFollowingOpen}>
+              <CollapsibleTrigger className="flex items-center gap-2.5 mb-4 px-1 w-full group/trigger">
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
                   <UserPlus className="w-4 h-4 text-primary" />
                 </div>
@@ -570,142 +601,150 @@ export default function Sidebar() {
                     {followedGroups.length}
                   </span>
                 )}
-              </div>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-300 group-hover/trigger:text-foreground",
+                    followingOpen ? "rotate-0" : "-rotate-90",
+                  )}
+                />
+              </CollapsibleTrigger>
 
-              {/* Loading State */}
-              {showLoading && (
-                <div className="space-y-1">
-                  {[...Array(2)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
-                    >
-                      <Skeleton className="w-11 h-11 rounded-full flex-shrink-0" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-3.5 w-28 rounded-md" />
-                        <Skeleton className="h-2.5 w-36 rounded-md" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Following Groups List */}
-              {!showLoading && followedGroups.length > 0 && (
-                <div className="space-y-1">
-                  {followedGroups.map((group) => {
-                    const isActive =
-                      pathname === `/discuss/group-posts/${group.id}`;
-                    return (
-                      <Link
-                        key={group.id}
-                        href={`/discuss/group-posts/${group.id}`}
-                        onClick={handleLinkClick}
-                        className={cn(
-                          "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
-                          isActive
-                            ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
-                            : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
-                        )}
+              <CollapsibleContent>
+                {/* Loading State */}
+                {showLoading && (
+                  <div className="space-y-1">
+                    {[...Array(2)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
                       >
-                        {isActive && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                        )}
-                        {/* Group Icon */}
-                        {group.icon_url ? (
-                          <div
-                            className={cn(
-                              "relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
-                              isActive
-                                ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
-                                : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
-                            )}
-                          >
-                            <Image
-                              src={group.icon_url}
-                              alt={group.name}
-                              fill
-                              className="object-cover"
-                              sizes="28px"
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            className={cn(
-                              "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
-                              isActive
-                                ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
-                                : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
-                            )}
-                          >
-                            <Users
-                              className={cn(
-                                "w-4 h-4",
-                                isActive ? "text-white" : "text-primary",
-                              )}
-                            />
-                          </div>
-                        )}
+                        <Skeleton className="w-11 h-11 rounded-full flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-3.5 w-28 rounded-md" />
+                          <Skeleton className="h-2.5 w-36 rounded-md" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                        {/* Group Info */}
-                        <div className="flex-1 min-w-0 relative z-10">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p
+                {/* Following Groups List */}
+                {!showLoading && followedGroups.length > 0 && (
+                  <div className="space-y-1">
+                    {followedGroups.map((group) => {
+                      const isActive =
+                        pathname === `/discuss/group-posts/${group.id}`;
+                      return (
+                        <Link
+                          key={group.id}
+                          href={`/discuss/group-posts/${group.id}`}
+                          onClick={handleLinkClick}
+                          className={cn(
+                            "flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                            isActive
+                              ? "bg-gradient-to-r from-primary via-primary/95 to-primary text-white shadow-lg shadow-primary/25"
+                              : "hover:bg-gradient-to-r hover:from-muted/80 hover:to-muted/60 hover:shadow-md border border-transparent hover:border-border/50",
+                          )}
+                        >
+                          {isActive && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                          )}
+                          {/* Group Icon */}
+                          {group.icon_url ? (
+                            <div
                               className={cn(
-                                "text-sm font-semibold truncate transition-colors",
-                                isActive ? "text-white" : "text-foreground",
+                                "relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 transition-all duration-300",
+                                isActive
+                                  ? "ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                  : "ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md",
                               )}
                             >
-                              {group.name}
-                            </p>
-                            {group.is_private && (
-                              <Lock
+                              <Image
+                                src={group.icon_url}
+                                alt={group.name}
+                                fill
+                                className="object-cover"
+                                sizes="28px"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              className={cn(
+                                "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ring-2 transition-all duration-300",
+                                isActive
+                                  ? "bg-white/20 ring-white/30 ring-offset-2 ring-offset-primary shadow-lg"
+                                  : "bg-gradient-to-br from-primary/15 to-primary/5 ring-border/50 ring-offset-2 ring-offset-background group-hover:ring-primary/30 group-hover:shadow-md group-hover:from-primary/20 group-hover:to-primary/10",
+                              )}
+                            >
+                              <Users
                                 className={cn(
-                                  "w-3.5 h-3.5 flex-shrink-0 transition-colors",
-                                  isActive
-                                    ? "text-white/80"
-                                    : "text-muted-foreground group-hover:text-foreground/70",
+                                  "w-4 h-4",
+                                  isActive ? "text-white" : "text-primary",
                                 )}
                               />
+                            </div>
+                          )}
+
+                          {/* Group Info */}
+                          <div className="flex-1 min-w-0 relative z-10">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p
+                                className={cn(
+                                  "text-sm font-semibold truncate transition-colors",
+                                  isActive ? "text-white" : "text-foreground",
+                                )}
+                              >
+                                {group.name}
+                              </p>
+                              {group.is_private && (
+                                <Lock
+                                  className={cn(
+                                    "w-3.5 h-3.5 flex-shrink-0 transition-colors",
+                                    isActive
+                                      ? "text-white/80"
+                                      : "text-muted-foreground group-hover:text-foreground/70",
+                                  )}
+                                />
+                              )}
+                            </div>
+                            {group.description && (
+                              <p
+                                className={cn(
+                                  "text-xs truncate transition-colors",
+                                  isActive
+                                    ? "text-white/85"
+                                    : "text-muted-foreground group-hover:text-muted-foreground/90",
+                                )}
+                              >
+                                {group.description}
+                              </p>
                             )}
                           </div>
-                          {group.description && (
-                            <p
-                              className={cn(
-                                "text-xs truncate transition-colors",
-                                isActive
-                                  ? "text-white/85"
-                                  : "text-muted-foreground group-hover:text-muted-foreground/90",
-                              )}
-                            >
-                              {group.description}
-                            </p>
-                          )}
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Empty State for Following Groups */}
-              {!showLoading && followedGroups.length === 0 && (
-                <Link
-                  href="/discuss/search-group"
-                  onClick={handleLinkClick}
-                  className="block group"
-                >
-                  <div className="py-8 px-4 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 transition-transform duration-200 group-hover:shadow-md group-hover:scale-[1.01]">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
-                      Not following any groups
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      Search for groups to join and start discussing
-                    </p>
+                        </Link>
+                      );
+                    })}
                   </div>
-                </Link>
-              )}
-            </div>
+                )}
+
+                {/* Empty State for Following Groups */}
+                {!showLoading && followedGroups.length === 0 && (
+                  <Link
+                    href="/discuss/search-group"
+                    onClick={handleLinkClick}
+                    className="block group"
+                  >
+                    <div className="py-8 px-4 text-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 transition-transform duration-200 group-hover:shadow-md group-hover:scale-[1.01]">
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Not following any groups
+                      </p>
+                      <p className="text-xs text-muted-foreground/70">
+                        Search for groups to join and start discussing
+                      </p>
+                    </div>
+                  </Link>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         </CardContent>
       </Card>

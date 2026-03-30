@@ -218,7 +218,7 @@ function FixtureVoteButton({
           disabled={triggerDisabled}
           title={triggerTitle}
         >
-          <VoteIcon className="w-4 h-4 mr-2" />
+          <VoteIcon className="w-4 h-4 " />
           {triggerLabel}
         </Button>
       </DialogTrigger>
@@ -429,7 +429,7 @@ export default function FixturePostHeader({
                       />
                     </div>
                   ) : null}
-                  <span className="text-[11px] md:text-xs font-bold uppercase tracking-wide text-white/80 truncate">
+                  <span className="text-[11px] md:text-xs font-bold uppercase tracking-wide text-white/80 line-clamp-1">
                     {leagueName}
                   </span>
                 </div>
