@@ -183,6 +183,7 @@ export function useLogout() {
       // Clear all user-specific cached data on logout / account switch
       queryClient.removeQueries({ queryKey: ["userGroups"] });
       queryClient.removeQueries({ queryKey: ["notifications"] });
+      queryClient.removeQueries({ queryKey: ["votes"] });
     },
   });
 }
