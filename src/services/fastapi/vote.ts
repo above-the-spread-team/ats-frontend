@@ -38,8 +38,21 @@ function voteFetchInit(includeContentTypeJson = false): RequestInit {
   };
 }
 
+export class RateLimitError extends Error {
+  /** Seconds until the next request slot opens (from Retry-After header). */
+  retryAfter: number;
+  constructor(retryAfter: number) {
+    super("rate_limit");
+    this.retryAfter = retryAfter;
+  }
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
+    if (res.status === 429) {
+      const retryAfter = parseInt(res.headers.get("Retry-After") ?? "60", 10);
+      throw new RateLimitError(isNaN(retryAfter) ? 60 : retryAfter);
+    }
     const body = await res.json().catch(() => ({}));
     const detail =
       typeof body?.detail === "string" ? body.detail : `HTTP ${res.status}`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAvailableFixtures, useVote } from "@/services/fastapi/vote";
+import { useAvailableFixtures, useVote, RateLimitError } from "@/services/fastapi/vote";
 import type { FixtureSummary, VoteChoice } from "@/type/fastapi/vote";
 import { CheckCircle2, Vote as VoteIcon } from "lucide-react";
 
@@ -73,6 +73,14 @@ function TeamLogo({
 
 // ── fixture vote row ───────────────────────────────────────────────────────
 
+function formatCooldown(seconds: number): string {
+  if (seconds <= 0) return "0s";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m === 0) return `${s}s`;
+  return s === 0 ? `${m}m` : `${m}m ${s}s`;
+}
+
 function FixtureVoteRow({
   fixture,
   canVote,
@@ -86,6 +94,29 @@ function FixtureVoteRow({
 }) {
   const { vote } = useVote();
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0); // seconds remaining
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const startCooldown = (seconds: number) => {
+    setCooldown(seconds);
+    timerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          timerRef.current = null;
+          setError(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const matchTime = new Date(fixture.match_date).toLocaleTimeString([], {
     hour: "2-digit",
@@ -93,18 +124,20 @@ function FixtureVoteRow({
   });
 
   const handleVote = async (choice: VoteChoice) => {
+    if (cooldown > 0) return;
     setError(null);
     onVoted(choice); // optimistic — show locked state immediately
     try {
       await vote(fixture.fixture_id, choice);
     } catch (e) {
       onVoted(null); // revert on failure
-      const msg = e instanceof Error ? e.message : "Failed to submit";
-      if (msg.toLowerCase().includes("already voted")) return;
-      if (msg.toLowerCase().includes("rate limit")) {
-        setError("Too many votes. Please wait a moment and try again.");
+      if (e instanceof RateLimitError) {
+        setError(`Rate limit reached — next slot opens in`);
+        startCooldown(e.retryAfter);
         return;
       }
+      const msg = e instanceof Error ? e.message : "Failed to submit";
+      if (msg.toLowerCase().includes("already voted")) return;
       setError(msg);
     }
   };
@@ -173,12 +206,12 @@ function FixtureVoteRow({
             {VOTE_META.map((v) => (
               <button
                 key={v.key}
-                disabled={!canVote}
+                disabled={!canVote || cooldown > 0}
                 onClick={() => handleVote(v.key)}
                 className={[
                   "flex h-full min-h-0 items-center justify-center rounded-md py-1 text-[11px] sm:text-xs font-bold text-white transition-all truncate px-0.5",
                   v.bg,
-                  !canVote
+                  !canVote || cooldown > 0
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:brightness-110 active:scale-95",
                 ].join(" ")}
@@ -190,7 +223,18 @@ function FixtureVoteRow({
         )}
       </div>
 
-      {error && <p className="text-xs text-destructive text-center">{error}</p>}
+      {error && (
+        <div className="flex items-center justify-center gap-1.5 rounded-md bg-destructive/10 px-3 py-1.5">
+          <p className="text-xs text-destructive text-center">
+            {error}
+            {cooldown > 0 && (
+              <span className="font-semibold tabular-nums ml-1">
+                {formatCooldown(cooldown)}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
