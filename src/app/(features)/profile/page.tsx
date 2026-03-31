@@ -13,6 +13,7 @@ import UserInfo from "@/app/(features)/profile/_components/user-info";
 import UserPosts from "@/app/(features)/profile/_components/user-posts";
 import UserGroups from "@/app/(features)/profile/_components/user-groups";
 import Notification from "@/app/(features)/profile/_components/notification";
+import UserPredictions from "@/app/(features)/profile/_components/user-predictions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const VALID_TABS: ProfileTabId[] = [
@@ -20,6 +21,7 @@ const VALID_TABS: ProfileTabId[] = [
   "groups",
   "posts",
   "notifications",
+  "predictions",
 ];
 
 function isValidTab(tab: string | null): tab is ProfileTabId {
@@ -112,6 +114,9 @@ function MePageContent() {
                       group_count: publicProfile.group_count,
                       comment_count: publicProfile.comment_count,
                       total_likes: publicProfile.total_likes,
+                      prediction_accuracy: publicProfile.prediction_accuracy,
+                      total_predictions: publicProfile.total_predictions,
+                      correct_predictions: publicProfile.correct_predictions,
                     }
                   : undefined
               }
@@ -119,6 +124,7 @@ function MePageContent() {
           )}
           {activeTab === "groups" && <UserGroups userId={user.id} />}
           {activeTab === "posts" && <UserPosts userId={user.id} />}
+          {activeTab === "predictions" && <UserPredictions />}
           {activeTab === "notifications" && <Notification />}
         </div>
       </div>

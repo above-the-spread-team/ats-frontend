@@ -20,6 +20,9 @@ export interface UserPublicResponse {
   group_count: number;
   comment_count: number;
   total_likes: number;
+  prediction_accuracy: number | null; // null if no resolved predictions
+  total_predictions: number;
+  correct_predictions: number;
 }
 
 export interface TokenResponse {

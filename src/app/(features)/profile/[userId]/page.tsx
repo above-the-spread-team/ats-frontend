@@ -13,6 +13,7 @@ import UserInfo from "@/app/(features)/profile/_components/user-info";
 import UserPosts from "@/app/(features)/profile/_components/user-posts";
 import UserGroups from "@/app/(features)/profile/_components/user-groups";
 import Notification from "@/app/(features)/profile/_components/notification";
+import UserPredictions from "@/app/(features)/profile/_components/user-predictions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfileByUserIdPage() {
@@ -101,7 +102,7 @@ export default function ProfileByUserIdPage() {
 
   if (isLoadingProfile || !profileUser) {
     const skeletonNavItems = NAV_ITEMS.filter(
-      (item) => showNotifications || item.id !== "notifications",
+      (item) => showNotifications || !item.selfOnly,
     );
     return (
       <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
@@ -146,6 +147,9 @@ export default function ProfileByUserIdPage() {
                       group_count: publicUser.group_count,
                       comment_count: publicUser.comment_count,
                       total_likes: publicUser.total_likes,
+                      prediction_accuracy: publicUser.prediction_accuracy,
+                      total_predictions: publicUser.total_predictions,
+                      correct_predictions: publicUser.correct_predictions,
                     }
                   : undefined
               }
@@ -153,6 +157,7 @@ export default function ProfileByUserIdPage() {
           )}
           {activeTab === "groups" && <UserGroups userId={profileUser.id} />}
           {activeTab === "posts" && <UserPosts userId={profileUser.id} />}
+          {activeTab === "predictions" && <UserPredictions />}
           {activeTab === "notifications" && showNotifications && (
             <Notification />
           )}

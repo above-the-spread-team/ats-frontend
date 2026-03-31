@@ -14,6 +14,7 @@ import {
   CircleDot,
   Camera,
   Plus,
+  Target,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import UserIcon from "@/components/common/user-icon";
@@ -50,6 +51,9 @@ export interface UserStats {
   group_count: number;
   comment_count: number;
   total_likes: number;
+  prediction_accuracy?: number | null;
+  total_predictions?: number;
+  correct_predictions?: number;
 }
 
 /** Full user has email/email_verified/role/etc.; public profile has counts. */
@@ -315,6 +319,22 @@ export default function UserInfo({
                   </span>
                 }
               />
+              {(statsToShow.total_predictions ?? 0) > 0 && (
+                <InfoRow
+                  icon={Target}
+                  label="Prediction accuracy"
+                  value={
+                    <span className="tabular-nums">
+                      {statsToShow.prediction_accuracy != null
+                        ? `${statsToShow.prediction_accuracy.toFixed(1)}%`
+                        : "—"}{" "}
+                      <span className="text-xs font-normal text-muted-foreground">
+                        ({statsToShow.correct_predictions ?? 0}/{statsToShow.total_predictions ?? 0})
+                      </span>
+                    </span>
+                  }
+                />
+              )}
             </div>
           </>
         )}
