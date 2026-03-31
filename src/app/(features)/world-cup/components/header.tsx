@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const WORLD_CUP_START = new Date("2026-06-11T00:00:00");
@@ -8,7 +9,8 @@ const WORLD_CUP_END = new Date("2026-07-19T00:00:00");
 function getTimeLeft() {
   const now = new Date();
   const diff = WORLD_CUP_START.getTime() - now.getTime();
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, started: true };
+  if (diff <= 0)
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, started: true };
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
     hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
@@ -54,18 +56,18 @@ export default function WorldCupHeader() {
     return () => clearInterval(timer);
   }, []);
 
-  const isLive =
-    new Date() >= WORLD_CUP_START && new Date() <= WORLD_CUP_END;
+  const isLive = new Date() >= WORLD_CUP_START && new Date() <= WORLD_CUP_END;
 
   return (
     <div className="relative w-full overflow-hidden min-h-[300px] sm:min-h-[360px] md:min-h-[420px]">
       {/* Background image — different stadium shot from the home promo */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1600&q=85&auto=format&fit=crop"
         alt="World Cup 2026 stadium"
+        fill
+        priority
         className="absolute inset-0 w-full h-full object-cover object-center"
-        loading="eager"
+        sizes="(max-width: 768px) 200px, 1200px"
       />
 
       {/* Layered overlays */}
@@ -78,10 +80,8 @@ export default function WorldCupHeader() {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-between h-full min-h-[300px] sm:min-h-[360px] md:min-h-[420px] px-4 sm:px-6 md:px-8 pt-6 sm:pt-8 md:pt-10 pb-6 sm:pb-8">
-
         {/* ── Top: Branding ── */}
         <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
-
           {/* Status badge */}
           {isLive ? (
             <span className="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-500/50 text-red-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
@@ -97,7 +97,10 @@ export default function WorldCupHeader() {
 
           {/* Trophy + Title */}
           <div className="flex flex-col items-center">
-            <span className="text-4xl sm:text-5xl md:text-6xl leading-none mb-1" aria-hidden>
+            <span
+              className="text-4xl sm:text-5xl md:text-6xl leading-none mb-1"
+              aria-hidden
+            >
               🏆
             </span>
             <h1 className="text-white font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-none tracking-tight">
@@ -133,9 +136,7 @@ export default function WorldCupHeader() {
             <div
               key={label}
               className={`flex flex-col items-center flex-1 py-2 ${
-                i < stats.length - 1
-                  ? "border-r border-white/15"
-                  : ""
+                i < stats.length - 1 ? "border-r border-white/15" : ""
               }`}
             >
               <span className="text-white font-black text-xl sm:text-2xl leading-none">
@@ -156,16 +157,21 @@ export default function WorldCupHeader() {
           {!timeLeft.started && (
             <div className="flex items-end gap-2 sm:gap-3">
               <CountdownUnit value={timeLeft.days} label="Days" />
-              <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">:</span>
+              <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">
+                :
+              </span>
               <CountdownUnit value={timeLeft.hours} label="Hours" />
-              <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">:</span>
+              <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">
+                :
+              </span>
               <CountdownUnit value={timeLeft.minutes} label="Mins" />
-              <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">:</span>
+              <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">
+                :
+              </span>
               <CountdownUnit value={timeLeft.seconds} label="Secs" />
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

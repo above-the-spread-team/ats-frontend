@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -46,12 +47,13 @@ export default function Promotion() {
     <Link href="/world-cup" className="block group focus:outline-none">
       <div className="relative w-full overflow-hidden rounded-xl md:rounded-2xl cursor-pointer min-h-[240px] sm:min-h-[280px] md:min-h-[300px]">
         {/* Background image */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1400&q=80&auto=format&fit=crop"
           alt="FIFA World Cup 2026 stadium"
+          fill
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
+          sizes=" (max-width: 768px) 200px, 600px"
         />
 
         {/* Overlays */}

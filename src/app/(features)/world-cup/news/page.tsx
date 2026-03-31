@@ -127,16 +127,18 @@ export default function WorldCupNews() {
                     <Image
                       src={getOptimizedNewsImage(article.image_url, 700)}
                       alt={article.title}
-                      fill
-                      className="object-cover"
-                      unoptimized
+                      width={400}
+                      height={400}
+                      className="object-cover w-full h-full"
                     />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
                       alt="Soccer stadium"
-                      className="w-full h-full object-cover"
+                      width={400}
+                      height={400}
+                      className="object-cover w-full h-full"
                     />
                   )}
 

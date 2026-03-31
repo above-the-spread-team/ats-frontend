@@ -12,6 +12,7 @@ import {
   Brain,
   TrendingUp,
 } from "lucide-react";
+import Image from "next/image";
 import FullPage from "@/components/common/full-page";
 import Nav, { NavTab } from "@/components/common/nav";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -240,12 +241,12 @@ function GameDetailContent() {
       {/* Fixture Detail - Always visible at top */}
       <div className="relative overflow-hidden pb-10 md:pb-12">
         {/* Background stadium image */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1731312084255-6b38e3ea2484?w=1600&q=80&auto=format&fit=crop"
-          alt=""
-          aria-hidden
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          alt="Soccer stadium"
+          fill
+          className="object-cover w-full h-full"
+          sizes="(max-width: 768px) 300px, 1000px"
         />
         {/* Dark overlay keeping the original teal tint */}
         {/* <div className="absolute inset-0 bg-gradient-to-r from-[#0d3030]/40 via-[#1b4d53]/80 to-[#0d3030]/90" /> */}

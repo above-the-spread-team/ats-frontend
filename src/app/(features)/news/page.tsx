@@ -155,18 +155,17 @@ export default function News() {
                           <Image
                             src={getOptimizedNewsImage(article.image_url, 700)}
                             alt={article.title}
-                            fill
-                            className="object-cover"
-                            unoptimized
+                            width={400}
+                            height={400}
+                            className="object-cover w-full h-full"
                           />
                         ) : (
                           <Image
                             src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
                             alt="Soccer stadium"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, 320px"
-                            unoptimized
+                            width={400}
+                            height={400}
+                            className="object-cover w-full h-full"
                           />
                         )}
                         <div className="absolute top-2 left-2">

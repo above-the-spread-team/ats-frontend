@@ -129,7 +129,7 @@ function StatusBadge({ fixture }: { fixture: FixtureResponseItem }) {
 function TeamLogo({
   logo,
   name,
-  size = 28,
+  size = 40,
 }: {
   logo: string | null;
   name: string;
@@ -215,7 +215,7 @@ function FixtureCard({
         <TeamLogo
           logo={fixture.teams.home.logo}
           name={fixture.teams.home.name}
-          size={26}
+          size={30}
         />
       </div>
 
