@@ -37,6 +37,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://abovethespread.com"
   ),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -88,7 +91,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${ff.variable} font-alan-sans `}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SportsOrganization",
+              name: "Above The Spread",
+              url: "https://abovethespread.com",
+              logo: "https://abovethespread.com/logo.png",
+              description:
+                "Live football fixtures, in-depth stats, match predictions, and fan discussions — covering Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and European cups.",
+            }),
+          }}
+        />
+      </head>
+      <body className={ff.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
