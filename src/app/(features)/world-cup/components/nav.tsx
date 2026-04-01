@@ -7,6 +7,7 @@ import { FaUsers } from "react-icons/fa";
 import { RiCalendarScheduleFill } from "react-icons/ri";
 import { PiRanking } from "react-icons/pi";
 import { IoNewspaperOutline } from "react-icons/io5";
+import { MdSportsSoccer } from "react-icons/md";
 
 const tabs = [
   {
@@ -15,7 +16,6 @@ const tabs = [
     icon: RiCalendarScheduleFill,
     exact: true,
   },
-
   {
     label: "Ranking",
     href: "/world-cup/ranking",
@@ -29,6 +29,12 @@ const tabs = [
     exact: false,
   },
   { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
+  {
+    label: "Prediction",
+    href: "/world-cup/prediction",
+    icon: MdSportsSoccer,
+    exact: false,
+  },
 ];
 
 export default function WorldCupNav() {
