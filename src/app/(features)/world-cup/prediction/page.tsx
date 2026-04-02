@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useWorldCupGroups,
@@ -14,11 +14,7 @@ import type {
   WorldCupTeamWithPercentage,
   WorldCupGroupResponse,
 } from "@/type/fastapi/world-cap-vote";
-import {
-  VotingModal,
-  TeamLogo,
-  CheckIcon,
-} from "./components/world-cup-vote";
+import { VotingModal, TeamLogo, CheckIcon } from "./components/world-cup-vote";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
