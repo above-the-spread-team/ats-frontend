@@ -137,11 +137,13 @@ export default function UserInfo({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Profile header: avatar + name + badge */}
+    <div className="space-y-4">
+      {/* Hero: avatar + name + verification badge */}
       <Card className="overflow-hidden border-border/50 bg-card shadow-sm">
-        <div className="relative bg-gradient-to-br from-primary-font/40 via-transparent to-primary-font/20  px-4 py-2">
-          <div className="flex flex-col items-center py-2 px-2 gap-4 text-center sm:flex-row sm:items-center sm:text-left">
+        <div className="relative bg-gradient-to-br from-primary-active/95 via-primary-active/85 to-primary-active/70 px-4 py-3 text-white">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,hsl(var(--primary-font)/0.35),transparent_55%)]" />
+
+          <div className="relative flex flex-col items-center py-2 px-2 gap-4 text-center sm:flex-row sm:items-center sm:text-left">
             <div className="relative shrink-0">
               {canEditAvatar ? (
                 <button
@@ -184,6 +186,7 @@ export default function UserInfo({
                   />
                 </div>
               )}
+
               {canEditAvatar && (
                 <button
                   type="button"
@@ -202,18 +205,19 @@ export default function UserInfo({
                 </button>
               )}
             </div>
+
             <div className="sm:pb-1">
-              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
                 {user.username}
               </h1>
 
               {showEmailSection && emailVerified !== undefined && (
                 <span
                   className={cn(
-                    "mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                    "mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium border border-white/20 text-white",
                     emailVerified
-                      ? "bg-green-500/10 text-green-700 dark:text-green-400/90"
-                      : "bg-amber-500/10 text-amber-700 dark:text-amber-400/90",
+                      ? "bg-green-500/15"
+                      : "bg-amber-500/15",
                   )}
                 >
                   {emailVerified ? (
@@ -229,114 +233,120 @@ export default function UserInfo({
         </div>
       </Card>
 
-      {/* Details & Activity in one block */}
-      <div className="p-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Details
-        </p>
-        <div className="divide-y divide-border/60">
-          {showEmailSection && fullUser && (
-            <InfoRow
-              icon={Mail}
-              label="Email"
-              value={<span className="truncate">{fullUser.email}</span>}
-            />
-          )}
-          <InfoRow
-            icon={Calendar}
-            label="Joined"
-            value={formatDate(user.created_at)}
-          />
-          {fullUser?.role && (
-            <InfoRow
-              icon={Shield}
-              label="Role"
-              value={<span className="capitalize">{fullUser.role}</span>}
-            />
-          )}
-          {fullUser?.updated_at && (
-            <InfoRow
-              icon={Clock}
-              label="Last updated"
-              value={formatDateTime(fullUser.updated_at)}
-            />
-          )}
-          {fullUser && "is_active" in fullUser && (
-            <InfoRow
-              icon={CircleDot}
-              label="Status"
-              value={
-                <span
-                  className={
-                    fullUser.is_active
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-muted-foreground"
-                  }
-                >
-                  {fullUser.is_active ? "Active" : "Inactive"}
-                </span>
-              }
-            />
-          )}
-        </div>
-        {statsToShow && (
-          <>
-            <p className="mb-3 mt-6 md:mt-8 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Activity
+      {/* Details + Activity */}
+      <div
+        className={cn(
+          "grid gap-4",
+          statsToShow ? "md:grid-cols-2" : "md:grid-cols-1",
+        )}
+      >
+        <Card className="border-border/50 bg-card shadow-sm">
+          <div className="p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Details
             </p>
             <div className="divide-y divide-border/60">
-              <InfoRow
-                icon={FileText}
-                label="Posts"
-                value={
-                  <span className="tabular-nums">{statsToShow.post_count}</span>
-                }
-              />
-              <InfoRow
-                icon={Users}
-                label="Groups"
-                value={
-                  <span className="tabular-nums">
-                    {statsToShow.group_count}
-                  </span>
-                }
-              />
-              <InfoRow
-                icon={MessageCircle}
-                label="Comments"
-                value={
-                  <span className="tabular-nums">
-                    {statsToShow.comment_count}
-                  </span>
-                }
-              />
-              <InfoRow
-                icon={Heart}
-                label="Likes received"
-                value={
-                  <span className="tabular-nums">
-                    {statsToShow.total_likes}
-                  </span>
-                }
-              />
-              {(statsToShow.total_predictions ?? 0) > 0 && (
+              {showEmailSection && fullUser && (
                 <InfoRow
-                  icon={Target}
-                  label="Prediction accuracy"
+                  icon={Mail}
+                  label="Email"
+                  value={<span className="truncate">{fullUser.email}</span>}
+                />
+              )}
+              <InfoRow
+                icon={Calendar}
+                label="Joined"
+                value={formatDate(user.created_at)}
+              />
+              {fullUser?.role && (
+                <InfoRow
+                  icon={Shield}
+                  label="Role"
+                  value={<span className="capitalize">{fullUser.role}</span>}
+                />
+              )}
+              {fullUser?.updated_at && (
+                <InfoRow
+                  icon={Clock}
+                  label="Last updated"
+                  value={formatDateTime(fullUser.updated_at)}
+                />
+              )}
+              {fullUser && "is_active" in fullUser && (
+                <InfoRow
+                  icon={CircleDot}
+                  label="Status"
                   value={
-                    <span className="tabular-nums">
-                      {statsToShow.prediction_accuracy != null
-                        ? `${statsToShow.prediction_accuracy.toFixed(1)}%`
-                        : "—"}{" "}
-                      <span className="text-xs font-normal text-muted-foreground">
-                        ({statsToShow.correct_predictions ?? 0}/{statsToShow.total_predictions ?? 0})
-                      </span>
+                    <span
+                      className={
+                        fullUser.is_active
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {fullUser.is_active ? "Active" : "Inactive"}
                     </span>
                   }
                 />
               )}
             </div>
-          </>
+          </div>
+        </Card>
+
+        {statsToShow && (
+          <Card className="border-border/50 bg-card shadow-sm">
+            <div className="p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Activity
+              </p>
+              <div className="divide-y divide-border/60">
+                <InfoRow
+                  icon={FileText}
+                  label="Posts"
+                  value={
+                    <span className="tabular-nums">{statsToShow.post_count}</span>
+                  }
+                />
+                <InfoRow
+                  icon={Users}
+                  label="Groups"
+                  value={
+                    <span className="tabular-nums">{statsToShow.group_count}</span>
+                  }
+                />
+                <InfoRow
+                  icon={MessageCircle}
+                  label="Comments"
+                  value={
+                    <span className="tabular-nums">{statsToShow.comment_count}</span>
+                  }
+                />
+                <InfoRow
+                  icon={Heart}
+                  label="Likes received"
+                  value={
+                    <span className="tabular-nums">{statsToShow.total_likes}</span>
+                  }
+                />
+                {(statsToShow.total_predictions ?? 0) > 0 && (
+                  <InfoRow
+                    icon={Target}
+                    label="Prediction accuracy"
+                    value={
+                      <span className="tabular-nums">
+                        {statsToShow.prediction_accuracy != null
+                          ? `${statsToShow.prediction_accuracy.toFixed(1)}%`
+                          : "—"}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          ({statsToShow.correct_predictions ?? 0}/{statsToShow.total_predictions ?? 0})
+                        </span>
+                      </span>
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          </Card>
         )}
       </div>
     </div>

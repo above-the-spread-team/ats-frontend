@@ -92,27 +92,21 @@ function GroupSection({
   groups: GroupListItemWithCounts[];
   emptyMessage: string;
 }) {
-  if (groups.length === 0) {
-    return (
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </p>
-        <p className="text-sm text-muted-foreground/80">{emptyMessage}</p>
-      </div>
-    );
-  }
   return (
-    <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <section className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {title}
       </p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {groups.map((group) => (
-          <GroupCard key={group.id} group={group} />
-        ))}
-      </div>
-    </div>
+      {groups.length === 0 ? (
+        <p className="text-sm text-muted-foreground/80">{emptyMessage}</p>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {groups.map((group) => (
+            <GroupCard key={group.id} group={group} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -131,19 +125,29 @@ export default function UserGroups({ userId }: UserGroupsProps) {
 
   if (isLoading) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="flex gap-3">
-                <Skeleton className="h-12 w-12 flex-shrink-0 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="space-y-4">
+        {[0, 1].map((sectionIdx) => (
+          <section
+            key={sectionIdx}
+            className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm"
+          >
+            <Skeleton className="mb-4 h-4 w-40" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[...Array(2)].map((_, i) => (
+                <Card key={i} className="border-border/50 shadow-none">
+                  <CardContent className="p-4">
+                    <div className="flex gap-3">
+                      <Skeleton className="h-12 w-12 flex-shrink-0 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     );
@@ -151,7 +155,7 @@ export default function UserGroups({ userId }: UserGroupsProps) {
 
   if (items.length === 0) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-12 text-center">
           <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <p className="mb-2 text-muted-foreground">No groups yet</p>

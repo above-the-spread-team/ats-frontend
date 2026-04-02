@@ -31,30 +31,44 @@ export default function UserPosts({ userId }: UserPostsProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="flex gap-3">
-                <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-3/4" />
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Posts
+            </p>
+            <Skeleton className="mt-1 h-5 w-56" />
+          </div>
+          <Skeleton className="h-9 w-28 rounded-md" />
+        </div>
+
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="border-border/50 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-12 text-center">
-          <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-2 ring-border/50">
+            <FileText className="w-8 h-8 text-muted-foreground" />
+          </div>
           <p className="text-muted-foreground mb-2">No posts yet</p>
           <p className="text-sm text-muted-foreground/80 mb-4">
             Your posts from the discuss section will appear here.
@@ -69,6 +83,21 @@ export default function UserPosts({ userId }: UserPostsProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Posts
+          </p>
+          <h2 className="mt-1 text-base font-bold tracking-tight">Discuss activity</h2>
+        </div>
+        {totalPages > 1 ? (
+          <p className="text-sm text-muted-foreground">
+            Page <span className="font-medium text-foreground tabular-nums">{page}</span> of{" "}
+            <span className="font-medium text-foreground tabular-nums">{totalPages}</span>
+          </p>
+        ) : null}
+      </div>
+
       <div className="space-y-3">
         {items.map((post) => (
           <PostCard

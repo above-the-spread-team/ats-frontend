@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Check } from "lucide-react";
 import {
@@ -32,21 +33,24 @@ const PAGE_SIZE = 15;
 function NotificationRow({
   item,
   onMarkRead,
+  isMarkReadPending,
 }: {
   item: NotificationItem;
   onMarkRead: (id: number) => void;
+  isMarkReadPending?: boolean;
 }) {
   const link = getNotificationLink(item);
   const showGroupIcon = !!item.group_avatar_url;
-  const content = (
-    <div
-      className={cn(
-        "flex gap-3 rounded-lg border p-3 transition-colors",
-        item.read_at
-          ? "border-border/50 bg-card"
-          : "border-primary/20 bg-primary/5",
-      )}
-    >
+
+  const rowClassName = cn(
+    "flex items-start gap-3 rounded-lg border p-3 transition-colors",
+    item.read_at
+      ? "border-border/50 bg-card hover:bg-muted/30 hover:border-primary/15"
+      : "border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/30",
+  );
+
+  const leftContent = (
+    <>
       <div className="flex-shrink-0">
         {showGroupIcon ? (
           <UserIcon
@@ -70,6 +74,7 @@ function NotificationRow({
           </div>
         )}
       </div>
+
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground">
           {formatNotificationMessage(item)}
@@ -78,30 +83,42 @@ function NotificationRow({
           {formatTimeAgo(item.created_at)}
         </p>
       </div>
+    </>
+  );
+
+  return (
+    <div className={rowClassName}>
+      {link ? (
+        <Link
+          href={link}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+          aria-label={formatNotificationMessage(item)}
+        >
+          {leftContent}
+        </Link>
+      ) : (
+        leftContent
+      )}
+
       {!item.read_at && (
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          className="flex-shrink-0"
+          className="flex-shrink-0 rounded-full"
           onClick={(e) => {
             e.preventDefault();
             onMarkRead(item.id);
           }}
+          disabled={isMarkReadPending}
           title="Mark as read"
+          aria-label="Mark as read"
         >
           <Check className="h-4 w-4" />
         </Button>
       )}
     </div>
   );
-  if (link) {
-    return (
-      <Link href={link} className="block">
-        {content}
-      </Link>
-    );
-  }
-  return content;
 }
 
 export default function Notification() {
@@ -131,24 +148,29 @@ export default function Notification() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-2">
-        {unreadCount > 0 && (
-          <span className="text-sm text-muted-foreground">
-            {unreadCount} unread
-          </span>
-        )}
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={unreadOnly}
-            onChange={(e) => {
-              setUnreadOnly(e.target.checked);
-              setPage(1);
-            }}
-            className="rounded border-border"
-          />
-          Unread only
-        </label>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          {unreadCount > 0 && (
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary-font">
+              {unreadCount} unread
+            </span>
+          )}
+
+          <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card px-3 py-2">
+            <Switch
+              checked={unreadOnly}
+              onCheckedChange={(checked) => {
+                setUnreadOnly(checked);
+                setPage(1);
+              }}
+              aria-label="Unread only"
+            />
+            <span className="text-sm font-medium text-muted-foreground">
+              Unread only
+            </span>
+          </div>
+        </div>
+
         {hasUnreadOnPage && (
           <Button
             variant="outline"
@@ -169,7 +191,7 @@ export default function Notification() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <Card className="border-border/50">
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="py-12 text-center">
             <Bell className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="mb-2 text-muted-foreground">
@@ -187,6 +209,7 @@ export default function Notification() {
               key={item.id}
               item={item}
               onMarkRead={handleMarkRead}
+              isMarkReadPending={markReadMutation.isPending}
             />
           ))}
           {totalPages > 1 && (

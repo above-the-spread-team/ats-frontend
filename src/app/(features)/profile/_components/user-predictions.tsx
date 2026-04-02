@@ -99,7 +99,7 @@ function StatsCard() {
 
   if (isLoading) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="p-4">
           <Skeleton className="h-5 w-32 mb-4" />
           <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border/50">
@@ -118,7 +118,7 @@ function StatsCard() {
 
   if (error || !data) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
           Could not load prediction stats.
         </CardContent>
@@ -127,7 +127,7 @@ function StatsCard() {
   }
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-border/50 bg-card shadow-sm">
       <CardContent className="p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
           My Stats
@@ -225,7 +225,7 @@ function HistoryCard() {
 
   if (isLoading) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="p-4 space-y-3">
           <Skeleton className="h-5 w-40" />
           {[...Array(5)].map((_, i) => (
@@ -242,7 +242,7 @@ function HistoryCard() {
 
   if (error || !data) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
           Could not load prediction history.
         </CardContent>
@@ -252,7 +252,7 @@ function HistoryCard() {
 
   if (data.items.length === 0 && page === 1) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-10 text-center">
           <Target className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm text-muted-foreground">No resolved predictions yet.</p>
@@ -265,7 +265,7 @@ function HistoryCard() {
   }
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-border/50 bg-card shadow-sm">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -388,7 +388,7 @@ function LeaderboardCard() {
 
   if (isLoading) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="p-4 space-y-3">
           <Skeleton className="h-5 w-36" />
           {[...Array(5)].map((_, i) => (
@@ -406,7 +406,7 @@ function LeaderboardCard() {
 
   if (error || !data) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
           Could not load leaderboard.
         </CardContent>
@@ -421,7 +421,7 @@ function LeaderboardCard() {
   const myTotalPredictions = stats?.total_predictions ?? 0;
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-border/50 bg-card shadow-sm">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -468,10 +468,16 @@ function LeaderboardCard() {
 
 export default function UserPredictions() {
   return (
-    <div className="space-y-4">
-      <StatsCard />
-      <HistoryCard />
-      <LeaderboardCard />
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="md:col-span-1">
+        <StatsCard />
+      </div>
+      <div className="md:col-span-1">
+        <LeaderboardCard />
+      </div>
+      <div className="md:col-span-2">
+        <HistoryCard />
+      </div>
     </div>
   );
 }

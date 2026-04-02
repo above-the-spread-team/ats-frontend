@@ -186,7 +186,7 @@ export default function SearchGroupPage() {
       {!isLoading && (
         <>
           {filteredGroups.length > 0 ? (
-            <div className="grid  md:grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3">
+            <div className="grid  grid-cols-1 xl:grid-cols-2 gap-2 md:gap-3">
               {filteredGroups.map((group) => (
                 <Card
                   key={group.id}

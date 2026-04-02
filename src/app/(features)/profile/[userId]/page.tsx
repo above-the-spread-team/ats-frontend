@@ -4,17 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useUser } from "@/services/fastapi/user";
-import {
-  UserNav,
-  type ProfileTabId,
-  NAV_ITEMS,
-} from "@/app/(features)/profile/_components/user-nav";
+import { type ProfileTabId } from "@/app/(features)/profile/_components/user-nav";
 import UserInfo from "@/app/(features)/profile/_components/user-info";
 import UserPosts from "@/app/(features)/profile/_components/user-posts";
 import UserGroups from "@/app/(features)/profile/_components/user-groups";
 import Notification from "@/app/(features)/profile/_components/notification";
 import UserPredictions from "@/app/(features)/profile/_components/user-predictions";
-import { Skeleton } from "@/components/ui/skeleton";
+import ProfileShell, {
+  ProfilePageSkeleton,
+} from "@/app/(features)/profile/_components/profile-shell";
 
 export default function ProfileByUserIdPage() {
   const router = useRouter();
@@ -67,6 +65,7 @@ export default function ProfileByUserIdPage() {
       : publicUserLoading;
   const showEmail = !!isViewingSelf && !!currentUser;
   const showNotifications = !!isViewingSelf;
+  const pageTitle = isViewingSelf ? "My Profile" : "Profile";
 
   useEffect(() => {
     if (
@@ -101,68 +100,40 @@ export default function ProfileByUserIdPage() {
   }
 
   if (isLoadingProfile || !profileUser) {
-    const skeletonNavItems = NAV_ITEMS.filter(
-      (item) => showNotifications || !item.selfOnly,
-    );
-    return (
-      <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
-        <h1 className="text-lg md:text-xl font-bold text-primary-title">
-          Profile
-        </h1>
-        <div className="flex flex-col md:flex-row">
-          <div className="flex flex-row md:flex-col h-fit justify-between w-full gap-0 md:w-40 bg-card border border-border/60 rounded-t-2xl md:rounded-r-none md:rounded-l-2xl overflow-hidden">
-            {skeletonNavItems.map((item) => (
-              <Skeleton key={item.id} className="m-2 h-10 rounded-lg" />
-            ))}
-          </div>
-          <div className="min-h-[700px] rounded-b-2xl rounded-r-2xl w-full border border-border/60 border-l-0 bg-card p-4">
-            <Skeleton className="h-48 w-full rounded-xl" />
-          </div>
-        </div>
-      </div>
-    );
+    return <ProfilePageSkeleton title={pageTitle} showNotifications={showNotifications} />;
   }
 
   return (
-    <div className="container mx-auto space-y-4 px-4 max-w-6xl py-3 md:py-4">
-      <h1 className="text-lg md:text-xl font-bold text-primary-title">
-        {isViewingSelf ? "My Profile" : "Profile"}
-      </h1>
-      <div className="flex flex-col md:flex-row">
-        <UserNav
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          showNotifications={showNotifications}
+    <ProfileShell
+      title={pageTitle}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      showNotifications={showNotifications}
+    >
+      {activeTab === "user-info" && (
+        <UserInfo
+          user={profileUser}
+          showEmail={showEmail}
+          canEditAvatar={isViewingSelf}
+          stats={
+            isViewingSelf && publicUser
+              ? {
+                  post_count: publicUser.post_count,
+                  group_count: publicUser.group_count,
+                  comment_count: publicUser.comment_count,
+                  total_likes: publicUser.total_likes,
+                  prediction_accuracy: publicUser.prediction_accuracy,
+                  total_predictions: publicUser.total_predictions,
+                  correct_predictions: publicUser.correct_predictions,
+                }
+              : undefined
+          }
         />
-        <div className="min-h-[700px] rounded-b-2xl rounded-r-2xl w-full border border-border/60 border-l-0 bg-card p-4">
-          {activeTab === "user-info" && (
-            <UserInfo
-              user={profileUser}
-              showEmail={showEmail}
-              canEditAvatar={isViewingSelf}
-              stats={
-                isViewingSelf && publicUser
-                  ? {
-                      post_count: publicUser.post_count,
-                      group_count: publicUser.group_count,
-                      comment_count: publicUser.comment_count,
-                      total_likes: publicUser.total_likes,
-                      prediction_accuracy: publicUser.prediction_accuracy,
-                      total_predictions: publicUser.total_predictions,
-                      correct_predictions: publicUser.correct_predictions,
-                    }
-                  : undefined
-              }
-            />
-          )}
-          {activeTab === "groups" && <UserGroups userId={profileUser.id} />}
-          {activeTab === "posts" && <UserPosts userId={profileUser.id} />}
-          {activeTab === "predictions" && <UserPredictions />}
-          {activeTab === "notifications" && showNotifications && (
-            <Notification />
-          )}
-        </div>
-      </div>
-    </div>
+      )}
+      {activeTab === "groups" && <UserGroups userId={profileUser.id} />}
+      {activeTab === "posts" && <UserPosts userId={profileUser.id} />}
+      {activeTab === "predictions" && <UserPredictions />}
+      {activeTab === "notifications" && showNotifications && <Notification />}
+    </ProfileShell>
   );
 }
