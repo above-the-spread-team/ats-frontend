@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { MyQueryClientProvider } from "@/providers/query-client";
 import { ToastContainer } from "react-toastify";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: {
@@ -78,6 +78,13 @@ export const metadata: Metadata = {
   },
   category: "sports",
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 const ff = Arimo({
   weight: ["400", "500", "600", "700"],
   variable: "--font-alan-sans",
