@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getStoredToken } from "@/services/fastapi/token-storage";
 import {
   useWorldCupGroups,
   useWorldCupDeadline,
@@ -17,14 +16,6 @@ import type {
   WorldCupTeamWithPercentage,
   WorldCupGroupResponse,
 } from "@/type/fastapi/world-cap-vote";
-import { Crown, Trophy, Users } from "lucide-react";
-import AskLogin from "@/components/common/ask-login";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -808,9 +799,7 @@ function VotingModal({
 
 export default function WorldCupPredictionPage() {
   const [isClient, setIsClient] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [votingModalOpen, setVotingModalOpen] = useState(false);
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   // Display picks (synced from existing prediction after load / after submit)
   const [groupPicks, setGroupPicks] = useState<Record<string, number>>({});
@@ -818,17 +807,15 @@ export default function WorldCupPredictionPage() {
 
   useEffect(() => {
     setIsClient(true);
-    setIsLoggedIn(!!getStoredToken());
   }, []);
 
   const { data: groups, isLoading: groupsLoading } = useWorldCupGroups();
-  const { data: deadline, isLoading: deadlineLoading } =
-    useWorldCupDeadline(isLoggedIn);
+  const { data: deadline, isLoading: deadlineLoading } = useWorldCupDeadline();
   const {
     data: existingPrediction,
     isLoading: predictionLoading,
     error: predictionError,
-  } = useMyPrediction(isLoggedIn);
+  } = useMyPrediction();
   const { data: champions, isLoading: championsLoading } =
     useChampionPercentages();
 
@@ -837,8 +824,7 @@ export default function WorldCupPredictionPage() {
 
   const hasExistingPrediction = !!existingPrediction && !predictionError;
   const votingClosed =
-    isLoggedIn &&
-    (existingPrediction?.is_locked || (!!deadline && !deadline.is_open));
+    existingPrediction?.is_locked || (!!deadline && !deadline.is_open);
 
   // Sync local display picks from existing prediction
   useEffect(() => {
@@ -881,7 +867,7 @@ export default function WorldCupPredictionPage() {
   if (!isClient) return null;
 
   const isLoading =
-    groupsLoading || (isLoggedIn && (deadlineLoading || predictionLoading));
+    groupsLoading || deadlineLoading || predictionLoading;
 
   if (isLoading) {
     return (
@@ -913,7 +899,7 @@ export default function WorldCupPredictionPage() {
       </div>
 
       {/* Deadline banner */}
-      {isLoggedIn && deadline && (
+      {deadline && (
         <DeadlineBanner
           deadline={deadline.deadline}
           isOpen={deadline.is_open}
@@ -922,35 +908,7 @@ export default function WorldCupPredictionPage() {
 
       {/* Vote / status button */}
       <div>
-        {!isLoggedIn ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setLoginDialogOpen(true)}
-              className="w-full py-3.5 rounded-xl text-sm lg:text-base font-bold bg-primary-font text-white hover:opacity-90 active:scale-[0.99] transition-all duration-150 shadow-sm"
-            >
-              🗳️ Vote now
-            </button>
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-              <DialogContent className="z-[100] max-w-md border-0 bg-transparent p-4 pt-10 shadow-none gap-0 sm:p-6 sm:pt-12 data-[state=open]:zoom-in-95">
-                <DialogHeader className="sr-only">
-                  <DialogTitle>Sign in to vote on World Cup predictions</DialogTitle>
-                </DialogHeader>
-                <AskLogin
-                  title="Pick the World Cup"
-                  description="Sign in to submit your group winners and champion prediction. Join the community and see how your picks compare."
-                  features={[
-                    { icon: Trophy, label: "Group winners" },
-                    { icon: Users, label: "Community percentages" },
-                    { icon: Crown, label: "Champion pick" },
-                  ]}
-                  ctaLabel="Sign in to vote"
-                  className="w-full max-w-none"
-                />
-              </DialogContent>
-            </Dialog>
-          </>
-        ) : votingClosed ? (
+        {votingClosed ? (
           <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-3">
             <span>🔒</span>
             <p className="text-xs text-muted-foreground font-medium">

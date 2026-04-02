@@ -140,6 +140,7 @@ export function useWorldCupDeadline(enabled = true) {
     queryFn: fetchDeadlineStatus,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+    refetchOnMount: "always",
     enabled,
   });
 }
@@ -150,6 +151,7 @@ export function useMyPrediction(enabled = true) {
     queryFn: fetchMyPrediction,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+    refetchOnMount: "always",
     retry: false,
     enabled,
   });
