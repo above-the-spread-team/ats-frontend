@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import { VotingModal } from "@/app/(features)/world-cup/prediction/components/wo
 
 const DISMISSED_KEY = "wc_vote_popup_dismissed_at";
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const OPEN_DELAY_MS = 10_000;
 
 function formatDeadline(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -31,6 +32,15 @@ function formatDeadline(iso: string) {
 export default function WorldCupVotePopup() {
   const [teaserOpen, setTeaserOpen] = useState(false);
   const [votingOpen, setVotingOpen] = useState(false);
+  const openDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+    return () => {
+      mountedAtRef.current = null;
+    };
+  }, []);
 
   const { data: deadline } = useWorldCupDeadline();
   const { data: groups } = useWorldCupGroups();
@@ -57,10 +67,26 @@ export default function WorldCupVotePopup() {
     if (deadline.your_prediction_exists) return;
     const dismissedAt = localStorage.getItem(DISMISSED_KEY);
     if (dismissedAt && Date.now() - Number(dismissedAt) < COOLDOWN_MS) return;
-    setTeaserOpen(true);
-  }, [deadline]);
+    if (teaserOpen) return;
+
+    if (openDelayTimerRef.current) clearTimeout(openDelayTimerRef.current);
+    const mountedAt = mountedAtRef.current ?? Date.now();
+    const remaining = OPEN_DELAY_MS - (Date.now() - mountedAt);
+    const delayMs = Math.max(0, remaining);
+    openDelayTimerRef.current = setTimeout(() => {
+      setTeaserOpen(true);
+      openDelayTimerRef.current = null;
+    }, delayMs);
+
+    return () => {
+      if (openDelayTimerRef.current) clearTimeout(openDelayTimerRef.current);
+      openDelayTimerRef.current = null;
+    };
+  }, [deadline, teaserOpen]);
 
   function dismiss() {
+    if (openDelayTimerRef.current) clearTimeout(openDelayTimerRef.current);
+    openDelayTimerRef.current = null;
     localStorage.setItem(DISMISSED_KEY, String(Date.now()));
     setTeaserOpen(false);
   }
