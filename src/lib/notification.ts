@@ -25,6 +25,17 @@ export function formatNotificationMessage(item: NotificationItem): string {
       return `You were removed from a group`;
     case "group_deleted":
       return `A group you were in was deleted`;
+    case "prediction_result": {
+      const meta = item.metadata;
+      if (
+        meta &&
+        typeof meta.home_team === "string" &&
+        typeof meta.away_team === "string"
+      ) {
+        return `Your prediction for ${meta.home_team} vs ${meta.away_team} was correct!`;
+      }
+      return "Your fixture prediction was correct!";
+    }
     default:
       return `${sender} — ${type.replace(/_/g, " ")}`;
   }
@@ -38,6 +49,7 @@ export function getNotificationLink(item: NotificationItem): string | null {
   const meta = item.metadata;
   if (!meta) return null;
   if (typeof meta.post_id === "number") return `/discuss/${meta.post_id}`;
+  if (typeof meta.fixture_id === "number") return `/fixtures/${meta.fixture_id}`;
   if (typeof meta.group_id === "number") {
     const base = `/discuss/group-posts/${meta.group_id}`;
     if (item.notification_type === "follow_request") return `${base}?view=pending`;

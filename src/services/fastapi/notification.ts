@@ -11,7 +11,7 @@ const BACKEND_URL =
 const NOTIFICATIONS_PREFIX = `${BACKEND_URL}/api/v1/notifications`;
 
 /** Single source for notification timing: 3 minutes. Used for poll interval (toasts), stale time (list, unread count, poll). */
-const NOTIFICATION_STALE_TIME_MS = 3 * 60 * 1000;
+const NOTIFICATION_STALE_TIME_MS = 3 * 1000;
 
 async function fetchNotifications(
   url: string,
