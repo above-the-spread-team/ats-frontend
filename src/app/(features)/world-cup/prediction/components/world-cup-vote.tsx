@@ -149,6 +149,9 @@ export function VotingModal({
 }: VotingModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [portalMounted, setPortalMounted] = useState(false);
+  const [submissionState, setSubmissionState] = useState<"idle" | "success">(
+    "idle",
+  );
 
   useEffect(() => {
     setPortalMounted(true);
@@ -195,6 +198,7 @@ export function VotingModal({
       setDisplayStep(0);
       setTargetStep(0);
       setAnimPhase("idle");
+      setSubmissionState("idle");
       setSubmitError(null);
       setChampSearch("");
     }
@@ -247,7 +251,7 @@ export function VotingModal({
     setSubmitError(null);
     try {
       await onSave(picks, champId);
-      onClose();
+      setSubmissionState("success");
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -258,6 +262,7 @@ export function VotingModal({
   if (!open || !portalMounted) return null;
 
   const isChampionStep = displayStep === TOTAL - 1;
+  const isSubmissionSuccess = isChampionStep && submissionState === "success";
   const currentGroup = isChampionStep ? null : sortedGroups[displayStep];
 
   const groupPickCount = Object.keys(picks).length;
@@ -280,7 +285,10 @@ export function VotingModal({
       <div
         className="fixed z-[100] min-h-dvh w-full bg-black/60 backdrop-blur-sm pointer-events-auto top-0 right-0 bottom-0 left-0"
         aria-hidden
-        onClick={onClose}
+        onClick={() => {
+          // Keep the success panel stable; still allow closing with the button/X.
+          if (!isSubmissionSuccess) onClose();
+        }}
       />
       <div className="fixed inset-0 z-[100] flex min-h-dvh w-full items-end sm:items-center justify-center pointer-events-none">
         <div className="relative z-10 pointer-events-auto w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-[560px] sm:rounded-2xl bg-card flex flex-col overflow-hidden shadow-2xl">
@@ -405,77 +413,122 @@ export function VotingModal({
               {/* Champion step */}
               {isChampionStep && (
                 <div className="px-5 pt-4 pb-2 space-y-3">
-                  {champId != null &&
-                    (() => {
-                      const team = allTeams.find((t) => t.id === champId);
-                      if (!team) return null;
-                      return (
-                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30">
-                          <TeamLogo
-                            src={team.logo_url}
-                            name={team.name}
-                            size={32}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs md:text-sm font-bold text-white truncate">
-                              {team.name}
-                            </p>
-                            <p className="text-xs text-white/80">
-                              Your champion pick
-                            </p>
-                          </div>
-                          <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
-                        </div>
-                      );
-                    })()}
-
-                  <input
-                    type="text"
-                    value={champSearch}
-                    onChange={(e) => setChampSearch(e.target.value)}
-                    placeholder="Search teams…"
-                    className="w-full h-9 px-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary-font/60 transition-colors"
-                  />
-
-                  <div className="space-y-0.5">
-                    {filteredTeams.map((team) => {
-                      const isSelected = champId === team.id;
-                      return (
-                        <button
-                          key={team.id}
-                          onClick={() => setChampId(team.id)}
-                          className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150 ${
-                            isSelected
-                              ? "bg-primary-font border border-primary-font"
-                              : "border border-transparent hover:bg-muted/50 hover:border-border/50"
-                          }`}
-                        >
-                          <TeamLogo
-                            src={team.logo_url}
-                            name={team.name}
-                            size={22}
-                          />
-                          <span
-                            className={`text-xs font-semibold flex-1 truncate ${
-                              isSelected ? "text-white" : "text-foreground"
-                            }`}
-                          >
-                            {team.name}
-                          </span>
-                          <span
-                            className={`text-[11px] ${isSelected ? "text-white" : "text-foreground/80"} flex-shrink-0`}
-                          >
-                            Grp {team.group_letter}
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {filteredTeams.length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-4">
-                        No teams match &ldquo;{champSearch}&rdquo;
+                  {isSubmissionSuccess ? (
+                    <div className="flex flex-col items-center text-center px-2 pb-3">
+                      <p className="text-lg sm:text-xl font-extrabold">
+                        Thank you for your voting!
                       </p>
-                    )}
-                  </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-[28ch]">
+                        Your World Cup prediction has been submitted
+                        successfully.
+                      </p>
+
+                      {champId != null && (
+                        <div className="mt-5 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30 w-full max-w-[340px]">
+                          {(() => {
+                            const team = allTeams.find((t) => t.id === champId);
+                            if (!team) return null;
+                            return (
+                              <div className="flex items-center gap-3">
+                                <TeamLogo
+                                  src={team.logo_url}
+                                  name={team.name}
+                                  size={40}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs sm:text-sm font-bold text-white truncate">
+                                    {team.name}
+                                  </p>
+                                  <p className="text-[11px] text-white/80">
+                                    Your champion pick
+                                  </p>
+                                </div>
+                                <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {champId != null &&
+                        (() => {
+                          const team = allTeams.find((t) => t.id === champId);
+                          if (!team) return null;
+                          return (
+                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30">
+                              <TeamLogo
+                                src={team.logo_url}
+                                name={team.name}
+                                size={32}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs md:text-sm font-bold text-white truncate">
+                                  {team.name}
+                                </p>
+                                <p className="text-xs text-white/80">
+                                  Your champion pick
+                                </p>
+                              </div>
+                              <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
+                            </div>
+                          );
+                        })()}
+
+                      <input
+                        type="text"
+                        value={champSearch}
+                        onChange={(e) => setChampSearch(e.target.value)}
+                        placeholder="Search teams…"
+                        className="w-full h-9 px-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary-font/60 transition-colors"
+                      />
+
+                      <div className="space-y-0.5">
+                        {filteredTeams.map((team) => {
+                          const isSelected = champId === team.id;
+                          return (
+                            <button
+                              key={team.id}
+                              onClick={() => setChampId(team.id)}
+                              className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150 ${
+                                isSelected
+                                  ? "bg-primary-font border border-primary-font"
+                                  : "border border-transparent hover:bg-muted/50 hover:border-border/50"
+                              }`}
+                            >
+                              <TeamLogo
+                                src={team.logo_url}
+                                name={team.name}
+                                size={22}
+                              />
+                              <span
+                                className={`text-xs font-semibold flex-1 truncate ${
+                                  isSelected ? "text-white" : "text-foreground"
+                                }`}
+                              >
+                                {team.name}
+                              </span>
+                              <span
+                                className={`text-[11px] ${
+                                  isSelected
+                                    ? "text-white"
+                                    : "text-foreground/80"
+                                } flex-shrink-0`}
+                              >
+                                Grp {team.group_letter}
+                              </span>
+                            </button>
+                          );
+                        })}
+                        {filteredTeams.length === 0 && (
+                          <p className="text-xs text-muted-foreground text-center py-4">
+                            No teams match &ldquo;{champSearch}&rdquo;
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -488,25 +541,34 @@ export function VotingModal({
             )}
 
             {isChampionStep ? (
-              <button
-                onClick={handleSubmit}
-                disabled={!allPicksDone || isSubmitting}
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 ${
-                  allPicksDone
-                    ? "bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
-                }`}
-              >
-                {isSubmitting
-                  ? "Submitting…"
-                  : !allPicksDone
-                    ? missingGroups > 0
-                      ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} still missing`
-                      : "Select a champion to submit"
-                    : hasExistingPrediction
-                      ? "Update Prediction"
-                      : "Submit Prediction"}
-              </button>
+              isSubmissionSuccess ? (
+                <button
+                  onClick={onClose}
+                  className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
+                >
+                  Done
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={!allPicksDone || isSubmitting}
+                  className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 ${
+                    allPicksDone
+                      ? "bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                >
+                  {isSubmitting
+                    ? "Submitting…"
+                    : !allPicksDone
+                      ? missingGroups > 0
+                        ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} still missing`
+                        : "Select a champion to submit"
+                      : hasExistingPrediction
+                        ? "Update Prediction"
+                        : "Submit Prediction"}
+                </button>
+              )
             ) : (
               <button
                 onClick={() => goTo(displayStep + 1)}

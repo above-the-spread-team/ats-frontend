@@ -20,7 +20,7 @@ import { VotingModal } from "@/app/(features)/world-cup/prediction/components/wo
 
 const DISMISSED_KEY = "wc_vote_popup_dismissed_at";
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-const OPEN_DELAY_MS = 10_000;
+const OPEN_DELAY_MS = 5_000;
 
 function formatDeadline(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -119,7 +119,12 @@ export default function WorldCupVotePopup() {
 
   return (
     <>
-      <Dialog open={teaserOpen} onOpenChange={(v) => { if (!v) dismiss(); }}>
+      <Dialog
+        open={teaserOpen}
+        onOpenChange={(v) => {
+          if (!v) dismiss();
+        }}
+      >
         <DialogContent className="sm:max-w-sm text-center">
           <DialogHeader className="items-center gap-2">
             <span className="text-5xl">🏆</span>
