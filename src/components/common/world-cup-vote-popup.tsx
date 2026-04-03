@@ -20,7 +20,7 @@ import { VotingModal } from "@/app/(features)/world-cup/prediction/components/wo
 
 const DISMISSED_KEY = "wc_vote_popup_dismissed_at";
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-const OPEN_DELAY_MS = 5_000;
+const OPEN_DELAY_MS = 3_000;
 
 function formatDeadline(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
