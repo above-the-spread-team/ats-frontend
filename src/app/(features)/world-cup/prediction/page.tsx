@@ -289,7 +289,11 @@ export default function WorldCupPredictionPage() {
 
   // Sync display picks from existing prediction
   useEffect(() => {
-    if (!existingPrediction) return;
+    if (!existingPrediction) {
+      setGroupPicks({});
+      setChampionId(null);
+      return;
+    }
     const picks: Record<string, number> = {};
     for (const gp of existingPrediction.group_predictions) {
       if (gp.winner_team_id != null) picks[gp.group_letter] = gp.winner_team_id;
