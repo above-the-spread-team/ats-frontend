@@ -260,15 +260,10 @@ function ChampionPercentages({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function WorldCupPredictionPage() {
-  const [isClient, setIsClient] = useState(false);
   const [votingModalOpen, setVotingModalOpen] = useState(false);
 
   const [groupPicks, setGroupPicks] = useState<Record<string, number>>({});
   const [championId, setChampionId] = useState<number | null>(null);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const { data: groups, isLoading: groupsLoading } = useWorldCupGroups();
   const { data: deadline, isLoading: deadlineLoading } = useWorldCupDeadline();
@@ -326,8 +321,6 @@ export default function WorldCupPredictionPage() {
     setGroupPicks(picks);
     setChampionId(champTeamId);
   }
-
-  if (!isClient) return null;
 
   const isLoading = groupsLoading || deadlineLoading || predictionLoading;
 

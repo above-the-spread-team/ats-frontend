@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useWorldCupFixtures } from "@/services/football-api/world-cup-fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixtureResponseItem } from "@/type/footballapi/fixture";
-import Loading from "@/components/common/loading";
 import { useUserTimezone } from "@/hooks/use-user-timezone";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -306,6 +306,77 @@ function GroupSection({
   );
 }
 
+/** Mirrors `FixtureCard` flex layout for loading (RWD column widths match real card). */
+function FixtureCardSkeleton() {
+  return (
+    <div
+      className="flex items-center gap-3 px-3 sm:px-4 lg:px-5 py-3 lg:py-4 rounded-lg border border-border/60 bg-card"
+      aria-hidden
+    >
+      <div className="w-14 sm:w-16 lg:w-20 flex-shrink-0 flex flex-col items-center gap-1.5">
+        <Skeleton className="h-2.5 w-10 sm:w-11 lg:w-14 rounded" />
+        <Skeleton className="h-4 w-8 sm:w-9 lg:w-11 rounded" />
+      </div>
+      <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
+        <Skeleton className="h-4 w-[40%] sm:w-[45%] max-w-[140px] lg:max-w-[180px] rounded" />
+        <Skeleton className="h-7 w-7 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
+      </div>
+      <div className="flex-shrink-0 w-14 sm:w-16 lg:w-20 flex items-center justify-center">
+        <Skeleton className="h-5 w-8 lg:h-6 lg:w-10 rounded" />
+      </div>
+      <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
+        <Skeleton className="h-6 w-6 sm:h-7 sm:w-7 rounded-full flex-shrink-0" />
+        <Skeleton className="h-4 w-[40%] sm:w-[45%] max-w-[140px] lg:max-w-[180px] rounded" />
+      </div>
+    </div>
+  );
+}
+
+/** Mirrors `GroupSection`: header row + stacked fixture skeletons. */
+function GroupSectionSkeleton({
+  fixtureCount,
+}: {
+  fixtureCount: number;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <Skeleton className="w-1 h-4 rounded-full flex-shrink-0" />
+          <Skeleton className="h-4 w-32 sm:w-40 lg:w-48 rounded" />
+        </div>
+        <Skeleton className="h-3 w-14 lg:w-16 rounded flex-shrink-0" />
+      </div>
+      <div className="space-y-1">
+        {Array.from({ length: fixtureCount }).map((_, i) => (
+          <FixtureCardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WorldCupPageSkeleton() {
+  return (
+    <div className="container mx-auto max-w-4xl px-4 py-6 sm:py-8 pb-16 space-y-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3">
+        <div className="flex flex-col gap-2 min-w-0">
+          <Skeleton className="h-4 w-44 sm:w-56 lg:w-64 rounded" />
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="h-3 w-3 rounded flex-shrink-0" />
+            <Skeleton className="h-3 w-28 sm:w-36 rounded" />
+          </div>
+        </div>
+        <Skeleton className="h-7 lg:h-8 w-28 lg:w-32 rounded-md flex-shrink-0 self-start sm:self-auto" />
+      </div>
+
+      <GroupSectionSkeleton fixtureCount={3} />
+      <GroupSectionSkeleton fixtureCount={2} />
+      <GroupSectionSkeleton fixtureCount={4} />
+    </div>
+  );
+}
+
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function WorldCupFixtures() {
@@ -321,11 +392,7 @@ export default function WorldCupFixtures() {
   }, [data?.response, sortMode]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[70vh]">
-        <Loading />
-      </div>
-    );
+    return <WorldCupPageSkeleton />;
   }
 
   if (error) {
