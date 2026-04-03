@@ -49,10 +49,12 @@ export function getNotificationLink(item: NotificationItem): string | null {
   const meta = item.metadata;
   if (!meta) return null;
   if (typeof meta.post_id === "number") return `/discuss/${meta.post_id}`;
-  if (typeof meta.fixture_id === "number") return `/fixtures/${meta.fixture_id}`;
+  if (typeof meta.fixture_id === "number")
+    return `/games/detail?id=${meta.fixture_id}`;
   if (typeof meta.group_id === "number") {
     const base = `/discuss/group-posts/${meta.group_id}`;
-    if (item.notification_type === "follow_request") return `${base}?view=pending`;
+    if (item.notification_type === "follow_request")
+      return `${base}?view=pending`;
     return base;
   }
   return null;
