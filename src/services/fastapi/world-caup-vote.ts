@@ -13,6 +13,39 @@ import { getAuthHeader } from "./token-storage";
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
+const WC_SESSION_KEY = "wc_session";
+
+// ---------------------------------------------------------------------------
+// Session ID helpers (localStorage-based, Safari-safe)
+// ---------------------------------------------------------------------------
+
+function getWcSessionId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(WC_SESSION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveWcSessionId(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(WC_SESSION_KEY, id);
+  } catch {
+    // ignore
+  }
+}
+
+export function clearWcSessionId(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(WC_SESSION_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -22,6 +55,8 @@ function authHeaders(includeJson = false): HeadersInit {
   if (includeJson) headers["Content-Type"] = "application/json";
   const auth = getAuthHeader();
   if (auth) headers["Authorization"] = auth;
+  const sessionId = getWcSessionId();
+  if (sessionId) headers["X-WC-Session"] = sessionId;
   return headers;
 }
 
@@ -30,6 +65,11 @@ function authFetchInit(includeJson = false): RequestInit {
     headers: authHeaders(includeJson),
     credentials: "include",
   };
+}
+
+function captureWcSession(res: Response): void {
+  const sessionId = res.headers.get("X-WC-Session");
+  if (sessionId) saveWcSessionId(sessionId);
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
@@ -83,7 +123,11 @@ export async function submitPrediction(
     ...authFetchInit(true),
     body: JSON.stringify(data),
   });
-  return handleResponse<WorldCupPredictionResponse>(res);
+  captureWcSession(res);
+  const result = await handleResponse<WorldCupPredictionResponse>(res);
+  // Logged-in submission: backend merged the anonymous prediction, clear stale session ID
+  if (getAuthHeader()) clearWcSessionId();
+  return result;
 }
 
 /** PUT /api/v1/world-cup/prediction/me — requires auth */
@@ -95,7 +139,11 @@ export async function updatePrediction(
     ...authFetchInit(true),
     body: JSON.stringify(data),
   });
-  return handleResponse<WorldCupPredictionResponse>(res);
+  captureWcSession(res);
+  const result = await handleResponse<WorldCupPredictionResponse>(res);
+  // Logged-in submission: backend merged the anonymous prediction, clear stale session ID
+  if (getAuthHeader()) clearWcSessionId();
+  return result;
 }
 
 /** DELETE /api/v1/world-cup/prediction/me — requires auth */

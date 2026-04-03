@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/fastapi/user";
 import { getAuthHeader, clearStoredToken } from "./token-storage";
+import { clearWcSessionId } from "./world-caup-vote";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -115,6 +116,7 @@ export async function logout(): Promise<void> {
     console.error("Logout error:", error);
   } finally {
     clearStoredToken();
+    clearWcSessionId();
     window.dispatchEvent(new Event("logout"));
   }
 }

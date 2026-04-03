@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { FaBell } from "react-icons/fa";
 import Link from "next/link";
+import Image from "next/image";
 import UserIcon from "@/components/common/user-icon";
 import {
   DropdownMenu,
@@ -27,27 +28,101 @@ import { formatTimeAgo } from "@/app/(features)/discuss/_components/comment-item
 
 export { formatNotificationMessage, getNotificationLink };
 
+function FixtureDualTeamIcon({
+  homeTeamLogo,
+  awayTeamLogo,
+  homeTeamName,
+  awayTeamName,
+  size = "md",
+}: {
+  homeTeamLogo: string | null | undefined;
+  awayTeamLogo: string | null | undefined;
+  homeTeamName?: string;
+  awayTeamName?: string;
+  size?: "sm" | "md";
+}) {
+  const homeFallback = (homeTeamName ?? "HM").slice(0, 2).toUpperCase();
+  const awayFallback = (awayTeamName ?? "AW").slice(0, 2).toUpperCase();
+  const circle = size === "sm" ? "w-8 h-8" : "w-10 h-10";
+  const overlap = size === "sm" ? "-ml-3" : "-ml-4";
+  const textSize = size === "sm" ? "text-[9px]" : "text-[10px]";
+
+  return (
+    <div className="relative flex items-center pr-1 flex-shrink-0" aria-hidden>
+      <div className={`relative z-[2] ${circle} rounded-full overflow-hidden ring-2 ring-border/50`}>
+        {homeTeamLogo ? (
+          <Image
+            src={homeTeamLogo}
+            alt=""
+            fill
+            className="object-contain object-center"
+            sizes="40px"
+          />
+        ) : (
+          <span className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}>
+            {homeFallback}
+          </span>
+        )}
+      </div>
+      <div className={`relative ${circle} rounded-full overflow-hidden ${overlap} ring-2 ring-border/50`}>
+        {awayTeamLogo ? (
+          <Image
+            src={awayTeamLogo}
+            alt=""
+            fill
+            className="object-contain object-center"
+            sizes="40px"
+          />
+        ) : (
+          <span className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}>
+            {awayFallback}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Toast content: avatar + message, used for notification toasts. */
 export function NotificationToastContent({
   message,
   avatarUrl,
   name,
   variant = "primary",
+  homeTeamLogo,
+  awayTeamLogo,
+  homeTeamName,
+  awayTeamName,
 }: {
   message: string;
   avatarUrl: string | null;
   name: string;
   variant?: "primary" | "muted";
+  homeTeamLogo?: string | null;
+  awayTeamLogo?: string | null;
+  homeTeamName?: string;
+  awayTeamName?: string;
 }) {
+  const showDualIcon = homeTeamLogo != null || awayTeamLogo != null;
   return (
     <div className="flex items-center gap-3 p-3 min-w-0">
-      <UserIcon
-        avatarUrl={avatarUrl}
-        name={name}
-        size="small"
-        variant={variant}
-        className="!h-10 !w-10 flex-shrink-0 ring-2 ring-border/50"
-      />
+      {showDualIcon ? (
+        <FixtureDualTeamIcon
+          homeTeamLogo={homeTeamLogo}
+          awayTeamLogo={awayTeamLogo}
+          homeTeamName={homeTeamName}
+          awayTeamName={awayTeamName}
+          size="md"
+        />
+      ) : (
+        <UserIcon
+          avatarUrl={avatarUrl}
+          name={name}
+          size="small"
+          variant={variant}
+          className="!h-10 !w-10 flex-shrink-0 ring-2 ring-border/50"
+        />
+      )}
       <p className="text-sm font-medium text-foreground line-clamp-2 flex-1 min-w-0">
         {message}
       </p>
@@ -104,7 +179,13 @@ function useNotificationToasts(authenticated: boolean) {
     newItems.forEach((item) => {
       const message = formatNotificationMessage(item);
       const link = getNotificationLink(item);
-      const showGroupIcon = !!item.group_avatar_url;
+      const isPrediction = item.notification_type === "prediction_result";
+      const meta = item.metadata;
+      const homeTeamLogo = isPrediction && meta && typeof meta.home_team_logo === "string" ? meta.home_team_logo : null;
+      const awayTeamLogo = isPrediction && meta && typeof meta.away_team_logo === "string" ? meta.away_team_logo : null;
+      const homeTeamName = isPrediction && meta && typeof meta.home_team === "string" ? meta.home_team : undefined;
+      const awayTeamName = isPrediction && meta && typeof meta.away_team === "string" ? meta.away_team : undefined;
+      const showGroupIcon = !isPrediction && !!item.group_avatar_url;
       const avatarUrl = showGroupIcon
         ? item.group_avatar_url
         : (item.sender?.avatar_url ?? null);
@@ -119,6 +200,10 @@ function useNotificationToasts(authenticated: boolean) {
           avatarUrl={avatarUrl}
           name={name}
           variant={iconVariant}
+          homeTeamLogo={homeTeamLogo}
+          awayTeamLogo={awayTeamLogo}
+          homeTeamName={homeTeamName}
+          awayTeamName={awayTeamName}
         />,
         {
           position: "bottom-right",
@@ -236,12 +321,23 @@ export function NotificationBell({
             <div className="py-1">
               {allItems.map((item) => {
                 const href = getNotificationLink(item);
-                const showGroupIcon = !!item.group_avatar_url;
+                const isPrediction = item.notification_type === "prediction_result";
+                const meta = item.metadata;
+                const showGroupIcon = !isPrediction && !!item.group_avatar_url;
                 const isRead = !!item.read_at;
                 const content = (
                   <div
                     className={`px-3 py-2 flex gap-2 items-center hover:bg-muted/50 cursor-pointer`}
                   >
+                    {isPrediction ? (
+                      <FixtureDualTeamIcon
+                        homeTeamLogo={meta && typeof meta.home_team_logo === "string" ? meta.home_team_logo : null}
+                        awayTeamLogo={meta && typeof meta.away_team_logo === "string" ? meta.away_team_logo : null}
+                        homeTeamName={meta && typeof meta.home_team === "string" ? meta.home_team : undefined}
+                        awayTeamName={meta && typeof meta.away_team === "string" ? meta.away_team : undefined}
+                        size="sm"
+                      />
+                    ) : (
                     <UserIcon
                       avatarUrl={
                         showGroupIcon
@@ -257,6 +353,7 @@ export function NotificationBell({
                       }
                       className="!h-8 !w-8 ring-1 ring-border/50"
                     />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p
                         className={`text-sm  font-medium line-clamp-2 w-[230px] ${isRead ? "text-muted-foreground/80" : "text-foreground"}`}
