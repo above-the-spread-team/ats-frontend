@@ -289,7 +289,7 @@ export default function VoteResult() {
           </p>
           <p className="text-xs md:text-sm text-muted-foreground mt-1">
             {dateOffset === -1
-              ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC."
+              ? "Tomorrow's fixtures are pre-loaded at 00:20 UTC."
               : dateOffset === 0
                 ? "Check back later!"
                 : "Yesterday's fixtures are available for review."}

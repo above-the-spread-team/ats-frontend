@@ -49,7 +49,9 @@ function FixtureDualTeamIcon({
 
   return (
     <div className="relative flex items-center pr-1 flex-shrink-0" aria-hidden>
-      <div className={`relative z-[2] ${circle} rounded-full overflow-hidden ring-2 ring-border/50`}>
+      <div
+        className={`relative z-[2] ${circle} rounded-full overflow-hidden ring-2 ring-border/50`}
+      >
         {homeTeamLogo ? (
           <Image
             src={homeTeamLogo}
@@ -59,12 +61,16 @@ function FixtureDualTeamIcon({
             sizes="40px"
           />
         ) : (
-          <span className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}>
+          <span
+            className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}
+          >
             {homeFallback}
           </span>
         )}
       </div>
-      <div className={`relative ${circle} rounded-full overflow-hidden ${overlap} ring-2 ring-border/50`}>
+      <div
+        className={`relative ${circle} rounded-full overflow-hidden ${overlap} ring-2 ring-border/50`}
+      >
         {awayTeamLogo ? (
           <Image
             src={awayTeamLogo}
@@ -74,7 +80,9 @@ function FixtureDualTeamIcon({
             sizes="40px"
           />
         ) : (
-          <span className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}>
+          <span
+            className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}
+          >
             {awayFallback}
           </span>
         )}
@@ -181,10 +189,22 @@ function useNotificationToasts(authenticated: boolean) {
       const link = getNotificationLink(item);
       const isPrediction = item.notification_type === "prediction_result";
       const meta = item.metadata;
-      const homeTeamLogo = isPrediction && meta && typeof meta.home_team_logo === "string" ? meta.home_team_logo : null;
-      const awayTeamLogo = isPrediction && meta && typeof meta.away_team_logo === "string" ? meta.away_team_logo : null;
-      const homeTeamName = isPrediction && meta && typeof meta.home_team === "string" ? meta.home_team : undefined;
-      const awayTeamName = isPrediction && meta && typeof meta.away_team === "string" ? meta.away_team : undefined;
+      const homeTeamLogo =
+        isPrediction && meta && typeof meta.home_team_logo === "string"
+          ? meta.home_team_logo
+          : null;
+      const awayTeamLogo =
+        isPrediction && meta && typeof meta.away_team_logo === "string"
+          ? meta.away_team_logo
+          : null;
+      const homeTeamName =
+        isPrediction && meta && typeof meta.home_team === "string"
+          ? meta.home_team
+          : undefined;
+      const awayTeamName =
+        isPrediction && meta && typeof meta.away_team === "string"
+          ? meta.away_team
+          : undefined;
       const showGroupIcon = !isPrediction && !!item.group_avatar_url;
       const avatarUrl = showGroupIcon
         ? item.group_avatar_url
@@ -321,7 +341,8 @@ export function NotificationBell({
             <div className="py-1">
               {allItems.map((item) => {
                 const href = getNotificationLink(item);
-                const isPrediction = item.notification_type === "prediction_result";
+                const isPrediction =
+                  item.notification_type === "prediction_result";
                 const meta = item.metadata;
                 const showGroupIcon = !isPrediction && !!item.group_avatar_url;
                 const isRead = !!item.read_at;
@@ -331,32 +352,50 @@ export function NotificationBell({
                   >
                     {isPrediction ? (
                       <FixtureDualTeamIcon
-                        homeTeamLogo={meta && typeof meta.home_team_logo === "string" ? meta.home_team_logo : null}
-                        awayTeamLogo={meta && typeof meta.away_team_logo === "string" ? meta.away_team_logo : null}
-                        homeTeamName={meta && typeof meta.home_team === "string" ? meta.home_team : undefined}
-                        awayTeamName={meta && typeof meta.away_team === "string" ? meta.away_team : undefined}
+                        homeTeamLogo={
+                          meta && typeof meta.home_team_logo === "string"
+                            ? meta.home_team_logo
+                            : null
+                        }
+                        awayTeamLogo={
+                          meta && typeof meta.away_team_logo === "string"
+                            ? meta.away_team_logo
+                            : null
+                        }
+                        homeTeamName={
+                          meta && typeof meta.home_team === "string"
+                            ? meta.home_team
+                            : undefined
+                        }
+                        awayTeamName={
+                          meta && typeof meta.away_team === "string"
+                            ? meta.away_team
+                            : undefined
+                        }
                         size="sm"
                       />
                     ) : (
-                    <UserIcon
-                      avatarUrl={
-                        showGroupIcon
-                          ? item.group_avatar_url
-                          : (item.sender?.avatar_url ?? null)
-                      }
-                      name={
-                        showGroupIcon ? "Group" : (item.sender?.username ?? "?")
-                      }
-                      size="small"
-                      variant={
-                        showGroupIcon || item.sender ? "primary" : "muted"
-                      }
-                      className="!h-8 !w-8 ring-1 ring-border/50"
-                    />
+                      <UserIcon
+                        avatarUrl={
+                          showGroupIcon
+                            ? item.group_avatar_url
+                            : (item.sender?.avatar_url ?? null)
+                        }
+                        name={
+                          showGroupIcon
+                            ? "Group"
+                            : (item.sender?.username ?? "?")
+                        }
+                        size="small"
+                        variant={
+                          showGroupIcon || item.sender ? "primary" : "muted"
+                        }
+                        className="!h-8 !w-8 ring-1 ring-border/50"
+                      />
                     )}
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`text-sm  font-medium line-clamp-2 w-[230px] ${isRead ? "text-muted-foreground/80" : "text-foreground"}`}
+                        className={`text-sm  font-medium line-clamp-2 w-[210px] ${isRead ? "text-muted-foreground/80" : "text-foreground"}`}
                       >
                         {formatNotificationMessage(item)}
                       </p>

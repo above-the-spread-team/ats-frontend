@@ -10,7 +10,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAvailableFixtures, useVote, RateLimitError } from "@/services/fastapi/vote";
+import {
+  useAvailableFixtures,
+  useVote,
+  RateLimitError,
+} from "@/services/fastapi/vote";
 import type { FixtureSummary, VoteChoice } from "@/type/fastapi/vote";
 import { CheckCircle2, Vote as VoteIcon } from "lucide-react";
 
@@ -432,7 +436,7 @@ function VotePopupContent() {
           </p>
           <p className="text-xs">
             {selectedDay === "tomorrow"
-              ? "Tomorrow's fixtures are pre-loaded at 12:20 UTC"
+              ? "Tomorrow's fixtures are pre-loaded at 00:20 UTC"
               : "All matches have finished or none were scheduled — check back tomorrow"}
           </p>
         </div>
