@@ -17,6 +17,7 @@ export interface PredictionHistoryItem {
   league_name: string | null;
   league_logo: string | null;
   match_date: string;           // ISO 8601
+  /** User's pick: home / away / draw (display with capitalize in UI). */
   vote_choice: "home" | "away" | "draw";
   is_correct: boolean;
   result: string | null;        // fixture's actual result

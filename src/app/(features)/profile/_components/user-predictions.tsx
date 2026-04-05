@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -26,7 +27,10 @@ import {
   useMyHistory,
   useLeaderboard,
 } from "@/services/fastapi/predictions";
-import type { LeaderboardEntry, PredictionHistoryItem } from "@/type/fastapi/predictions";
+import type {
+  LeaderboardEntry,
+  PredictionHistoryItem,
+} from "@/type/fastapi/predictions";
 
 const PAGE_SIZE = 10;
 
@@ -82,8 +86,13 @@ function StatCell({
   accent?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 py-4 px-2">
-      <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", accent ?? "bg-muted/60")}>
+    <div className="flex flex-col   items-center gap-1.5 py-4 px-2">
+      <div
+        className={cn(
+          "flex h-9 w-9 items-center justify-center rounded-full",
+          accent ?? "bg-muted/60",
+        )}
+      >
         <Icon className="h-4 w-4 text-foreground" />
       </div>
       <p className="text-xl font-bold tabular-nums text-foreground">{value}</p>
@@ -104,7 +113,10 @@ function StatsCard() {
           <Skeleton className="h-5 w-32 mb-4" />
           <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border/50">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 py-4 px-2">
+              <div
+                key={i}
+                className="flex flex-col items-center gap-2 py-4 px-2"
+              >
                 <Skeleton className="h-9 w-9 rounded-full" />
                 <Skeleton className="h-7 w-14" />
                 <Skeleton className="h-3 w-20" />
@@ -133,9 +145,10 @@ function StatsCard() {
           My Stats
         </p>
         <p className="text-[11px] text-muted-foreground/70 mb-4">
-          {data.correct_predictions} correct out of {data.total_predictions} resolved predictions
+          {data.correct_predictions} correct out of {data.total_predictions}{" "}
+          resolved predictions
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border/50 border border-border/50 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y sm:divide-y-0 divide-border/50 border border-border/50 rounded-xl overflow-hidden">
           <StatCell
             icon={Target}
             label="My Accuracy"
@@ -152,7 +165,9 @@ function StatsCard() {
             icon={Flame}
             label="Win Streak"
             value={data.current_win_streak}
-            accent={data.current_win_streak > 0 ? "bg-orange-500/15" : "bg-muted/60"}
+            accent={
+              data.current_win_streak > 0 ? "bg-orange-500/15" : "bg-muted/60"
+            }
           />
           <StatCell
             icon={Trophy}
@@ -162,7 +177,8 @@ function StatsCard() {
           />
         </div>
         <p className="text-[11px] text-muted-foreground/70 mt-3">
-          Community: {data.total_players.toLocaleString()} player{data.total_players !== 1 ? "s" : ""} with resolved predictions
+          Community: {data.total_players.toLocaleString()} player
+          {data.total_players !== 1 ? "s" : ""} with resolved predictions
         </p>
       </CardContent>
     </Card>
@@ -173,6 +189,19 @@ function StatsCard() {
 // Card 2 — History
 // ---------------------------------------------------------------------------
 
+function voteChoiceLabel(choice: PredictionHistoryItem["vote_choice"]) {
+  switch (choice) {
+    case "home":
+      return "Home";
+    case "away":
+      return "Away";
+    case "draw":
+      return "Draw";
+    default:
+      return choice;
+  }
+}
+
 function HistoryRow({ item }: { item: PredictionHistoryItem }) {
   const choiceLabel =
     item.vote_choice === "home"
@@ -182,7 +211,11 @@ function HistoryRow({ item }: { item: PredictionHistoryItem }) {
         : "Draw";
 
   return (
-    <div className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+    <Link
+      href={`/games/detail?id=${item.fixture_id}`}
+      className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0 -mx-1 px-1 rounded-md transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+      aria-label={`View match: ${item.home_team} vs ${item.away_team}, pick ${voteChoiceLabel(item.vote_choice)}`}
+    >
       {/* Result icon */}
       {item.is_correct ? (
         <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-500" />
@@ -193,21 +226,29 @@ function HistoryRow({ item }: { item: PredictionHistoryItem }) {
       {/* Teams */}
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         <TeamLogo src={item.home_team_logo} name={item.home_team} />
-        <span className="text-sm truncate font-medium">{item.home_team}</span>
+        <span className="text-sm truncate font-medium hidden md:block">
+          {item.home_team}
+        </span>
         <span className="text-xs text-muted-foreground flex-shrink-0">vs</span>
         <TeamLogo src={item.away_team_logo} name={item.away_team} />
-        <span className="text-sm truncate font-medium">{item.away_team}</span>
+        <span className="text-sm truncate font-medium hidden md:block">
+          {item.away_team}
+        </span>
       </div>
 
-      {/* Right: pick + date */}
-      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+      {/* Right: vote_choice + pick label + date */}
+      <div className="flex flex-col items-end gap-0.5 flex-shrink-0 text-right">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {voteChoiceLabel(item.vote_choice)}
+        </span>
         <span
           className={cn(
-            "text-xs font-semibold px-2 py-0.5 rounded-full",
+            "text-xs font-semibold px-2 py-0.5 rounded-full max-w-[10rem] sm:max-w-[14rem] truncate",
             item.is_correct
               ? "bg-green-500/10 text-green-700 dark:text-green-400"
               : "bg-red-500/10 text-red-700 dark:text-red-400",
           )}
+          title={choiceLabel}
         >
           {choiceLabel}
         </span>
@@ -215,7 +256,7 @@ function HistoryRow({ item }: { item: PredictionHistoryItem }) {
           {formatMatchDate(item.match_date)}
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -255,7 +296,9 @@ function HistoryCard() {
       <Card className="border-border/50 bg-card shadow-sm">
         <CardContent className="py-10 text-center">
           <Target className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm text-muted-foreground">No resolved predictions yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No resolved predictions yet.
+          </p>
           <p className="text-xs text-muted-foreground/70 mt-1">
             Your results will appear here once matches finish.
           </p>
@@ -265,17 +308,22 @@ function HistoryCard() {
   }
 
   return (
-    <Card className="border-border/50 bg-card shadow-sm">
+    <Card className="border-border/50 bg-card shadow-sm ">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Prediction History
           </p>
-          <span className="text-xs text-muted-foreground">{data.total} total</span>
+          <span className="text-xs text-muted-foreground">
+            {data.total} total
+          </span>
         </div>
         <div className="divide-y divide-border/50">
           {data.items.map((item) => (
-            <HistoryRow key={`${item.fixture_id}-${item.vote_choice}`} item={item} />
+            <HistoryRow
+              key={`${item.fixture_id}-${item.vote_choice}`}
+              item={item}
+            />
           ))}
         </div>
         {data.total_pages > 1 && (
@@ -289,7 +337,11 @@ function HistoryCard() {
                       e.preventDefault();
                       if (page > 1) setPage((p) => p - 1);
                     }}
-                    className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    className={
+                      page <= 1
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
                   />
                 </PaginationItem>
                 <PaginationItem>
@@ -304,7 +356,11 @@ function HistoryCard() {
                       e.preventDefault();
                       if (page < data.total_pages) setPage((p) => p + 1);
                     }}
-                    className={page >= data.total_pages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    className={
+                      page >= data.total_pages
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -365,15 +421,24 @@ function LeaderboardRow({
             {entry.username.slice(0, 2).toUpperCase()}
           </span>
         )}
-        <span className={cn("text-sm font-medium truncate", isCurrentUser && "text-primary-font font-semibold")}>
+        <span
+          className={cn(
+            "text-sm font-medium truncate",
+            isCurrentUser && "text-primary-font font-semibold",
+          )}
+        >
           {entry.username}
-          {isCurrentUser && <span className="ml-1 text-[10px] text-primary-font/70">(you)</span>}
+          {isCurrentUser && (
+            <span className="ml-1 text-[10px] text-primary-font/70">(you)</span>
+          )}
         </span>
       </div>
 
       {/* Stats */}
       <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span className="text-sm font-bold tabular-nums">{entry.accuracy.toFixed(1)}%</span>
+        <span className="text-sm font-bold tabular-nums">
+          {entry.accuracy.toFixed(1)}%
+        </span>
         <span className="text-[11px] text-muted-foreground tabular-nums">
           {entry.correct_predictions}/{entry.total_games}
         </span>
@@ -427,7 +492,9 @@ function LeaderboardCard() {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Leaderboard
           </p>
-          <span className="text-xs text-muted-foreground">Top 10 · min 15 games</span>
+          <span className="text-xs text-muted-foreground">
+            Top 10 · min 15 games
+          </span>
         </div>
 
         {data.top_10.length === 0 ? (
@@ -450,11 +517,15 @@ function LeaderboardCard() {
         {myRank !== null && myRank !== undefined ? (
           <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Your rank</span>
-            <span className="font-bold text-foreground tabular-nums">#{myRank}</span>
+            <span className="font-bold text-foreground tabular-nums">
+              #{myRank}
+            </span>
           </div>
         ) : myTotalPredictions < 15 ? (
           <p className="mt-4 pt-3 border-t border-border/50 text-xs text-muted-foreground text-center">
-            You need {15 - myTotalPredictions} more resolved prediction{15 - myTotalPredictions !== 1 ? "s" : ""} to appear on the leaderboard.
+            You need {15 - myTotalPredictions} more resolved prediction
+            {15 - myTotalPredictions !== 1 ? "s" : ""} to appear on the
+            leaderboard.
           </p>
         ) : null}
       </CardContent>
