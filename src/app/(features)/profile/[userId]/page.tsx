@@ -67,16 +67,6 @@ export default function ProfileByUserIdPage() {
   const showNotifications = !!isViewingSelf;
   const pageTitle = isViewingSelf ? "My Profile" : "Profile";
 
-  useEffect(() => {
-    if (
-      currentUserError &&
-      currentUserError instanceof Error &&
-      currentUserError.message.includes("401")
-    ) {
-      router.push("/login");
-    }
-  }, [currentUserError, router]);
-
   // Invalid userId (missing, NaN) or 404
   if (
     !isMe &&
