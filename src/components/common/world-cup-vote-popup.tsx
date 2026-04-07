@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,7 @@ import { VotingModal } from "@/app/(features)/world-cup/prediction/components/wo
 
 const DISMISSED_KEY = "wc_vote_popup_dismissed_at";
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-const OPEN_DELAY_MS = 3_000;
+const OPEN_DELAY_MS = 1_000;
 
 function formatDeadline(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -125,32 +126,49 @@ export default function WorldCupVotePopup() {
           if (!v) dismiss();
         }}
       >
-        <DialogContent className="sm:max-w-sm text-center">
-          <DialogHeader className="items-center gap-2">
-            <span className="text-5xl">🏆</span>
-            <DialogTitle className="text-lg font-bold">
-              Predict the World Cup!
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              Pick group winners and the champion before the deadline.
-              {deadline?.deadline && (
-                <span className="block mt-1 font-medium text-foreground/80">
-                  Closes {formatDeadline(deadline.deadline)}
+        <DialogContent className="max-w-[95%] sm:max-w-lg overflow-hidden bg-black border-0 p-0">
+          <div className="relative">
+            <Image
+              src="/images/world-cup-popup.jpg"
+              alt="World Cup trophy"
+              width={1200}
+              height={700}
+              priority
+              className="h-[420px] w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7 text-left text-white">
+              <DialogHeader className="items-start gap-2">
+                <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider backdrop-blur">
+                  World Cup 2026
                 </span>
-              )}
-            </DialogDescription>
-          </DialogHeader>
+                <DialogTitle className="text-2xl sm:text-3xl font-black leading-tight text-white">
+                  Predict the World Cup.
+                </DialogTitle>
+                <DialogDescription className="text-sm sm:text-base text-white/85">
+                  Pick group winners and the champion before kickoff.
+                  {deadline?.deadline && (
+                    <span className="mt-1 block text-white font-semibold">
+                      Closes {formatDeadline(deadline.deadline)}
+                    </span>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="flex flex-col gap-2 mt-2">
-            <Button onClick={handlePredictNow}>Predict Now</Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={dismiss}
-              className="text-muted-foreground"
-            >
-              Not now
-            </Button>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <Button onClick={handlePredictNow} className="sm:min-w-36 ">
+                  Predict Now
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={dismiss}
+                  className="text-white/90 hover:text-white hover:bg-white/15"
+                >
+                  Not now
+                </Button>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
