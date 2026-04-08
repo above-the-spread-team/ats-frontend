@@ -116,7 +116,7 @@ export default function RootLayout({
         />
       </head>
       <body className={ff.className}>
-        <PlausibleProvider domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN!}>
+        <PlausibleProvider src={process.env.NEXT_PUBLIC_PLAUSIBLE_SRC} enabled={!!process.env.NEXT_PUBLIC_PLAUSIBLE_SRC}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
