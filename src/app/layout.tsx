@@ -116,7 +116,10 @@ export default function RootLayout({
         />
       </head>
       <body className={ff.className}>
-        <PlausibleProvider src={process.env.NEXT_PUBLIC_PLAUSIBLE_SRC} enabled={!!process.env.NEXT_PUBLIC_PLAUSIBLE_SRC}>
+        <PlausibleProvider
+          src={process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ?? "https://plausible.io/js/plausible.js"}
+          enabled={!!process.env.NEXT_PUBLIC_PLAUSIBLE_SRC}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
