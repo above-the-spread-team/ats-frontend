@@ -132,7 +132,6 @@ export default function WorldCupNews() {
                       className="object-cover w-full h-full"
                     />
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <Image
                       src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
                       alt="Soccer stadium"
