@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { MyQueryClientProvider } from "@/providers/query-client";
 import { ToastContainer } from "react-toastify";
+import PlausibleProvider from "next-plausible";
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
@@ -115,26 +116,28 @@ export default function RootLayout({
         />
       </head>
       <body className={ff.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          // disableTransitionOnChange
-        >
-          <MyQueryClientProvider>
-            {children}
-            <ToastContainer
-              position="bottom-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop
-              closeOnClick
-              rtl={false}
-              theme="light"
-              toastClassName="rounded-lg border border-border shadow-lg"
-            />
-          </MyQueryClientProvider>
-        </ThemeProvider>
+        <PlausibleProvider domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN!}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            // disableTransitionOnChange
+          >
+            <MyQueryClientProvider>
+              {children}
+              <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                theme="light"
+                toastClassName="rounded-lg border border-border shadow-lg"
+              />
+            </MyQueryClientProvider>
+          </ThemeProvider>
+        </PlausibleProvider>
       </body>
     </html>
   );

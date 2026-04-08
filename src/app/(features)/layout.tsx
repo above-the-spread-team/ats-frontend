@@ -12,6 +12,7 @@ import { SidebarProvider } from "@/app/(features)/discuss/_contexts/sidebar-cont
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import WorldCupVotePopup from "@/components/common/world-cup-vote-popup";
+import AnalyticsTracker from "@/components/common/analytics-tracker";
 
 export default function FeaturesLayout({
   children,
@@ -76,6 +77,7 @@ export default function FeaturesLayout({
       {!isDiscussPage && <ConditionalFooter />}
       <MobileNav />
       <WorldCupVotePopup />
+      <AnalyticsTracker />
     </div>
   );
 
