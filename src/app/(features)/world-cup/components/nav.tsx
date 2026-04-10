@@ -43,7 +43,7 @@ export default function WorldCupNav() {
   return (
     <div className="container mx-auto bg-background/95 backdrop-blur-sm border-b border-border">
       <nav
-        className="flex justify-center items-end gap-0.5 md:gap-1 overflow-x-auto scrollbar-none"
+        className="flex w-full items-center md:items-end md:justify-center gap-0.5 md:gap-1 overflow-x-auto scrollbar-none"
         aria-label="World Cup sections"
       >
         {tabs.map(({ label, href, icon: Icon, exact }) => {
@@ -56,8 +56,10 @@ export default function WorldCupNav() {
               key={href}
               href={href}
               className={`
-                  relative flex items-center gap-1.5 px-2 sm:px-4 py-3 text-sm font-semibold
-                  whitespace-nowrap transition-colors duration-200 flex-shrink-0
+                  relative flex min-w-0 flex-1 flex-col md:flex-none md:flex-shrink-0
+                  md:flex-row items-center justify-center gap-0.5 md:gap-1.5
+                  px-1 sm:px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-semibold
+                  text-center whitespace-normal md:whitespace-nowrap transition-colors duration-200
                   ${
                     isActive
                       ? "text-primary-font"
@@ -65,7 +67,7 @@ export default function WorldCupNav() {
                   }
                 `}
             >
-              <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+              <Icon className="w-4 h-4 md:w-3.5 md:h-3.5 flex-shrink-0" />
               {label}
               {/* Active underline */}
               <span
