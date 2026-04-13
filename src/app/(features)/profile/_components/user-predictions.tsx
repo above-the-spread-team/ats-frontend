@@ -26,6 +26,8 @@ import {
   useMyStats,
   useMyHistory,
   useLeaderboard,
+  useUserStats,
+  useUserHistory,
 } from "@/services/fastapi/predictions";
 import type {
   LeaderboardEntry,
@@ -103,8 +105,11 @@ function StatCell({
   );
 }
 
-function StatsCard() {
-  const { data, isLoading, error } = useMyStats();
+function StatsCard({ userId }: { userId?: number }) {
+  const myStats = useMyStats();
+  const userStats = useUserStats(userId ?? null);
+  const { data, isLoading, error } = userId !== undefined ? userStats : myStats;
+  const isOwn = userId === undefined;
 
   if (isLoading) {
     return (
@@ -142,7 +147,7 @@ function StatsCard() {
     <Card className="border-border/50 bg-card shadow-sm">
       <CardContent className="p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-          My Stats
+          {isOwn ? "My Stats" : "Stats"}
         </p>
         <p className="text-[11px] text-muted-foreground/70 mb-4">
           {data.correct_predictions} correct out of {data.total_predictions}{" "}
@@ -151,7 +156,7 @@ function StatsCard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y sm:divide-y-0 divide-border/50 border border-border/50 rounded-xl overflow-hidden">
           <StatCell
             icon={Target}
-            label="My Accuracy"
+            label={isOwn ? "My Accuracy" : "Accuracy"}
             value={`${data.user_accuracy.toFixed(1)}%`}
             accent="bg-primary/15"
           />
@@ -260,9 +265,11 @@ function HistoryRow({ item }: { item: PredictionHistoryItem }) {
   );
 }
 
-function HistoryCard() {
+function HistoryCard({ userId }: { userId?: number }) {
   const [page, setPage] = useState(1);
-  const { data, isLoading, error } = useMyHistory(page, PAGE_SIZE);
+  const myHistory = useMyHistory(page, PAGE_SIZE);
+  const userHistory = useUserHistory(userId ?? null, page, PAGE_SIZE);
+  const { data, isLoading, error } = userId !== undefined ? userHistory : myHistory;
 
   if (isLoading) {
     return (
@@ -537,17 +544,21 @@ function LeaderboardCard() {
 // Exported component
 // ---------------------------------------------------------------------------
 
-export default function UserPredictions() {
+export default function UserPredictions({ userId }: { userId?: number }) {
+  const isOwn = userId === undefined;
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <div className="md:col-span-1">
-        <StatsCard />
+      <div className={isOwn ? "md:col-span-1" : "md:col-span-2"}>
+        <StatsCard userId={userId} />
       </div>
-      <div className="md:col-span-1">
-        <LeaderboardCard />
-      </div>
+      {isOwn && (
+        <div className="md:col-span-1">
+          <LeaderboardCard />
+        </div>
+      )}
       <div className="md:col-span-2">
-        <HistoryCard />
+        <HistoryCard userId={userId} />
       </div>
     </div>
   );

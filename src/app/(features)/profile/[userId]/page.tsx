@@ -122,7 +122,9 @@ export default function ProfileByUserIdPage() {
       )}
       {activeTab === "groups" && <UserGroups userId={profileUser.id} />}
       {activeTab === "posts" && <UserPosts userId={profileUser.id} />}
-      {activeTab === "predictions" && <UserPredictions />}
+      {activeTab === "predictions" && (
+        <UserPredictions userId={isViewingSelf ? undefined : profileUser.id} />
+      )}
       {activeTab === "notifications" && showNotifications && <Notification />}
     </ProfileShell>
   );
