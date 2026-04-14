@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/pagination";
 import { formatTimeAgo } from "@/app/(features)/discuss/_components/comment-item";
 import { cn } from "@/lib/utils";
+import { FixtureDualTeamIcon } from "@/components/common/fixture-dual-team-icon";
 
 const PAGE_SIZE = 15;
 
@@ -40,6 +41,8 @@ function NotificationRow({
   isMarkReadPending?: boolean;
 }) {
   const link = getNotificationLink(item);
+  const isPrediction = item.notification_type === "prediction_result";
+  const meta = item.metadata;
   const showGroupIcon = !!item.group_avatar_url;
 
   const rowClassName = cn(
@@ -52,7 +55,31 @@ function NotificationRow({
   const leftContent = (
     <>
       <div className="flex-shrink-0">
-        {showGroupIcon ? (
+        {isPrediction ? (
+          <FixtureDualTeamIcon
+            homeTeamLogo={
+              meta && typeof meta.home_team_logo === "string"
+                ? meta.home_team_logo
+                : null
+            }
+            awayTeamLogo={
+              meta && typeof meta.away_team_logo === "string"
+                ? meta.away_team_logo
+                : null
+            }
+            homeTeamName={
+              meta && typeof meta.home_team === "string"
+                ? meta.home_team
+                : undefined
+            }
+            awayTeamName={
+              meta && typeof meta.away_team === "string"
+                ? meta.away_team
+                : undefined
+            }
+            size="sm"
+          />
+        ) : showGroupIcon ? (
           <UserIcon
             avatarUrl={item.group_avatar_url}
             name="Group"

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { FaBell } from "react-icons/fa";
 import Link from "next/link";
-import Image from "next/image";
+import { FixtureDualTeamIcon } from "@/components/common/fixture-dual-team-icon";
 import UserIcon from "@/components/common/user-icon";
 import {
   DropdownMenu,
@@ -27,69 +27,6 @@ import {
 import { formatTimeAgo } from "@/app/(features)/discuss/_components/comment-item";
 
 export { formatNotificationMessage, getNotificationLink };
-
-function FixtureDualTeamIcon({
-  homeTeamLogo,
-  awayTeamLogo,
-  homeTeamName,
-  awayTeamName,
-  size = "md",
-}: {
-  homeTeamLogo: string | null | undefined;
-  awayTeamLogo: string | null | undefined;
-  homeTeamName?: string;
-  awayTeamName?: string;
-  size?: "sm" | "md";
-}) {
-  const homeFallback = (homeTeamName ?? "HM").slice(0, 2).toUpperCase();
-  const awayFallback = (awayTeamName ?? "AW").slice(0, 2).toUpperCase();
-  const circle = size === "sm" ? "w-8 h-8" : "w-10 h-10";
-  const overlap = size === "sm" ? "-ml-3" : "-ml-4";
-  const textSize = size === "sm" ? "text-[9px]" : "text-[10px]";
-
-  return (
-    <div className="relative flex items-center pr-1 flex-shrink-0" aria-hidden>
-      <div
-        className={`relative z-[2] ${circle} rounded-full overflow-hidden ring-2 ring-border/50`}
-      >
-        {homeTeamLogo ? (
-          <Image
-            src={homeTeamLogo}
-            alt=""
-            fill
-            className="object-contain object-center"
-            sizes="40px"
-          />
-        ) : (
-          <span
-            className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}
-          >
-            {homeFallback}
-          </span>
-        )}
-      </div>
-      <div
-        className={`relative ${circle} rounded-full overflow-hidden ${overlap} ring-2 ring-border/50`}
-      >
-        {awayTeamLogo ? (
-          <Image
-            src={awayTeamLogo}
-            alt=""
-            fill
-            className="object-contain object-center"
-            sizes="40px"
-          />
-        ) : (
-          <span
-            className={`absolute inset-0 flex items-center justify-center ${textSize} font-bold text-muted-foreground bg-muted`}
-          >
-            {awayFallback}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
 
 /** Toast content: avatar + message, used for notification toasts. */
 export function NotificationToastContent({

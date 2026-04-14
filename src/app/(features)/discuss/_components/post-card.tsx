@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FixtureDualTeamIcon } from "@/components/common/fixture-dual-team-icon";
 import UserIcon from "@/components/common/user-icon";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,66 +42,6 @@ interface PostCardProps {
   initialExpanded?: boolean; // Auto-expand comments (useful for single post view)
   scrollableComments?: boolean; // Whether comments should be scrollable (default: true)
   hideGroupInfo?: boolean; // If true, hide group icon/name and only show user info (for group pages)
-}
-
-function FixtureDualTeamIcon({
-  fallbackName,
-  homeTeamLogo,
-  awayTeamLogo,
-}: {
-  fallbackName: string | null | undefined;
-  homeTeamLogo: string | null | undefined;
-  awayTeamLogo: string | null | undefined;
-}) {
-  const splitFromName = (() => {
-    if (!fallbackName) return { home: "HM", away: "AW" };
-    const normalized = fallbackName.replace(/\s+vs\.?\s+/i, "|");
-    const [left, right] = normalized.split("|");
-    return {
-      home: left?.trim() || "HM",
-      away: right?.trim() || "AW",
-    };
-  })();
-
-  const homeName = splitFromName.home;
-  const awayName = splitFromName.away;
-  const homeLogo = homeTeamLogo ?? null;
-  const awayLogo = awayTeamLogo ?? null;
-
-  return (
-    <div className="relative flex items-center pr-1" aria-hidden>
-      <div className="relative z-[2] w-8 h-8 md:w-10 md:h-10 rounded-full     overflow-hidden">
-        {homeLogo ? (
-          <Image
-            src={homeLogo}
-            alt=""
-            fill
-            className="object-contain object-center"
-            sizes="40px"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-muted-foreground bg-muted">
-            {homeName.slice(0, 2).toUpperCase()}
-          </span>
-        )}
-      </div>
-      <div className="relative  w-8 h-8 md:w-10 md:h-10 rounded-full  overflow-hidden -ml-3 md:-ml-4">
-        {awayLogo ? (
-          <Image
-            src={awayLogo}
-            alt=""
-            fill
-            className="object-contain object-center"
-            sizes="40px"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-muted-foreground bg-muted">
-            {awayName.slice(0, 2).toUpperCase()}
-          </span>
-        )}
-      </div>
-    </div>
-  );
 }
 
 export default function PostCard({
@@ -336,6 +277,7 @@ export default function PostCard({
                       fallbackName={post.groupName}
                       homeTeamLogo={post.homeTeamLogo}
                       awayTeamLogo={post.awayTeamLogo}
+                      size="responsive"
                     />
                   ) : post.groupIconUrl ? (
                     <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
