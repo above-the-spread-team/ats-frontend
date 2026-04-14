@@ -522,7 +522,7 @@ export default function PostContent({
                 : (postsData?.total_pages ?? 0);
               return totalPages > 0 && totalPages > 1;
             })() && (
-              <div className="flex justify-center pb-4 pt-2">
+              <div className="flex justify-center pt-2">
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>

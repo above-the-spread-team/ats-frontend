@@ -119,7 +119,7 @@ function DiscussLayoutContent({ children }: { children: React.ReactNode }) {
           {!isMobile && (
             <div ref={scrollContainerRef} className="h-full">
               <ScrollArea className="h-full px-2">
-                <div className="pt-4  px-2">
+                <div className="pt-4  px-2 mb-10">
                   {showBackToDiscuss && (
                     <div className="">
                       <BackToDiscussion className="mb-2" />
