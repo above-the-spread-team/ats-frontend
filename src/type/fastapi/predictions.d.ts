@@ -45,8 +45,9 @@ export interface LeaderboardEntry {
 
 export interface LeaderboardResponse {
   top_10: LeaderboardEntry[];
-  user_entry: LeaderboardEntry | null; // null if user has < 15 resolved games this month
-  period_start: string;                // ISO 8601 — first day of the current month (UTC)
+  user_entry: LeaderboardEntry | null; // null if user has < 15 resolved games or not authenticated
+  period_start: string | null;         // null for "overall"; ISO 8601 first day of the month otherwise
+  period_end: string | null;           // null for "overall"/"monthly"; exclusive upper bound for "last_month"
 }
 
 export interface MonthlyWinnerResponse {
@@ -61,7 +62,7 @@ export interface MonthlyWinnerResponse {
   captured_at: string;     // ISO 8601
 }
 
-export type LeaderboardTimeRange = "overall" | "month" | "last_month";
+export type LeaderboardTimeRange = "overall" | "monthly" | "last_month";
 
 export interface PredictionError {
   detail: string;

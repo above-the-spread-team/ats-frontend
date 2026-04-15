@@ -82,7 +82,7 @@ export async function fetchUserStats(userId: number): Promise<UserPredictionStat
 export async function fetchLeaderboard(
   timeRange?: LeaderboardTimeRange,
 ): Promise<LeaderboardResponse> {
-  const params = timeRange ? `?time_range=${timeRange}` : "";
+  const params = timeRange ? `?period=${timeRange}` : "";
   const res = await fetch(
     `${BACKEND_URL}/api/v1/leaderboard${params}`,
     authFetchInit(),

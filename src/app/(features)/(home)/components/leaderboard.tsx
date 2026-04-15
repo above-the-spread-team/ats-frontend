@@ -16,7 +16,7 @@ import {
 
 const TABS: { value: LeaderboardTimeRange; label: string }[] = [
   { value: "overall", label: "Overall" },
-  { value: "month", label: "This Month" },
+  { value: "monthly", label: "This Month" },
   { value: "last_month", label: "Last Month" },
 ];
 
@@ -113,7 +113,7 @@ function TabBar({
 // ---------------------------------------------------------------------------
 
 export default function Leaderboard() {
-  const [timeRange, setTimeRange] = useState<LeaderboardTimeRange>("month");
+  const [timeRange, setTimeRange] = useState<LeaderboardTimeRange>("monthly");
 
   return (
     <section className="space-y-4 max-w-4xl mx-auto">
