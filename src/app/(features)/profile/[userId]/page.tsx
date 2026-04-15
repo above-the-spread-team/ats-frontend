@@ -125,7 +125,7 @@ export default function ProfileByUserIdPage() {
       {activeTab === "predictions" && (
         isViewingSelf
           ? <UserPredictions />
-          : <p className="py-10 text-center text-sm text-muted-foreground">Prediction stats are only visible to the account owner.</p>
+          : <UserPredictions userId={profileUser.id} />
       )}
       {activeTab === "notifications" && showNotifications && <Notification />}
     </ProfileShell>

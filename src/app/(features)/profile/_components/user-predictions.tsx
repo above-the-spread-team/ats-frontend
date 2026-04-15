@@ -19,12 +19,14 @@ import {
   Trophy,
   CheckCircle2,
   XCircle,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useMyStats,
   useMyHistory,
   useLeaderboard,
+  useUserStats,
 } from "@/services/fastapi/predictions";
 import type { PredictionHistoryItem } from "@/type/fastapi/predictions";
 import {
@@ -79,26 +81,54 @@ function StatCell({
   label,
   value,
   accent,
+  hero,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: React.ReactNode;
   accent?: string;
+  hero?: boolean;
 }) {
   return (
-    <div className="flex flex-col   items-center gap-1.5 py-4 px-2">
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-xl px-4 py-3",
+        hero ? "flex-row justify-between" : "flex-col justify-center py-4",
+        accent ?? "bg-muted/40",
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-background/50",
+          )}
+        >
+          <Icon className="h-4 w-4 text-foreground/80" />
+        </div>
+        {hero && (
+          <p className="text-sm font-semibold text-foreground">{label}</p>
+        )}
+      </div>
       <div
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-full",
-          accent ?? "bg-muted/60",
+          "flex flex-col",
+          hero ? "items-end" : "items-center gap-1",
         )}
       >
-        <Icon className="h-4 w-4 text-foreground" />
+        <p
+          className={cn(
+            "font-bold tabular-nums text-foreground",
+            hero ? "text-2xl" : "text-xl",
+          )}
+        >
+          {value}
+        </p>
+        {!hero && (
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground text-center leading-tight">
+            {label}
+          </p>
+        )}
       </div>
-      <p className="text-xl font-bold tabular-nums text-foreground">{value}</p>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground text-center leading-tight">
-        {label}
-      </p>
     </div>
   );
 }
@@ -109,18 +139,12 @@ function StatsCard() {
   if (isLoading) {
     return (
       <Card className="border-border/50 bg-card shadow-sm">
-        <CardContent className="p-4">
-          <Skeleton className="h-5 w-32 mb-4" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border/50">
+        <CardContent className="p-4 space-y-3">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <div className="grid grid-cols-2 gap-2">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center gap-2 py-4 px-2"
-              >
-                <Skeleton className="h-9 w-9 rounded-full" />
-                <Skeleton className="h-7 w-14" />
-                <Skeleton className="h-3 w-20" />
-              </div>
+              <Skeleton key={i} className="h-20 rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -141,43 +165,55 @@ function StatsCard() {
   return (
     <Card className="border-border/50 bg-card shadow-sm">
       <CardContent className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-          My Stats
-        </p>
-        <p className="text-[11px] text-muted-foreground/70 mb-4">
-          {data.correct_predictions} correct out of {data.total_predictions}{" "}
-          resolved predictions
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y sm:divide-y-0 divide-border/50 border border-border/50 rounded-xl overflow-hidden">
-          <StatCell
-            icon={Target}
-            label="My Accuracy"
-            value={`${data.user_accuracy.toFixed(1)}%`}
-            accent="bg-primary/15"
-          />
-          <StatCell
-            icon={Users}
-            label="Community Avg"
-            value={`${data.community_accuracy.toFixed(1)}%`}
-            accent="bg-blue-500/10"
-          />
-          <StatCell
-            icon={Flame}
-            label="Win Streak"
-            value={data.current_win_streak}
-            accent={
-              data.current_win_streak > 0 ? "bg-orange-500/15" : "bg-muted/60"
-            }
-          />
-          <StatCell
-            icon={Trophy}
-            label="Best Streak"
-            value={data.max_win_streak}
-            accent="bg-yellow-500/10"
-          />
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            My Stats
+          </p>
+          <span className="text-[11px] text-muted-foreground/70">
+            {data.correct_predictions}/{data.total_predictions} correct
+          </span>
         </div>
-        <p className="text-[11px] text-muted-foreground/70 mt-3">
-          Community: {data.total_players.toLocaleString()} player
+        <div className="space-y-2">
+          {/* Hero: Score */}
+          <StatCell
+            icon={Star}
+            label="Score"
+            value={data.score.toFixed(1)}
+            accent="bg-violet-500/10 border border-violet-500/20"
+            hero
+          />
+          {/* 2-col grid */}
+          <div className="grid grid-cols-2 gap-2">
+            <StatCell
+              icon={Target}
+              label="My Accuracy"
+              value={`${data.user_accuracy.toFixed(1)}%`}
+              accent="bg-primary/10"
+            />
+            <StatCell
+              icon={Users}
+              label="Community Avg"
+              value={`${data.community_accuracy.toFixed(1)}%`}
+              accent="bg-blue-500/10"
+            />
+            <StatCell
+              icon={Flame}
+              label="Win Streak"
+              value={data.current_win_streak}
+              accent={
+                data.current_win_streak > 0 ? "bg-orange-500/10" : "bg-muted/40"
+              }
+            />
+            <StatCell
+              icon={Trophy}
+              label="Best Streak"
+              value={data.max_win_streak}
+              accent="bg-yellow-500/10"
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground/60 mt-3">
+          {data.total_players.toLocaleString()} player
           {data.total_players !== 1 ? "s" : ""} with resolved predictions
         </p>
       </CardContent>
@@ -452,10 +488,113 @@ function LeaderboardCard() {
 }
 
 // ---------------------------------------------------------------------------
+// Card — Public stats for another user
+// ---------------------------------------------------------------------------
+
+function PublicStatsCard({ userId }: { userId: number }) {
+  const { data, isLoading, error } = useUserStats(userId);
+
+  if (isLoading) {
+    return (
+      <Card className="border-border/50 bg-card shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <div className="grid grid-cols-2 gap-2">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <Card className="border-border/50 bg-card shadow-sm">
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          Could not load prediction stats.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-border/50 bg-card shadow-sm">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Prediction Stats
+          </p>
+          <span className="text-[11px] text-muted-foreground/70">
+            {data.correct_predictions}/{data.total_predictions} correct
+          </span>
+        </div>
+        <div className="space-y-2">
+          {/* Hero: Score */}
+          <StatCell
+            icon={Star}
+            label="Score"
+            value={data.score.toFixed(1)}
+            accent="bg-primary-hero/10 border border-violet-500/20"
+            hero
+          />
+          {/* 2-col grid */}
+          <div className="grid grid-cols-2 gap-2">
+            <StatCell
+              icon={Target}
+              label="Accuracy"
+              value={`${data.user_accuracy.toFixed(1)}%`}
+              accent="bg-primary/10"
+            />
+            <StatCell
+              icon={Users}
+              label="Community Avg"
+              value={`${data.community_accuracy.toFixed(1)}%`}
+              accent="bg-blue-500/10"
+            />
+            <StatCell
+              icon={Flame}
+              label="Win Streak"
+              value={data.current_win_streak}
+              accent={
+                data.current_win_streak > 0 ? "bg-orange-500/10" : "bg-muted/40"
+              }
+            />
+            <StatCell
+              icon={Trophy}
+              label="Best Streak"
+              value={data.max_win_streak}
+              accent="bg-yellow-500/10"
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Exported component
 // ---------------------------------------------------------------------------
 
-export default function UserPredictions() {
+export default function UserPredictions({ userId }: { userId?: number }) {
+  // Viewing another user: show their stats + overall leaderboard
+  if (userId !== undefined) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="md:col-span-1">
+          <PublicStatsCard userId={userId} />
+        </div>
+        <div className="md:col-span-1">
+          <LeaderboardCard />
+        </div>
+      </div>
+    );
+  }
+
+  // Viewing own profile: show my stats, leaderboard, and history
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="md:col-span-1">
