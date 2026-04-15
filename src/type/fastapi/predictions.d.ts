@@ -36,15 +36,31 @@ export interface LeaderboardEntry {
   user_id: number;
   username: string;
   avatar_url: string | null;
-  accuracy: number;             // 0–100 percentage
+  accuracy: number;             // 0–100 raw percentage
+  score: number;                // 0–100 Bayesian-adjusted score used for ranking
   total_games: number;          // resolved games played
   correct_predictions: number;
 }
 
 export interface LeaderboardResponse {
   top_10: LeaderboardEntry[];
-  user_rank: number | null;     // null if user has < 15 resolved games
+  user_entry: LeaderboardEntry | null; // null if user has < 15 resolved games this month
+  period_start: string;                // ISO 8601 — first day of the current month (UTC)
 }
+
+export interface MonthlyWinnerResponse {
+  period_year: number;
+  period_month: number;
+  user_id: number | null;  // null if the user account was deleted
+  username: string;
+  avatar_url: string | null;
+  accuracy: number;
+  total_games: number;
+  correct_predictions: number;
+  captured_at: string;     // ISO 8601
+}
+
+export type LeaderboardTimeRange = "overall" | "month" | "last_month";
 
 export interface PredictionError {
   detail: string;

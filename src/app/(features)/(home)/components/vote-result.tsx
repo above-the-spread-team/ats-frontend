@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFixtures } from "@/services/fastapi/vote";
-import { VoteDialog } from "./vote";
+import { VoteDialog } from "@/components/common/vote-today-popup";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { Button } from "@/components/ui/button";
 import VoteColor from "@/components/common/vote-color";

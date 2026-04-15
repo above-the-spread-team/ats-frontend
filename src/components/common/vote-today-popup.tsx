@@ -10,9 +10,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useAvailableFixtures,
   useVote,
+  useVoteTodayPopup,
+  useDismissVoteTodayPopup,
   RateLimitError,
 } from "@/services/fastapi/vote";
 import type { FixtureSummary, VoteChoice } from "@/type/fastapi/vote";
@@ -503,16 +506,25 @@ function VotePopupContent() {
   );
 }
 
-// ── reusable dialog wrapper ────────────────────────────────────────────────
+// ── shared dialog shell ────────────────────────────────────────────────────
 
-/** Wrap any element with this to open the voting popup on click. */
-export function VoteDialog({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-
+/**
+ * Internal shell: renders the Dialog frame + VotePopupContent.
+ * Pass `trigger` to render a DialogTrigger (manual mode).
+ * Omit `trigger` for controlled/auto mode.
+ */
+function VotePopupShell({
+  open,
+  onOpenChange,
+  trigger,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  trigger?: React.ReactNode;
+}) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="p-0 gap-0 w-full max-w-[95%] md:max-w-lg sm:max-w-xl flex flex-col max-h-[90vh] sm:max-h-[80vh]">
         <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -523,11 +535,64 @@ export function VoteDialog({ children }: { children: React.ReactNode }) {
             Pick the winner for today&apos;s matches
           </p>
         </DialogHeader>
-
         <div className="overflow-y-auto flex-1 min-h-0">
           <VotePopupContent />
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ── auto mode (layout.tsx) ─────────────────────────────────────────────────
+
+/** ms until the next 00:30 UTC reset — used to schedule a query invalidation. */
+function msUntilNextCutoff(): number {
+  const now = new Date();
+  const next = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 30),
+  );
+  if (now >= next) next.setUTCDate(next.getUTCDate() + 1);
+  return next.getTime() - now.getTime();
+}
+
+/**
+ * Mounts invisibly in the layout and opens the popup once per day.
+ * All show/dismiss logic lives on the backend (GET + POST /api/v1/popup/vote-today).
+ * Dismiss is called on open so multi-tab users only see it once.
+ * Automatically re-checks at the next 00:30 UTC reset without a page refresh.
+ */
+export function VoteTodayAutoPopup() {
+  const queryClient = useQueryClient();
+  const { data } = useVoteTodayPopup();
+  const { mutate: dismiss } = useDismissVoteTodayPopup();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (data?.show) {
+      dismiss();
+      setOpen(true);
+    }
+  }, [data?.show, dismiss]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["popup", "vote-today"] });
+    }, msUntilNextCutoff());
+    return () => clearTimeout(timer);
+  }, [queryClient]);
+
+  return <VotePopupShell open={open} onOpenChange={setOpen} />;
+}
+
+// ── manual mode (vote-result.tsx) ──────────────────────────────────────────
+
+/**
+ * Wrap any element to open the voting popup on click.
+ * No auto-show or dismiss API calls — purely user-triggered.
+ */
+export function VoteDialog({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <VotePopupShell open={open} onOpenChange={setOpen} trigger={children} />
   );
 }

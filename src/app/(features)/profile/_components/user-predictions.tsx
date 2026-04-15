@@ -19,20 +19,18 @@ import {
   Trophy,
   CheckCircle2,
   XCircle,
-  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useMyStats,
   useMyHistory,
   useLeaderboard,
-  useUserStats,
-  useUserHistory,
 } from "@/services/fastapi/predictions";
-import type {
-  LeaderboardEntry,
-  PredictionHistoryItem,
-} from "@/type/fastapi/predictions";
+import type { PredictionHistoryItem } from "@/type/fastapi/predictions";
+import {
+  LeaderboardRow,
+  LeaderboardSkeleton,
+} from "@/components/common/leaderboard";
 
 const PAGE_SIZE = 10;
 
@@ -105,11 +103,8 @@ function StatCell({
   );
 }
 
-function StatsCard({ userId }: { userId?: number }) {
-  const myStats = useMyStats();
-  const userStats = useUserStats(userId ?? null);
-  const { data, isLoading, error } = userId !== undefined ? userStats : myStats;
-  const isOwn = userId === undefined;
+function StatsCard() {
+  const { data, isLoading, error } = useMyStats();
 
   if (isLoading) {
     return (
@@ -147,7 +142,7 @@ function StatsCard({ userId }: { userId?: number }) {
     <Card className="border-border/50 bg-card shadow-sm">
       <CardContent className="p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-          {isOwn ? "My Stats" : "Stats"}
+          My Stats
         </p>
         <p className="text-[11px] text-muted-foreground/70 mb-4">
           {data.correct_predictions} correct out of {data.total_predictions}{" "}
@@ -156,7 +151,7 @@ function StatsCard({ userId }: { userId?: number }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y sm:divide-y-0 divide-border/50 border border-border/50 rounded-xl overflow-hidden">
           <StatCell
             icon={Target}
-            label={isOwn ? "My Accuracy" : "Accuracy"}
+            label="My Accuracy"
             value={`${data.user_accuracy.toFixed(1)}%`}
             accent="bg-primary/15"
           />
@@ -265,11 +260,9 @@ function HistoryRow({ item }: { item: PredictionHistoryItem }) {
   );
 }
 
-function HistoryCard({ userId }: { userId?: number }) {
+function HistoryCard() {
   const [page, setPage] = useState(1);
-  const myHistory = useMyHistory(page, PAGE_SIZE);
-  const userHistory = useUserHistory(userId ?? null, page, PAGE_SIZE);
-  const { data, isLoading, error } = userId !== undefined ? userHistory : myHistory;
+  const { data, isLoading, error } = useMyHistory(page, PAGE_SIZE);
 
   if (isLoading) {
     return (
@@ -383,77 +376,6 @@ function HistoryCard({ userId }: { userId?: number }) {
 // Card 3 — Leaderboard
 // ---------------------------------------------------------------------------
 
-function LeaderboardRow({
-  entry,
-  isCurrentUser,
-}: {
-  entry: LeaderboardEntry;
-  isCurrentUser: boolean;
-}) {
-  const rankColors: Record<number, string> = {
-    1: "text-yellow-500",
-    2: "text-slate-400",
-    3: "text-amber-600",
-  };
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 py-2.5 first:pt-0 last:pb-0",
-        isCurrentUser && "rounded-lg bg-primary/5 px-2 -mx-2",
-      )}
-    >
-      {/* Rank */}
-      <span
-        className={cn(
-          "w-6 text-center text-sm font-bold flex-shrink-0",
-          rankColors[entry.rank] ?? "text-muted-foreground",
-        )}
-      >
-        {entry.rank <= 3 ? <Crown className="h-4 w-4 mx-auto" /> : entry.rank}
-      </span>
-
-      {/* Avatar placeholder + username */}
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        {entry.avatar_url ? (
-          <Image
-            src={entry.avatar_url}
-            alt={entry.username}
-            width={28}
-            height={28}
-            className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-          />
-        ) : (
-          <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground flex-shrink-0">
-            {entry.username.slice(0, 2).toUpperCase()}
-          </span>
-        )}
-        <span
-          className={cn(
-            "text-sm font-medium truncate",
-            isCurrentUser && "text-primary-font font-semibold",
-          )}
-        >
-          {entry.username}
-          {isCurrentUser && (
-            <span className="ml-1 text-[10px] text-primary-font/70">(you)</span>
-          )}
-        </span>
-      </div>
-
-      {/* Stats */}
-      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span className="text-sm font-bold tabular-nums">
-          {entry.accuracy.toFixed(1)}%
-        </span>
-        <span className="text-[11px] text-muted-foreground tabular-nums">
-          {entry.correct_predictions}/{entry.total_games}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function LeaderboardCard() {
   const { data: stats } = useMyStats();
   const { data, isLoading, error } = useLeaderboard();
@@ -461,16 +383,8 @@ function LeaderboardCard() {
   if (isLoading) {
     return (
       <Card className="border-border/50 bg-card shadow-sm">
-        <CardContent className="p-4 space-y-3">
-          <Skeleton className="h-5 w-36" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Skeleton className="h-4 w-6 flex-shrink-0" />
-              <Skeleton className="h-7 w-7 rounded-full flex-shrink-0" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-4 w-14" />
-            </div>
-          ))}
+        <CardContent className="p-4">
+          <LeaderboardSkeleton rows={5} />
         </CardContent>
       </Card>
     );
@@ -486,10 +400,7 @@ function LeaderboardCard() {
     );
   }
 
-  // Figure out the current user's user_id by matching rank from stats
-  // Backend returns user_rank but not user_id in LeaderboardResponse directly,
-  // so we highlight via user_rank matching entry.rank.
-  const myRank = data.user_rank;
+  const myEntry = data.user_entry;
   const myTotalPredictions = stats?.total_predictions ?? 0;
 
   return (
@@ -500,7 +411,7 @@ function LeaderboardCard() {
             Leaderboard
           </p>
           <span className="text-xs text-muted-foreground">
-            Top 10 · min 15 games
+            Score · min 15 games
           </span>
         </div>
 
@@ -509,23 +420,23 @@ function LeaderboardCard() {
             No qualified players yet.
           </p>
         ) : (
-          <div className="divide-y divide-border/50">
+          <div className="space-y-0.5">
             {data.top_10.map((entry) => (
               <LeaderboardRow
                 key={entry.user_id}
                 entry={entry}
-                isCurrentUser={entry.rank === myRank}
+                isCurrentUser={entry.user_id === myEntry?.user_id}
               />
             ))}
           </div>
         )}
 
         {/* Current user rank footer */}
-        {myRank !== null && myRank !== undefined ? (
+        {myEntry !== null && myEntry !== undefined ? (
           <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Your rank</span>
             <span className="font-bold text-foreground tabular-nums">
-              #{myRank}
+              #{myEntry.rank}
             </span>
           </div>
         ) : myTotalPredictions < 15 ? (
@@ -544,21 +455,17 @@ function LeaderboardCard() {
 // Exported component
 // ---------------------------------------------------------------------------
 
-export default function UserPredictions({ userId }: { userId?: number }) {
-  const isOwn = userId === undefined;
-
+export default function UserPredictions() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <div className={isOwn ? "md:col-span-1" : "md:col-span-2"}>
-        <StatsCard userId={userId} />
+      <div className="md:col-span-1">
+        <StatsCard />
       </div>
-      {isOwn && (
-        <div className="md:col-span-1">
-          <LeaderboardCard />
-        </div>
-      )}
+      <div className="md:col-span-1">
+        <LeaderboardCard />
+      </div>
       <div className="md:col-span-2">
-        <HistoryCard userId={userId} />
+        <HistoryCard />
       </div>
     </div>
   );
