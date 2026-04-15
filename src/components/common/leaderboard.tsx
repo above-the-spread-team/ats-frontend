@@ -35,7 +35,13 @@ export const TOP3: Record<
 // UserAvatar
 // ---------------------------------------------------------------------------
 
-export function UserAvatar({ src, name }: { src: string | null; name: string }) {
+export function UserAvatar({
+  src,
+  name,
+}: {
+  src: string | null;
+  name: string;
+}) {
   if (src) {
     return (
       <Image
@@ -107,14 +113,17 @@ export function LeaderboardRow({
 
       {/* Stats */}
       <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span
-          className={cn(
-            "text-sm font-bold tabular-nums",
-            top ? top.rankCls : "text-foreground",
-          )}
-        >
-          {entry.score.toFixed(1)}
-        </span>
+        <div className="flex items-center gap-1">
+          <p className="text-[11px] text-muted-foreground">score:</p>
+          <span
+            className={cn(
+              "text-sm font-bold tabular-nums",
+              top ? top.rankCls : "text-foreground",
+            )}
+          >
+            {entry.score.toFixed(1)}
+          </span>
+        </div>
         <span className="text-[11px] text-muted-foreground tabular-nums">
           {entry.accuracy.toFixed(1)}%&nbsp;·&nbsp;{entry.correct_predictions}/
           {entry.total_games}

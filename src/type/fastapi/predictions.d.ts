@@ -2,6 +2,7 @@ export interface UserPredictionStats {
   user_accuracy: number;        // 0–100 percentage
   correct_predictions: number;
   total_predictions: number;    // resolved votes only (is_correct IS NOT NULL)
+  score: number;                // 0–100 Bayesian-adjusted score (same formula as leaderboard)
   community_accuracy: number;   // across all authenticated users
   total_players: number;        // distinct users with ≥1 resolved vote
   current_win_streak: number;
