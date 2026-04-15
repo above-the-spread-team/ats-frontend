@@ -19,7 +19,6 @@ import {
   Trophy,
   CheckCircle2,
   XCircle,
-  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -376,6 +375,30 @@ function HistoryCard() {
 // Card 3 — Leaderboard
 // ---------------------------------------------------------------------------
 
+const TOP3: Record<
+  number,
+  { emoji: string; rowCls: string; rankCls: string; glow: string }
+> = {
+  1: {
+    emoji: "🥇",
+    rowCls: "bg-yellow-500/5 border border-yellow-500/20",
+    rankCls: "text-yellow-500",
+    glow: "shadow-[0_0_12px_rgba(234,179,8,0.15)]",
+  },
+  2: {
+    emoji: "🥈",
+    rowCls: "bg-slate-400/5 border border-slate-400/20",
+    rankCls: "text-slate-400",
+    glow: "",
+  },
+  3: {
+    emoji: "🥉",
+    rowCls: "bg-amber-700/5 border border-amber-700/20",
+    rankCls: "text-amber-700",
+    glow: "",
+  },
+};
+
 function LeaderboardRow({
   entry,
   isCurrentUser,
@@ -383,48 +406,49 @@ function LeaderboardRow({
   entry: LeaderboardEntry;
   isCurrentUser: boolean;
 }) {
-  const rankColors: Record<number, string> = {
-    1: "text-yellow-500",
-    2: "text-slate-400",
-    3: "text-amber-600",
-  };
+  const top = TOP3[entry.rank];
 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 py-2.5 first:pt-0 last:pb-0",
-        isCurrentUser && "rounded-lg bg-primary/5 px-2 -mx-2",
+        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+        top
+          ? `${top.rowCls} ${top.glow}`
+          : isCurrentUser
+            ? "bg-primary/5 border border-primary/20"
+            : "hover:bg-muted/40",
       )}
     >
       {/* Rank */}
-      <span
-        className={cn(
-          "w-6 text-center text-sm font-bold flex-shrink-0",
-          rankColors[entry.rank] ?? "text-muted-foreground",
+      <div className="w-7 flex-shrink-0 text-center">
+        {top ? (
+          <span className="text-lg leading-none select-none">{top.emoji}</span>
+        ) : (
+          <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+            {entry.rank}
+          </span>
         )}
-      >
-        {entry.rank <= 3 ? <Crown className="h-4 w-4 mx-auto" /> : entry.rank}
-      </span>
+      </div>
 
-      {/* Avatar placeholder + username */}
-      <div className="flex items-center gap-2 flex-1 min-w-0">
+      {/* Avatar + username */}
+      <div className="flex items-center gap-2.5 flex-1 min-w-0">
         {entry.avatar_url ? (
           <Image
             src={entry.avatar_url}
             alt={entry.username}
-            width={28}
-            height={28}
-            className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-border/40"
           />
         ) : (
-          <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground flex-shrink-0">
+          <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-[11px] font-bold text-muted-foreground flex-shrink-0 ring-1 ring-border/40">
             {entry.username.slice(0, 2).toUpperCase()}
           </span>
         )}
         <span
           className={cn(
-            "text-sm font-medium truncate",
-            isCurrentUser && "text-primary-font font-semibold",
+            "text-sm truncate",
+            top || isCurrentUser ? "font-semibold" : "font-medium",
           )}
         >
           {entry.username}
@@ -436,11 +460,16 @@ function LeaderboardRow({
 
       {/* Stats */}
       <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span className="text-sm font-bold tabular-nums">
+        <span
+          className={cn(
+            "text-sm font-bold tabular-nums",
+            top ? top.rankCls : "text-foreground",
+          )}
+        >
           {entry.score.toFixed(1)}
         </span>
         <span className="text-[11px] text-muted-foreground tabular-nums">
-          {entry.accuracy.toFixed(1)}% · {entry.correct_predictions}/
+          {entry.accuracy.toFixed(1)}%&nbsp;·&nbsp;{entry.correct_predictions}/
           {entry.total_games}
         </span>
       </div>
@@ -500,7 +529,7 @@ function LeaderboardCard() {
             No qualified players yet.
           </p>
         ) : (
-          <div className="divide-y divide-border/50">
+          <div className="space-y-0.5">
             {data.top_10.map((entry) => (
               <LeaderboardRow
                 key={entry.user_id}

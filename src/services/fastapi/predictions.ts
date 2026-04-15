@@ -4,6 +4,7 @@ import type {
   PredictionHistoryResponse,
   LeaderboardResponse,
   MonthlyWinnerResponse,
+  LeaderboardTimeRange,
   PredictionError,
 } from "@/type/fastapi/predictions";
 import { getAuthHeader } from "./token-storage";
@@ -65,12 +66,16 @@ export async function fetchMyHistory(
 }
 
 /**
- * GET /api/v1/leaderboard
+ * GET /api/v1/leaderboard?time_range=
  * Returns the top 10 predictors and the authenticated user's current rank.
+ * time_range: "overall" | "month" (default) | "last_month"
  */
-export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
+export async function fetchLeaderboard(
+  timeRange?: LeaderboardTimeRange,
+): Promise<LeaderboardResponse> {
+  const params = timeRange ? `?time_range=${timeRange}` : "";
   const res = await fetch(
-    `${BACKEND_URL}/api/v1/leaderboard`,
+    `${BACKEND_URL}/api/v1/leaderboard${params}`,
     authFetchInit(),
   );
   return handleResponse<LeaderboardResponse>(res);
@@ -118,11 +123,12 @@ export function useMyHistory(page: number = 1, pageSize: number = 20) {
 
 /**
  * Leaderboard with top 10 predictors and the authenticated user's rank.
+ * Omit timeRange to get the default (current month) behaviour.
  */
-export function useLeaderboard() {
+export function useLeaderboard(timeRange?: LeaderboardTimeRange) {
   return useQuery<LeaderboardResponse, PredictionError>({
-    queryKey: ["leaderboard"],
-    queryFn: fetchLeaderboard,
+    queryKey: ["leaderboard", timeRange ?? "default"],
+    queryFn: () => fetchLeaderboard(timeRange),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

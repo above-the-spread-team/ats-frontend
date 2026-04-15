@@ -60,6 +60,8 @@ export interface MonthlyWinnerResponse {
   captured_at: string;     // ISO 8601
 }
 
+export type LeaderboardTimeRange = "overall" | "month" | "last_month";
+
 export interface PredictionError {
   detail: string;
 }
