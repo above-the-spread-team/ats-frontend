@@ -13,6 +13,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import WorldCupVotePopup from "@/components/common/world-cup-vote-popup";
 import AnalyticsTracker from "@/components/common/analytics-tracker";
+import { VoteTodayAutoPopup } from "@/components/common/vote-today-popup";
 
 export default function FeaturesLayout({
   children,
@@ -24,7 +25,9 @@ export default function FeaturesLayout({
 
   // Stabilize isDiscussPage so we don't flip to the wrong header when pathname
   // is briefly undefined during client-side navigation or hydration
-  const isDiscussPageRef = useRef(pathname != null && pathname.startsWith("/discuss"));
+  const isDiscussPageRef = useRef(
+    pathname != null && pathname.startsWith("/discuss"),
+  );
   if (pathname != null) {
     isDiscussPageRef.current = pathname.startsWith("/discuss");
   }
@@ -71,12 +74,17 @@ export default function FeaturesLayout({
         </header>
       )}
       <Nav />
-      <main className={cn(isDiscussPage && "flex-1 min-h-0 flex flex-col overflow-hidden")}>
+      <main
+        className={cn(
+          isDiscussPage && "flex-1 min-h-0 flex flex-col overflow-hidden",
+        )}
+      >
         {children}
       </main>
       {!isDiscussPage && <ConditionalFooter />}
       <MobileNav />
-      <WorldCupVotePopup />
+      {/* <WorldCupVotePopup /> */}
+      <VoteTodayAutoPopup />
       <AnalyticsTracker />
     </div>
   );

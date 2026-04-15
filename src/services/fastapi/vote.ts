@@ -245,6 +245,56 @@ export function useVote() {
 }
 
 // ---------------------------------------------------------------------------
+// Popup API
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /api/v1/popup/vote-today
+ * Returns { show: true } when there are fixtures today AND the user hasn't
+ * dismissed the popup since the last 00:30 UTC daily reset.
+ */
+export async function fetchVoteTodayPopup(): Promise<{ show: boolean }> {
+  const res = await fetch(
+    `${BACKEND_URL}/api/v1/popup/vote-today`,
+    voteFetchInit(),
+  );
+  return handleResponse<{ show: boolean }>(res);
+}
+
+/**
+ * POST /api/v1/popup/vote-today/dismiss
+ * Records the current UTC time as popup_last_seen on the user's account.
+ */
+export async function dismissVoteTodayPopup(): Promise<{ success: boolean }> {
+  const res = await fetch(`${BACKEND_URL}/api/v1/popup/vote-today/dismiss`, {
+    method: "POST",
+    ...voteFetchInit(),
+  });
+  return handleResponse<{ success: boolean }>(res);
+}
+
+export function useVoteTodayPopup() {
+  return useQuery<{ show: boolean }, VoteError>({
+    queryKey: ["popup", "vote-today"],
+    queryFn: fetchVoteTodayPopup,
+    staleTime: Infinity, // backend is source of truth; invalidated manually at reset
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+  });
+}
+
+export function useDismissVoteTodayPopup() {
+  const queryClient = useQueryClient();
+  return useMutation<{ success: boolean }, Error>({
+    mutationFn: dismissVoteTodayPopup,
+    onSuccess: () => {
+      // Immediately reflect dismissal in the cache so other hooks see show: false
+      queryClient.setQueryData(["popup", "vote-today"], { show: false });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Admin / dev helper (manual fixture sync)
 // ---------------------------------------------------------------------------
 
