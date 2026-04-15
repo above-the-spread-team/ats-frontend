@@ -26,10 +26,11 @@ import {
   useMyHistory,
   useLeaderboard,
 } from "@/services/fastapi/predictions";
-import type {
-  LeaderboardEntry,
-  PredictionHistoryItem,
-} from "@/type/fastapi/predictions";
+import type { PredictionHistoryItem } from "@/type/fastapi/predictions";
+import {
+  LeaderboardRow,
+  LeaderboardSkeleton,
+} from "@/components/common/leaderboard";
 
 const PAGE_SIZE = 10;
 
@@ -375,108 +376,6 @@ function HistoryCard() {
 // Card 3 — Leaderboard
 // ---------------------------------------------------------------------------
 
-const TOP3: Record<
-  number,
-  { emoji: string; rowCls: string; rankCls: string; glow: string }
-> = {
-  1: {
-    emoji: "🥇",
-    rowCls: "bg-yellow-500/5 border border-yellow-500/20",
-    rankCls: "text-yellow-500",
-    glow: "shadow-[0_0_12px_rgba(234,179,8,0.15)]",
-  },
-  2: {
-    emoji: "🥈",
-    rowCls: "bg-slate-400/5 border border-slate-400/20",
-    rankCls: "text-slate-400",
-    glow: "",
-  },
-  3: {
-    emoji: "🥉",
-    rowCls: "bg-amber-700/5 border border-amber-700/20",
-    rankCls: "text-amber-700",
-    glow: "",
-  },
-};
-
-function LeaderboardRow({
-  entry,
-  isCurrentUser,
-}: {
-  entry: LeaderboardEntry;
-  isCurrentUser: boolean;
-}) {
-  const top = TOP3[entry.rank];
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-        top
-          ? `${top.rowCls} ${top.glow}`
-          : isCurrentUser
-            ? "bg-primary/5 border border-primary/20"
-            : "hover:bg-muted/40",
-      )}
-    >
-      {/* Rank */}
-      <div className="w-7 flex-shrink-0 text-center">
-        {top ? (
-          <span className="text-lg leading-none select-none">{top.emoji}</span>
-        ) : (
-          <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-            {entry.rank}
-          </span>
-        )}
-      </div>
-
-      {/* Avatar + username */}
-      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-        {entry.avatar_url ? (
-          <Image
-            src={entry.avatar_url}
-            alt={entry.username}
-            width={32}
-            height={32}
-            className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-border/40"
-          />
-        ) : (
-          <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-[11px] font-bold text-muted-foreground flex-shrink-0 ring-1 ring-border/40">
-            {entry.username.slice(0, 2).toUpperCase()}
-          </span>
-        )}
-        <span
-          className={cn(
-            "text-sm truncate",
-            top || isCurrentUser ? "font-semibold" : "font-medium",
-          )}
-        >
-          {entry.username}
-          {isCurrentUser && (
-            <span className="ml-1 text-[10px] text-primary-font/70">(you)</span>
-          )}
-        </span>
-      </div>
-
-      {/* Stats */}
-      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span
-          className={cn(
-            "text-sm font-bold tabular-nums",
-            top ? top.rankCls : "text-foreground",
-          )}
-        >
-          {entry.score.toFixed(1)}
-        </span>
-        <span className="text-[11px] text-muted-foreground tabular-nums">
-          {entry.accuracy.toFixed(1)}%&nbsp;·&nbsp;{entry.correct_predictions}/
-          {entry.total_games}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function LeaderboardCard() {
   const { data: stats } = useMyStats();
   const { data, isLoading, error } = useLeaderboard();
@@ -484,16 +383,8 @@ function LeaderboardCard() {
   if (isLoading) {
     return (
       <Card className="border-border/50 bg-card shadow-sm">
-        <CardContent className="p-4 space-y-3">
-          <Skeleton className="h-5 w-36" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Skeleton className="h-4 w-6 flex-shrink-0" />
-              <Skeleton className="h-7 w-7 rounded-full flex-shrink-0" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-4 w-14" />
-            </div>
-          ))}
+        <CardContent className="p-4">
+          <LeaderboardSkeleton rows={5} />
         </CardContent>
       </Card>
     );

@@ -55,7 +55,9 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
     return (
       <div className="py-12 text-center space-y-1">
         <Trophy className="w-8 h-8 mx-auto text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">No qualified players yet.</p>
+        <p className="text-sm text-muted-foreground">
+          No qualified players yet.
+        </p>
         <p className="text-xs text-muted-foreground/60">
           Players need at least 15 resolved games to appear.
         </p>
@@ -111,23 +113,43 @@ function TabBar({
 // ---------------------------------------------------------------------------
 
 export default function Leaderboard() {
-  const [timeRange, setTimeRange] = useState<LeaderboardTimeRange>("overall");
+  const [timeRange, setTimeRange] = useState<LeaderboardTimeRange>("month");
 
   return (
     <section className="space-y-4 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/10">
-            <Trophy className="h-4 w-4 text-yellow-500" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold leading-tight">Leaderboard</h2>
-            <p className="text-[11px] text-muted-foreground leading-tight">
-              Top 10 · min 15 resolved games
-            </p>
-          </div>
+        <div>
+          <h2 className="text-base font-bold leading-tight">Leaderboard</h2>
+          <p className="text-[11px] text-muted-foreground leading-tight">
+            Top 10 · min 15 resolved games
+          </p>
         </div>
         <TabBar active={timeRange} onChange={setTimeRange} />
+      </div>
+
+      {/* Prize banner */}
+      <div className="relative overflow-hidden rounded-xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent px-4 py-3 flex items-center gap-3">
+        {/* Decorative glow */}
+        <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-yellow-400/20 blur-2xl pointer-events-none" />
+        <span className="text-2xl leading-none select-none flex-shrink-0">
+          🏆
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-snug">
+            Monthly Champion Prize
+          </p>
+          <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+            The{" "}
+            <span className="font-semibold text-yellow-600 dark:text-yellow-400">
+              #1 player
+            </span>{" "}
+            at the end of each month wins{" "}
+            <span className="font-semibold text-yellow-600 dark:text-yellow-400">
+              $100 USD
+            </span>
+            . Keep predicting to climb the ranks!
+          </p>
+        </div>
       </div>
 
       <div className="bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden">
