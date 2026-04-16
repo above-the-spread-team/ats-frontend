@@ -11,7 +11,7 @@ import DiscussMobileHeader from "@/components/layout/discuss-mobile-header";
 import { SidebarProvider } from "@/app/(features)/discuss/_contexts/sidebar-context";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-// import WorldCupVotePopup from "@/components/common/world-cup-vote-popup";
+import WorldCupVotePopup from "@/components/common/world-cup-vote-popup";
 import AnalyticsTracker from "@/components/common/analytics-tracker";
 import { VoteTodayAutoPopup } from "@/components/common/vote-today-popup";
 
@@ -83,7 +83,7 @@ export default function FeaturesLayout({
       </main>
       {!isDiscussPage && <ConditionalFooter />}
       <MobileNav />
-      {/* <WorldCupVotePopup /> */}
+      <WorldCupVotePopup />
       <VoteTodayAutoPopup />
       <AnalyticsTracker />
     </div>

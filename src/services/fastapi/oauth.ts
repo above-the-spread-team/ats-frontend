@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/fastapi/user";
 import { getAuthHeader, clearStoredToken, storeToken } from "./token-storage";
-import { clearWcSessionId } from "./world-caup-vote";
+import { clearWcSessionId } from "./world-cup-vote";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -26,7 +26,7 @@ export interface ExchangeTokenResponse {
  * The code expires in 30 seconds and is one-time use.
  */
 export async function exchangeOAuthCode(
-  code: string
+  code: string,
 ): Promise<ExchangeTokenResponse> {
   const response = await fetch(`${BACKEND_URL}/api/auth/exchange-token`, {
     method: "POST",
@@ -146,7 +146,11 @@ export async function logout(): Promise<void> {
     });
 
     if (!response.ok) {
-      console.warn("Logout response not OK:", response.status, response.statusText);
+      console.warn(
+        "Logout response not OK:",
+        response.status,
+        response.statusText,
+      );
     }
   } catch (error) {
     console.error("Logout error:", error);

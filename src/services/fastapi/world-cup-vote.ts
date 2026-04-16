@@ -7,7 +7,7 @@ import type {
   WorldCupPredictionUpdate,
   WorldCupPredictionResponse,
   WorldCupVoteError,
-} from "@/type/fastapi/world-cap-vote";
+} from "@/type/fastapi/world-cup-vote";
 import { getAuthHeader } from "./token-storage";
 
 const BACKEND_URL =
@@ -93,7 +93,9 @@ export async function fetchWorldCupGroups(): Promise<WorldCupGroupResponse[]> {
 }
 
 /** GET /api/v1/world-cup/champions — public */
-export async function fetchChampionPercentages(): Promise<WorldCupTeamWithPercentage[]> {
+export async function fetchChampionPercentages(): Promise<
+  WorldCupTeamWithPercentage[]
+> {
   const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/champions`);
   return handleResponse<WorldCupTeamWithPercentage[]>(res);
 }
@@ -207,32 +209,36 @@ export function useMyPrediction(enabled = true) {
 
 export function useSubmitPrediction() {
   const queryClient = useQueryClient();
-  return useMutation<WorldCupPredictionResponse, Error, WorldCupPredictionCreate>(
-    {
-      mutationFn: submitPrediction,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "groups"] });
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "champions"] });
-      },
+  return useMutation<
+    WorldCupPredictionResponse,
+    Error,
+    WorldCupPredictionCreate
+  >({
+    mutationFn: submitPrediction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "groups"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "champions"] });
     },
-  );
+  });
 }
 
 export function useUpdatePrediction() {
   const queryClient = useQueryClient();
-  return useMutation<WorldCupPredictionResponse, Error, WorldCupPredictionUpdate>(
-    {
-      mutationFn: updatePrediction,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "groups"] });
-        queryClient.invalidateQueries({ queryKey: ["world-cup", "champions"] });
-      },
+  return useMutation<
+    WorldCupPredictionResponse,
+    Error,
+    WorldCupPredictionUpdate
+  >({
+    mutationFn: updatePrediction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "groups"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "champions"] });
     },
-  );
+  });
 }
 
 export function useDeletePrediction() {

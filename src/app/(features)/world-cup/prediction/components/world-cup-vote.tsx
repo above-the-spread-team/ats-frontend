@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import type { WorldCupGroupResponse } from "@/type/fastapi/world-cap-vote";
+import type { WorldCupGroupResponse } from "@/type/fastapi/world-cup-vote";
 
 // ─── hooks ────────────────────────────────────────────────────────────────────
 

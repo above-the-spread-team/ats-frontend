@@ -16,7 +16,7 @@ import {
   useMyPrediction,
   useSubmitPrediction,
   useUpdatePrediction,
-} from "@/services/fastapi/world-caup-vote";
+} from "@/services/fastapi/world-cup-vote";
 import { VotingModal } from "@/app/(features)/world-cup/prediction/components/world-cup-vote";
 
 const DISMISSED_KEY = "wc_vote_popup_dismissed_at";
@@ -106,7 +106,7 @@ export default function WorldCupVotePopup() {
     const payload = {
       group_predictions: groups.map((g) => ({
         group_letter: g.group_letter,
-        winner_team_id: picks[g.group_letter] ?? 0,
+        winner_team_id: picks[g.group_letter],
       })),
       champion_team_id: champTeamId,
     };

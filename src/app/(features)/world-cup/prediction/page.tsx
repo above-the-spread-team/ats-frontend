@@ -9,11 +9,11 @@ import {
   useSubmitPrediction,
   useUpdatePrediction,
   useChampionPercentages,
-} from "@/services/fastapi/world-caup-vote";
+} from "@/services/fastapi/world-cup-vote";
 import type {
   WorldCupTeamWithPercentage,
   WorldCupGroupResponse,
-} from "@/type/fastapi/world-cap-vote";
+} from "@/type/fastapi/world-cup-vote";
 import { VotingModal, TeamLogo, CheckIcon } from "./components/world-cup-vote";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -307,7 +307,7 @@ export default function WorldCupPredictionPage() {
     const payload = {
       group_predictions: groups.map((g) => ({
         group_letter: g.group_letter,
-        winner_team_id: picks[g.group_letter] ?? 0,
+        winner_team_id: picks[g.group_letter],
       })),
       champion_team_id: champTeamId,
     };
