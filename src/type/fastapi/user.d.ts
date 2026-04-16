@@ -7,7 +7,7 @@ export interface User {
   is_active: boolean;
   created_at: string;
   updated_at: string | null; // Optional - can be null for newly created users
-  role?: string; // From backend UserResponse (e.g. "user", "admin")
+  role: string; // From backend UserResponse (e.g. "user", "admin") — always present
 }
 
 /** Public user profile by ID (GET /api/v1/users/{user_id}). Includes counts; no email, role, or is_active. */
