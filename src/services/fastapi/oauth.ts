@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/fastapi/user";
-import { getAuthHeader, clearStoredToken } from "./token-storage";
+import { getAuthHeader, clearStoredToken, storeToken } from "./token-storage";
 import { clearWcSessionId } from "./world-caup-vote";
 
 const BACKEND_URL =
@@ -11,6 +11,42 @@ const BACKEND_URL =
  * HttpOnly cookies cannot be read by JavaScript, so we don't store tokens
  * in localStorage. Authentication is checked via API calls.
  */
+
+export interface ExchangeTokenResponse {
+  token: string;
+  user: User;
+}
+
+/**
+ * Exchange a short-lived OAuth code for a JWT.
+ * Called on the /auth/callback page after Google OAuth redirects back.
+ * Safari blocks SameSite=None cookies, so the backend embeds a one-time code
+ * in the redirect URL (?code=...) and we POST it here to receive the JWT in
+ * the response body — same storage path as email/password login.
+ * The code expires in 30 seconds and is one-time use.
+ */
+export async function exchangeOAuthCode(
+  code: string
+): Promise<ExchangeTokenResponse> {
+  const response = await fetch(`${BACKEND_URL}/api/auth/exchange-token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // also receives the cookie if browser allows it
+    body: JSON.stringify({ code }),
+  });
+
+  if (!response.ok) {
+    const error: AuthError = await response.json().catch(() => ({
+      detail: "Failed to complete authentication",
+    }));
+    throw new Error(error.detail || "Failed to complete authentication");
+  }
+
+  const data: ExchangeTokenResponse = await response.json();
+  // Store token for Safari (and any browser that prefers the Authorization header)
+  storeToken(data.token);
+  return data;
+}
 
 /**
  * Check if user is authenticated by attempting to fetch user data
