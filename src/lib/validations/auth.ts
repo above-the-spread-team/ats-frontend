@@ -7,15 +7,19 @@ export const emailSchema = z
   .email("Please enter a valid email address");
 
 // Password validation schema
-// Must contain: uppercase, lowercase, number, and be 8-16 characters
+// Must contain: uppercase, lowercase, number, special character, and be 8-128 characters
 export const passwordSchema = z
   .string()
   .min(1, "Password is required")
   .min(8, "Password must be at least 8 characters")
-  .max(16, "Password must be at most 16 characters")
+  .max(128, "Password must be at most 128 characters")
   .regex(/[a-z]/, "Password must contain at least one lowercase letter")
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-  .regex(/[0-9]/, "Password must contain at least one number");
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(
+    /[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'/`~]/,
+    "Password must contain at least one special character"
+  );
 
 // Login form schema
 export const loginSchema = z.object({

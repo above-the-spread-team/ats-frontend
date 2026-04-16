@@ -135,6 +135,36 @@ export function useRecentUnreadPoll(enabled: boolean = true) {
   });
 }
 
+/**
+ * Delete a notification.
+ * DELETE /api/v1/notifications/{notification_id}
+ */
+export async function deleteNotification(notificationId: number): Promise<void> {
+  const response = await fetchNotifications(
+    `${NOTIFICATIONS_PREFIX}/${notificationId}`,
+    { method: "DELETE" },
+  );
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const detail =
+      typeof errorData?.detail === "string"
+        ? errorData.detail
+        : "Failed to delete notification";
+    if (response.status === 401) throw new Error("401: Unauthorized");
+    throw new Error(detail);
+  }
+}
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, number>({
+    mutationFn: deleteNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+}
+
 export function useMarkNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation<void, Error, MarkReadRequest>({

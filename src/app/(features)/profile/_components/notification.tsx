@@ -6,11 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Trash2 } from "lucide-react";
 import {
   useNotifications,
   useMarkNotificationsRead,
   useUnreadCount,
+  useDeleteNotification,
 } from "@/services/fastapi/notification";
 import UserIcon from "@/components/common/user-icon";
 import type { NotificationItem } from "@/type/fastapi/notification";
@@ -35,10 +36,14 @@ function NotificationRow({
   item,
   onMarkRead,
   isMarkReadPending,
+  onDelete,
+  isDeletePending,
 }: {
   item: NotificationItem;
   onMarkRead: (id: number) => void;
   isMarkReadPending?: boolean;
+  onDelete: (id: number) => void;
+  isDeletePending?: boolean;
 }) {
   const link = getNotificationLink(item);
   const isPrediction = item.notification_type === "prediction_result";
@@ -127,23 +132,40 @@ function NotificationRow({
         leftContent
       )}
 
-      {!item.read_at && (
+      <div className="flex flex-shrink-0 items-center gap-1">
+        {!item.read_at && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            onClick={(e) => {
+              e.preventDefault();
+              onMarkRead(item.id);
+            }}
+            disabled={isMarkReadPending}
+            title="Mark as read"
+            aria-label="Mark as read"
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="flex-shrink-0 rounded-full"
+          className="rounded-full text-muted-foreground hover:text-destructive"
           onClick={(e) => {
             e.preventDefault();
-            onMarkRead(item.id);
+            onDelete(item.id);
           }}
-          disabled={isMarkReadPending}
-          title="Mark as read"
-          aria-label="Mark as read"
+          disabled={isDeletePending}
+          title="Delete notification"
+          aria-label="Delete notification"
         >
-          <Check className="h-4 w-4" />
+          <Trash2 className="h-4 w-4" />
         </Button>
-      )}
+      </div>
     </div>
   );
 }
@@ -155,6 +177,7 @@ export default function Notification() {
   const { data: unreadData } = useUnreadCount();
   const { data, isLoading } = useNotifications(page, PAGE_SIZE, unreadOnly);
   const markReadMutation = useMarkNotificationsRead();
+  const deleteMutation = useDeleteNotification();
 
   const items = data?.items ?? [];
   const totalPages = data?.total_pages ?? 1;
@@ -162,6 +185,10 @@ export default function Notification() {
 
   const handleMarkRead = (id: number) => {
     markReadMutation.mutate({ notification_ids: [id] });
+  };
+
+  const handleDelete = (id: number) => {
+    deleteMutation.mutate(id);
   };
 
   const handleMarkAllRead = () => {
@@ -237,6 +264,8 @@ export default function Notification() {
               item={item}
               onMarkRead={handleMarkRead}
               isMarkReadPending={markReadMutation.isPending}
+              onDelete={handleDelete}
+              isDeletePending={deleteMutation.isPending}
             />
           ))}
           {totalPages > 1 && (
