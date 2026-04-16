@@ -15,6 +15,8 @@ export function formatNotificationMessage(item: NotificationItem): string {
       return `${sender} commented on your post`;
     case "reply_to_comment":
       return `${sender} replied to your comment`;
+    case "new_follower":
+      return `${sender} followed your group`;
     case "follow_request":
       return `${sender} requested to follow a group`;
     case "follow_approved":
