@@ -634,6 +634,7 @@ export function VoteTodayAutoPopup() {
   useEffect(() => {
     const timer = setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ["popup", "vote-today"] });
+      queryClient.invalidateQueries({ queryKey: ["votes", "available"] });
     }, msUntilNextCutoff());
     return () => clearTimeout(timer);
   }, [queryClient]);
