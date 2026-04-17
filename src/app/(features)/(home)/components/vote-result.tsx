@@ -233,7 +233,7 @@ export default function VoteResult() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 ">
         <div className="flex w-full md:w-auto items-center justify-between">
           <h2 className="text-lg md:text-xl  font-bold text-primary-font">
-            User&apos;s votes
+            User&apos;s predictions
           </h2>
           <div className="block md:hidden">
             <VoteDialog>

@@ -116,11 +116,13 @@ export default function Leaderboard() {
   const [timeRange, setTimeRange] = useState<LeaderboardTimeRange>("monthly");
 
   return (
-    <section className="space-y-4 max-w-4xl mx-auto">
+    <section className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold leading-tight">Leaderboard</h2>
-          <p className="text-[11px] text-muted-foreground leading-tight">
+          <h2 className="text-base md:text-lg font-bold leading-tight">
+            Leaderboard
+          </h2>
+          <p className="text-[11px] md:text-sm text-muted-foreground leading-tight">
             Top 10 · min 15 resolved games
           </p>
         </div>
@@ -135,10 +137,10 @@ export default function Leaderboard() {
           🏆
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground leading-snug">
+          <p className="text-sm md:text-basefont-semibold font-semibold text-foreground leading-snug">
             Monthly Champion Prize
           </p>
-          <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+          <p className="text-xs md:text-sm text-muted-foreground leading-snug mt-0.5">
             The{" "}
             <span className="font-semibold text-yellow-600 dark:text-yellow-400">
               #1 player
