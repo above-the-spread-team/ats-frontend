@@ -226,6 +226,7 @@ export function useLogout() {
       queryClient.removeQueries({ queryKey: ["userGroups"] });
       queryClient.removeQueries({ queryKey: ["notifications"] });
       queryClient.removeQueries({ queryKey: ["votes"] });
+      queryClient.removeQueries({ queryKey: ["popup", "vote-today"] });
       queryClient.removeQueries({ queryKey: ["world-cup", "prediction"] });
       queryClient.removeQueries({ queryKey: ["world-cup", "deadline"] });
     },

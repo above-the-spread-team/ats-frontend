@@ -18,6 +18,7 @@ import {
   useDismissVoteTodayPopup,
   RateLimitError,
 } from "@/services/fastapi/vote";
+import { getStoredToken } from "@/services/fastapi/token-storage";
 import type { FixtureSummary, VoteChoice } from "@/type/fastapi/vote";
 import { CheckCircle2, Vote as VoteIcon } from "lucide-react";
 
@@ -545,6 +546,41 @@ function VotePopupShell({
 
 // ── auto mode (layout.tsx) ─────────────────────────────────────────────────
 
+// ── anonymous dismiss helpers ──────────────────────────────────────────────
+
+const ANON_DISMISSED_KEY = "vote_popup_dismissed_day";
+
+/**
+ * Returns a string key for the current "popup day" — the UTC date that began
+ * at 00:30 UTC. Before 00:30 UTC the popup day is still the previous calendar day.
+ */
+function getPopupDay(): string {
+  const now = new Date();
+  const cutoffMs = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    0,
+    30,
+  );
+  const base =
+    now.getTime() < cutoffMs
+      ? new Date(cutoffMs - 86_400_000)
+      : new Date(cutoffMs);
+  return base.toISOString().slice(0, 10);
+}
+
+function isPopupDismissedLocally(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(ANON_DISMISSED_KEY) === getPopupDay();
+}
+
+function dismissPopupLocally(): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(ANON_DISMISSED_KEY, getPopupDay());
+  }
+}
+
 /** ms until the next 00:30 UTC reset — used to schedule a query invalidation. */
 function msUntilNextCutoff(): number {
   const now = new Date();
@@ -557,22 +593,43 @@ function msUntilNextCutoff(): number {
 
 /**
  * Mounts invisibly in the layout and opens the popup once per day.
- * All show/dismiss logic lives on the backend (GET + POST /api/v1/popup/vote-today).
- * Dismiss is called on open so multi-tab users only see it once.
- * Automatically re-checks at the next 00:30 UTC reset without a page refresh.
+ *
+ * Logged-in users: backend (GET/POST /api/v1/popup/vote-today) is the source
+ * of truth — dismiss is recorded server-side so multi-tab users see it once.
+ *
+ * Anonymous users: the backend has no account to write to, so dismiss is
+ * tracked in localStorage keyed by popup-day (resets at 00:30 UTC).
+ * Availability is determined by checking for unvoted fixtures.
+ *
+ * Both paths automatically re-check after the next 00:30 UTC daily reset.
  */
 export function VoteTodayAutoPopup() {
   const queryClient = useQueryClient();
-  const { data } = useVoteTodayPopup();
+  const { data: popupData } = useVoteTodayPopup();
+  const { data: availableFixtures } = useAvailableFixtures("today");
   const { mutate: dismiss } = useDismissVoteTodayPopup();
   const [open, setOpen] = useState(false);
 
+  // Logged-in path: backend decides show/dismiss
   useEffect(() => {
-    if (data?.show) {
+    if (typeof window === "undefined") return;
+    if (!getStoredToken()) return;
+    if (popupData?.show) {
       dismiss();
       setOpen(true);
     }
-  }, [data?.show, dismiss]);
+  }, [popupData?.show, dismiss]);
+
+  // Anonymous path: localStorage decides dismiss; fixtures decide availability
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (getStoredToken()) return;
+    if (isPopupDismissedLocally()) return;
+    if (availableFixtures && availableFixtures.some((f) => f.user_vote === null)) {
+      dismissPopupLocally();
+      setOpen(true);
+    }
+  }, [availableFixtures]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
