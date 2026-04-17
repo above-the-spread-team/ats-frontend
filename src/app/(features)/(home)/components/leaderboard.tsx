@@ -68,7 +68,7 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
   return (
     <div>
       <ColumnHeaders />
-      <div className="space-y-0.5">
+      <div className="space-y-1 ">
         {data.top_10.map((entry) => (
           <LeaderboardRow key={entry.user_id} entry={entry} />
         ))}

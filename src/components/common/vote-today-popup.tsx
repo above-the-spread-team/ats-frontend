@@ -304,8 +304,8 @@ function LeagueGroup({
 // ── popup content ──────────────────────────────────────────────────────────
 
 const DAY_TABS: { label: string; day: "today" | "tomorrow" }[] = [
-  { label: "Today", day: "today" },
   { label: "Tomorrow", day: "tomorrow" },
+  { label: "Today", day: "today" },
 ];
 
 function VotePopupContent() {
@@ -526,7 +526,7 @@ function VotePopupShell({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="p-0 gap-0 w-full max-w-[95%] md:max-w-lg sm:max-w-xl flex flex-col max-h-[90vh] sm:max-h-[80vh]">
+      <DialogContent className="p-0 gap-0 w-full max-w-[95%] md:max-w-lg sm:max-w-xl flex flex-col max-h-[70vh] sm:max-h-[80vh]">
         <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <VoteIcon className="w-5 h-5 text-primary-font flex-shrink-0" />
@@ -625,7 +625,10 @@ export function VoteTodayAutoPopup() {
     if (typeof window === "undefined") return;
     if (getStoredToken()) return;
     if (isPopupDismissedLocally()) return;
-    if (availableFixtures && availableFixtures.some((f) => f.user_vote === null)) {
+    if (
+      availableFixtures &&
+      availableFixtures.some((f) => f.user_vote === null)
+    ) {
       dismissPopupLocally();
       setOpen(true);
     }

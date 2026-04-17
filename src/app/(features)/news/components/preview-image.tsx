@@ -18,7 +18,7 @@ function darkenColor(hex: string, percent: number): string {
   const r = Math.max(0, Math.floor((num >> 16) * (1 - percent / 100)));
   const g = Math.max(
     0,
-    Math.floor(((num >> 8) & 0x00ff) * (1 - percent / 100))
+    Math.floor(((num >> 8) & 0x00ff) * (1 - percent / 100)),
   );
   const b = Math.max(0, Math.floor((num & 0x0000ff) * (1 - percent / 100)));
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
@@ -31,17 +31,17 @@ function lightenColor(hex: string, percent: number): string {
   const num = parseInt(hex.replace("#", ""), 16);
   const r = Math.min(
     255,
-    Math.floor((num >> 16) + (255 - (num >> 16)) * (percent / 100))
+    Math.floor((num >> 16) + (255 - (num >> 16)) * (percent / 100)),
   );
   const g = Math.min(
     255,
     Math.floor(
-      ((num >> 8) & 0x00ff) + (255 - ((num >> 8) & 0x00ff)) * (percent / 100)
-    )
+      ((num >> 8) & 0x00ff) + (255 - ((num >> 8) & 0x00ff)) * (percent / 100),
+    ),
   );
   const b = Math.min(
     255,
-    Math.floor((num & 0x0000ff) + (255 - (num & 0x0000ff)) * (percent / 100))
+    Math.floor((num & 0x0000ff) + (255 - (num & 0x0000ff)) * (percent / 100)),
   );
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
@@ -91,7 +91,7 @@ export default function PreviewImage({
           }}
         ></div>
 
-        <div className="relative w-12 h-12 md:w-20 md:h-20 z-10">
+        <div className="relative w-16 h-16 md:w-20 md:h-20 z-10">
           <Image
             src={getOptimizedLogo(homeTeamLogo, 64)}
             alt="Home team"
@@ -101,7 +101,7 @@ export default function PreviewImage({
           />
         </div>
 
-        <div className="relative w-12 h-12 md:w-20 md:h-20 z-10">
+        <div className="relative w-16 h-16 md:w-20 md:h-20 z-10">
           <Image
             src={getOptimizedLogo(awayTeamLogo, 64)}
             alt="Away team"

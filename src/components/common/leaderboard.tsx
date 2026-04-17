@@ -76,7 +76,7 @@ export function LeaderboardRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+        "flex items-center gap-3 px-3 py-1.5 md:py-2 rounded-lg transition-colors",
         top
           ? `${top.rowCls} ${top.glow}`
           : isCurrentUser
