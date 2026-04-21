@@ -625,10 +625,7 @@ export function VoteTodayAutoPopup() {
     if (typeof window === "undefined") return;
     if (getStoredToken()) return;
     if (isPopupDismissedLocally()) return;
-    if (
-      availableFixtures &&
-      availableFixtures.some((f) => f.user_vote === null)
-    ) {
+    if (availableFixtures && availableFixtures.length > 0) {
       dismissPopupLocally();
       setOpen(true);
     }
