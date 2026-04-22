@@ -356,6 +356,11 @@ export default function PostCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-2 p-0">
+        {isAuthor && post.moderationStatus === "pending_moderation" && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+            Under Review
+          </span>
+        )}
         <div className="mb-1.5 flex flex-col items-start">
           <p
             ref={contentRef}
@@ -581,5 +586,6 @@ export function mapPostResponse(post: PostResponse): Post {
     fixtureApiId: post.fixture_api_id ?? null,
     homeTeamLogo: post.home_team_logo ?? null,
     awayTeamLogo: post.away_team_logo ?? null,
+    moderationStatus: post.moderation_status,
   };
 }

@@ -50,6 +50,7 @@ export interface PostResponse extends PostBase {
   dislikes: number;
   user_reaction: boolean | null; // True for like, False for dislike, null if no reaction or not authenticated
   tags: TagSummary[];
+  moderation_status: string; // "published" | "pending_moderation" | "rejected"
 }
 
 export interface PostListResponse {
@@ -114,6 +115,7 @@ export interface Post {
   fixtureApiId?: number | null;
   homeTeamLogo?: string | null;
   awayTeamLogo?: string | null;
+  moderationStatus?: string;
 }
 
 export interface PostError {
