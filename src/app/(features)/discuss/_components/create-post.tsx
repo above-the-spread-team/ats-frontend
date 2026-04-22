@@ -53,6 +53,7 @@ export default function CreatePost({
 }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [pendingReview, setPendingReview] = useState(false);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const pendingFocusRef = useRef<{
@@ -239,7 +240,11 @@ export default function CreatePost({
       setContent("");
       setSelectedTagIds([]);
       isSubmittingRef.current = false;
-      onOpenChange(false);
+      if (newPost.moderation_status === "pending_moderation") {
+        setPendingReview(true);
+      } else {
+        onOpenChange(false);
+      }
     } catch (error) {
       console.error("Error creating post:", error);
       // Reset submitting flag on error so user can retry
@@ -261,6 +266,7 @@ export default function CreatePost({
     if (!open) {
       setContent("");
       setSelectedTagIds([]);
+      setPendingReview(false);
       onOpenChange(false);
     }
   };
@@ -299,6 +305,21 @@ export default function CreatePost({
           </DialogDescription>
         </DialogHeader>
 
+        {pendingReview ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <p className="text-sm font-medium">Your post is under review</p>
+            <p className="text-xs text-muted-foreground">
+              It will appear once our moderation check completes.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleClose(false)}
+            >
+              Close
+            </Button>
+          </div>
+        ) : (
         <div>
           {/* User Info */}
           {currentUser && (
@@ -460,8 +481,9 @@ export default function CreatePost({
             </div>
           </div>
         </div>
+        )}
 
-        <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
+        {!pendingReview && <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
           <Button
             type="button"
             variant="outline"
@@ -483,7 +505,7 @@ export default function CreatePost({
           >
             {isSubmitting ? "Posting..." : "Post"}
           </Button>
-        </DialogFooter>
+        </DialogFooter>}
       </DialogContent>
     </Dialog>
   );
