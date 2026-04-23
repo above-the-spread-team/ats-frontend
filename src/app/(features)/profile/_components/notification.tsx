@@ -88,7 +88,7 @@ function NotificationRow({
           />
         ) : isModeration ? (
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
-            <IoChatbubbles className="h-4 w-4 text-muted-foreground" />
+            <IoChatbubbles className="h-6 w-6 text-primary-font" />
           </div>
         ) : showGroupIcon ? (
           <UserIcon

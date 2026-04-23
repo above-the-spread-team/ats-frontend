@@ -27,7 +27,7 @@ import { useTags, useAddTagsToPost } from "@/services/fastapi/tags";
 import { cn } from "@/lib/utils";
 import UserIcon from "@/components/common/user-icon";
 import EmojiPicker from "@/components/common/emoji-picker";
-import { Tag, X, Smile, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Tag, X, Smile, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
 import type { EmojiClickData } from "emoji-picker-react";
 
@@ -61,7 +61,8 @@ export default function CreatePost({
 
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
-  const [moderationPhase, setModerationPhase] = useState<ModerationPhase>("idle");
+  const [moderationPhase, setModerationPhase] =
+    useState<ModerationPhase>("idle");
   const [pendingPostId, setPendingPostId] = useState<number | null>(null);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -83,7 +84,7 @@ export default function CreatePost({
       setModerationPhase(status === "published" ? "approved" : "rejected");
       queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
-    () => setModerationPhase("timed_out")
+    () => setModerationPhase("timed_out"),
   );
 
   // Group tags by type (only league tags for posts)
@@ -330,239 +331,296 @@ export default function CreatePost({
         </DialogHeader>
 
         {moderationPhase !== "idle" ? (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
+          <div
+            className={cn(
+              "mx-1 my-2 flex flex-col items-center gap-5 rounded-2xl border px-6 py-10 text-center md:gap-6 md:px-10 md:py-14",
+              moderationPhase === "approved" &&
+                "border-green-500/25 bg-green-500/5",
+              moderationPhase === "rejected" &&
+                "border-red-500/25 bg-red-500/5",
+              (moderationPhase === "pending_moderation" ||
+                moderationPhase === "timed_out") &&
+                "border-border/60 bg-muted/20",
+            )}
+          >
+            {/* Icon */}
             {moderationPhase === "pending_moderation" && (
-              <>
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="text-sm font-medium">Reviewing your post...</p>
-                <p className="text-xs text-muted-foreground">
-                  This usually takes 10–15 seconds.
-                </p>
-              </>
+              <div className="relative flex items-center justify-center">
+                <div className="absolute h-16 w-16 animate-ping rounded-full bg-muted-foreground/10 md:h-20 md:w-20" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
+                  <Loader2 className="h-7 w-7 animate-spin text-muted-foreground md:h-9 md:w-9" />
+                </div>
+              </div>
             )}
             {moderationPhase === "timed_out" && (
-              <>
-                <p className="text-sm font-medium">Still reviewing...</p>
-                <p className="text-xs text-muted-foreground">
-                  You&apos;ll be notified in the app when it&apos;s ready.
-                </p>
-              </>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
+                <Clock className="h-7 w-7 text-muted-foreground md:h-9 md:w-9" />
+              </div>
             )}
             {moderationPhase === "approved" && (
-              <>
-                <CheckCircle2 className="h-8 w-8 text-green-500" />
-                <p className="text-sm font-medium">Post published!</p>
-                <p className="text-xs text-muted-foreground">
-                  Your post passed moderation and is now live.
-                </p>
-              </>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 md:h-20 md:w-20">
+                <CheckCircle2 className="h-7 w-7 text-green-500 md:h-9 md:w-9" />
+              </div>
             )}
             {moderationPhase === "rejected" && (
-              <>
-                <XCircle className="h-8 w-8 text-red-500" />
-                <p className="text-sm font-medium">Post rejected</p>
-                <p className="text-xs text-muted-foreground max-w-xs">
-                  Your post didn&apos;t meet our community guidelines and has
-                  been removed. Please review our guidelines before posting
-                  again.
-                </p>
-              </>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 md:h-20 md:w-20">
+                <XCircle className="h-7 w-7 text-red-500 md:h-9 md:w-9" />
+              </div>
             )}
+
+            {/* Text */}
+            <div className="space-y-2">
+              {moderationPhase === "pending_moderation" && (
+                <>
+                  <p className="text-base font-semibold md:text-lg">
+                    Reviewing your post...
+                  </p>
+                  <p className="text-sm text-muted-foreground md:text-base">
+                    This usually takes 10–15 seconds.
+                  </p>
+                </>
+              )}
+              {moderationPhase === "timed_out" && (
+                <>
+                  <p className="text-base font-semibold md:text-lg">
+                    Still reviewing...
+                  </p>
+                  <p className="text-sm text-muted-foreground md:text-base">
+                    You&apos;ll be notified in the app when it&apos;s ready.
+                  </p>
+                </>
+              )}
+              {moderationPhase === "approved" && (
+                <>
+                  <p className="text-base font-semibold text-green-600 md:text-lg dark:text-green-400">
+                    Post published!
+                  </p>
+                  <p className="text-sm text-muted-foreground md:text-base">
+                    Your post passed moderation and is now live.
+                  </p>
+                </>
+              )}
+              {moderationPhase === "rejected" && (
+                <>
+                  <p className="text-base font-semibold text-red-600 md:text-lg dark:text-red-400">
+                    Post rejected
+                  </p>
+                  <p className="mx-auto max-w-xs text-sm text-muted-foreground md:text-base">
+                    Your post didn&apos;t meet our community guidelines and has
+                    been removed. Please review our guidelines before posting
+                    again.
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Action button — hidden while actively polling */}
+            {moderationPhase !== "pending_moderation" && (
+              <Button
+                type="button"
+                variant={moderationPhase === "approved" ? "default" : "outline"}
+                className="min-w-[100px] md:min-w-[120px]"
+                onClick={() => handleClose(false)}
+              >
+                {moderationPhase === "approved" ? "Done" : "Dismiss"}
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div>
+            {/* User Info */}
+            {currentUser && (
+              <div className="flex items-center gap-3 pb-4 border-b border-border">
+                <UserIcon
+                  avatarUrl={currentUser.avatar_url}
+                  name={currentUser.username}
+                  size="large"
+                  variant="primary"
+                />
+                <div>
+                  <p className="text-sm font-semibold">
+                    {currentUser.username}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Content Textarea */}
+            <div className="space-y-1 pt-2">
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="post-content"
+                  className="text-sm pl-2 font-medium text-foreground"
+                >
+                  What&apos;s on your mind?
+                </label>
+                {/* Emoji Picker Button */}
+                <DropdownMenu
+                  open={emojiDropdownOpen}
+                  onOpenChange={setEmojiDropdownOpen}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isSubmitting}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Smile className="scale-110" />
+                      <span className="sr-only">Add emoji</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-auto p-0 border-0 shadow-lg bg-transparent"
+                  >
+                    <EmojiPicker onEmojiClick={handleEmojiClick} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <Textarea
+                ref={textareaRef}
+                id="post-content"
+                placeholder="Write something..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                disabled={isSubmitting}
+                rows={8}
+                className={cn(
+                  "flex w-full rounded-xl border border-input bg-card px-3 py-2 text-base shadow-sm transition-colors",
+                  "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-font",
+                  "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none",
+                  "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative  [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
+                )}
+              />
+            </div>
+            {(createPostMutation.isError || addTagsMutation.isError) && (
+              <p className="text-sm px-1 py-1 text-red-500">
+                {createPostMutation.error instanceof Error
+                  ? createPostMutation.error.message
+                  : addTagsMutation.error instanceof Error
+                    ? addTagsMutation.error.message
+                    : "Failed to create post. Please try again."}
+              </p>
+            )}
+
+            {/* Tag Selection */}
+            <div className="space-y-2">
+              <label className="text-sm pl-2 font-medium text-foreground">
+                Tags (optional)
+              </label>
+              <div className="space-y-2">
+                {/* Selected tags as chips */}
+                {selectedTagIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedTagIds.map((tagId) => {
+                      const tag = Object.values(tagsByType)
+                        .flat()
+                        .find((t) => t.id === tagId);
+                      if (!tag) return null;
+
+                      return (
+                        <Button
+                          key={tagId}
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleTagToggle(tagId)}
+                          disabled={isSubmitting}
+                          className="h-7 gap-1.5 text-xs rounded-full"
+                        >
+                          {tag.name}
+                          <X className="h-3 w-3" strokeWidth={2.5} />
+                        </Button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Tag selector dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild className="rounded-full">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isSubmitting || tagsLoading}
+                      className="gap-2"
+                    >
+                      <Tag className="h-4 w-4" />
+                      <span>Add tags</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-56 max-h-[400px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
+                  >
+                    {TAG_TYPE_ORDER.map((type, index) => {
+                      const tags = tagsByType[type];
+                      if (tags.length === 0) return null;
+
+                      return (
+                        <div key={type}>
+                          <DropdownMenuGroup>
+                            <DropdownMenuLabel>
+                              {TAG_TYPE_LABELS[type]}
+                            </DropdownMenuLabel>
+                            {tags.map((tag) => {
+                              const isSelected = selectedTagIds.includes(
+                                tag.id,
+                              );
+                              return (
+                                <DropdownMenuCheckboxItem
+                                  key={tag.id}
+                                  checked={isSelected}
+                                  onCheckedChange={() =>
+                                    handleTagToggle(tag.id)
+                                  }
+                                >
+                                  {tag.name}
+                                </DropdownMenuCheckboxItem>
+                              );
+                            })}
+                          </DropdownMenuGroup>
+                          {index < TAG_TYPE_ORDER.length - 1 && (
+                            <DropdownMenuSeparator />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {moderationPhase === "idle" && (
+          <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleClose(false)}
-            >
-              {moderationPhase === "approved" ? "Done" : "Dismiss"}
-            </Button>
-          </div>
-        ) : (
-        <div>
-          {/* User Info */}
-          {currentUser && (
-            <div className="flex items-center gap-3 pb-4 border-b border-border">
-              <UserIcon
-                avatarUrl={currentUser.avatar_url}
-                name={currentUser.username}
-                size="large"
-                variant="primary"
-              />
-              <div>
-                <p className="text-sm font-semibold">{currentUser.username}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Content Textarea */}
-          <div className="space-y-1 pt-2">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="post-content"
-                className="text-sm pl-2 font-medium text-foreground"
-              >
-                What&apos;s on your mind?
-              </label>
-              {/* Emoji Picker Button */}
-              <DropdownMenu
-                open={emojiDropdownOpen}
-                onOpenChange={setEmojiDropdownOpen}
-              >
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={isSubmitting}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Smile className="scale-110" />
-                    <span className="sr-only">Add emoji</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-auto p-0 border-0 shadow-lg bg-transparent"
-                >
-                  <EmojiPicker onEmojiClick={handleEmojiClick} />
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <Textarea
-              ref={textareaRef}
-              id="post-content"
-              placeholder="Write something..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!isSubmitting) {
+                  handleClose(false);
+                }
+              }}
               disabled={isSubmitting}
-              rows={8}
-              className={cn(
-                "flex w-full rounded-xl border border-input bg-card px-3 py-2 text-base shadow-sm transition-colors",
-                "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-font",
-                "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none",
-                "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative  [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
-              )}
-            />
-          </div>
-          {(createPostMutation.isError || addTagsMutation.isError) && (
-            <p className="text-sm px-1 py-1 text-red-500">
-              {createPostMutation.error instanceof Error
-                ? createPostMutation.error.message
-                : addTagsMutation.error instanceof Error
-                  ? addTagsMutation.error.message
-                  : "Failed to create post. Please try again."}
-            </p>
-          )}
-
-          {/* Tag Selection */}
-          <div className="space-y-2">
-            <label className="text-sm pl-2 font-medium text-foreground">
-              Tags (optional)
-            </label>
-            <div className="space-y-2">
-              {/* Selected tags as chips */}
-              {selectedTagIds.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedTagIds.map((tagId) => {
-                    const tag = Object.values(tagsByType)
-                      .flat()
-                      .find((t) => t.id === tagId);
-                    if (!tag) return null;
-
-                    return (
-                      <Button
-                        key={tagId}
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleTagToggle(tagId)}
-                        disabled={isSubmitting}
-                        className="h-7 gap-1.5 text-xs rounded-full"
-                      >
-                        {tag.name}
-                        <X className="h-3 w-3" strokeWidth={2.5} />
-                      </Button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Tag selector dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild className="rounded-full">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isSubmitting || tagsLoading}
-                    className="gap-2"
-                  >
-                    <Tag className="h-4 w-4" />
-                    <span>Add tags</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  className="w-56 max-h-[400px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.2)_transparent]"
-                >
-                  {TAG_TYPE_ORDER.map((type, index) => {
-                    const tags = tagsByType[type];
-                    if (tags.length === 0) return null;
-
-                    return (
-                      <div key={type}>
-                        <DropdownMenuGroup>
-                          <DropdownMenuLabel>
-                            {TAG_TYPE_LABELS[type]}
-                          </DropdownMenuLabel>
-                          {tags.map((tag) => {
-                            const isSelected = selectedTagIds.includes(tag.id);
-                            return (
-                              <DropdownMenuCheckboxItem
-                                key={tag.id}
-                                checked={isSelected}
-                                onCheckedChange={() => handleTagToggle(tag.id)}
-                              >
-                                {tag.name}
-                              </DropdownMenuCheckboxItem>
-                            );
-                          })}
-                        </DropdownMenuGroup>
-                        {index < TAG_TYPE_ORDER.length - 1 && (
-                          <DropdownMenuSeparator />
-                        )}
-                      </div>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !content.trim()}
+            >
+              {isSubmitting ? "Posting..." : "Post"}
+            </Button>
+          </DialogFooter>
         )}
-
-        {moderationPhase === "idle" && <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!isSubmitting) {
-                handleClose(false);
-              }
-            }}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !content.trim()}
-          >
-            {isSubmitting ? "Posting..." : "Post"}
-          </Button>
-        </DialogFooter>}
       </DialogContent>
     </Dialog>
   );
