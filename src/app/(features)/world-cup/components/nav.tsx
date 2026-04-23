@@ -28,13 +28,13 @@ const tabs = [
     icon: IoNewspaperOutline,
     exact: false,
   },
-  { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
   {
     label: "Prediction",
     href: "/world-cup/prediction",
     icon: MdSportsSoccer,
     exact: false,
   },
+  { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
 ];
 
 export default function WorldCupNav() {

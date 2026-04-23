@@ -341,14 +341,7 @@ export default function CreatePost({
         {moderationPhase !== "idle" ? (
           <div
             className={cn(
-              "mx-1 my-2 flex flex-col items-center gap-5 rounded-2xl border px-6 py-10 text-center md:gap-6 md:px-10 md:py-14",
-              moderationPhase === "approved" &&
-                "border-green-500/25 bg-green-500/5",
-              moderationPhase === "rejected" &&
-                "border-red-500/25 bg-red-500/5",
-              (moderationPhase === "pending_moderation" ||
-                moderationPhase === "timed_out") &&
-                "border-border/60 bg-muted/20",
+              "mx-1 my-2 flex flex-col items-center gap-5 rounded-2xl border-border/60 bg-muted/20 border px-6 py-10 text-center md:gap-6 md:px-10 md:py-14",
             )}
           >
             {/* Icon */}
@@ -366,12 +359,12 @@ export default function CreatePost({
               </div>
             )}
             {moderationPhase === "approved" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 md:h-20 md:w-20">
                 <CheckCircle2 className="h-7 w-7 text-green-500 md:h-9 md:w-9" />
               </div>
             )}
             {moderationPhase === "rejected" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 md:h-20 md:w-20">
                 <XCircle className="h-7 w-7 text-red-500 md:h-9 md:w-9" />
               </div>
             )}

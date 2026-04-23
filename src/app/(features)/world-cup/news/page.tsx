@@ -21,7 +21,7 @@ import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "../../news/components/preview-image";
 import { Tag } from "@/components/common/tag";
 
-const WORLD_CUP_TAG_ID = 104;
+const WORLD_CUP_TAG_ID = 14;
 const PAGE_SIZE = 15;
 
 export default function WorldCupNews() {
