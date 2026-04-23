@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCreatePost, useModerationPoller } from "@/services/fastapi/posts";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useTags, useAddTagsToPost } from "@/services/fastapi/tags";
 import { cn } from "@/lib/utils";
@@ -73,11 +74,15 @@ export default function CreatePost({
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
   const { data: tagsData, isLoading: tagsLoading } = useTags(100);
+  const queryClient = useQueryClient();
 
   useModerationPoller(
     pendingPostId,
     moderationPhase === "pending_moderation",
-    (status) => setModerationPhase(status === "published" ? "approved" : "rejected"),
+    (status) => {
+      setModerationPhase(status === "published" ? "approved" : "rejected");
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
     () => setModerationPhase("timed_out")
   );
 
@@ -295,12 +300,13 @@ export default function CreatePost({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]"
-        // Prevent closing on outside click or escape during submission
+        // Prevent closing on outside click or escape during submission or moderation review
         onInteractOutside={(e: Event) => {
           if (
             isSubmittingRef.current ||
             createPostMutation.isPending ||
-            addTagsMutation.isPending
+            addTagsMutation.isPending ||
+            moderationPhase !== "idle"
           ) {
             e.preventDefault();
           }
@@ -309,7 +315,8 @@ export default function CreatePost({
           if (
             isSubmittingRef.current ||
             createPostMutation.isPending ||
-            addTagsMutation.isPending
+            addTagsMutation.isPending ||
+            moderationPhase === "pending_moderation"
           ) {
             e.preventDefault();
           }
@@ -354,8 +361,10 @@ export default function CreatePost({
               <>
                 <XCircle className="h-8 w-8 text-red-500" />
                 <p className="text-sm font-medium">Post rejected</p>
-                <p className="text-xs text-muted-foreground">
-                  Your post didn&apos;t pass our moderation check.
+                <p className="text-xs text-muted-foreground max-w-xs">
+                  Your post didn&apos;t meet our community guidelines and has
+                  been removed. Please review our guidelines before posting
+                  again.
                 </p>
               </>
             )}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { FaBell } from "react-icons/fa";
+import { IoChatbubbles } from "react-icons/io5";
 import Link from "next/link";
 import { FixtureDualTeamIcon } from "@/components/common/fixture-dual-team-icon";
 import UserIcon from "@/components/common/user-icon";
@@ -38,6 +39,7 @@ export function NotificationToastContent({
   awayTeamLogo,
   homeTeamName,
   awayTeamName,
+  isModeration = false,
 }: {
   message: string;
   avatarUrl: string | null;
@@ -47,6 +49,7 @@ export function NotificationToastContent({
   awayTeamLogo?: string | null;
   homeTeamName?: string;
   awayTeamName?: string;
+  isModeration?: boolean;
 }) {
   const showDualIcon = homeTeamLogo != null || awayTeamLogo != null;
   return (
@@ -59,6 +62,10 @@ export function NotificationToastContent({
           awayTeamName={awayTeamName}
           size="md"
         />
+      ) : isModeration ? (
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
+          <IoChatbubbles className="h-5 w-5 text-muted-foreground" />
+        </div>
       ) : (
         <UserIcon
           avatarUrl={avatarUrl}
@@ -125,6 +132,7 @@ function useNotificationToasts(authenticated: boolean) {
       const message = formatNotificationMessage(item);
       const link = getNotificationLink(item);
       const isPrediction = item.notification_type === "prediction_result";
+      const isModeration = item.notification_type === "moderation_report";
       const meta = item.metadata;
       const homeTeamLogo =
         isPrediction && meta && typeof meta.home_team_logo === "string"
@@ -142,7 +150,7 @@ function useNotificationToasts(authenticated: boolean) {
         isPrediction && meta && typeof meta.away_team === "string"
           ? meta.away_team
           : undefined;
-      const showGroupIcon = !isPrediction && !!item.group_avatar_url;
+      const showGroupIcon = !isPrediction && !isModeration && !!item.group_avatar_url;
       const avatarUrl = showGroupIcon
         ? item.group_avatar_url
         : (item.sender?.avatar_url ?? null);
@@ -161,6 +169,7 @@ function useNotificationToasts(authenticated: boolean) {
           awayTeamLogo={awayTeamLogo}
           homeTeamName={homeTeamName}
           awayTeamName={awayTeamName}
+          isModeration={isModeration}
         />,
         {
           position: "bottom-right",
@@ -280,8 +289,10 @@ export function NotificationBell({
                 const href = getNotificationLink(item);
                 const isPrediction =
                   item.notification_type === "prediction_result";
+                const isModeration =
+                  item.notification_type === "moderation_report";
                 const meta = item.metadata;
-                const showGroupIcon = !isPrediction && !!item.group_avatar_url;
+                const showGroupIcon = !isPrediction && !isModeration && !!item.group_avatar_url;
                 const isRead = !!item.read_at;
                 const content = (
                   <div
@@ -311,6 +322,10 @@ export function NotificationBell({
                         }
                         size="sm"
                       />
+                    ) : isModeration ? (
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border/50">
+                        <IoChatbubbles className="h-4 w-4 text-muted-foreground" />
+                      </div>
                     ) : (
                       <UserIcon
                         avatarUrl={

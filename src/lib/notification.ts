@@ -38,6 +38,15 @@ export function formatNotificationMessage(item: NotificationItem): string {
       }
       return "Your fixture prediction was correct!";
     }
+    case "moderation_report": {
+      const result =
+        item.metadata && typeof item.metadata.moderation_result === "string"
+          ? item.metadata.moderation_result
+          : null;
+      if (result === "published") return "Your post was approved and is now live!";
+      if (result === "rejected") return "Your post was rejected by moderation.";
+      return "Your post moderation result is available.";
+    }
     default:
       return `${sender} — ${type.replace(/_/g, " ")}`;
   }

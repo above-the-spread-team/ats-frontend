@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Check, Trash2 } from "lucide-react";
+import { IoChatbubbles } from "react-icons/io5";
 import {
   useNotifications,
   useMarkNotificationsRead,
@@ -47,8 +48,9 @@ function NotificationRow({
 }) {
   const link = getNotificationLink(item);
   const isPrediction = item.notification_type === "prediction_result";
+  const isModeration = item.notification_type === "moderation_report";
   const meta = item.metadata;
-  const showGroupIcon = !!item.group_avatar_url;
+  const showGroupIcon = !isModeration && !!item.group_avatar_url;
 
   const rowClassName = cn(
     "flex items-start gap-3 rounded-lg border p-3 transition-colors",
@@ -84,6 +86,10 @@ function NotificationRow({
             }
             size="sm"
           />
+        ) : isModeration ? (
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+            <IoChatbubbles className="h-4 w-4 text-muted-foreground" />
+          </div>
         ) : showGroupIcon ? (
           <UserIcon
             avatarUrl={item.group_avatar_url}
