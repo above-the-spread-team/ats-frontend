@@ -366,12 +366,12 @@ export default function CreatePost({
               </div>
             )}
             {moderationPhase === "approved" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 md:h-20 md:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
                 <CheckCircle2 className="h-7 w-7 text-green-500 md:h-9 md:w-9" />
               </div>
             )}
             {moderationPhase === "rejected" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 md:h-20 md:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
                 <XCircle className="h-7 w-7 text-red-500 md:h-9 md:w-9" />
               </div>
             )}

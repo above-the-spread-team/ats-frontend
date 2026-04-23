@@ -64,7 +64,7 @@ export function NotificationToastContent({
         />
       ) : isModeration ? (
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
-          <IoChatbubbles className="h-5 w-5 text-muted-foreground" />
+          <IoChatbubbles className="h-6 w-6 text-primary-font" />
         </div>
       ) : (
         <UserIcon
@@ -150,7 +150,8 @@ function useNotificationToasts(authenticated: boolean) {
         isPrediction && meta && typeof meta.away_team === "string"
           ? meta.away_team
           : undefined;
-      const showGroupIcon = !isPrediction && !isModeration && !!item.group_avatar_url;
+      const showGroupIcon =
+        !isPrediction && !isModeration && !!item.group_avatar_url;
       const avatarUrl = showGroupIcon
         ? item.group_avatar_url
         : (item.sender?.avatar_url ?? null);
@@ -292,7 +293,8 @@ export function NotificationBell({
                 const isModeration =
                   item.notification_type === "moderation_report";
                 const meta = item.metadata;
-                const showGroupIcon = !isPrediction && !isModeration && !!item.group_avatar_url;
+                const showGroupIcon =
+                  !isPrediction && !isModeration && !!item.group_avatar_url;
                 const isRead = !!item.read_at;
                 const content = (
                   <div
@@ -324,7 +326,7 @@ export function NotificationBell({
                       />
                     ) : isModeration ? (
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border/50">
-                        <IoChatbubbles className="h-4 w-4 text-muted-foreground" />
+                        <IoChatbubbles className="h-6 w-6 text-primary-font" />
                       </div>
                     ) : (
                       <UserIcon
