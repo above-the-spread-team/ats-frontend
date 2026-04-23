@@ -118,6 +118,12 @@ export interface Post {
   moderationStatus?: string;
 }
 
+export interface PostModerationStatusResponse {
+  post_id: number;
+  moderation_status: string; // "pending_moderation" | "published" | "rejected"
+  updated_at: string;
+}
+
 export interface PostError {
   detail: string;
 }

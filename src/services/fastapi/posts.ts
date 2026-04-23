@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   useQuery,
   useInfiniteQuery,
@@ -9,6 +10,7 @@ import type {
   PostUpdate,
   PostResponse,
   PostListResponse,
+  PostModerationStatusResponse,
   PostError,
   PostDateFilter,
   PostSortOption,
@@ -832,6 +834,101 @@ export function useDislikePost() {
       }
     },
   });
+}
+
+/**
+ * Get the current moderation status of a post.
+ * GET /api/v1/posts/{postId}/moderation-status
+ * Author or admin only.
+ */
+export async function getModerationStatus(
+  postId: number
+): Promise<PostModerationStatusResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (authHeader) headers["Authorization"] = authHeader;
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/posts/${postId}/moderation-status`,
+    { method: "GET", headers, credentials: "include" }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 401) throw new Error("401: Not authenticated");
+    if (response.status === 403) throw new Error("Not authorized");
+    if (response.status === 404) throw new Error("Post not found");
+    throw new Error(
+      typeof errorData.detail === "string"
+        ? errorData.detail
+        : "Failed to fetch moderation status"
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Polls GET /api/v1/posts/{postId}/moderation-status every 2 s.
+ * Stops when status resolves to published/rejected, caller sets enabled=false, or 60 s elapse.
+ */
+export function useModerationPoller(
+  postId: number | null,
+  enabled: boolean,
+  onResolved: (status: "published" | "rejected") => void,
+  onTimeout: () => void
+) {
+  const onResolvedRef = useRef(onResolved);
+  const onTimeoutRef = useRef(onTimeout);
+  onResolvedRef.current = onResolved;
+  onTimeoutRef.current = onTimeout;
+
+  useEffect(() => {
+    if (!postId || !enabled) return;
+
+    let cancelled = false;
+    const startTime = Date.now();
+    const TIMEOUT_MS = 60_000;
+    const INTERVAL_MS = 2_000;
+    let timerId: ReturnType<typeof setTimeout>;
+
+    const tick = async () => {
+      if (cancelled) return;
+
+      if (Date.now() - startTime >= TIMEOUT_MS) {
+        onTimeoutRef.current();
+        return;
+      }
+
+      try {
+        const result = await getModerationStatus(postId);
+        if (cancelled) return;
+
+        if (
+          result.moderation_status === "published" ||
+          result.moderation_status === "rejected"
+        ) {
+          onResolvedRef.current(
+            result.moderation_status as "published" | "rejected"
+          );
+          return;
+        }
+      } catch {
+        // network error — retry next interval
+      }
+
+      if (!cancelled) {
+        timerId = setTimeout(tick, INTERVAL_MS);
+      }
+    };
+
+    tick();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timerId);
+    };
+  }, [postId, enabled]);
 }
 
 /**

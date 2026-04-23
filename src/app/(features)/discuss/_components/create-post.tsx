@@ -20,13 +20,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCreatePost } from "@/services/fastapi/posts";
+import { useCreatePost, useModerationPoller } from "@/services/fastapi/posts";
 import { useCurrentUser } from "@/services/fastapi/oauth";
 import { useTags, useAddTagsToPost } from "@/services/fastapi/tags";
 import { cn } from "@/lib/utils";
 import UserIcon from "@/components/common/user-icon";
 import EmojiPicker from "@/components/common/emoji-picker";
-import { Tag, X, Smile } from "lucide-react";
+import { Tag, X, Smile, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
 import type { EmojiClickData } from "emoji-picker-react";
 
@@ -51,9 +51,17 @@ export default function CreatePost({
   onOpenChange,
   groupId,
 }: CreatePostProps) {
+  type ModerationPhase =
+    | "idle"
+    | "pending_moderation"
+    | "approved"
+    | "rejected"
+    | "timed_out";
+
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
-  const [pendingReview, setPendingReview] = useState(false);
+  const [moderationPhase, setModerationPhase] = useState<ModerationPhase>("idle");
+  const [pendingPostId, setPendingPostId] = useState<number | null>(null);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const pendingFocusRef = useRef<{
@@ -65,6 +73,13 @@ export default function CreatePost({
   const addTagsMutation = useAddTagsToPost();
   const { data: currentUser } = useCurrentUser();
   const { data: tagsData, isLoading: tagsLoading } = useTags(100);
+
+  useModerationPoller(
+    pendingPostId,
+    moderationPhase === "pending_moderation",
+    (status) => setModerationPhase(status === "published" ? "approved" : "rejected"),
+    () => setModerationPhase("timed_out")
+  );
 
   // Group tags by type (only league tags for posts)
   const tagsByType = useMemo(() => {
@@ -241,7 +256,8 @@ export default function CreatePost({
       setSelectedTagIds([]);
       isSubmittingRef.current = false;
       if (newPost.moderation_status === "pending_moderation") {
-        setPendingReview(true);
+        setPendingPostId(newPost.id);
+        setModerationPhase("pending_moderation");
       } else {
         onOpenChange(false);
       }
@@ -266,7 +282,8 @@ export default function CreatePost({
     if (!open) {
       setContent("");
       setSelectedTagIds([]);
-      setPendingReview(false);
+      setModerationPhase("idle");
+      setPendingPostId(null);
       onOpenChange(false);
     }
   };
@@ -305,18 +322,49 @@ export default function CreatePost({
           </DialogDescription>
         </DialogHeader>
 
-        {pendingReview ? (
+        {moderationPhase !== "idle" ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <p className="text-sm font-medium">Your post is under review</p>
-            <p className="text-xs text-muted-foreground">
-              It will appear once our moderation check completes.
-            </p>
+            {moderationPhase === "pending_moderation" && (
+              <>
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="text-sm font-medium">Reviewing your post...</p>
+                <p className="text-xs text-muted-foreground">
+                  This usually takes 10–15 seconds.
+                </p>
+              </>
+            )}
+            {moderationPhase === "timed_out" && (
+              <>
+                <p className="text-sm font-medium">Still reviewing...</p>
+                <p className="text-xs text-muted-foreground">
+                  You&apos;ll be notified in the app when it&apos;s ready.
+                </p>
+              </>
+            )}
+            {moderationPhase === "approved" && (
+              <>
+                <CheckCircle2 className="h-8 w-8 text-green-500" />
+                <p className="text-sm font-medium">Post published!</p>
+                <p className="text-xs text-muted-foreground">
+                  Your post passed moderation and is now live.
+                </p>
+              </>
+            )}
+            {moderationPhase === "rejected" && (
+              <>
+                <XCircle className="h-8 w-8 text-red-500" />
+                <p className="text-sm font-medium">Post rejected</p>
+                <p className="text-xs text-muted-foreground">
+                  Your post didn&apos;t pass our moderation check.
+                </p>
+              </>
+            )}
             <Button
               type="button"
               variant="outline"
               onClick={() => handleClose(false)}
             >
-              Close
+              {moderationPhase === "approved" ? "Done" : "Dismiss"}
             </Button>
           </div>
         ) : (
@@ -483,7 +531,7 @@ export default function CreatePost({
         </div>
         )}
 
-        {!pendingReview && <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
+        {moderationPhase === "idle" && <DialogFooter className="flex flex-row justify-end px-4 gap-2 md:px-2">
           <Button
             type="button"
             variant="outline"
