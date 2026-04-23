@@ -27,7 +27,15 @@ import { useTags, useAddTagsToPost } from "@/services/fastapi/tags";
 import { cn } from "@/lib/utils";
 import UserIcon from "@/components/common/user-icon";
 import EmojiPicker from "@/components/common/emoji-picker";
-import { Tag, X, Smile, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import {
+  Tag,
+  X,
+  Smile,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
 import type { EmojiClickData } from "emoji-picker-react";
 
@@ -348,13 +356,13 @@ export default function CreatePost({
               <div className="relative flex items-center justify-center">
                 <div className="absolute h-16 w-16 animate-ping rounded-full bg-muted-foreground/10 md:h-20 md:w-20" />
                 <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
-                  <Loader2 className="h-7 w-7 animate-spin text-muted-foreground md:h-9 md:w-9" />
+                  <Loader2 className="h-7 w-7 animate-spin text-primary-font md:h-9 md:w-9" />
                 </div>
               </div>
             )}
             {moderationPhase === "timed_out" && (
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
-                <Clock className="h-7 w-7 text-muted-foreground md:h-9 md:w-9" />
+                <Clock className="h-7 w-7 text-primary-font md:h-9 md:w-9" />
               </div>
             )}
             {moderationPhase === "approved" && (
