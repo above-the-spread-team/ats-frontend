@@ -36,7 +36,7 @@ export default function AnalyticsTracker() {
           }
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     observer.observe(sentinel);
@@ -46,5 +46,12 @@ export default function AnalyticsTracker() {
     };
   }, [pathname, plausible]);
 
-  return <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />;
+  return (
+    <div
+      ref={sentinelRef}
+      aria-hidden="true"
+      className="bg-primary-active"
+      style={{ height: 1 }}
+    />
+  );
 }

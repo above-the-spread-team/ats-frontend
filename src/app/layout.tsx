@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   creator: "Above The Spread",
   publisher: "Above The Spread",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://abovethespread.com"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://abovethespread.com",
   ),
   alternates: {
     canonical: "/",
@@ -117,7 +117,10 @@ export default function RootLayout({
       </head>
       <body className={ff.className}>
         <PlausibleProvider
-          src={process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ?? "https://plausible.io/js/plausible.js"}
+          src={
+            process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ??
+            "https://plausible.io/js/plausible.js"
+          }
           enabled={!!process.env.NEXT_PUBLIC_PLAUSIBLE_SRC}
         >
           <ThemeProvider
