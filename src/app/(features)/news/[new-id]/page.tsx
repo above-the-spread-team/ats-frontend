@@ -454,7 +454,7 @@ export default function NewsDetailPage() {
             </div>
 
             {/* Article Content */}
-            {news.content && <NewsContentRenderer content={news.content} />}
+            <NewsContentRenderer content={news.content} />
 
             {/* Footer Actions */}
             <div className="mt-6 pt-4 border-t flex items-center justify-between">

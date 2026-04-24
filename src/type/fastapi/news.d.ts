@@ -44,8 +44,8 @@ export type ParsedNewsContent = GeneralNewsContent | MatchPreviewContent;
 export interface NewsResponse {
   id: number;
   title: string;
-  content: string | null; // Full JSON string in detail view; null in list views — use content_preview for lists
-  content_preview: string | null; // Plain-text ~30-word preview; populated in list views, null in detail
+  content: string | null; // Full JSON string (detail view only). Null in list responses — use content_preview instead.
+  content_preview: string | null; // ~25-word plain-text preview (list views only). Null in detail responses.
   image_url: string | null; // For General News
   fixture_id: number | null; // For Match Preview
   home_team_logo: string | null; // For Match Preview only

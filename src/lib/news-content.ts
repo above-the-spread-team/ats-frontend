@@ -9,21 +9,12 @@ import type {
 export function parseNewsContent(content: string): ParsedNewsContent | null {
   try {
     const parsed = JSON.parse(content);
-    if (!parsed || typeof parsed !== "object") return null;
-
-    // Explicit type field takes precedence
-    if (parsed.type === "general_news" || parsed.type === "match_preview") {
+    if (
+      parsed &&
+      (parsed.type === "general_news" || parsed.type === "match_preview")
+    ) {
       return parsed as ParsedNewsContent;
     }
-
-    // Structural fallback for records stored without a type field
-    if (Array.isArray(parsed.paragraphs)) {
-      return { ...parsed, type: "match_preview" } as ParsedNewsContent;
-    }
-    if (Array.isArray(parsed.events)) {
-      return { ...parsed, type: "general_news" } as ParsedNewsContent;
-    }
-
     return null;
   } catch {
     return null;
