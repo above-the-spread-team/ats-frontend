@@ -50,7 +50,7 @@ export default function AnalyticsTracker() {
     <div
       ref={sentinelRef}
       aria-hidden="true"
-      className="bg-primary-active"
+      className="bg-primary-active opacity-0 md:opacity-100"
       style={{ height: 1 }}
     />
   );
