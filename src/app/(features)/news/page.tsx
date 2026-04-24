@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/pagination";
 import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
-import { getNewsPreview } from "@/lib/news-content";
+
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import PreviewImage from "./components/preview-image";
 import NewsFilter from "./components/news-filter";
@@ -199,7 +199,7 @@ export default function News() {
                         </h3>
 
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                          {getNewsPreview(article.content)}
+                          {article.content_preview ?? ""}
                         </p>
 
                         <div className="mt-auto flex items-center justify-between text-xs">
