@@ -365,7 +365,7 @@ function HostCard({ item }: { item: TeamResponseItem }) {
 // ─── regular team card ───────────────────────────────────────────────────────
 
 function TeamCard({ item }: { item: TeamResponseItem }) {
-  const { team, venue } = item;
+  const { team } = item;
   const confed = getConfederation(team.country);
   const meta = CONFED_META[confed];
 
