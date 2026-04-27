@@ -304,6 +304,8 @@ export default function CreatePost({
       setSelectedTagIds([]);
       setModerationPhase("idle");
       setPendingPostId(null);
+      createPostMutation.reset();
+      addTagsMutation.reset();
       onOpenChange(false);
     }
   };
@@ -316,16 +318,7 @@ export default function CreatePost({
       <DialogContent
         className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]"
         // Prevent closing on outside click or escape during submission or moderation review
-        onInteractOutside={(e: Event) => {
-          if (
-            isSubmittingRef.current ||
-            createPostMutation.isPending ||
-            addTagsMutation.isPending ||
-            (moderationPhase !== "idle" && moderationPhase !== "rate_limited")
-          ) {
-            e.preventDefault();
-          }
-        }}
+        onInteractOutside={(e: Event) => e.preventDefault()}
         onEscapeKeyDown={(e: KeyboardEvent) => {
           if (
             isSubmittingRef.current ||
