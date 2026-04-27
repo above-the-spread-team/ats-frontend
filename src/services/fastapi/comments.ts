@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   CommentCreate,

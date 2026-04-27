@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/fastapi/user";
 import { storeToken, getAuthHeader } from "./token-storage";
@@ -31,7 +32,7 @@ export interface LoginResponse {
 export async function register(
   data: RegisterRequest
 ): Promise<RegisterResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -89,7 +90,7 @@ export async function register(
  * Backend sets HttpOnly cookie automatically
  */
 export async function login(data: LoginRequest): Promise<LoginResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -212,7 +213,7 @@ export async function verifyEmail(token: string): Promise<VerifyEmailResponse> {
 export async function resendVerification(
   email: string
 ): Promise<ResendVerificationResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/resend-verification`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/resend-verification`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -320,7 +321,7 @@ export interface ForgotPasswordResponse {
 export async function forgotPassword(
   email: string
 ): Promise<ForgotPasswordResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/forgot-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -380,7 +381,7 @@ export interface ResetPasswordResponse {
 export async function resetPassword(
   data: ResetPasswordRequest
 ): Promise<ResetPasswordResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/reset-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -481,7 +482,7 @@ export async function uploadUserIcon(file: File): Promise<UploadIconResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/auth/upload-icon`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/upload-icon`, {
     method: "POST",
     credentials: "include", // Include HttpOnly cookie (for non-Safari browsers)
     headers,

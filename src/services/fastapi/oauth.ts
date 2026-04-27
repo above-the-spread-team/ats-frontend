@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/fastapi/user";
 import { getAuthHeader, clearStoredToken, storeToken } from "./token-storage";
@@ -28,7 +29,7 @@ export interface ExchangeTokenResponse {
 export async function exchangeOAuthCode(
   code: string,
 ): Promise<ExchangeTokenResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/auth/exchange-token`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/exchange-token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // also receives the cookie if browser allows it
@@ -64,7 +65,7 @@ export async function checkAuthStatus(): Promise<boolean> {
       headers["Authorization"] = authHeader;
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+    const response = await backendFetch(`${BACKEND_URL}/api/auth/me`, {
       method: "GET",
       credentials: "include", // Include HttpOnly cookies (for non-Safari browsers)
       headers,
@@ -113,7 +114,7 @@ export async function getCurrentUser(): Promise<User> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/auth/me`, {
     method: "GET",
     headers,
     credentials: "include", // Sends HttpOnly cookie automatically (for non-Safari browsers)
@@ -140,7 +141,7 @@ export async function getCurrentUser(): Promise<User> {
  */
 export async function logout(): Promise<void> {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
+    const response = await backendFetch(`${BACKEND_URL}/api/auth/logout`, {
       method: "POST",
       credentials: "include",
     });

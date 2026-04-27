@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import {
   useQuery,
   useMutation,
@@ -34,7 +35,7 @@ export async function createGroup(data: GroupCreate): Promise<GroupResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/groups`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/groups`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -98,7 +99,7 @@ export async function updateGroup(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/groups/${groupId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/groups/${groupId}`, {
     method: "PATCH",
     headers,
     credentials: "include",
@@ -228,7 +229,7 @@ export async function getGroup(groupId: number): Promise<GroupResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/groups/${groupId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/groups/${groupId}`, {
     method: "GET",
     headers,
     credentials: "include",
@@ -320,7 +321,7 @@ export async function deleteGroup(groupId: number): Promise<void> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/groups/${groupId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/groups/${groupId}`, {
     method: "DELETE",
     headers,
     credentials: "include",
@@ -365,7 +366,7 @@ export async function followGroup(groupId: number): Promise<GroupResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/groups/${groupId}/follow`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/groups/${groupId}/follow`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -424,7 +425,7 @@ export async function unfollowGroup(groupId: number): Promise<GroupResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/groups/${groupId}/follow`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/groups/${groupId}/follow`, {
     method: "DELETE",
     headers,
     credentials: "include",

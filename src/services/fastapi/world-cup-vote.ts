@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   WorldCupGroupResponse,
@@ -88,7 +89,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 /** GET /api/v1/world-cup/groups — public */
 export async function fetchWorldCupGroups(): Promise<WorldCupGroupResponse[]> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/groups`);
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/groups`);
   return handleResponse<WorldCupGroupResponse[]>(res);
 }
 
@@ -96,13 +97,13 @@ export async function fetchWorldCupGroups(): Promise<WorldCupGroupResponse[]> {
 export async function fetchChampionPercentages(): Promise<
   WorldCupTeamWithPercentage[]
 > {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/champions`);
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/champions`);
   return handleResponse<WorldCupTeamWithPercentage[]>(res);
 }
 
 /** GET /api/v1/world-cup/deadline — requires auth */
 export async function fetchDeadlineStatus(): Promise<WorldCupDeadlineResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/deadline`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/deadline`, {
     ...authFetchInit(),
   });
   return handleResponse<WorldCupDeadlineResponse>(res);
@@ -110,7 +111,7 @@ export async function fetchDeadlineStatus(): Promise<WorldCupDeadlineResponse> {
 
 /** GET /api/v1/world-cup/prediction/me — requires auth */
 export async function fetchMyPrediction(): Promise<WorldCupPredictionResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
     ...authFetchInit(),
   });
   return handleResponse<WorldCupPredictionResponse>(res);
@@ -120,7 +121,7 @@ export async function fetchMyPrediction(): Promise<WorldCupPredictionResponse> {
 export async function submitPrediction(
   data: WorldCupPredictionCreate,
 ): Promise<WorldCupPredictionResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/prediction`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction`, {
     method: "POST",
     ...authFetchInit(true),
     body: JSON.stringify(data),
@@ -136,7 +137,7 @@ export async function submitPrediction(
 export async function updatePrediction(
   data: WorldCupPredictionUpdate,
 ): Promise<WorldCupPredictionResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
     method: "PUT",
     ...authFetchInit(true),
     body: JSON.stringify(data),
@@ -150,7 +151,7 @@ export async function updatePrediction(
 
 /** DELETE /api/v1/world-cup/prediction/me — requires auth */
 export async function deleteMyPrediction(): Promise<void> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
     method: "DELETE",
     ...authFetchInit(),
   });

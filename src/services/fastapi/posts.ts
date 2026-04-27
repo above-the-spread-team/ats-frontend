@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useEffect, useRef } from "react";
 import {
   useQuery,
@@ -33,7 +34,7 @@ export async function createPost(data: PostCreate): Promise<PostResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/posts`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/posts`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -174,7 +175,7 @@ export async function getPost(postId: number): Promise<PostResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
     method: "GET",
     headers,
     credentials: "include",
@@ -221,7 +222,7 @@ export async function updatePost(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
     method: "PATCH",
     headers,
     credentials: "include",
@@ -284,7 +285,7 @@ export async function deletePost(postId: number): Promise<void> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/posts/${postId}`, {
     method: "DELETE",
     headers,
     credentials: "include",
@@ -550,7 +551,7 @@ export async function likePost(postId: number): Promise<PostResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/posts/${postId}/like`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/posts/${postId}/like`, {
     method: "POST",
     headers,
     credentials: "include",

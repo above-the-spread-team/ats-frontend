@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   TagCreate,
@@ -29,7 +30,7 @@ export async function createTag(data: TagCreate): Promise<TagResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -122,7 +123,7 @@ export async function listTags(
  * Get a tag by ID
  */
 export async function getTag(tagId: number): Promise<TagResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/${tagId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/${tagId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -164,7 +165,7 @@ export async function updateTag(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/${tagId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/${tagId}`, {
     method: "PUT",
     headers,
     credentials: "include",
@@ -224,7 +225,7 @@ export async function deleteTag(tagId: number): Promise<void> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/${tagId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/${tagId}`, {
     method: "DELETE",
     headers,
     credentials: "include",
@@ -267,7 +268,7 @@ export async function addTagsToPost(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -316,7 +317,7 @@ export async function updatePostTags(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
     method: "PUT",
     headers,
     credentials: "include",
@@ -353,7 +354,7 @@ export async function updatePostTags(
  * Get all tags for a post
  */
 export async function getPostTags(postId: number): Promise<TagSummary[]> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -397,7 +398,7 @@ export async function removeTagsFromPost(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/posts/${postId}`, {
     method: "DELETE",
     headers,
     credentials: "include",
@@ -443,7 +444,7 @@ export async function addTagsToNews(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -492,7 +493,7 @@ export async function updateNewsTags(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
     method: "PUT",
     headers,
     credentials: "include",
@@ -529,7 +530,7 @@ export async function updateNewsTags(
  * Get all tags for news
  */
 export async function getNewsTags(newsId: number): Promise<TagSummary[]> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -573,7 +574,7 @@ export async function removeTagsFromNews(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/news/${newsId}`, {
     method: "DELETE",
     headers,
     credentials: "include",
@@ -609,7 +610,7 @@ export async function removeTagsFromNews(
 export async function autoTagContent(
   data: AutoTagRequest
 ): Promise<TagSummary[]> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/tags/auto-tag`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/tags/auto-tag`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

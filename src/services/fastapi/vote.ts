@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   VoteChoice,
@@ -74,7 +75,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 export async function submitVote(
   payload: FixtureVoteCreate,
 ): Promise<FixtureVoteResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/votes`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/votes`, {
     method: "POST",
     ...voteFetchInit(true),
     body: JSON.stringify(payload),
@@ -123,7 +124,7 @@ export async function fetchFixtures(
 export async function fetchAvailableFixtures(
   day: "today" | "tomorrow" = "today",
 ): Promise<FixtureSummary[]> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/votes/available?day=${day}`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/votes/available?day=${day}`, {
     ...voteFetchInit(),
   });
   return handleResponse<FixtureSummary[]>(res);
@@ -136,7 +137,7 @@ export async function fetchAvailableFixtures(
 export async function fetchFixtureVotes(
   fixtureId: number,
 ): Promise<FixtureVotesResult> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/votes/${fixtureId}`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/votes/${fixtureId}`, {
     ...voteFetchInit(),
   });
   return handleResponse<FixtureVotesResult>(res);
@@ -266,7 +267,7 @@ export async function fetchVoteTodayPopup(): Promise<{ show: boolean }> {
  * Records the current UTC time as popup_last_seen on the user's account.
  */
 export async function dismissVoteTodayPopup(): Promise<{ success: boolean }> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/popup/vote-today/dismiss`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/popup/vote-today/dismiss`, {
     method: "POST",
     ...voteFetchInit(),
   });
@@ -306,7 +307,7 @@ export function useDismissVoteTodayPopup() {
 export async function syncFixtures(
   secretKey: string,
 ): Promise<SyncFixturesResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/votes/sync`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/votes/sync`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -323,7 +324,7 @@ export async function syncFixtures(
 export async function syncTomorrowFixtures(
   secretKey: string,
 ): Promise<SyncFixturesResponse> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/votes/sync/tomorrow`, {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/votes/sync/tomorrow`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery } from "@tanstack/react-query";
 import type { UserPublicResponse } from "@/type/fastapi/user";
 import type { GroupListWithCountsResponse } from "@/type/fastapi/groups";
@@ -13,7 +14,7 @@ const BACKEND_URL =
 export async function getUserById(
   userId: number,
 ): Promise<UserPublicResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/users/${userId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/users/${userId}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

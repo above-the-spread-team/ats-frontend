@@ -19,12 +19,9 @@ export async function GET(req: NextRequest) {
   }
 
   const res = NextResponse.redirect(new URL("/", req.url));
-  res.cookies.set("__ats_dev", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 30,
-    path: "/",
-  });
+  const cookieOpts = { secure: true, sameSite: "strict" as const, maxAge: 60 * 60 * 24 * 30, path: "/" };
+  res.cookies.set("__ats_dev", token, { ...cookieOpts, httpOnly: true });
+  // Non-HttpOnly so client-side fetch can read it and forward as X-Maintenance-Bypass header
+  res.cookies.set("__ats_dev_pub", token, cookieOpts);
   return res;
 }

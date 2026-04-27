@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import { useQuery } from "@tanstack/react-query";
 import type {
   UserPredictionStats,
@@ -42,7 +43,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
  * Returns the authenticated user's prediction accuracy, streaks, and community stats.
  */
 export async function fetchMyStats(): Promise<UserPredictionStats> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/predictions/me`, authFetchInit());
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/predictions/me`, authFetchInit());
   return handleResponse<UserPredictionStats>(res);
 }
 
@@ -70,7 +71,7 @@ export async function fetchMyHistory(
  * Returns public prediction stats for any user by their ID.
  */
 export async function fetchUserStats(userId: number): Promise<UserPredictionStats> {
-  const res = await fetch(`${BACKEND_URL}/api/v1/predictions/users/${userId}`, authFetchInit());
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/predictions/users/${userId}`, authFetchInit());
   return handleResponse<UserPredictionStats>(res);
 }
 

@@ -1,3 +1,4 @@
+import { backendFetch } from "@/lib/backend-fetch";
 import {
   useQuery,
   useInfiniteQuery,
@@ -73,7 +74,7 @@ export async function fetchNewsById(newsId: number): Promise<NewsResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/news/${newsId}`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/news/${newsId}`, {
     method: "GET",
     headers,
     credentials: "include",
@@ -496,7 +497,7 @@ export async function likeNews(newsId: number): Promise<NewsResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/news/${newsId}/like`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/news/${newsId}/like`, {
     method: "POST",
     headers,
     credentials: "include",
@@ -538,7 +539,7 @@ export async function dislikeNews(newsId: number): Promise<NewsResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/v1/news/${newsId}/dislike`, {
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/news/${newsId}/dislike`, {
     method: "POST",
     headers,
     credentials: "include",
