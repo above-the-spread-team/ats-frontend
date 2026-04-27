@@ -126,7 +126,10 @@ export default function WorldCupVotePopup() {
           if (!v) dismiss();
         }}
       >
-        <DialogContent className="max-w-[95%] sm:max-w-lg overflow-hidden bg-black border-0 p-0">
+        <DialogContent
+          className="max-w-[95%] sm:max-w-lg overflow-hidden bg-black border-0 p-0"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <div className="relative">
             <Image
               src="/images/world-cup-popup.jpg"

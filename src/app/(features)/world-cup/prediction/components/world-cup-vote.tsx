@@ -285,10 +285,6 @@ export function VotingModal({
       <div
         className="fixed z-[100] min-h-dvh w-full bg-black/60 backdrop-blur-sm pointer-events-auto top-0 right-0 bottom-0 left-0"
         aria-hidden
-        onClick={() => {
-          // Keep the success panel stable; still allow closing with the button/X.
-          if (!isSubmissionSuccess) onClose();
-        }}
       />
       <div className="fixed inset-0 z-[100] flex min-h-dvh w-full items-end sm:items-center justify-center pointer-events-none">
         <div className="relative z-10 pointer-events-auto w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-[560px] sm:rounded-2xl bg-card flex flex-col overflow-hidden shadow-2xl">

@@ -168,7 +168,7 @@ function TeamRow({
       {/* Thin underline bar — one pixel, cleaner than a full progress row */}
       <span
         aria-hidden
-        className="absolute bottom-0 left-2 right-2 h-px rounded-full bg-muted overflow-hidden"
+        className="absolute bottom-0 left-2 right-2 h-[2px] md:h-[2.5px] rounded-full bg-muted overflow-hidden"
       >
         <span
           className={`block h-full rounded-full transition-all duration-500 ${
@@ -687,7 +687,7 @@ export default function WorldCupPredictionPage() {
     setChampionId(champTeamId);
   }
 
-  const isLoading = groupsLoading || deadlineLoading || predictionLoading;
+  const isLoading = groupsLoading || deadlineLoading;
 
   const sortedGroups = useMemo(
     () =>
