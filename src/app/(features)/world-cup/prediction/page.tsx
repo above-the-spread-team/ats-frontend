@@ -125,7 +125,7 @@ function TeamRow({
       )}
 
       <span
-        className={`w-4 text-[10px] font-bold tabular-nums ${
+        className={`w-4 text-xs md:text-sm font-bold tabular-nums ${
           rank === 1 ? "text-amber-500" : "text-muted-foreground/60"
         }`}
       >
@@ -140,7 +140,7 @@ function TeamRow({
 
       <span
         className={`flex-1 min-w-0 truncate ${
-          size === "md" ? "text-sm" : "text-[13px]"
+          size === "md" ? "text-xs" : "text-sm"
         } ${
           isPicked
             ? "font-bold text-foreground"
@@ -158,7 +158,7 @@ function TeamRow({
       )}
 
       <span
-        className={`w-10 text-right text-[11px] tabular-nums ${
+        className={`w-10 text-right text-xs md:text-sm tabular-nums ${
           isPicked ? "font-semibold text-foreground" : "text-muted-foreground"
         }`}
       >
@@ -203,24 +203,12 @@ function GroupCard({
   return (
     <div className="group relative rounded-2xl bg-card border border-border/80 p-3.5 pt-3 transition-colors hover:border-border">
       <div className="flex items-center gap-2 pb-2 mb-2 border-b border-border/60">
-        <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-primary-font text-white font-black text-[13px] tracking-tight">
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-primary-font text-white font-black text-md tracking-tight">
           {group.group_letter}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/80 leading-none">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/80 leading-none">
             Group {group.group_letter}
-          </p>
-          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-            {pickedTeam ? (
-              <>
-                Your winner ·{" "}
-                <span className="font-semibold text-foreground">
-                  {pickedTeam.name}
-                </span>
-              </>
-            ) : (
-              "No pick yet"
-            )}
           </p>
         </div>
       </div>
@@ -274,14 +262,14 @@ function PodiumSlot({
           size={place === 1 ? 40 : 28}
         />
         <p
-          className={`text-[11px] sm:text-xs font-bold text-center leading-tight w-full truncate ${
+          className={`text-xs sm:text-md font-bold text-center leading-tight w-full truncate ${
             place === 1 ? "text-foreground" : "text-foreground/85"
           }`}
         >
           {team.name}
         </p>
         <p
-          className={`text-[10px] tabular-nums font-semibold ${
+          className={`text-xs tabular-nums font-semibold ${
             place === 1
               ? "text-amber-500 dark:text-amber-400"
               : "text-muted-foreground"
@@ -511,7 +499,7 @@ function ActionBar({
 
           {deadline && !votingClosed && countdown && (
             <span
-              className={`inline-flex items-center gap-1.5 text-[11px] font-semibold tabular-nums ${
+              className={`inline-flex items-center gap-1.5 text-[11px] md:text-xs font-semibold tabular-nums ${
                 countdown.urgent
                   ? "text-red-600 dark:text-red-400"
                   : "text-muted-foreground"
@@ -527,7 +515,7 @@ function ActionBar({
           )}
 
           {deadline && (
-            <span className="text-[11px] text-muted-foreground/80 ml-auto">
+            <span className="hidden md:block text-[11px] md:text-xs text-muted-foreground/80 ml-auto">
               Closes {formatDeadline(deadline.deadline)}
             </span>
           )}
@@ -537,7 +525,7 @@ function ActionBar({
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black tabular-nums leading-none">
+              <span className="text-lg md:text-xl font-black tabular-nums leading-none">
                 {donePicks}
                 <span className="text-muted-foreground/50 font-bold">
                   /{totalPicks}
@@ -548,7 +536,7 @@ function ActionBar({
               </span>
             </div>
 
-            <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="mt-2 h-1 md:h-1.5 rounded-full bg-muted overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   allDone
@@ -566,7 +554,7 @@ function ActionBar({
               {Array.from({ length: totalGroups }).map((_, i) => (
                 <span
                   key={i}
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
                     i < groupPickCount
                       ? "bg-primary-font"
                       : "bg-muted border border-border"
@@ -574,7 +562,7 @@ function ActionBar({
                 />
               ))}
               <span
-                className={`w-2 h-2 rounded-full ml-0.5 ${
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ml-0.5 ${
                   championPicked
                     ? "bg-amber-400 ring-2 ring-amber-400/30"
                     : "bg-muted border border-amber-400/40"
@@ -589,7 +577,7 @@ function ActionBar({
         <button
           onClick={onOpen}
           disabled={votingClosed}
-          className={`group/btn w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl text-sm sm:text-[15px] font-bold transition-all duration-150 ${
+          className={`group/btn w-full flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-xl text-sm sm:text-[15px] font-bold transition-all duration-150 ${
             votingClosed
               ? "bg-muted text-muted-foreground cursor-not-allowed"
               : "bg-primary-font text-white hover:opacity-95 active:scale-[0.99] shadow-sm shadow-primary-font/20"
@@ -732,9 +720,9 @@ export default function WorldCupPredictionPage() {
   const totalGroups = groups?.length ?? 12;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-6 sm:space-y-8">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-4 sm:space-y-6">
       {/* ── Title ── */}
-      <header className="flex items-end justify-between gap-4 flex-wrap">
+      <header className="flex ">
         <div className="space-y-1.5 min-w-0">
           <div className="flex items-center gap-2">
             <span className="h-4 w-1 rounded-full bg-amber-400" />
@@ -742,18 +730,13 @@ export default function WorldCupPredictionPage() {
               Predictions · World Cup 2026
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-[1.05]">
+          <h1 className="text-md sm:text-lg lg:text-xl font-black tracking-tight leading-[1.05]">
             Build your bracket.
-            <br className="hidden sm:block" />
             <span className="text-muted-foreground/70">
               {" "}
               Call the champion.
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-lg">
-            Pick a winner for each of the 12 groups and choose who raises the
-            trophy. Rankings you see below are the live community vote.
-          </p>
         </div>
       </header>
 

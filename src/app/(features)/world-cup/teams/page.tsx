@@ -581,45 +581,44 @@ export default function WorldCupTeams() {
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-6 sm:space-y-8">
       {/* ── Hero ── */}
-      <header className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="h-4 w-1 rounded-full bg-amber-400" />
-          <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
-            Teams · World Cup 2026
-          </span>
-        </div>
-        <div className="flex items-end justify-between gap-4 flex-wrap">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-[1.05] max-w-xl">
+      <header className=" flex flex-col md:flex-row justify-between items-start gap-4">
+        <div className="flex items-start flex-col  gap-2">
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-1 rounded-full bg-amber-400" />
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
+              Teams · World Cup 2026
+            </span>
+          </div>
+          <h1 className="text-md sm:text-lg lg:text-xl font-black tracking-tight leading-[1.05] max-w-xl">
             48 nations,
             <span className="text-muted-foreground/70"> one trophy.</span>
           </h1>
-
-          {/* Stats strip */}
-          <div className="flex items-center divide-x divide-border/80 rounded-xl border border-border/70 bg-card overflow-hidden text-center">
-            <div className="px-3 sm:px-4 py-2">
-              <p className="text-lg sm:text-xl font-black leading-none tabular-nums">
-                {isLoading ? "—" : totalAll}
-              </p>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                Teams
-              </p>
-            </div>
-            <div className="px-3 sm:px-4 py-2">
-              <p className="text-lg sm:text-xl font-black leading-none tabular-nums">
-                {isLoading ? "—" : confedTally || 6}
-              </p>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                Confeds
-              </p>
-            </div>
-            <div className="px-3 sm:px-4 py-2">
-              <p className="text-lg sm:text-xl font-black leading-none tabular-nums">
-                3
-              </p>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                Hosts
-              </p>
-            </div>
+        </div>
+        {/* Stats strip */}
+        <div className="flex items-center divide-x divide-border/80 rounded-xl border border-border/70 bg-card overflow-hidden text-center">
+          <div className="px-3 sm:px-4 py-2">
+            <p className="text-lg sm:text-xl font-black leading-none tabular-nums">
+              {isLoading ? "—" : totalAll}
+            </p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+              Teams
+            </p>
+          </div>
+          <div className="px-3 sm:px-4 py-2">
+            <p className="text-lg sm:text-xl font-black leading-none tabular-nums">
+              {isLoading ? "—" : confedTally || 6}
+            </p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+              Confeds
+            </p>
+          </div>
+          <div className="px-3 sm:px-4 py-2">
+            <p className="text-lg sm:text-xl font-black leading-none tabular-nums">
+              3
+            </p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+              Hosts
+            </p>
           </div>
         </div>
       </header>
