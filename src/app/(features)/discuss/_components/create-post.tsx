@@ -35,6 +35,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  AlertCircle,
 } from "lucide-react";
 import type { TagType, TagResponse } from "@/type/fastapi/tags";
 import type { EmojiClickData } from "emoji-picker-react";
@@ -65,7 +66,8 @@ export default function CreatePost({
     | "pending_moderation"
     | "approved"
     | "rejected"
-    | "timed_out";
+    | "timed_out"
+    | "rate_limited";
 
   const [content, setContent] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
@@ -277,9 +279,13 @@ export default function CreatePost({
       }
     } catch (error) {
       console.error("Error creating post:", error);
-      // Reset submitting flag on error so user can retry
       isSubmittingRef.current = false;
-      // Error is handled by React Query, but we can show a toast here if needed
+      if (
+        error instanceof Error &&
+        error.message.includes("Daily post limit")
+      ) {
+        setModerationPhase("rate_limited");
+      }
     }
   };
 
@@ -315,7 +321,7 @@ export default function CreatePost({
             isSubmittingRef.current ||
             createPostMutation.isPending ||
             addTagsMutation.isPending ||
-            moderationPhase !== "idle"
+            (moderationPhase !== "idle" && moderationPhase !== "rate_limited")
           ) {
             e.preventDefault();
           }
@@ -341,75 +347,91 @@ export default function CreatePost({
         {moderationPhase !== "idle" ? (
           <div
             className={cn(
-              "mx-1 my-2 flex flex-col items-center gap-5 rounded-2xl border-border/60 bg-muted/20 border px-6 py-10 text-center md:gap-6 md:px-10 md:py-14",
+              "mx-1 my-1 flex flex-col items-center gap-4 rounded-2xl border border-border/60 bg-muted/20 px-4 py-8 text-center sm:gap-5 sm:px-8 sm:py-10 md:gap-6 md:px-10 md:py-12",
             )}
           >
             {/* Icon */}
             {moderationPhase === "pending_moderation" && (
               <div className="relative flex items-center justify-center">
-                <div className="absolute h-16 w-16 animate-ping rounded-full bg-muted-foreground/10 md:h-20 md:w-20" />
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
-                  <Loader2 className="h-7 w-7 animate-spin text-primary-font md:h-9 md:w-9" />
+                <div className="absolute h-14 w-14 animate-ping rounded-full bg-muted-foreground/10 sm:h-16 sm:w-16 md:h-20 md:w-20" />
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-muted sm:h-16 sm:w-16 md:h-20 md:w-20">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary-font sm:h-7 sm:w-7 md:h-9 md:w-9" />
                 </div>
               </div>
             )}
             {moderationPhase === "timed_out" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted md:h-20 md:w-20">
-                <Clock className="h-7 w-7 text-primary-font md:h-9 md:w-9" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted sm:h-16 sm:w-16 md:h-20 md:w-20">
+                <Clock className="h-6 w-6 text-primary-font sm:h-7 sm:w-7 md:h-9 md:w-9" />
               </div>
             )}
             {moderationPhase === "approved" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 md:h-20 md:w-20">
-                <CheckCircle2 className="h-7 w-7 text-green-500 md:h-9 md:w-9" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/15 ring-1 ring-green-500/30 sm:h-16 sm:w-16 md:h-20 md:w-20">
+                <CheckCircle2 className="h-6 w-6 text-green-500 sm:h-7 sm:w-7 md:h-9 md:w-9" />
               </div>
             )}
             {moderationPhase === "rejected" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 md:h-20 md:w-20">
-                <XCircle className="h-7 w-7 text-red-500 md:h-9 md:w-9" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-500/15 ring-1 ring-red-500/30 sm:h-16 sm:w-16 md:h-20 md:w-20">
+                <XCircle className="h-6 w-6 text-red-500 sm:h-7 sm:w-7 md:h-9 md:w-9" />
+              </div>
+            )}
+            {moderationPhase === "rate_limited" && (
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/15 ring-1 ring-amber-500/30 sm:h-16 sm:w-16 md:h-20 md:w-20">
+                <AlertCircle className="h-6 w-6 text-amber-500 sm:h-7 sm:w-7 md:h-9 md:w-9" />
               </div>
             )}
 
             {/* Text */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {moderationPhase === "pending_moderation" && (
                 <>
-                  <p className="text-base font-semibold md:text-lg">
+                  <p className="text-sm font-semibold sm:text-base md:text-lg">
                     Reviewing your post...
                   </p>
-                  <p className="text-sm text-muted-foreground md:text-base">
+                  <p className="text-xs text-muted-foreground sm:text-sm md:text-base">
                     This usually takes 10–15 seconds.
                   </p>
                 </>
               )}
               {moderationPhase === "timed_out" && (
                 <>
-                  <p className="text-base font-semibold md:text-lg">
+                  <p className="text-sm font-semibold sm:text-base md:text-lg">
                     Still reviewing...
                   </p>
-                  <p className="text-sm text-muted-foreground md:text-base">
+                  <p className="text-xs text-muted-foreground sm:text-sm md:text-base">
                     You&apos;ll be notified in the app when it&apos;s ready.
                   </p>
                 </>
               )}
               {moderationPhase === "approved" && (
                 <>
-                  <p className="text-base font-semibold text-green-600 md:text-lg dark:text-green-400">
+                  <p className="text-sm font-semibold text-green-600 sm:text-base md:text-lg dark:text-green-400">
                     Post published!
                   </p>
-                  <p className="text-sm text-muted-foreground md:text-base">
+                  <p className="text-xs text-muted-foreground sm:text-sm md:text-base">
                     Your post passed moderation and is now live.
                   </p>
                 </>
               )}
               {moderationPhase === "rejected" && (
                 <>
-                  <p className="text-base font-semibold text-red-600 md:text-lg dark:text-red-400">
+                  <p className="text-sm font-semibold text-red-600 sm:text-base md:text-lg dark:text-red-400">
                     Post rejected
                   </p>
-                  <p className="mx-auto max-w-xs text-sm text-muted-foreground md:text-base">
+                  <p className="mx-auto max-w-[240px] text-xs text-muted-foreground sm:max-w-xs sm:text-sm md:text-base">
                     Your post didn&apos;t meet our community guidelines and has
                     been removed. Please review our guidelines before posting
                     again.
+                  </p>
+                </>
+              )}
+              {moderationPhase === "rate_limited" && (
+                <>
+                  <p className="text-sm font-semibold text-amber-600 sm:text-base md:text-lg dark:text-amber-400">
+                    Daily limit reached
+                  </p>
+                  <p className="mx-auto max-w-[240px] text-xs text-muted-foreground sm:max-w-xs sm:text-sm md:text-base">
+                    You&apos;ve used all 7 posts for today. Your limit resets at
+                    midnight UTC.
                   </p>
                 </>
               )}
@@ -420,10 +442,14 @@ export default function CreatePost({
               <Button
                 type="button"
                 variant={moderationPhase === "approved" ? "default" : "outline"}
-                className="min-w-[100px] md:min-w-[120px]"
+                className="min-w-[90px] sm:min-w-[100px] md:min-w-[120px]"
                 onClick={() => handleClose(false)}
               >
-                {moderationPhase === "approved" ? "Done" : "Dismiss"}
+                {moderationPhase === "approved"
+                  ? "Done"
+                  : moderationPhase === "rate_limited"
+                    ? "Got it"
+                    : "Dismiss"}
               </Button>
             )}
           </div>
@@ -487,11 +513,12 @@ export default function CreatePost({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isSubmitting}
-                rows={8}
+                rows={6}
                 className={cn(
                   "flex w-full rounded-xl border border-input bg-card px-3 py-2 text-base shadow-sm transition-colors",
                   "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-font",
                   "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none",
+                  "min-h-[120px] sm:min-h-[160px] md:min-h-[200px]",
                   "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:relative  [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
                 )}
               />

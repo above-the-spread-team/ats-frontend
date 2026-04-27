@@ -77,6 +77,9 @@ export async function createPost(data: PostCreate): Promise<PostResponse> {
       }
       throw new Error(error.detail || "User account is inactive");
     }
+    if (response.status === 429) {
+      throw new Error(error.detail || "Daily post limit reached (7 posts per day). Resets at 00:00 UTC.");
+    }
 
     throw new Error(error.detail || "Failed to create post. Please try again.");
   }
