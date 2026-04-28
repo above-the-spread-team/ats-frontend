@@ -31,7 +31,7 @@ export default function UserIcon({
   };
 
   const variantClasses = {
-    primary: "bg-gradient-to-br from-green-100 to-primary-active text-white",
+    primary: "bg-gradient-to-br from-blue-400 to-blue-100 text-white",
     muted: "bg-mygray text-muted-foreground",
   };
 
@@ -41,7 +41,7 @@ export default function UserIcon({
         "rounded-full flex items-center justify-center font-semibold flex-shrink-0 overflow-hidden",
         sizeClasses[size],
         variantClasses[variant],
-        className
+        className,
       )}
     >
       {avatarUrl ? (
