@@ -25,7 +25,7 @@ function formatDateParam(date: Date, timezone?: string): string {
 
 async function fetchFixturesByDate(
   dateStr: string,
-  timezone: string
+  timezone: string,
 ): Promise<FixturesApiResponse> {
   const params = new URLSearchParams({
     date: dateStr,
@@ -61,8 +61,8 @@ export function useFixturesByDate(dateStr: string, timezone: string) {
     queryKey: ["fixtures-by-date", dateStr, timezone],
     queryFn: () => fetchFixturesByDate(dateStr, timezone),
     enabled: !!dateStr && !!timezone,
-    staleTime: 60 * 60 * 1000,
-    refetchInterval: 2 * 60 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -71,8 +71,8 @@ export function useFixturesLive(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["fixtures-live"],
     queryFn: fetchFixturesLive,
-    staleTime: 3 * 60 * 1000,
-    refetchInterval: 3 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
     enabled: options?.enabled ?? true,
   });
@@ -81,7 +81,7 @@ export function useFixturesLive(options?: { enabled?: boolean }) {
 export function useFixtures(date: Date, timezone: string) {
   const dateStr = useMemo(
     () => formatDateParam(date, timezone),
-    [date, timezone]
+    [date, timezone],
   );
 
   const {
@@ -98,9 +98,7 @@ export function useFixtures(date: Date, timezone: string) {
     if (!dateData?.response) return undefined;
     let list = dateData.response;
     if (isToday && liveData?.response && liveData.response.length > 0) {
-      const liveMap = new Map(
-        liveData.response.map((f) => [f.fixture.id, f])
-      );
+      const liveMap = new Map(liveData.response.map((f) => [f.fixture.id, f]));
       list = list.map((f) => liveMap.get(f.fixture.id) ?? f);
     }
     return {
@@ -136,7 +134,7 @@ async function fetchFixture(fixtureId: number): Promise<FixturesApiResponse> {
 async function fetchFixturesNextLast(
   type: "next" | "last",
   count: number,
-  leagueId?: number
+  leagueId?: number,
 ): Promise<FixturesApiResponse> {
   const params = new URLSearchParams();
   params.append(type, count.toString());
@@ -162,7 +160,7 @@ async function fetchFixturesNextLast(
 export function useFixturesNextLast(
   type: "next" | "last",
   count: number,
-  leagueId?: number
+  leagueId?: number,
 ) {
   return useQuery({
     queryKey: ["fixtures-next-last", type, count, leagueId],

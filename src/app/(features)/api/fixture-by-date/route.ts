@@ -8,7 +8,7 @@ import type {
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 const DEFAULT_TIMEZONE = "Europe/London";
-const CACHE_SECONDS = 3600; // 1 hour
+const CACHE_SECONDS = 300; // 5 minutes
 
 const API_URL =
   (process.env.FOOTBALL_API_URL ||
@@ -53,7 +53,7 @@ async function fetchWithTimeout(
  * GET /api/fixture-by-date?date=2020-01-30&timezone=Europe/London
  * Fetches fixtures for one date across 8 leagues using
  * fixtures?date=YYYY-MM-DD&league={id}&season=YYYY&timezone=...
- * Cache: 1 hour.
+ * Cache: 5 minutes.
  */
 export async function GET(req: NextRequest) {
   if (!API_KEY) {

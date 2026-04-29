@@ -18,11 +18,15 @@ const API_KEY =
   process.env.NEXT_PUBLIC_FOOTBALL_API_KEY ||
   "";
 
-// Cache the entire route response for 4 hours at the CDN/edge level.
+/** Route ISR + CDN response: 1 hour fresh, 2 hours SWR */
+const CACHE_SECONDS = 3600;
+
+// Cache the entire route response for 1 hour at the CDN/edge level.
 // Individual fetch() calls below must NOT use next: { revalidate } so that
 // retries always hit the real API rather than a stale per-URL Next.js cache.
-export const revalidate = 14400;
+export const revalidate = CACHE_SECONDS;
 
+/** GET /api/leagues — aggregated leagues for LEAGUE_IDS. Cache: 1 hour. */
 export async function GET() {
   if (!API_KEY) {
     return NextResponse.json(
@@ -37,7 +41,7 @@ export async function GET() {
   // Do not send season when listing all leagues: API returns each league with full "seasons" array.
   // Use GET leagues?id=X (no season) to get "all the seasons available for a league/cup".
   // Sequential fetching avoids bursting the football API rate limit (10 req/min on free plans).
-  // The 4-hour revalidate means this loop only runs ~6 times per day per deployment.
+  // Hourly revalidate limits how often the full loop runs per deployment.
 
   const fetchLeague = async (leagueId: number): Promise<LeagueResponseItem[]> => {
     const res = await fetch(
@@ -82,17 +86,26 @@ export async function GET() {
     ([leagueId, message]) => `League ${leagueId}: ${message}`,
   );
 
-  return NextResponse.json({
-    get: "leagues",
-    parameters: {
-      id: LEAGUE_IDS.join(","),
+  const headers = new Headers();
+  headers.set(
+    "Cache-Control",
+    `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS * 2}`,
+  );
+
+  return NextResponse.json(
+    {
+      get: "leagues",
+      parameters: {
+        id: LEAGUE_IDS.join(","),
+      },
+      results: leagues.length,
+      errors: errorMessages,
+      paging: {
+        current: 1,
+        total: 1,
+      },
+      response: leagues,
     },
-    results: leagues.length,
-    errors: errorMessages,
-    paging: {
-      current: 1,
-      total: 1,
-    },
-    response: leagues,
-  });
+    { headers },
+  );
 }

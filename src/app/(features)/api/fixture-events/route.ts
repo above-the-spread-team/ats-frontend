@@ -14,6 +14,13 @@ const API_KEY =
   process.env.NEXT_PUBLIC_FOOTBALL_API_KEY ||
   "";
 
+/** Next fetch cache + CDN response: 1 min fresh, 2 min SWR (see API-Sports rate guidance) */
+const CACHE_SECONDS = 60;
+
+/**
+ * GET /api/fixture-events?fixture=…
+ * Cache: 1 minute.
+ */
 export async function GET(req: NextRequest) {
   if (!API_KEY) {
     return NextResponse.json(
@@ -65,8 +72,7 @@ export async function GET(req: NextRequest) {
       headers: {
         "x-apisports-key": API_KEY,
       },
-      // Recommended: 1 call per minute for fixtures in progress, 1 call per day otherwise
-      next: { revalidate: 60 }, // 1 minute
+      next: { revalidate: CACHE_SECONDS },
     });
 
     if (!response.ok) {
@@ -82,7 +88,13 @@ export async function GET(req: NextRequest) {
 
     const data = (await response.json()) as FixtureEventsApiResponse;
 
-    return NextResponse.json(data);
+    const headers = new Headers();
+    headers.set(
+      "Cache-Control",
+      `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS * 2}`
+    );
+
+    return NextResponse.json(data, { headers });
   } catch (error) {
     console.error("Fixture Events API Error:", error);
     return NextResponse.json(

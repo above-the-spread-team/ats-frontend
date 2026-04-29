@@ -14,6 +14,13 @@ const API_KEY =
   process.env.NEXT_PUBLIC_FOOTBALL_API_KEY ||
   "";
 
+/** Next fetch cache + CDN response: 5 min fresh, 10 min SWR */
+const CACHE_SECONDS = 300;
+
+/**
+ * GET /api/headtohead?h2h=… or team1 & team2
+ * Cache: 5 minutes.
+ */
 export async function GET(req: NextRequest) {
   if (!API_KEY) {
     return NextResponse.json(
@@ -102,8 +109,7 @@ export async function GET(req: NextRequest) {
       headers: {
         "x-apisports-key": API_KEY,
       },
-      // Recommended: 1 call per minute for active fixtures, 1 call per day otherwise
-      next: { revalidate: 60 },
+      next: { revalidate: CACHE_SECONDS },
     });
 
     if (!response.ok) {
@@ -119,7 +125,13 @@ export async function GET(req: NextRequest) {
 
     const data = (await response.json()) as HeadToHeadApiResponse;
 
-    return NextResponse.json(data);
+    const headers = new Headers();
+    headers.set(
+      "Cache-Control",
+      `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS * 2}`
+    );
+
+    return NextResponse.json(data, { headers });
   } catch (error) {
     console.error("Head-to-Head API Error:", error);
     return NextResponse.json(

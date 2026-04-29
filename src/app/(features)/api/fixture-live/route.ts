@@ -19,7 +19,7 @@ const API_KEY =
   "";
 
 const FETCH_TIMEOUT = 15000;
-const LIVE_CACHE_SECONDS = 180; // 3 minutes
+const LIVE_CACHE_SECONDS = 120; // 2 minutes
 
 async function fetchWithTimeout(
   url: string,
@@ -52,7 +52,7 @@ async function fetchWithTimeout(
  * Fetches fixtures currently in play. Events are included in the API response.
  * - live=all: every league
  * - live=id-id-id: our LEAGUE_IDS by default (2-3-848-39-140-135-78-61)
- * Cache: 3 minutes (live scores/status change often).
+ * Cache: 2 minutes (live scores/status change often).
  */
 export async function GET(req: NextRequest) {
   if (!API_KEY) {

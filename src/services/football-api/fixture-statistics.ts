@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { FixtureStatisticsApiResponse } from "@/type/footballapi/fixture-statistics";
 
 async function fetchFixtureStatistics(
-  fixtureId: number
+  fixtureId: number,
 ): Promise<FixtureStatisticsApiResponse> {
   const params = new URLSearchParams({
     fixture: fixtureId.toString(),
@@ -35,7 +35,7 @@ type FixtureStatusType =
 
 export function useFixtureStatistics(
   fixtureId: number | null,
-  statusType?: FixtureStatusType | null
+  statusType?: FixtureStatusType | null,
 ) {
   return useQuery({
     queryKey: ["fixture-statistics", fixtureId],
@@ -53,7 +53,7 @@ export function useFixtureStatistics(
       if (statusType === "In Play") {
         return 60 * 1000; // 60 seconds for live matches
       } else if (statusType === "Finished") {
-        return 100 * 60 * 1000; // 100 minutes for finished matches
+        return 5 * 60 * 1000; // 5 minutes for finished matches
       } else if (statusType === "Scheduled") {
         return 5 * 60 * 1000; // 5 minutes for scheduled matches
       } else {

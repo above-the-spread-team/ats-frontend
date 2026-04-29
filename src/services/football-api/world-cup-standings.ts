@@ -26,7 +26,7 @@ export function useWorldCupStandings() {
   return useQuery({
     queryKey: ["world-cup-standings"],
     queryFn: fetchWorldCupStandings,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 10 * 60 * 1000, // 10 minutes
     refetchInterval: false,
     refetchOnWindowFocus: false,
   });

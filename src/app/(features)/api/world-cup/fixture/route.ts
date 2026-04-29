@@ -3,7 +3,7 @@ import type { FixturesApiResponse } from "@/type/footballapi/fixture";
 
 const WORLD_CUP_LEAGUE_ID = 1;
 const WORLD_CUP_SEASON = 2026;
-const CACHE_SECONDS = 3600; // 1 hour
+const CACHE_SECONDS = 300; // 5 minutes
 
 const API_URL =
   (process.env.FOOTBALL_API_URL ||
@@ -19,7 +19,7 @@ const API_KEY =
 /**
  * GET /api/world-cup/fixture?timezone=Europe/London
  * Fetches all FIFA World Cup 2026 fixtures (league=1, season=2026).
- * Cache: 1 hour.
+ * Cache: 5 minutes.
  */
 export async function GET(req: NextRequest) {
   if (!API_KEY) {

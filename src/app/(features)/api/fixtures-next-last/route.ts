@@ -17,6 +17,9 @@ const API_KEY =
 // Timeout duration in milliseconds (30 seconds)
 const FETCH_TIMEOUT = 30000;
 
+/** Next fetch cache + CDN: 5 min fresh, 10 min SWR */
+const CACHE_SECONDS = 300;
+
 // Helper function to add timeout to fetch requests
 async function fetchWithTimeout(
   url: string,
@@ -49,6 +52,10 @@ async function fetchWithTimeout(
   }
 }
 
+/**
+ * GET /api/fixtures-next-last?next=…|last=…&league=…
+ * Cache: 5 minutes.
+ */
 export async function GET(req: NextRequest) {
   if (!API_KEY) {
     return NextResponse.json(
@@ -117,16 +124,13 @@ export async function GET(req: NextRequest) {
     params.append("league", league.toString());
   }
 
-  // Use shorter cache for upcoming fixtures (1 hour)
-  const revalidateTime = 3600;
-
   try {
     const fetchOptions: RequestInit = {
       headers: {
         "x-apisports-key": API_KEY,
       },
       next: {
-        revalidate: revalidateTime,
+        revalidate: CACHE_SECONDS,
       },
     };
 
@@ -150,9 +154,7 @@ export async function GET(req: NextRequest) {
     const headers = new Headers();
     headers.set(
       "Cache-Control",
-      `public, s-maxage=${revalidateTime}, stale-while-revalidate=${
-        revalidateTime * 2
-      }`
+      `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS * 2}`
     );
 
     return NextResponse.json(data, { headers });
