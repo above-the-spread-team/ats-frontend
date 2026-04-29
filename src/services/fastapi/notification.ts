@@ -24,7 +24,7 @@ async function fetchNotifications(
     ...(authHeader && { Authorization: authHeader }),
     ...options.headers,
   };
-  return fetch(url, { ...options, credentials: "include", headers });
+  return backendFetch(url, { ...options, credentials: "include", headers });
 }
 
 /**
@@ -73,7 +73,7 @@ export async function markNotificationsRead(
     "Content-Type": "application/json",
     ...(authHeader && { Authorization: authHeader }),
   };
-  const response = await fetch(`${NOTIFICATIONS_PREFIX}/read`, {
+  const response = await backendFetch(`${NOTIFICATIONS_PREFIX}/read`, {
     method: "PATCH",
     credentials: "include",
     headers,

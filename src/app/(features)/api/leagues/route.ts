@@ -24,7 +24,7 @@ const CACHE_SECONDS = 3600;
 // Cache the entire route response for 1 hour at the CDN/edge level.
 // Individual fetch() calls below must NOT use next: { revalidate } so that
 // retries always hit the real API rather than a stale per-URL Next.js cache.
-export const revalidate = CACHE_SECONDS;
+export const revalidate = 3600;
 
 /** GET /api/leagues — aggregated leagues for LEAGUE_IDS. Cache: 1 hour. */
 export async function GET() {

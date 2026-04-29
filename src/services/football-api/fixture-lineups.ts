@@ -53,11 +53,11 @@ export function useFixtureLineups(
       if (statusType === "In Play") {
         return 20 * 60 * 1000; // 20 minutes for live matches
       } else if (statusType === "Finished") {
-        return 24 * 60 * 60 * 1000; // 24 hours (1 day) for finished matches
+        return 5 * 60 * 1000; // 5 minutes for finished matches
       } else if (statusType === "Scheduled") {
         return 10 * 60 * 1000; // 10 minutes for scheduled matches
       } else {
-        return 20 * 60 * 1000; // 20 minutes default
+        return 2 * 60 * 1000; // 2 minutes default
       }
     },
     // Keep previous data while refetching

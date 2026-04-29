@@ -28,7 +28,7 @@ export async function createComment(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/${postId}/comments`,
     {
       method: "POST",
@@ -105,7 +105,7 @@ export async function listComments(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/${postId}/comments?${params.toString()}`,
     {
       method: "GET",
@@ -146,7 +146,7 @@ export async function getComment(commentId: number): Promise<CommentResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}`,
     {
       method: "GET",
@@ -191,7 +191,7 @@ export async function updateComment(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}`,
     {
       method: "PATCH",
@@ -259,7 +259,7 @@ export async function deleteComment(commentId: number): Promise<void> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}`,
     {
       method: "DELETE",
@@ -315,7 +315,7 @@ export async function getCommentReplies(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}/replies?${params.toString()}`,
     {
       method: "GET",
@@ -498,7 +498,7 @@ export async function likeComment(commentId: number): Promise<CommentResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}/like`,
     {
       method: "POST",
@@ -547,7 +547,7 @@ export async function dislikeComment(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}/dislike`,
     {
       method: "POST",
@@ -594,7 +594,7 @@ export async function removeCommentReaction(
     headers["Authorization"] = authHeader;
   }
 
-  const response = await fetch(
+  const response = await backendFetch(
     `${BACKEND_URL}/api/v1/posts/comments/${commentId}/reaction`,
     {
       method: "DELETE",

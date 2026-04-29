@@ -91,7 +91,7 @@ function AuthCallbackContent() {
       setStatus("success");
       setTimeout(() => router.push("/"), 1500);
     }
-  }, [user, isLoading, error, status, router]);
+  }, [user, isLoading, error, status, router, queryClient]);
 
   return (
     <>

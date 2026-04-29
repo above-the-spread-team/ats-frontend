@@ -27,7 +27,7 @@ export function useWorldCupFixtures(timezone?: string) {
   const { data: scheduleData, isLoading, error, ...rest } = useQuery({
     queryKey: ["world-cup-fixtures", tz],
     queryFn: () => fetchWorldCupFixtures(tz),
-    staleTime: 60 * 60 * 1000, // 1 hour — schedule rarely changes
+    staleTime: 5 * 60 * 1000, // 5 minutes — schedule rarely changes
     refetchInterval: false,
     refetchOnWindowFocus: false,
   });

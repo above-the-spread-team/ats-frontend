@@ -197,9 +197,6 @@ function GroupCard({
       ),
     [group.teams],
   );
-  const pickedTeam =
-    localPick != null ? sorted.find((t) => t.id === localPick) : null;
-
   return (
     <div className="group relative rounded-2xl bg-card border border-border/80 p-3.5 pt-3 transition-colors hover:border-border">
       <div className="flex items-center gap-2 pb-2 mb-2 border-b border-border/60">
@@ -633,7 +630,6 @@ export default function WorldCupPredictionPage() {
   const { data: deadline, isLoading: deadlineLoading } = useWorldCupDeadline();
   const {
     data: existingPrediction,
-    isLoading: predictionLoading,
     error: predictionError,
   } = useMyPrediction();
   const { data: champions, isLoading: championsLoading } =
