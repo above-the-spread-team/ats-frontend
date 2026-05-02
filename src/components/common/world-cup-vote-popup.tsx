@@ -123,50 +123,90 @@ export default function WorldCupVotePopup() {
         }}
       >
         <DialogContent
-          className="max-w-[95%] sm:max-w-lg overflow-hidden bg-black border-0 p-0"
+          className="max-w-[90vw] overflow-hidden border-0 bg-zinc-950 p-0 shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:max-w-md"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <div className="relative">
+          <div className="relative min-h-[460px] overflow-hidden sm:min-h-[520px]">
             <Image
               src="/images/world-cup-popup.jpg"
               alt="World Cup trophy"
               width={1200}
               height={700}
               priority
-              className="h-[420px] w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
-            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7 text-left text-white">
-              <DialogHeader className="items-start gap-2">
-                <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider backdrop-blur">
-                  World Cup 2026
-                </span>
-                <DialogTitle className="text-2xl sm:text-3xl font-black leading-tight text-white">
-                  Predict the World Cup.
-                </DialogTitle>
-                <DialogDescription className="text-sm sm:text-base text-white/85">
-                  Pick 2 qualifiers from each group, choose a champion, and
-                  guess the total goals.
-                  {deadline?.deadline && (
-                    <span className="mt-1 block text-white font-semibold">
-                      Closes {formatDeadline(deadline.deadline)}
-                    </span>
-                  )}
-                </DialogDescription>
-              </DialogHeader>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(250,204,21,0.36),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0.18)_0%,rgba(9,9,11,0.78)_52%,rgba(9,9,11,0.98)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.14)_0_1px,transparent_1px_18px)] opacity-20" />
 
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
-                <Button onClick={handlePredictNow} className="sm:min-w-36">
-                  Predict Now
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={dismiss}
-                  className="text-white/90 hover:text-white hover:bg-white/15"
-                >
-                  Not now
-                </Button>
+            <div className="relative flex min-h-[460px] flex-col justify-between p-4 text-white sm:min-h-[520px] sm:p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="rounded-full border border-white/15 bg-black/35 px-2.5 py-1 text-[10px] md:text-[11px] font-black uppercase tracking-[0.18em] text-amber-200 shadow-lg shadow-black/25 backdrop-blur-md">
+                  World Cup 2026 Challenge
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <DialogHeader className="items-start gap-2 text-left">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] md:text-xs font-bold text-white/90 backdrop-blur">
+                    <span className="h-1 w-1 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.95)]" />
+                    Free to enter before kickoff
+                  </div>
+                  <DialogTitle className="max-w-[13ch] text-3xl font-black leading-[0.96] tracking-[-0.05em] text-white sm:text-4xl">
+                    Predict the World Cup.
+                    <span className="mt-2 block text-amber-300">
+                      Win 500 USD.
+                    </span>
+                  </DialogTitle>
+                  <DialogDescription className="max-w-xs text-xs md:text-sm font-medium leading-relaxed text-white/82 sm:text-xs">
+                    Pick 2 qualifiers from each group, choose the champion, and
+                    guess the total goals. The closest bracket takes the prize.
+                    {deadline?.deadline && (
+                      <span className="mt-2 inline-flex rounded-full border border-white/15 bg-black/35 px-2.5 py-1 text-xs md:text-sm font-bold text-white backdrop-blur">
+                        Closes {formatDeadline(deadline.deadline)}
+                      </span>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl border border-white/10 bg-white/10 p-2 backdrop-blur">
+                    <p className="text-sm font-black leading-none">12</p>
+                    <p className="mt-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-white/60">
+                      Groups
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/10 p-2 backdrop-blur">
+                    <p className="text-sm font-black leading-none">1</p>
+                    <p className="mt-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-white/60">
+                      Champion
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-amber-300/25 bg-amber-300/15 p-2 backdrop-blur">
+                    <p className="text-sm font-black leading-none text-amber-200">
+                      Goals
+                    </p>
+                    <p className="mt-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-amber-100/70">
+                      Tie-break
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    onClick={handlePredictNow}
+                    className="h-10 flex-1 rounded-xl bg-amber-300 text-xs font-black uppercase tracking-[0.1em] text-zinc-950 shadow-[0_16px_36px_rgba(251,191,36,0.3)] hover:bg-amber-200"
+                  >
+                    Start Prediction
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={dismiss}
+                    className="h-10 rounded-xl border border-white/10 bg-white/5 px-4 text-xs text-white/85 hover:bg-white/12 hover:text-white"
+                  >
+                    Not now
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
