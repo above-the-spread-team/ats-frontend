@@ -601,8 +601,10 @@ export function VotingModal({
                         <p className="text-lg sm:text-xl font-extrabold">
                           Prediction submitted!
                         </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-[28ch] mx-auto">
-                          Your World Cup prediction has been saved successfully.
+
+                        <p className="text-md sm:text-base font-medium text-muted-foreground mt-2 max-w-[42ch] mx-auto">
+                          Prediction saved! **Log in now** to qualify for the
+                          prize—anonymous entries are not eligible to win.
                         </p>
                       </div>
 
