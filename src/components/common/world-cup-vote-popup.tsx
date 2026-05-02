@@ -126,19 +126,19 @@ export default function WorldCupVotePopup() {
           className="max-w-[90vw] overflow-hidden border-0 bg-zinc-950 p-0 shadow-[0_28px_90px_rgba(0,0,0,0.55)] sm:max-w-md"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <div className="relative min-h-[460px] overflow-hidden sm:min-h-[520px]">
+          <div className="relative overflow-hidden ">
             <Image
               src="/images/world-cup-popup.jpg"
               alt="World Cup trophy"
-              width={1200}
-              height={700}
+              width={800}
+              height={600}
               priority
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover "
             />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(250,204,21,0.36),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0.18)_0%,rgba(9,9,11,0.78)_52%,rgba(9,9,11,0.98)_100%)]" />
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.14)_0_1px,transparent_1px_18px)] opacity-20" />
 
-            <div className="relative flex min-h-[460px] flex-col justify-between p-4 text-white sm:min-h-[520px] sm:p-5">
+            <div className="relative flex min-h-[440px] flex-col justify-between p-4 text-white  sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="rounded-full border border-white/15 bg-black/35 px-2.5 py-1 text-[10px] md:text-[11px] font-black uppercase tracking-[0.18em] text-amber-200 shadow-lg shadow-black/25 backdrop-blur-md">
                   World Cup 2026 Challenge
@@ -147,10 +147,6 @@ export default function WorldCupVotePopup() {
 
               <div className="space-y-3">
                 <DialogHeader className="items-start gap-2 text-left">
-                  <div className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] md:text-xs font-bold text-white/90 backdrop-blur">
-                    <span className="h-1 w-1 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.95)]" />
-                    Free to enter before kickoff
-                  </div>
                   <DialogTitle className="max-w-[13ch] text-3xl font-black leading-[0.96] tracking-[-0.05em] text-white sm:text-4xl">
                     Predict the World Cup.
                     <span className="mt-2 block text-amber-300">
@@ -194,7 +190,7 @@ export default function WorldCupVotePopup() {
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Button
                     onClick={handlePredictNow}
-                    className="h-10 flex-1 rounded-xl bg-amber-300 text-xs font-black uppercase tracking-[0.1em] text-zinc-950 shadow-[0_16px_36px_rgba(251,191,36,0.3)] hover:bg-amber-200"
+                    className="py-3 flex-1 rounded-xl bg-amber-300 text-xs font-black uppercase tracking-[0.1em] text-zinc-950 shadow-[0_16px_36px_rgba(251,191,36,0.3)] hover:bg-amber-200"
                   >
                     Start Prediction
                   </Button>
@@ -202,7 +198,7 @@ export default function WorldCupVotePopup() {
                     variant="ghost"
                     size="sm"
                     onClick={dismiss}
-                    className="h-10 rounded-xl border border-white/10 bg-white/5 px-4 text-xs text-white/85 hover:bg-white/12 hover:text-white"
+                    className="h-9 rounded-xl border border-white/10 bg-white/5 px-4 text-xs text-white/85 hover:bg-white/12 hover:text-white"
                   >
                     Not now
                   </Button>

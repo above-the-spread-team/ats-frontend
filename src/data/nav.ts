@@ -22,7 +22,7 @@ export const navItems: NavItem[] = [
   },
   {
     label: "World Cup",
-    href: "/world-cup",
+    href: "/world-cup/prediction",
     icon: GiTrophyCup,
   },
 

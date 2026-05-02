@@ -44,7 +44,10 @@ export default function Promotion() {
   }, []);
 
   return (
-    <Link href="/world-cup" className="block group focus:outline-none">
+    <Link
+      href="/world-cup/prediction"
+      className="block group focus:outline-none"
+    >
       <div className="relative w-full overflow-hidden rounded-xl md:rounded-2xl cursor-pointer min-h-[240px] sm:min-h-[280px] md:min-h-[300px]">
         {/* Background image */}
         <Image

@@ -333,11 +333,7 @@ function FixtureCardSkeleton() {
 }
 
 /** Mirrors `GroupSection`: header row + stacked fixture skeletons. */
-function GroupSectionSkeleton({
-  fixtureCount,
-}: {
-  fixtureCount: number;
-}) {
+function GroupSectionSkeleton({ fixtureCount }: { fixtureCount: number }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between px-1">
