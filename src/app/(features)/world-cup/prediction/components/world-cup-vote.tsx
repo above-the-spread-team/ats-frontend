@@ -10,6 +10,7 @@ import {
   WheelPickerWrapper,
   type WheelPickerOption,
 } from "@ncdai/react-wheel-picker";
+import { useCurrentUser } from "@/services/fastapi/oauth";
 import type { WorldCupGroupResponse } from "@/type/fastapi/world-cup-vote";
 
 // ─── hooks ────────────────────────────────────────────────────────────────────
@@ -189,6 +190,11 @@ export function VotingModal({
   onSave,
 }: VotingModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const {
+    data: currentUser,
+    isFetched: hasCheckedAuth,
+    isLoading: isAuthLoading,
+  } = useCurrentUser({ enabled: open });
   const [portalMounted, setPortalMounted] = useState(false);
   const [submissionState, setSubmissionState] = useState<"idle" | "success">(
     "idle",
@@ -340,6 +346,8 @@ export function VotingModal({
   const isGoalsStep = displayStep === GOALS_STEP;
   const isGroupStep = !isChampionStep && !isGoalsStep;
   const isSubmissionSuccess = isGoalsStep && submissionState === "success";
+  const showAnonymousPrizeNote =
+    hasCheckedAuth && !isAuthLoading && !currentUser;
   const currentGroup = isGroupStep ? sortedGroups[displayStep] : null;
 
   const groupsWithTwoPicks = sortedGroups.filter(
@@ -602,10 +610,16 @@ export function VotingModal({
                           Prediction submitted!
                         </p>
 
-                        <p className="text-md sm:text-base font-medium text-muted-foreground mt-2 max-w-[42ch] mx-auto">
-                          Prediction saved! **Log in now** to qualify for the
-                          prize—anonymous entries are not eligible to win.
-                        </p>
+                        {showAnonymousPrizeNote && (
+                          <p className="text-md sm:text-base font-medium text-muted-foreground mt-2 max-w-[42ch] mx-auto">
+                            Prediction saved!{" "}
+                            <strong className="font-bold text-foreground">
+                              Log in now
+                            </strong>{" "}
+                            to qualify for the prize—anonymous entries are not
+                            eligible to win.
+                          </p>
+                        )}
                       </div>
 
                       {champId != null &&
