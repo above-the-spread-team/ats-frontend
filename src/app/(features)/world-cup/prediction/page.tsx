@@ -169,17 +169,6 @@ function GroupCard({
             Group {group.group_letter}
           </p>
         </div>
-        {/* Progress indicator: 0, 1, or 2 picks */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          {[0, 1].map((i) => (
-            <span
-              key={i}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                i < pickCount ? "bg-amber-400" : "bg-muted border border-border"
-              }`}
-            />
-          ))}
-        </div>
       </div>
 
       <div className="space-y-2">
@@ -251,7 +240,7 @@ function PodiumSlot({
         }`}
       >
         <span
-          className={`text-[10px] font-black ${
+          className={`text-[11px] md:text-xs font-black ${
             place === 1
               ? "text-amber-600 dark:text-amber-400"
               : "text-muted-foreground/70"
@@ -273,6 +262,7 @@ function ChampionPanel({
   isLoading: boolean;
   currentChampionId: number | null;
 }) {
+  const [showAllContenders, setShowAllContenders] = useState(false);
   const sorted = useMemo(
     () =>
       teams
@@ -284,6 +274,8 @@ function ChampionPanel({
   );
   const top3 = sorted.slice(0, 3);
   const rest = sorted.slice(3);
+  const visibleRest = showAllContenders ? rest : rest.slice(0, 8);
+  const hiddenRestCount = Math.max(rest.length - visibleRest.length, 0);
   const myChampion =
     currentChampionId != null
       ? sorted.find((t) => t.id === currentChampionId)
@@ -377,15 +369,29 @@ function ChampionPanel({
           )}
 
           {rest.length > 0 && (
-            <div className="px-2 pb-3 sm:px-3 sm:pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-2">
-              {rest.map((team, i) => (
-                <TeamRow
-                  key={team.id}
-                  team={team}
-                  rank={i + 4}
-                  isPicked={team.id === currentChampionId}
-                />
-              ))}
+            <div className="px-2 pb-3 sm:px-3 sm:pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2">
+                {visibleRest.map((team, i) => (
+                  <TeamRow
+                    key={team.id}
+                    team={team}
+                    rank={i + 4}
+                    isPicked={team.id === currentChampionId}
+                  />
+                ))}
+              </div>
+
+              {rest.length > 8 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllContenders((prev) => !prev)}
+                  className="mt-3 w-full rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  {showAllContenders
+                    ? "Show less"
+                    : `Show all teams (${hiddenRestCount} more)`}
+                </button>
+              )}
             </div>
           )}
         </>
@@ -452,7 +458,7 @@ export default function WorldCupPredictionPage() {
     }
     setGroupPicks(picks);
     setChampionId(existingVote.champion_team_id ?? null);
-    setTotalGoals(existingVote.total_goals);
+    setTotalGoals(existingVote.total_goals ?? null);
   }, [existingVote]);
 
   async function handleSave(
@@ -518,6 +524,8 @@ export default function WorldCupPredictionPage() {
       : groupPickCount > 0 || championId !== null || totalGoals !== null
         ? "Continue Prediction"
         : "Start Prediction";
+  const displayTotalGoals =
+    totalGoals !== null && Number.isFinite(totalGoals) ? totalGoals : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-4 sm:space-y-6">
@@ -576,6 +584,25 @@ export default function WorldCupPredictionPage() {
           </div>
         </div>
       </header>
+
+      {/* Champion podium */}
+      <section className="space-y-3 sm:space-y-4">
+        <div>
+          <h2 className="text-sm sm:text-base font-black uppercase tracking-[0.14em] leading-none">
+            Championship
+          </h2>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+            The one team to rule them all
+          </p>
+        </div>
+
+        <ChampionPanel
+          teams={champions}
+          isLoading={championsLoading}
+          currentChampionId={championId}
+        />
+      </section>
+
       {/* Groups section */}
       <section className="space-y-3 sm:space-y-4">
         <div className="flex items-end justify-between gap-3">
@@ -609,24 +636,6 @@ export default function WorldCupPredictionPage() {
             ))}
           </div>
         )}
-      </section>
-
-      {/* Champion podium */}
-      <section className="space-y-3 sm:space-y-4">
-        <div>
-          <h2 className="text-sm sm:text-base font-black uppercase tracking-[0.14em] leading-none">
-            Championship
-          </h2>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
-            The one team to rule them all
-          </p>
-        </div>
-
-        <ChampionPanel
-          teams={champions}
-          isLoading={championsLoading}
-          currentChampionId={championId}
-        />
       </section>
 
       {groups && (

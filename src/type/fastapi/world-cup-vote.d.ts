@@ -36,7 +36,7 @@ export interface WorldCupVoteResponse {
   champion_team_id: number | null;
   champion_team: WorldCupTeamResponse | null;
   selections: Record<string, number[]>;
-  total_goals: number;
+  total_goals: number | null;
   is_eligible: boolean;
   created_at: string; // ISO 8601
 }
