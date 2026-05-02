@@ -2,6 +2,7 @@ import { backendFetch } from "@/lib/backend-fetch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User, AuthError } from "@/type/fastapi/user";
 import { storeToken, getAuthHeader } from "./token-storage";
+import { clearWcSessionId } from "./world-cup-vote";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -268,9 +269,15 @@ export function useLogin() {
   return useMutation<LoginResponse, Error, LoginRequest>({
     mutationFn: login,
     onSuccess: () => {
-      // Invalidate and refetch current user to update auth state
-      // The backend sets HttpOnly cookie, so refetching will get the user
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      // Clear anonymous WC session so future fetches use auth credentials only.
+      clearWcSessionId();
+      // Remove the cache entirely (not just invalidate) so the component shows
+      // a loading state with zero stale data while the fresh fetch runs.
+      // If we only invalidated, React Query would continue to display the old
+      // anonymous vote in the background until the new request resolves.
+      queryClient.removeQueries({ queryKey: ["world-cup", "vote"] });
+      queryClient.removeQueries({ queryKey: ["world-cup", "deadline"] });
     },
   });
 }
@@ -290,9 +297,10 @@ export function useVerifyEmail() {
   >({
     mutationFn: verifyEmail,
     onSuccess: () => {
-      // Invalidate and refetch current user to update auth state
-      // Backend sets HttpOnly cookie in response, so refetching will get the user
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      clearWcSessionId();
+      queryClient.removeQueries({ queryKey: ["world-cup", "vote"] });
+      queryClient.removeQueries({ queryKey: ["world-cup", "deadline"] });
     },
   });
 }

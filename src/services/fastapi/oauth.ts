@@ -228,7 +228,9 @@ export function useLogout() {
       queryClient.removeQueries({ queryKey: ["notifications"] });
       queryClient.removeQueries({ queryKey: ["votes"] });
       queryClient.removeQueries({ queryKey: ["popup", "vote-today"] });
-      queryClient.removeQueries({ queryKey: ["world-cup", "prediction"] });
+      // Remove entirely so no stale vote is shown while a fresh anonymous
+      // fetch runs after logout.
+      queryClient.removeQueries({ queryKey: ["world-cup", "vote"] });
       queryClient.removeQueries({ queryKey: ["world-cup", "deadline"] });
     },
   });

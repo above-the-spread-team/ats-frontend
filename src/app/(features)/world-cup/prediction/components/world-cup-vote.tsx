@@ -1,10 +1,15 @@
 "use client";
 
+import "@ncdai/react-wheel-picker/style.css";
+
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { WheelPicker, WheelPickerWrapper } from "@ncdai/react-wheel-picker";
-import "@ncdai/react-wheel-picker/style.css";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
 import type { WorldCupGroupResponse } from "@/type/fastapi/world-cup-vote";
 
 // ─── hooks ────────────────────────────────────────────────────────────────────
@@ -81,14 +86,6 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-function GoalIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z" />
-    </svg>
-  );
-}
-
 // ─── TeamLogo ─────────────────────────────────────────────────────────────────
 
 export function TeamLogo({
@@ -133,26 +130,43 @@ export function TeamLogo({
   );
 }
 
+// ─── QualifierBadge ───────────────────────────────────────────────────────────
+
+function QualifierBadge({ count, max = 2 }: { count: number; max?: number }) {
+  const full = count === max;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums transition-colors ${
+        full
+          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+          : count === 0
+            ? "bg-muted text-muted-foreground border border-border"
+            : "bg-amber-400/15 text-amber-700 dark:text-amber-400 border border-amber-400/30"
+      }`}
+    >
+      {count}/{max}
+      {full ? " ✓" : " picked"}
+    </span>
+  );
+}
+
+// ─── Goals wheel options (0–300) ─────────────────────────────────────────────
+
+const GOALS_OPTIONS: WheelPickerOption<number>[] = Array.from(
+  { length: 301 },
+  (_, i) => ({ value: i, label: String(i) }),
+);
+
 // ─── VotingModal ──────────────────────────────────────────────────────────────
 
 type AnimPhase = "idle" | "exit" | "enter";
 type Direction = "forward" | "backward";
 
-// Steps: 0..N-1 = groups, N = champion, N+1 = total goals
-const CHAMPION_OFFSET = 0;
-const GOALS_OFFSET = 1;
-
-// Generate 0–200 goal options for the wheel picker
-const GOALS_OPTIONS = Array.from({ length: 201 }, (_, i) => ({
-  value: i,
-  label: String(i),
-}));
-
 export interface VotingModalProps {
   open: boolean;
   onClose: () => void;
   groups: WorldCupGroupResponse[];
-  /** Initial qualifier selections per group, 2 team IDs each */
+  /** Each group letter maps to an array of up to 2 selected team IDs */
   initialPicks: Record<string, number[]>;
   initialChampionId: number | null;
   initialTotalGoals: number;
@@ -190,21 +204,24 @@ export function VotingModal({
     [groups],
   );
 
-  // TOTAL = groups + champion + goals
+  // Steps: [0..N-1] groups · [N] champion · [N+1] goals
   const TOTAL = sortedGroups.length + 2;
-  const CHAMPION_STEP = sortedGroups.length + CHAMPION_OFFSET;
-  const GOALS_STEP = sortedGroups.length + GOALS_OFFSET;
+  const CHAMPION_STEP = TOTAL - 2;
+  const GOALS_STEP = TOTAL - 1;
 
   const [displayStep, setDisplayStep] = useState(0);
   const [targetStep, setTargetStep] = useState(0);
   const [animPhase, setAnimPhase] = useState<AnimPhase>("idle");
   const [direction, setDirection] = useState<Direction>("forward");
 
-  /** 2 qualifier IDs per group letter */
+  /** Record<groupLetter, number[]> — max 2 IDs per group */
   const [picks, setPicks] = useState<Record<string, number[]>>({});
   const [champId, setChampId] = useState<number | null>(null);
-  const [totalGoals, setTotalGoals] = useState<number>(100);
   const [champSearch, setChampSearch] = useState("");
+
+  // Goals wheel state
+  const [totalGoals, setTotalGoals] = useState(160);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -226,13 +243,16 @@ export function VotingModal({
   // Init on open
   useEffect(() => {
     if (open) {
-      const cloned: Record<string, number[]> = {};
-      for (const [k, v] of Object.entries(initialPicks)) {
-        cloned[k] = [...v];
-      }
-      setPicks(cloned);
+      setPicks(
+        Object.fromEntries(
+          Object.entries(initialPicks).map(([k, v]) => [k, [...v]]),
+        ),
+      );
       setChampId(initialChampionId);
-      setTotalGoals(initialTotalGoals > 0 ? initialTotalGoals : 100);
+
+      const clamped = Math.min(300, Math.max(0, initialTotalGoals));
+      setTotalGoals(clamped);
+
       setDisplayStep(0);
       setTargetStep(0);
       setAnimPhase("idle");
@@ -283,16 +303,20 @@ export function VotingModal({
     }
   }
 
-  /** Toggle a team in/out of the 2-slot qualifier selection for the current group */
-  function toggleQualifier(groupLetter: string, teamId: number) {
+  /** Toggle a qualifier pick — max 2; 3rd tap replaces earliest */
+  function togglePick(groupLetter: string, teamId: number) {
     setPicks((prev) => {
       const current = prev[groupLetter] ?? [];
       if (current.includes(teamId)) {
-        // deselect
-        return { ...prev, [groupLetter]: current.filter((id) => id !== teamId) };
+        return {
+          ...prev,
+          [groupLetter]: current.filter((id) => id !== teamId),
+        };
       }
-      if (current.length >= 2) return prev; // already full
-      return { ...prev, [groupLetter]: [...current, teamId] };
+      if (current.length < 2) {
+        return { ...prev, [groupLetter]: [...current, teamId] };
+      }
+      return { ...prev, [groupLetter]: [current[1], teamId] };
     });
   }
 
@@ -318,16 +342,16 @@ export function VotingModal({
   const isSubmissionSuccess = isGoalsStep && submissionState === "success";
   const currentGroup = isGroupStep ? sortedGroups[displayStep] : null;
 
-  const groupPickCount = Object.values(picks).filter((v) => v.length === 2)
-    .length;
-  const missingGroups = sortedGroups.length - groupPickCount;
-  const allGroupsDone = missingGroups === 0;
-  const allPicksDone = allGroupsDone && champId != null;
+  const groupsWithTwoPicks = sortedGroups.filter(
+    (g) => (picks[g.group_letter]?.length ?? 0) === 2,
+  ).length;
+  const missingGroups = sortedGroups.length - groupsWithTwoPicks;
+  const allPicksDone = missingGroups === 0 && champId != null;
 
   const currentGroupPicks = currentGroup
     ? (picks[currentGroup.group_letter] ?? [])
     : [];
-  const currentGroupFull = currentGroupPicks.length === 2;
+  const currentGroupComplete = currentGroupPicks.length === 2;
 
   let animClass = "";
   if (animPhase === "exit") {
@@ -340,14 +364,11 @@ export function VotingModal({
 
   const progressPct = Math.round(((displayStep + 1) / TOTAL) * 100);
 
+  // Step title
   let stepTitle = "";
-  if (isGroupStep && currentGroup) {
-    stepTitle = `Group ${currentGroup.group_letter} — Pick 2 qualifiers`;
-  } else if (isChampionStep) {
-    stepTitle = "🏆 Who will win the World Cup?";
-  } else {
-    stepTitle = "⚽ Predict the total goals";
-  }
+  if (isGoalsStep) stepTitle = "⚽ Predict total goals";
+  else if (isChampionStep) stepTitle = "🏆 Who will win the World Cup?";
+  else stepTitle = `Group ${currentGroup?.group_letter} — Pick 2 qualifiers`;
 
   return createPortal(
     <>
@@ -357,11 +378,12 @@ export function VotingModal({
       />
       <div className="fixed inset-0 z-[100] flex min-h-dvh w-full items-end sm:items-center justify-center pointer-events-none">
         <div className="relative z-10 pointer-events-auto w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-[560px] sm:rounded-2xl bg-card flex flex-col overflow-hidden shadow-2xl">
-          {/* Header */}
+          {/* ── Header ── */}
           <div className="flex items-center gap-3 px-5 pt-5 pb-3 flex-shrink-0">
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground flex-shrink-0"
+              aria-label="Close"
             >
               <XIcon className="w-4 h-4" />
             </button>
@@ -380,6 +402,7 @@ export function VotingModal({
                 onClick={() => goTo(displayStep - 1)}
                 disabled={displayStep === 0 || animPhase !== "idle"}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30 transition-colors text-muted-foreground"
+                aria-label="Previous step"
               >
                 <ChevronLeftIcon className="w-4 h-4" />
               </button>
@@ -387,13 +410,14 @@ export function VotingModal({
                 onClick={() => goTo(displayStep + 1)}
                 disabled={displayStep === TOTAL - 1 || animPhase !== "idle"}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30 transition-colors text-muted-foreground"
+                aria-label="Next step"
               >
                 <ChevronRightIcon className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Progress bar */}
+          {/* ── Progress bar ── */}
           <div className="mx-5 h-1 rounded-full bg-muted overflow-hidden flex-shrink-0">
             <div
               className="h-full rounded-full bg-primary-font transition-all duration-300"
@@ -401,7 +425,7 @@ export function VotingModal({
             />
           </div>
 
-          {/* Animated content */}
+          {/* ── Animated content ── */}
           <div
             className="flex-1 overflow-y-auto overscroll-contain"
             style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
@@ -414,93 +438,78 @@ export function VotingModal({
                 backfaceVisibility: "hidden",
               }}
             >
-              {/* ── Group step: pick 2 qualifiers ── */}
+              {/* ── Group step ──────────────────────────────────────────── */}
               {isGroupStep && currentGroup && (
-                <div className="px-5 pt-4 pb-2 space-y-2.5">
-                  {/* Selection badge */}
+                <div className="px-5 pt-4 pb-2 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
-                      Select 2 teams that advance from this group
+                      Select the{" "}
+                      <span className="font-semibold text-foreground">
+                        2 teams
+                      </span>{" "}
+                      that advance from this group
                     </p>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold tabular-nums ${
-                        currentGroupFull
-                          ? "bg-primary-font/15 text-primary-font"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {currentGroupPicks.length}/2
-                    </span>
+                    <QualifierBadge count={currentGroupPicks.length} max={2} />
                   </div>
 
-                  {currentGroup.teams.map((team) => {
-                    const isSelected = currentGroupPicks.includes(team.id);
-                    const isDisabled = !isSelected && currentGroupFull;
-                    const pct = team.prediction_percentage;
-                    const selectionIndex = currentGroupPicks.indexOf(team.id);
-
-                    return (
-                      <button
-                        key={team.id}
-                        onClick={() =>
-                          toggleQualifier(currentGroup.group_letter, team.id)
-                        }
-                        disabled={isDisabled}
-                        className={`w-full flex flex-col gap-1.5 rounded-xl px-3 py-3 text-left transition-all duration-150 ${
-                          isSelected
-                            ? "bg-primary-font border border-primary-font"
-                            : isDisabled
-                              ? "border border-border/30 opacity-40 cursor-not-allowed"
+                  <div className="space-y-2">
+                    {currentGroup.teams.map((team) => {
+                      const isSelected = currentGroupPicks.includes(team.id);
+                      const pct = team.prediction_percentage;
+                      return (
+                        <button
+                          key={team.id}
+                          onClick={() =>
+                            togglePick(currentGroup.group_letter, team.id)
+                          }
+                          className={`w-full flex flex-col gap-1.5 rounded-xl px-3 py-3 text-left transition-all duration-150 ${
+                            isSelected
+                              ? "bg-primary-font border border-primary-font"
                               : "border border-border/60 hover:bg-muted/50 hover:border-border"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <TeamLogo
-                            src={team.logo_url}
-                            name={team.name}
-                            size={28}
-                          />
-                          <span
-                            className={`text-sm font-semibold flex-1 truncate ${
-                              isSelected ? "text-white" : "text-foreground"
-                            }`}
-                          >
-                            {team.name}
-                          </span>
-
-                          {isSelected && (
-                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-[10px] font-black flex-shrink-0">
-                              {selectionIndex + 1}
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <TeamLogo
+                              src={team.logo_url}
+                              name={team.name}
+                              size={28}
+                            />
+                            <span
+                              className={`text-sm font-semibold flex-1 truncate ${
+                                isSelected ? "text-white" : "text-foreground"
+                              }`}
+                            >
+                              {team.name}
                             </span>
-                          )}
-
-                          <span
-                            className={`text-[11px] font-medium tabular-nums ${
-                              isSelected
-                                ? "text-white/80"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {pct.toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="h-1 rounded-full bg-muted overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              isSelected ? "bg-primary-hero" : "bg-primary-font"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </button>
-                    );
-                  })}
+                            {isSelected ? (
+                              <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
+                            ) : (
+                              <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
+                                {pct.toFixed(1)}%
+                              </span>
+                            )}
+                          </div>
+                          <div className="h-1 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                isSelected
+                                  ? "bg-primary-hero"
+                                  : "bg-primary-font/60"
+                              }`}
+                              style={{ width: `${Math.max(pct, 1)}%` }}
+                            />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              {/* ── Champion step ── */}
-              {isChampionStep && !isSubmissionSuccess && (
+              {/* ── Champion step ────────────────────────────────────────── */}
+              {isChampionStep && (
                 <div className="px-5 pt-4 pb-2 space-y-3">
+                  {/* Current champion pick preview */}
                   {champId != null &&
                     (() => {
                       const team = allTeams.find((t) => t.id === champId);
@@ -525,6 +534,7 @@ export function VotingModal({
                       );
                     })()}
 
+                  {/* Champion search */}
                   <input
                     type="text"
                     value={champSearch}
@@ -533,6 +543,7 @@ export function VotingModal({
                     className="w-full h-9 px-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary-font/60 transition-colors"
                   />
 
+                  {/* Team list */}
                   <div className="space-y-0.5">
                     {filteredTeams.map((team) => {
                       const isSelected = champId === team.id;
@@ -559,11 +570,9 @@ export function VotingModal({
                             {team.name}
                           </span>
                           <span
-                            className={`text-[11px] ${
-                              isSelected
-                                ? "text-white"
-                                : "text-foreground/80"
-                            } flex-shrink-0`}
+                            className={`text-[11px] flex-shrink-0 ${
+                              isSelected ? "text-white" : "text-foreground/80"
+                            }`}
                           >
                             Grp {team.group_letter}
                           </span>
@@ -579,125 +588,112 @@ export function VotingModal({
                 </div>
               )}
 
-              {/* ── Total Goals step ── */}
+              {/* ── Goals step ───────────────────────────────────────────── */}
               {isGoalsStep && (
-                <div className="px-5 pt-4 pb-2 space-y-4">
+                <div className="px-5 pt-4 pb-4 space-y-5">
                   {isSubmissionSuccess ? (
-                    // Success state
-                    <div className="flex flex-col items-center text-center px-2 pb-3 pt-2 gap-4">
-                      <div className="w-16 h-16 rounded-full bg-primary-font/15 border-2 border-primary-font/30 flex items-center justify-center">
-                        <CheckIcon className="w-8 h-8 text-primary-font" />
+                    /* ── Success state ── */
+                    <div className="flex flex-col items-center text-center px-2 pb-2 gap-4">
+                      <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                        <CheckIcon className="w-7 h-7 text-emerald-500" />
                       </div>
                       <div>
                         <p className="text-lg sm:text-xl font-extrabold">
                           Prediction submitted!
                         </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-[28ch]">
-                          Your World Cup bracket has been saved successfully.
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-[28ch] mx-auto">
+                          Your World Cup prediction has been saved successfully.
                         </p>
                       </div>
 
-                      {/* Summary chips */}
-                      <div className="w-full max-w-sm space-y-2">
-                        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-muted/60 border border-border/50">
-                          <span className="text-xs text-muted-foreground font-medium">
-                            Groups selected
-                          </span>
-                          <span className="text-xs font-bold text-foreground tabular-nums">
-                            {groupPickCount} / {sortedGroups.length}
-                          </span>
-                        </div>
-
-                        {champId != null &&
-                          (() => {
-                            const team = allTeams.find((t) => t.id === champId);
-                            if (!team) return null;
-                            return (
-                              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30">
+                      {champId != null &&
+                        (() => {
+                          const team = allTeams.find((t) => t.id === champId);
+                          if (!team) return null;
+                          return (
+                            <div className="px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30 w-full max-w-[340px]">
+                              <div className="flex items-center gap-3">
                                 <TeamLogo
                                   src={team.logo_url}
                                   name={team.name}
-                                  size={32}
+                                  size={36}
                                 />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-bold text-white truncate">
+                                  <p className="text-xs sm:text-sm font-bold text-white truncate">
                                     {team.name}
                                   </p>
                                   <p className="text-[11px] text-white/80">
-                                    Champion pick
+                                    Your champion pick
                                   </p>
                                 </div>
                                 <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
                               </div>
-                            );
-                          })()}
+                            </div>
+                          );
+                        })()}
 
-                        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-muted/60 border border-border/50">
-                          <span className="text-xs text-muted-foreground font-medium">
-                            Total goals guess
-                          </span>
-                          <span className="text-sm font-black text-foreground tabular-nums">
+                      <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted border border-border w-full max-w-[340px]">
+                        <span className="text-2xl">⚽</span>
+                        <div>
+                          <p className="text-[11px] text-muted-foreground text-left">
+                            Total goals prediction
+                          </p>
+                          <p className="text-2xl font-black tabular-nums text-foreground leading-tight">
                             {totalGoals}
-                          </span>
+                            <span className="text-base font-medium text-muted-foreground ml-1">
+                              goals
+                            </span>
+                          </p>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    // Goals picker
+                    /* ── Goals wheel ── */
                     <>
                       <div className="text-center space-y-1">
-                        <p className="text-xs text-muted-foreground">
-                          How many goals will be scored in total across all
-                          group stage &amp; knockout matches?
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          Predict the total goals scored in the entire
+                          tournament. Closest guess wins tiebreaks.
                         </p>
-                        <p className="text-[11px] text-muted-foreground/70">
-                          Tie-breaker — closer guess wins
+                        <p className="text-xs md:text-sm text-muted-foreground/60">
+                          2022 Qatar: 172 · 2018 Russia: 169 · 2014 Brazil: 171
                         </p>
                       </div>
 
                       {/* Big number display */}
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-6xl sm:text-7xl font-black tabular-nums text-foreground leading-none">
-                            {totalGoals}
-                          </span>
-                          <div className="flex flex-col items-start gap-0.5">
-                            <GoalIcon className="w-5 h-5 text-primary-font" />
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                              goals
-                            </span>
-                          </div>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground/70">
-                          Scroll the wheel to adjust
-                        </p>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-4xl sm:text-5xl font-black tabular-nums tracking-tight text-foreground transition-all duration-150">
+                          {totalGoals}
+                        </span>
+                        <span className="text-base font-semibold text-muted-foreground self-end pb-1.5">
+                          goals
+                        </span>
                       </div>
 
-                      {/* Wheel picker */}
-                      <div className="flex justify-center">
-                        <WheelPickerWrapper className="w-full max-w-[240px]">
+                      {/* Single wheel picker */}
+                      <div className="relative rounded-2xl border border-border overflow-hidden bg-muted/30">
+                        <WheelPickerWrapper className="h-[200px]  px-4">
                           <WheelPicker<number>
-                            value={totalGoals}
-                            onValueChange={(v) => setTotalGoals(v)}
                             options={GOALS_OPTIONS}
-                            visibleCount={8}
-                            infinite={false}
+                            value={totalGoals}
+                            onValueChange={setTotalGoals}
+                            visibleCount={16}
+                            optionItemHeight={36}
                             classNames={{
                               optionItem:
-                                "text-sm font-semibold text-foreground",
-                              highlightWrapper: "rounded-xl",
+                                "text-lg font-semibold text-muted-foreground",
+                              highlightWrapper:
+                                "rounded-xl  bg-card border border-border shadow-sm",
                               highlightItem:
-                                "font-black text-primary-font text-base",
+                                "text-2xl font-black text-foreground",
                             }}
                           />
                         </WheelPickerWrapper>
-                      </div>
 
-                      {/* Context hint */}
-                      <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/70">
-                        <span>WC 2022: 172 goals</span>
-                        <span className="w-px h-3 bg-border" />
-                        <span>WC 2018: 169 goals</span>
+                        {/* Bottom hint */}
+                        <p className="text-center text-xs md:text-sm text-muted-foreground/60 py-2">
+                          Scroll or drag · typical range 130–200
+                        </p>
                       </div>
                     </>
                   )}
@@ -706,14 +702,15 @@ export function VotingModal({
             </div>
           </div>
 
-          {/* Footer */}
+          {/* ── Footer ── */}
           <div className="px-5 pt-3 pb-5 border-t border-border/60 flex-shrink-0 space-y-2">
             {submitError && (
               <p className="text-xs text-red-500 text-center">{submitError}</p>
             )}
 
-            {isGoalsStep ? (
-              isSubmissionSuccess ? (
+            {/* Goals step footer */}
+            {isGoalsStep &&
+              (isSubmissionSuccess ? (
                 <button
                   onClick={onClose}
                   className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
@@ -725,23 +722,25 @@ export function VotingModal({
                   onClick={handleSubmit}
                   disabled={!allPicksDone || isSubmitting}
                   className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 ${
-                    allPicksDone
+                    allPicksDone && !isSubmitting
                       ? "bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
                       : "bg-muted text-muted-foreground cursor-not-allowed"
                   }`}
                 >
                   {isSubmitting
                     ? "Submitting…"
-                    : !allGroupsDone
-                      ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} still missing`
-                      : champId == null
-                        ? "Select a champion first"
+                    : champId == null
+                      ? "Select a champion first"
+                      : missingGroups > 0
+                        ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} incomplete`
                         : hasExistingVote
                           ? "Update Prediction"
                           : "Submit Prediction"}
                 </button>
-              )
-            ) : isChampionStep ? (
+              ))}
+
+            {/* Champion step footer */}
+            {isChampionStep && (
               <button
                 onClick={() => goTo(GOALS_STEP)}
                 disabled={champId == null || animPhase !== "idle"}
@@ -752,24 +751,27 @@ export function VotingModal({
                 }`}
               >
                 {champId == null
-                  ? "Select your champion"
-                  : "Next — Set total goals →"}
+                  ? "Select a champion to continue"
+                  : "Next — Predict Goals →"}
               </button>
-            ) : (
+            )}
+
+            {/* Group step footer */}
+            {isGroupStep && (
               <button
                 onClick={() => goTo(displayStep + 1)}
-                disabled={!currentGroupFull || animPhase !== "idle"}
+                disabled={!currentGroupComplete || animPhase !== "idle"}
                 className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 ${
-                  currentGroupFull
+                  currentGroupComplete
                     ? "bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
                     : "bg-muted text-muted-foreground cursor-not-allowed"
                 }`}
               >
-                {!currentGroupFull
-                  ? `Pick ${2 - currentGroupPicks.length} more team${2 - currentGroupPicks.length > 1 ? "s" : ""}`
-                  : displayStep === CHAMPION_STEP - 1
+                {currentGroupComplete
+                  ? displayStep === CHAMPION_STEP - 1
                     ? "Next — Pick Champion →"
-                    : "Next →"}
+                    : "Next →"
+                  : `Pick ${2 - currentGroupPicks.length} more team${2 - currentGroupPicks.length > 1 ? "s" : ""} to continue`}
               </button>
             )}
           </div>
