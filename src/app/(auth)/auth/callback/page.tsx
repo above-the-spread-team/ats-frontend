@@ -48,9 +48,12 @@ function AuthCallbackContent() {
       .then((data) => {
         // Seed the React Query cache so useCurrentUser returns immediately
         queryClient.setQueryData(["currentUser"], data.user);
-        // Clear vote cache so the new account's vote state is fetched fresh
+        // Remove all user-specific caches so the new account's data is fetched
+        // fresh with no stale anonymous data shown in between.
         queryClient.removeQueries({ queryKey: ["votes"] });
         queryClient.removeQueries({ queryKey: ["popup", "vote-today"] });
+        queryClient.removeQueries({ queryKey: ["world-cup", "vote"] });
+        queryClient.removeQueries({ queryKey: ["world-cup", "deadline"] });
         setStatus("success");
         setTimeout(() => router.push("/"), 1500);
       })
@@ -88,6 +91,8 @@ function AuthCallbackContent() {
     if (user) {
       queryClient.removeQueries({ queryKey: ["votes"] });
       queryClient.removeQueries({ queryKey: ["popup", "vote-today"] });
+      queryClient.removeQueries({ queryKey: ["world-cup", "vote"] });
+      queryClient.removeQueries({ queryKey: ["world-cup", "deadline"] });
       setStatus("success");
       setTimeout(() => router.push("/"), 1500);
     }

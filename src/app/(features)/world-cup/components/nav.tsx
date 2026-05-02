@@ -11,6 +11,12 @@ import { MdSportsSoccer } from "react-icons/md";
 
 const tabs = [
   {
+    label: "Prediction",
+    href: "/world-cup/prediction",
+    icon: MdSportsSoccer,
+    exact: false,
+  },
+  {
     label: "Fixtures",
     href: "/world-cup",
     icon: RiCalendarScheduleFill,
@@ -28,12 +34,7 @@ const tabs = [
     icon: IoNewspaperOutline,
     exact: false,
   },
-  {
-    label: "Prediction",
-    href: "/world-cup/prediction",
-    icon: MdSportsSoccer,
-    exact: false,
-  },
+
   { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
 ];
 

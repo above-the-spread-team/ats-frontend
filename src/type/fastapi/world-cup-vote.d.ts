@@ -17,44 +17,37 @@ export interface WorldCupGroupResponse {
   teams: WorldCupTeamWithPercentage[];
 }
 
-// ── Prediction request bodies ─────────────────────────────────────────────────
+// ── Vote request bodies ───────────────────────────────────────────────────────
 
-export interface WorldCupGroupPredictionItem {
-  group_letter: string;
-  winner_team_id: number;
-}
-
-export interface WorldCupPredictionCreate {
-  group_predictions: WorldCupGroupPredictionItem[];
+export interface WorldCupVoteCreate {
+  /** Map of group letter → exactly 2 qualifying team IDs, e.g. {"A": [1, 2], ...} */
+  selections: Record<string, number[]>;
   champion_team_id: number;
+  total_goals: number;
 }
 
-export type WorldCupPredictionUpdate = WorldCupPredictionCreate;
+export type WorldCupVoteUpdate = WorldCupVoteCreate;
 
-// ── Prediction responses ──────────────────────────────────────────────────────
+// ── Vote responses ────────────────────────────────────────────────────────────
 
-export interface WorldCupGroupPredictionResponse {
-  group_letter: string;
-  winner_team_id: number | null;
-  winner_team: WorldCupTeamResponse | null;
-}
-
-export interface WorldCupPredictionResponse {
+export interface WorldCupVoteResponse {
   id: number;
-  user_id: number;
+  user_id: number | null;
   champion_team_id: number | null;
   champion_team: WorldCupTeamResponse | null;
-  group_predictions: WorldCupGroupPredictionResponse[];
-  is_locked: boolean;
+  selections: Record<string, number[]>;
+  total_goals: number | null;
+  is_eligible: boolean;
   created_at: string; // ISO 8601
-  updated_at: string;
 }
 
 export interface WorldCupDeadlineResponse {
   deadline: string; // ISO 8601
   is_open: boolean;
-  your_prediction_exists: boolean;
+  your_vote_exists: boolean;
 }
+
+// ── Error ─────────────────────────────────────────────────────────────────────
 
 export interface WorldCupVoteError {
   detail: string;
