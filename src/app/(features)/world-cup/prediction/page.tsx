@@ -34,39 +34,6 @@ function LockIcon({ className }: { className?: string }) {
   );
 }
 
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 6l6 6-6 6" />
-    </svg>
-  );
-}
-
 function GoalBadgeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -84,23 +51,6 @@ function formatDeadline(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function useCountdown(iso: string | undefined) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  if (!iso) return null;
-  const target = new Date(iso).getTime();
-  const diff = target - now;
-  if (diff <= 0) return null;
-  const d = Math.floor(diff / 86_400_000);
-  const h = Math.floor((diff % 86_400_000) / 3_600_000);
-  const m = Math.floor((diff % 3_600_000) / 60_000);
-  const s = Math.floor((diff % 60_000) / 1000);
-  return { d, h, m, s, urgent: d === 0 && h < 24 };
 }
 
 // ─── TeamRow ─────────────────────────────────────────────────────────────────
@@ -225,9 +175,7 @@ function GroupCard({
             <span
               key={i}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                i < pickCount
-                  ? "bg-amber-400"
-                  : "bg-muted border border-border"
+                i < pickCount ? "bg-amber-400" : "bg-muted border border-border"
               }`}
             />
           ))}
@@ -259,17 +207,13 @@ function PodiumSlot({
   place: 1 | 2 | 3;
   isPicked: boolean;
 }) {
-  const heights = { 1: "h-20 sm:h-24", 2: "h-14 sm:h-16", 3: "h-10 sm:h-12" };
-  const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const heights = { 1: "h-10", 2: "h-8", 3: "h-6" };
   const orderMd = { 1: "md:order-2", 2: "md:order-1", 3: "md:order-3" };
 
   if (!team) return <div className={`flex-1 ${orderMd[place]}`} />;
 
   return (
     <div className={`flex-1 flex flex-col items-center ${orderMd[place]}`}>
-      <span className="text-lg sm:text-xl mb-1" aria-hidden>
-        {medals[place]}
-      </span>
       <div
         className={`relative flex flex-col items-center gap-1.5 px-2 pt-2 pb-1.5 rounded-t-xl w-full min-w-0 ${
           place === 1
@@ -283,7 +227,7 @@ function PodiumSlot({
           size={place === 1 ? 40 : 28}
         />
         <p
-          className={`text-xs sm:text-md font-bold text-center leading-tight w-full truncate ${
+          className={`text-xs sm:text-md max-w-[92px] md:max-w-full font-bold text-center leading-tight w-full truncate ${
             place === 1 ? "text-foreground" : "text-foreground/85"
           }`}
         >
@@ -367,7 +311,7 @@ function ChampionPanel({
                 name={myChampion.name}
                 size={18}
               />
-              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 max-w-[10ch] truncate">
+              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400  truncate">
                 {myChampion.name}
               </span>
             </div>
@@ -402,7 +346,7 @@ function ChampionPanel({
 
       {!isLoading && sorted.length > 0 && (
         <>
-          <div className="px-4 pt-5 pb-2 sm:px-6 sm:pt-6">
+          <div className="px-2 pt-2 ">
             <div className="flex items-end gap-2 sm:gap-3 md:max-w-md md:mx-auto">
               <PodiumSlot
                 team={top3[1]}
@@ -450,190 +394,6 @@ function ChampionPanel({
   );
 }
 
-// ─── ActionBar ───────────────────────────────────────────────────────────────
-
-function ActionBar({
-  deadline,
-  countdown,
-  votingClosed,
-  hasExistingVote,
-  groupPickCount,
-  totalGroups,
-  championPicked,
-  goalsPicked,
-  totalGoals,
-  onOpen,
-}: {
-  deadline: { deadline: string; is_open: boolean } | undefined;
-  countdown: ReturnType<typeof useCountdown>;
-  votingClosed: boolean;
-  hasExistingVote: boolean;
-  groupPickCount: number;
-  totalGroups: number;
-  championPicked: boolean;
-  goalsPicked: boolean;
-  totalGoals: number | null;
-  onOpen: () => void;
-}) {
-  // groups + champion + goals
-  const totalPicks = totalGroups + 2;
-  const donePicks =
-    groupPickCount + (championPicked ? 1 : 0) + (goalsPicked ? 1 : 0);
-  const progressPct = Math.round((donePicks / totalPicks) * 100);
-  const allDone = donePicks === totalPicks;
-
-  const ctaLabel = votingClosed
-    ? "Voting closed"
-    : allDone
-      ? hasExistingVote
-        ? "Review & edit bracket"
-        : "Review & submit"
-      : hasExistingVote
-        ? "Update your bracket"
-        : donePicks === 0
-          ? "Start your bracket"
-          : "Continue bracket";
-
-  return (
-    <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80"
-      />
-
-      <div className="p-4 sm:p-5 space-y-3.5">
-        {/* Status + countdown */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {votingClosed ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/25 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
-              <LockIcon className="w-3 h-3" />
-              Locked
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              <span className="relative flex w-1.5 h-1.5">
-                <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              </span>
-              Voting open
-            </span>
-          )}
-
-          {deadline && !votingClosed && countdown && (
-            <span
-              className={`inline-flex items-center gap-1.5 text-[11px] md:text-xs font-semibold tabular-nums ${
-                countdown.urgent
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-muted-foreground"
-              }`}
-            >
-              <ClockIcon className="w-3.5 h-3.5" />
-              {countdown.d > 0
-                ? `${countdown.d}d ${countdown.h}h left`
-                : countdown.h > 0
-                  ? `${countdown.h}h ${countdown.m}m left`
-                  : `${countdown.m}m ${String(countdown.s).padStart(2, "0")}s left`}
-            </span>
-          )}
-
-          {deadline && (
-            <span className="hidden md:block text-[11px] md:text-xs text-muted-foreground/80 ml-auto">
-              Closes {formatDeadline(deadline.deadline)}
-            </span>
-          )}
-        </div>
-
-        {/* Progress counter */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg md:text-xl font-black tabular-nums leading-none">
-                {donePicks}
-                <span className="text-muted-foreground/50 font-bold">
-                  /{totalPicks}
-                </span>
-              </span>
-              <span className="text-xs text-muted-foreground font-medium">
-                picks locked in
-              </span>
-              {goalsPicked && totalGoals !== null && (
-                <span className="inline-flex items-center gap-1 ml-auto rounded-md bg-primary-font/10 border border-primary-font/20 px-2 py-0.5 text-[11px] font-bold text-primary-font">
-                  <GoalBadgeIcon className="w-3 h-3" />
-                  {totalGoals} goals
-                </span>
-              )}
-            </div>
-
-            <div className="mt-2 h-1 md:h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  allDone
-                    ? "bg-gradient-to-r from-amber-400 to-amber-500"
-                    : "bg-primary-font"
-                }`}
-                style={{
-                  width: `${Math.max(progressPct, donePicks > 0 ? 4 : 0)}%`,
-                }}
-              />
-            </div>
-
-            {/* Per-group dots + champion dot + goals dot */}
-            <div className="mt-2 flex flex-wrap gap-1">
-              {Array.from({ length: totalGroups }).map((_, i) => (
-                <span
-                  key={i}
-                  className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
-                    i < groupPickCount
-                      ? "bg-primary-font"
-                      : "bg-muted border border-border"
-                  }`}
-                />
-              ))}
-              <span
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ml-0.5 ${
-                  championPicked
-                    ? "bg-amber-400 ring-2 ring-amber-400/30"
-                    : "bg-muted border border-amber-400/40"
-                }`}
-                title="Champion pick"
-              />
-              <span
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
-                  goalsPicked
-                    ? "bg-primary-font ring-2 ring-primary-font/30"
-                    : "bg-muted border border-primary-font/30"
-                }`}
-                title="Total goals guess"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* CTA */}
-        <button
-          onClick={onOpen}
-          disabled={votingClosed}
-          className={`group/btn w-full flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-xl text-sm sm:text-[15px] font-bold transition-all duration-150 ${
-            votingClosed
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary-font text-white hover:opacity-95 active:scale-[0.99] shadow-sm shadow-primary-font/20"
-          }`}
-        >
-          {votingClosed ? (
-            <LockIcon className="w-4 h-4" />
-          ) : (
-            <TrophyIcon className="w-4 h-4" />
-          )}
-          {ctaLabel}
-          {!votingClosed && (
-            <ChevronRightIcon className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5" />
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Skeletons ───────────────────────────────────────────────────────────────
 
 function GroupCardSkeleton() {
@@ -675,8 +435,6 @@ export default function WorldCupPredictionPage() {
 
   const submitMutation = useSubmitVote();
   const updateMutation = useUpdateVote();
-  const countdown = useCountdown(deadline?.deadline);
-
   const hasExistingVote = !!existingVote && !voteError;
   const votingClosed = !!deadline && !deadline.is_open;
 
@@ -753,44 +511,71 @@ export default function WorldCupPredictionPage() {
     (v) => v.length === 2,
   ).length;
   const totalGroups = groups?.length ?? 12;
+  const heroCtaLabel = votingClosed
+    ? "Voting Closed"
+    : hasExistingVote
+      ? "Edit Prediction"
+      : groupPickCount > 0 || championId !== null || totalGoals !== null
+        ? "Continue Prediction"
+        : "Start Prediction";
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-4 sm:space-y-6">
-      {/* Title */}
-      <header className="flex">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="h-4 w-1 rounded-full bg-amber-400" />
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
-              Predictions · World Cup 2026
-            </span>
+      {/* Prize hero */}
+      <header className="relative overflow-hidden rounded-3xl border border-amber-400/25 bg-zinc-950 text-white shadow-[0_24px_70px_rgba(0,0,0,0.22)]">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(251,191,36,0.34),transparent_32%),radial-gradient(circle_at_88%_20%,rgba(16,185,129,0.18),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.08)_0_1px,transparent_1px_18px)]"
+        />
+        <div className="relative grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-end sm:p-5 lg:p-6">
+          <div className="min-w-0 space-y-3">
+            <div className="flex justify-between items-center gap-2">
+              {!votingClosed && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                  Open now
+                </span>
+              )}
+              {deadline && (
+                <span className=" text-xs md:text-md text-white ml-auto">
+                  Closes {formatDeadline(deadline.deadline)}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <h1 className="max-w-2xl text-2xl font-black leading-[0.98] tracking-[-0.05em] sm:text-3xl lg:text-4xl">
+                Predict the World Cup.
+                <span className="block text-amber-300">Win 500 USD.</span>
+              </h1>
+              <div className=" flex   flex-col md:flex-row items-end justify-between gap-4">
+                <p className="mt-3 max-w-xl text-xs font-medium leading-relaxed text-white/72 sm:text-sm">
+                  Pick 2 qualifiers from each group, choose the champion, and
+                  guess the tournament total goals. Your goals pick becomes the
+                  tie-breaker if the bracket race is close.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setVotingModalOpen(true)}
+                  disabled={votingClosed}
+                  className={`w-full md:w-auto flex h-10 px-2 items-center justify-center gap-2 rounded-2xl text-xs font-black uppercase tracking-[0.14em] transition-all ${
+                    votingClosed
+                      ? "cursor-not-allowed border border-white/10 bg-white/10 text-white/45"
+                      : "bg-amber-300 text-zinc-950 shadow-[0_18px_42px_rgba(251,191,36,0.28)] hover:bg-amber-200 active:scale-[0.99]"
+                  }`}
+                >
+                  {votingClosed ? (
+                    <LockIcon className="h-4 w-4" />
+                  ) : (
+                    <TrophyIcon className="h-4 w-4" />
+                  )}
+                  {heroCtaLabel}
+                </button>
+              </div>
+            </div>
           </div>
-          <h1 className="text-md sm:text-lg lg:text-xl font-black tracking-tight leading-[1.05]">
-            Build your bracket.
-            <span className="text-muted-foreground/70">
-              {" "}
-              Call the champion.
-            </span>
-          </h1>
         </div>
       </header>
-
-      {/* Action bar */}
-      <div className="sticky top-2 z-20 sm:static">
-        <ActionBar
-          deadline={deadline}
-          countdown={countdown}
-          votingClosed={votingClosed}
-          hasExistingVote={hasExistingVote}
-          groupPickCount={groupPickCount}
-          totalGroups={totalGroups}
-          championPicked={championId != null}
-          goalsPicked={totalGoals !== null}
-          totalGoals={totalGoals}
-          onOpen={() => setVotingModalOpen(true)}
-        />
-      </div>
-
       {/* Groups section */}
       <section className="space-y-3 sm:space-y-4">
         <div className="flex items-end justify-between gap-3">
