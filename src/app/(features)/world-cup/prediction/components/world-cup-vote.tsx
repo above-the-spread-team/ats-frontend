@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { WheelPicker, WheelPickerWrapper } from "@ncdai/react-wheel-picker";
+import "@ncdai/react-wheel-picker/style.css";
 import type { WorldCupGroupResponse } from "@/type/fastapi/world-cup-vote";
 
 // ─── hooks ────────────────────────────────────────────────────────────────────
@@ -79,6 +81,14 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
+function GoalIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z" />
+    </svg>
+  );
+}
+
 // ─── TeamLogo ─────────────────────────────────────────────────────────────────
 
 export function TeamLogo({
@@ -128,14 +138,30 @@ export function TeamLogo({
 type AnimPhase = "idle" | "exit" | "enter";
 type Direction = "forward" | "backward";
 
+// Steps: 0..N-1 = groups, N = champion, N+1 = total goals
+const CHAMPION_OFFSET = 0;
+const GOALS_OFFSET = 1;
+
+// Generate 0–200 goal options for the wheel picker
+const GOALS_OPTIONS = Array.from({ length: 201 }, (_, i) => ({
+  value: i,
+  label: String(i),
+}));
+
 export interface VotingModalProps {
   open: boolean;
   onClose: () => void;
   groups: WorldCupGroupResponse[];
-  initialPicks: Record<string, number>;
+  /** Initial qualifier selections per group, 2 team IDs each */
+  initialPicks: Record<string, number[]>;
   initialChampionId: number | null;
-  hasExistingPrediction: boolean;
-  onSave: (picks: Record<string, number>, championId: number) => Promise<void>;
+  initialTotalGoals: number;
+  hasExistingVote: boolean;
+  onSave: (
+    picks: Record<string, number[]>,
+    championId: number,
+    totalGoals: number,
+  ) => Promise<void>;
 }
 
 export function VotingModal({
@@ -144,7 +170,8 @@ export function VotingModal({
   groups,
   initialPicks,
   initialChampionId,
-  hasExistingPrediction,
+  initialTotalGoals,
+  hasExistingVote,
   onSave,
 }: VotingModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -162,15 +189,21 @@ export function VotingModal({
       [...groups].sort((a, b) => a.group_letter.localeCompare(b.group_letter)),
     [groups],
   );
-  const TOTAL = sortedGroups.length + 1; // groups + 1 champion step
+
+  // TOTAL = groups + champion + goals
+  const TOTAL = sortedGroups.length + 2;
+  const CHAMPION_STEP = sortedGroups.length + CHAMPION_OFFSET;
+  const GOALS_STEP = sortedGroups.length + GOALS_OFFSET;
 
   const [displayStep, setDisplayStep] = useState(0);
   const [targetStep, setTargetStep] = useState(0);
   const [animPhase, setAnimPhase] = useState<AnimPhase>("idle");
   const [direction, setDirection] = useState<Direction>("forward");
 
-  const [picks, setPicks] = useState<Record<string, number>>({});
+  /** 2 qualifier IDs per group letter */
+  const [picks, setPicks] = useState<Record<string, number[]>>({});
   const [champId, setChampId] = useState<number | null>(null);
+  const [totalGoals, setTotalGoals] = useState<number>(100);
   const [champSearch, setChampSearch] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -193,8 +226,13 @@ export function VotingModal({
   // Init on open
   useEffect(() => {
     if (open) {
-      setPicks({ ...initialPicks });
+      const cloned: Record<string, number[]> = {};
+      for (const [k, v] of Object.entries(initialPicks)) {
+        cloned[k] = [...v];
+      }
+      setPicks(cloned);
       setChampId(initialChampionId);
+      setTotalGoals(initialTotalGoals > 0 ? initialTotalGoals : 100);
       setDisplayStep(0);
       setTargetStep(0);
       setAnimPhase("idle");
@@ -245,12 +283,25 @@ export function VotingModal({
     }
   }
 
+  /** Toggle a team in/out of the 2-slot qualifier selection for the current group */
+  function toggleQualifier(groupLetter: string, teamId: number) {
+    setPicks((prev) => {
+      const current = prev[groupLetter] ?? [];
+      if (current.includes(teamId)) {
+        // deselect
+        return { ...prev, [groupLetter]: current.filter((id) => id !== teamId) };
+      }
+      if (current.length >= 2) return prev; // already full
+      return { ...prev, [groupLetter]: [...current, teamId] };
+    });
+  }
+
   async function handleSubmit() {
     if (champId == null) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await onSave(picks, champId);
+      await onSave(picks, champId, totalGoals);
       setSubmissionState("success");
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Something went wrong.");
@@ -261,13 +312,22 @@ export function VotingModal({
 
   if (!open || !portalMounted) return null;
 
-  const isChampionStep = displayStep === TOTAL - 1;
-  const isSubmissionSuccess = isChampionStep && submissionState === "success";
-  const currentGroup = isChampionStep ? null : sortedGroups[displayStep];
+  const isChampionStep = displayStep === CHAMPION_STEP;
+  const isGoalsStep = displayStep === GOALS_STEP;
+  const isGroupStep = !isChampionStep && !isGoalsStep;
+  const isSubmissionSuccess = isGoalsStep && submissionState === "success";
+  const currentGroup = isGroupStep ? sortedGroups[displayStep] : null;
 
-  const groupPickCount = Object.keys(picks).length;
+  const groupPickCount = Object.values(picks).filter((v) => v.length === 2)
+    .length;
   const missingGroups = sortedGroups.length - groupPickCount;
-  const allPicksDone = missingGroups === 0 && champId != null;
+  const allGroupsDone = missingGroups === 0;
+  const allPicksDone = allGroupsDone && champId != null;
+
+  const currentGroupPicks = currentGroup
+    ? (picks[currentGroup.group_letter] ?? [])
+    : [];
+  const currentGroupFull = currentGroupPicks.length === 2;
 
   let animClass = "";
   if (animPhase === "exit") {
@@ -279,6 +339,15 @@ export function VotingModal({
   }
 
   const progressPct = Math.round(((displayStep + 1) / TOTAL) * 100);
+
+  let stepTitle = "";
+  if (isGroupStep && currentGroup) {
+    stepTitle = `Group ${currentGroup.group_letter} — Pick 2 qualifiers`;
+  } else if (isChampionStep) {
+    stepTitle = "🏆 Who will win the World Cup?";
+  } else {
+    stepTitle = "⚽ Predict the total goals";
+  }
 
   return createPortal(
     <>
@@ -302,9 +371,7 @@ export function VotingModal({
                 Step {displayStep + 1} of {TOTAL}
               </p>
               <p className="text-sm md:text-lg font-bold truncate">
-                {isChampionStep
-                  ? "🏆 Who will win the World Cup?"
-                  : `Group ${currentGroup?.group_letter} — Pick the winner`}
+                {stepTitle}
               </p>
             </div>
 
@@ -347,26 +414,44 @@ export function VotingModal({
                 backfaceVisibility: "hidden",
               }}
             >
-              {/* Group step */}
-              {!isChampionStep && currentGroup && (
+              {/* ── Group step: pick 2 qualifiers ── */}
+              {isGroupStep && currentGroup && (
                 <div className="px-5 pt-4 pb-2 space-y-2.5">
+                  {/* Selection badge */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Select 2 teams that advance from this group
+                    </p>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold tabular-nums ${
+                        currentGroupFull
+                          ? "bg-primary-font/15 text-primary-font"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {currentGroupPicks.length}/2
+                    </span>
+                  </div>
+
                   {currentGroup.teams.map((team) => {
-                    const isSelected =
-                      picks[currentGroup.group_letter] === team.id;
+                    const isSelected = currentGroupPicks.includes(team.id);
+                    const isDisabled = !isSelected && currentGroupFull;
                     const pct = team.prediction_percentage;
+                    const selectionIndex = currentGroupPicks.indexOf(team.id);
+
                     return (
                       <button
                         key={team.id}
                         onClick={() =>
-                          setPicks((prev) => ({
-                            ...prev,
-                            [currentGroup.group_letter]: team.id,
-                          }))
+                          toggleQualifier(currentGroup.group_letter, team.id)
                         }
+                        disabled={isDisabled}
                         className={`w-full flex flex-col gap-1.5 rounded-xl px-3 py-3 text-left transition-all duration-150 ${
                           isSelected
                             ? "bg-primary-font border border-primary-font"
-                            : "border border-border/60 hover:bg-muted/50 hover:border-border"
+                            : isDisabled
+                              ? "border border-border/30 opacity-40 cursor-not-allowed"
+                              : "border border-border/60 hover:bg-muted/50 hover:border-border"
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
@@ -382,6 +467,13 @@ export function VotingModal({
                           >
                             {team.name}
                           </span>
+
+                          {isSelected && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-[10px] font-black flex-shrink-0">
+                              {selectionIndex + 1}
+                            </span>
+                          )}
+
                           <span
                             className={`text-[11px] font-medium tabular-nums ${
                               isSelected
@@ -406,122 +498,206 @@ export function VotingModal({
                 </div>
               )}
 
-              {/* Champion step */}
-              {isChampionStep && (
+              {/* ── Champion step ── */}
+              {isChampionStep && !isSubmissionSuccess && (
                 <div className="px-5 pt-4 pb-2 space-y-3">
-                  {isSubmissionSuccess ? (
-                    <div className="flex flex-col items-center text-center px-2 pb-3">
-                      <p className="text-lg sm:text-xl font-extrabold">
-                        Thank you for your voting!
-                      </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-[28ch]">
-                        Your World Cup prediction has been submitted
-                        successfully.
-                      </p>
+                  {champId != null &&
+                    (() => {
+                      const team = allTeams.find((t) => t.id === champId);
+                      if (!team) return null;
+                      return (
+                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30">
+                          <TeamLogo
+                            src={team.logo_url}
+                            name={team.name}
+                            size={32}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs md:text-sm font-bold text-white truncate">
+                              {team.name}
+                            </p>
+                            <p className="text-xs text-white/80">
+                              Your champion pick
+                            </p>
+                          </div>
+                          <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
+                        </div>
+                      );
+                    })()}
 
-                      {champId != null && (
-                        <div className="mt-5 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30 w-full max-w-[340px]">
-                          {(() => {
+                  <input
+                    type="text"
+                    value={champSearch}
+                    onChange={(e) => setChampSearch(e.target.value)}
+                    placeholder="Search teams…"
+                    className="w-full h-9 px-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary-font/60 transition-colors"
+                  />
+
+                  <div className="space-y-0.5">
+                    {filteredTeams.map((team) => {
+                      const isSelected = champId === team.id;
+                      return (
+                        <button
+                          key={team.id}
+                          onClick={() => setChampId(team.id)}
+                          className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150 ${
+                            isSelected
+                              ? "bg-primary-font border border-primary-font"
+                              : "border border-transparent hover:bg-muted/50 hover:border-border/50"
+                          }`}
+                        >
+                          <TeamLogo
+                            src={team.logo_url}
+                            name={team.name}
+                            size={22}
+                          />
+                          <span
+                            className={`text-xs font-semibold flex-1 truncate ${
+                              isSelected ? "text-white" : "text-foreground"
+                            }`}
+                          >
+                            {team.name}
+                          </span>
+                          <span
+                            className={`text-[11px] ${
+                              isSelected
+                                ? "text-white"
+                                : "text-foreground/80"
+                            } flex-shrink-0`}
+                          >
+                            Grp {team.group_letter}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {filteredTeams.length === 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-4">
+                        No teams match &ldquo;{champSearch}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Total Goals step ── */}
+              {isGoalsStep && (
+                <div className="px-5 pt-4 pb-2 space-y-4">
+                  {isSubmissionSuccess ? (
+                    // Success state
+                    <div className="flex flex-col items-center text-center px-2 pb-3 pt-2 gap-4">
+                      <div className="w-16 h-16 rounded-full bg-primary-font/15 border-2 border-primary-font/30 flex items-center justify-center">
+                        <CheckIcon className="w-8 h-8 text-primary-font" />
+                      </div>
+                      <div>
+                        <p className="text-lg sm:text-xl font-extrabold">
+                          Prediction submitted!
+                        </p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-[28ch]">
+                          Your World Cup bracket has been saved successfully.
+                        </p>
+                      </div>
+
+                      {/* Summary chips */}
+                      <div className="w-full max-w-sm space-y-2">
+                        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-muted/60 border border-border/50">
+                          <span className="text-xs text-muted-foreground font-medium">
+                            Groups selected
+                          </span>
+                          <span className="text-xs font-bold text-foreground tabular-nums">
+                            {groupPickCount} / {sortedGroups.length}
+                          </span>
+                        </div>
+
+                        {champId != null &&
+                          (() => {
                             const team = allTeams.find((t) => t.id === champId);
                             if (!team) return null;
                             return (
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30">
                                 <TeamLogo
                                   src={team.logo_url}
                                   name={team.name}
-                                  size={40}
+                                  size={32}
                                 />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs sm:text-sm font-bold text-white truncate">
+                                  <p className="text-xs font-bold text-white truncate">
                                     {team.name}
                                   </p>
                                   <p className="text-[11px] text-white/80">
-                                    Your champion pick
+                                    Champion pick
                                   </p>
                                 </div>
                                 <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
                               </div>
                             );
                           })()}
+
+                        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-muted/60 border border-border/50">
+                          <span className="text-xs text-muted-foreground font-medium">
+                            Total goals guess
+                          </span>
+                          <span className="text-sm font-black text-foreground tabular-nums">
+                            {totalGoals}
+                          </span>
                         </div>
-                      )}
+                      </div>
                     </div>
                   ) : (
+                    // Goals picker
                     <>
-                      {champId != null &&
-                        (() => {
-                          const team = allTeams.find((t) => t.id === champId);
-                          if (!team) return null;
-                          return (
-                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-font border border-primary-font/30">
-                              <TeamLogo
-                                src={team.logo_url}
-                                name={team.name}
-                                size={32}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs md:text-sm font-bold text-white truncate">
-                                  {team.name}
-                                </p>
-                                <p className="text-xs text-white/80">
-                                  Your champion pick
-                                </p>
-                              </div>
-                              <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
-                            </div>
-                          );
-                        })()}
+                      <div className="text-center space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          How many goals will be scored in total across all
+                          group stage &amp; knockout matches?
+                        </p>
+                        <p className="text-[11px] text-muted-foreground/70">
+                          Tie-breaker — closer guess wins
+                        </p>
+                      </div>
 
-                      <input
-                        type="text"
-                        value={champSearch}
-                        onChange={(e) => setChampSearch(e.target.value)}
-                        placeholder="Search teams…"
-                        className="w-full h-9 px-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary-font/60 transition-colors"
-                      />
+                      {/* Big number display */}
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-6xl sm:text-7xl font-black tabular-nums text-foreground leading-none">
+                            {totalGoals}
+                          </span>
+                          <div className="flex flex-col items-start gap-0.5">
+                            <GoalIcon className="w-5 h-5 text-primary-font" />
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              goals
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground/70">
+                          Scroll the wheel to adjust
+                        </p>
+                      </div>
 
-                      <div className="space-y-0.5">
-                        {filteredTeams.map((team) => {
-                          const isSelected = champId === team.id;
-                          return (
-                            <button
-                              key={team.id}
-                              onClick={() => setChampId(team.id)}
-                              className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150 ${
-                                isSelected
-                                  ? "bg-primary-font border border-primary-font"
-                                  : "border border-transparent hover:bg-muted/50 hover:border-border/50"
-                              }`}
-                            >
-                              <TeamLogo
-                                src={team.logo_url}
-                                name={team.name}
-                                size={22}
-                              />
-                              <span
-                                className={`text-xs font-semibold flex-1 truncate ${
-                                  isSelected ? "text-white" : "text-foreground"
-                                }`}
-                              >
-                                {team.name}
-                              </span>
-                              <span
-                                className={`text-[11px] ${
-                                  isSelected
-                                    ? "text-white"
-                                    : "text-foreground/80"
-                                } flex-shrink-0`}
-                              >
-                                Grp {team.group_letter}
-                              </span>
-                            </button>
-                          );
-                        })}
-                        {filteredTeams.length === 0 && (
-                          <p className="text-xs text-muted-foreground text-center py-4">
-                            No teams match &ldquo;{champSearch}&rdquo;
-                          </p>
-                        )}
+                      {/* Wheel picker */}
+                      <div className="flex justify-center">
+                        <WheelPickerWrapper className="w-full max-w-[240px]">
+                          <WheelPicker<number>
+                            value={totalGoals}
+                            onValueChange={(v) => setTotalGoals(v)}
+                            options={GOALS_OPTIONS}
+                            visibleCount={8}
+                            infinite={false}
+                            classNames={{
+                              optionItem:
+                                "text-sm font-semibold text-foreground",
+                              highlightWrapper: "rounded-xl",
+                              highlightItem:
+                                "font-black text-primary-font text-base",
+                            }}
+                          />
+                        </WheelPickerWrapper>
+                      </div>
+
+                      {/* Context hint */}
+                      <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/70">
+                        <span>WC 2022: 172 goals</span>
+                        <span className="w-px h-3 bg-border" />
+                        <span>WC 2018: 169 goals</span>
                       </div>
                     </>
                   )}
@@ -536,7 +712,7 @@ export function VotingModal({
               <p className="text-xs text-red-500 text-center">{submitError}</p>
             )}
 
-            {isChampionStep ? (
+            {isGoalsStep ? (
               isSubmissionSuccess ? (
                 <button
                   onClick={onClose}
@@ -556,31 +732,44 @@ export function VotingModal({
                 >
                   {isSubmitting
                     ? "Submitting…"
-                    : !allPicksDone
-                      ? missingGroups > 0
-                        ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} still missing`
-                        : "Select a champion to submit"
-                      : hasExistingPrediction
-                        ? "Update Prediction"
-                        : "Submit Prediction"}
+                    : !allGroupsDone
+                      ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} still missing`
+                      : champId == null
+                        ? "Select a champion first"
+                        : hasExistingVote
+                          ? "Update Prediction"
+                          : "Submit Prediction"}
                 </button>
               )
-            ) : (
+            ) : isChampionStep ? (
               <button
-                onClick={() => goTo(displayStep + 1)}
-                disabled={
-                  !picks[sortedGroups[displayStep]?.group_letter ?? ""] ||
-                  animPhase !== "idle"
-                }
+                onClick={() => goTo(GOALS_STEP)}
+                disabled={champId == null || animPhase !== "idle"}
                 className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 ${
-                  picks[sortedGroups[displayStep]?.group_letter ?? ""]
+                  champId != null
                     ? "bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
                     : "bg-muted text-muted-foreground cursor-not-allowed"
                 }`}
               >
-                {displayStep === TOTAL - 2
-                  ? "Next — Pick Champion →"
-                  : "Next →"}
+                {champId == null
+                  ? "Select your champion"
+                  : "Next — Set total goals →"}
+              </button>
+            ) : (
+              <button
+                onClick={() => goTo(displayStep + 1)}
+                disabled={!currentGroupFull || animPhase !== "idle"}
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 ${
+                  currentGroupFull
+                    ? "bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
+                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                }`}
+              >
+                {!currentGroupFull
+                  ? `Pick ${2 - currentGroupPicks.length} more team${2 - currentGroupPicks.length > 1 ? "s" : ""}`
+                  : displayStep === CHAMPION_STEP - 1
+                    ? "Next — Pick Champion →"
+                    : "Next →"}
               </button>
             )}
           </div>

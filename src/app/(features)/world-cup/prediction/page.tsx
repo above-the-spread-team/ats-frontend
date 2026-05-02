@@ -5,9 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useWorldCupGroups,
   useWorldCupDeadline,
-  useMyPrediction,
-  useSubmitPrediction,
-  useUpdatePrediction,
+  useMyVote,
+  useSubmitVote,
+  useUpdateVote,
   useChampionPercentages,
 } from "@/services/fastapi/world-cup-vote";
 import type {
@@ -16,7 +16,7 @@ import type {
 } from "@/type/fastapi/world-cup-vote";
 import { VotingModal, TeamLogo, CheckIcon } from "./components/world-cup-vote";
 
-// ─── tiny inline icons (kept here so the file stays self-contained) ──────────
+// ─── tiny inline icons ────────────────────────────────────────────────────────
 
 function TrophyIcon({ className }: { className?: string }) {
   return (
@@ -67,6 +67,14 @@ function ChevronRightIcon({ className }: { className?: string }) {
   );
 }
 
+function GoalBadgeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z" />
+    </svg>
+  );
+}
+
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 function formatDeadline(iso: string) {
@@ -95,7 +103,7 @@ function useCountdown(iso: string | undefined) {
   return { d, h, m, s, urgent: d === 0 && h < 24 };
 }
 
-// ─── TeamRow (shared between group card and champion list) ───────────────────
+// ─── TeamRow ─────────────────────────────────────────────────────────────────
 
 function TeamRow({
   team,
@@ -165,7 +173,6 @@ function TeamRow({
         {pct.toFixed(1)}%
       </span>
 
-      {/* Thin underline bar — one pixel, cleaner than a full progress row */}
       <span
         aria-hidden
         className="absolute bottom-0 left-2 right-2 h-[2px] md:h-[2.5px] rounded-full bg-muted overflow-hidden"
@@ -185,10 +192,11 @@ function TeamRow({
 
 function GroupCard({
   group,
-  localPick,
+  localPicks,
 }: {
   group: WorldCupGroupResponse;
-  localPick: number | null;
+  /** Up to 2 picked team IDs for this group */
+  localPicks: number[];
 }) {
   const sorted = useMemo(
     () =>
@@ -197,6 +205,9 @@ function GroupCard({
       ),
     [group.teams],
   );
+
+  const pickCount = localPicks.length;
+
   return (
     <div className="group relative rounded-2xl bg-card border border-border/80 p-3.5 pt-3 transition-colors hover:border-border">
       <div className="flex items-center gap-2 pb-2 mb-2 border-b border-border/60">
@@ -208,6 +219,19 @@ function GroupCard({
             Group {group.group_letter}
           </p>
         </div>
+        {/* Progress indicator: 0, 1, or 2 picks */}
+        <div className="flex items-center gap-0.5 flex-shrink-0">
+          {[0, 1].map((i) => (
+            <span
+              key={i}
+              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                i < pickCount
+                  ? "bg-amber-400"
+                  : "bg-muted border border-border"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -216,7 +240,7 @@ function GroupCard({
             key={team.id}
             team={team}
             rank={i + 1}
-            isPicked={localPick === team.id}
+            isPicked={localPicks.includes(team.id)}
           />
         ))}
       </div>
@@ -224,7 +248,7 @@ function GroupCard({
   );
 }
 
-// ─── ChampionPanel (podium + full list) ──────────────────────────────────────
+// ─── ChampionPanel ───────────────────────────────────────────────────────────
 
 function PodiumSlot({
   team,
@@ -323,7 +347,6 @@ function ChampionPanel({
 
   return (
     <section className="rounded-2xl border border-border/80 bg-card overflow-hidden">
-      {/* Header strip */}
       <div className="relative px-4 py-3.5 sm:px-5 sm:py-4 border-b border-border/60 bg-gradient-to-r from-amber-400/10 via-transparent to-transparent">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center">
@@ -379,7 +402,6 @@ function ChampionPanel({
 
       {!isLoading && sorted.length > 0 && (
         <>
-          {/* Podium */}
           <div className="px-4 pt-5 pb-2 sm:px-6 sm:pt-6">
             <div className="flex items-end gap-2 sm:gap-3 md:max-w-md md:mx-auto">
               <PodiumSlot
@@ -400,7 +422,6 @@ function ChampionPanel({
             </div>
           </div>
 
-          {/* Divider */}
           {rest.length > 0 && (
             <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-2">
               <span className="h-px flex-1 bg-border" />
@@ -411,7 +432,6 @@ function ChampionPanel({
             </div>
           )}
 
-          {/* Rest list — 2 columns on md+, stacked on mobile */}
           {rest.length > 0 && (
             <div className="px-2 pb-3 sm:px-3 sm:pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-2">
               {rest.map((team, i) => (
@@ -430,39 +450,45 @@ function ChampionPanel({
   );
 }
 
-// ─── ActionBar (progress + CTA + deadline) ───────────────────────────────────
+// ─── ActionBar ───────────────────────────────────────────────────────────────
 
 function ActionBar({
   deadline,
   countdown,
   votingClosed,
-  hasExistingPrediction,
+  hasExistingVote,
   groupPickCount,
   totalGroups,
   championPicked,
+  goalsPicked,
+  totalGoals,
   onOpen,
 }: {
   deadline: { deadline: string; is_open: boolean } | undefined;
   countdown: ReturnType<typeof useCountdown>;
   votingClosed: boolean;
-  hasExistingPrediction: boolean;
+  hasExistingVote: boolean;
   groupPickCount: number;
   totalGroups: number;
   championPicked: boolean;
+  goalsPicked: boolean;
+  totalGoals: number | null;
   onOpen: () => void;
 }) {
-  const totalPicks = totalGroups + 1;
-  const donePicks = groupPickCount + (championPicked ? 1 : 0);
+  // groups + champion + goals
+  const totalPicks = totalGroups + 2;
+  const donePicks =
+    groupPickCount + (championPicked ? 1 : 0) + (goalsPicked ? 1 : 0);
   const progressPct = Math.round((donePicks / totalPicks) * 100);
   const allDone = donePicks === totalPicks;
 
   const ctaLabel = votingClosed
     ? "Voting closed"
     : allDone
-      ? hasExistingPrediction
+      ? hasExistingVote
         ? "Review & edit bracket"
         : "Review & submit"
-      : hasExistingPrediction
+      : hasExistingVote
         ? "Update your bracket"
         : donePicks === 0
           ? "Start your bracket"
@@ -470,14 +496,13 @@ function ActionBar({
 
   return (
     <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden">
-      {/* Decorative gold stripe */}
       <div
         aria-hidden
         className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80"
       />
 
       <div className="p-4 sm:p-5 space-y-3.5">
-        {/* Row 1: status chip + countdown */}
+        {/* Status + countdown */}
         <div className="flex items-center gap-2 flex-wrap">
           {votingClosed ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/25 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
@@ -518,7 +543,7 @@ function ActionBar({
           )}
         </div>
 
-        {/* Row 2: progress ring-ish + counter */}
+        {/* Progress counter */}
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
@@ -531,6 +556,12 @@ function ActionBar({
               <span className="text-xs text-muted-foreground font-medium">
                 picks locked in
               </span>
+              {goalsPicked && totalGoals !== null && (
+                <span className="inline-flex items-center gap-1 ml-auto rounded-md bg-primary-font/10 border border-primary-font/20 px-2 py-0.5 text-[11px] font-bold text-primary-font">
+                  <GoalBadgeIcon className="w-3 h-3" />
+                  {totalGoals} goals
+                </span>
+              )}
             </div>
 
             <div className="mt-2 h-1 md:h-1.5 rounded-full bg-muted overflow-hidden">
@@ -546,7 +577,7 @@ function ActionBar({
               />
             </div>
 
-            {/* Tiny per-group dots */}
+            {/* Per-group dots + champion dot + goals dot */}
             <div className="mt-2 flex flex-wrap gap-1">
               {Array.from({ length: totalGroups }).map((_, i) => (
                 <span
@@ -566,11 +597,19 @@ function ActionBar({
                 }`}
                 title="Champion pick"
               />
+              <span
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
+                  goalsPicked
+                    ? "bg-primary-font ring-2 ring-primary-font/30"
+                    : "bg-muted border border-primary-font/30"
+                }`}
+                title="Total goals guess"
+              />
             </div>
           </div>
         </div>
 
-        {/* Row 3: CTA */}
+        {/* CTA */}
         <button
           onClick={onOpen}
           disabled={votingClosed}
@@ -595,7 +634,7 @@ function ActionBar({
   );
 }
 
-// ─── skeletons ───────────────────────────────────────────────────────────────
+// ─── Skeletons ───────────────────────────────────────────────────────────────
 
 function GroupCardSkeleton() {
   return (
@@ -623,57 +662,53 @@ function GroupCardSkeleton() {
 
 export default function WorldCupPredictionPage() {
   const [votingModalOpen, setVotingModalOpen] = useState(false);
-  const [groupPicks, setGroupPicks] = useState<Record<string, number>>({});
+  /** 2 qualifier IDs per group letter */
+  const [groupPicks, setGroupPicks] = useState<Record<string, number[]>>({});
   const [championId, setChampionId] = useState<number | null>(null);
+  const [totalGoals, setTotalGoals] = useState<number | null>(null);
 
   const { data: groups, isLoading: groupsLoading } = useWorldCupGroups();
   const { data: deadline, isLoading: deadlineLoading } = useWorldCupDeadline();
-  const {
-    data: existingPrediction,
-    error: predictionError,
-  } = useMyPrediction();
+  const { data: existingVote, error: voteError } = useMyVote();
   const { data: champions, isLoading: championsLoading } =
     useChampionPercentages();
 
-  const submitMutation = useSubmitPrediction();
-  const updateMutation = useUpdatePrediction();
+  const submitMutation = useSubmitVote();
+  const updateMutation = useUpdateVote();
   const countdown = useCountdown(deadline?.deadline);
 
-  const hasExistingPrediction = !!existingPrediction && !predictionError;
-  const votingClosed =
-    !!existingPrediction?.is_locked || (!!deadline && !deadline.is_open);
+  const hasExistingVote = !!existingVote && !voteError;
+  const votingClosed = !!deadline && !deadline.is_open;
 
+  // Sync local display state from server vote
   useEffect(() => {
-    if (!existingPrediction) {
+    if (!existingVote) {
       setGroupPicks({});
       setChampionId(null);
+      setTotalGoals(null);
       return;
     }
-    const picks: Record<string, number> = {};
-    for (const gp of existingPrediction.group_predictions) {
-      if (gp.winner_team_id != null) picks[gp.group_letter] = gp.winner_team_id;
+    const picks: Record<string, number[]> = {};
+    for (const [group, ids] of Object.entries(existingVote.selections)) {
+      picks[group] = [...ids];
     }
     setGroupPicks(picks);
-    if (existingPrediction.champion_team_id != null) {
-      setChampionId(existingPrediction.champion_team_id);
-    }
-  }, [existingPrediction]);
+    setChampionId(existingVote.champion_team_id ?? null);
+    setTotalGoals(existingVote.total_goals);
+  }, [existingVote]);
 
   async function handleSave(
-    picks: Record<string, number>,
+    picks: Record<string, number[]>,
     champTeamId: number,
+    goals: number,
   ): Promise<void> {
-    if (!groups) throw new Error("Groups not loaded.");
-
     const payload = {
-      group_predictions: groups.map((g) => ({
-        group_letter: g.group_letter,
-        winner_team_id: picks[g.group_letter],
-      })),
+      selections: picks,
       champion_team_id: champTeamId,
+      total_goals: goals,
     };
 
-    if (hasExistingPrediction) {
+    if (hasExistingVote) {
       await updateMutation.mutateAsync(payload);
     } else {
       await submitMutation.mutateAsync(payload);
@@ -681,6 +716,7 @@ export default function WorldCupPredictionPage() {
 
     setGroupPicks(picks);
     setChampionId(champTeamId);
+    setTotalGoals(goals);
   }
 
   const isLoading = groupsLoading || deadlineLoading;
@@ -712,13 +748,16 @@ export default function WorldCupPredictionPage() {
     );
   }
 
-  const groupPickCount = Object.keys(groupPicks).length;
+  // Count groups with exactly 2 picks
+  const groupPickCount = Object.values(groupPicks).filter(
+    (v) => v.length === 2,
+  ).length;
   const totalGroups = groups?.length ?? 12;
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-4 sm:space-y-6">
-      {/* ── Title ── */}
-      <header className="flex ">
+      {/* Title */}
+      <header className="flex">
         <div className="space-y-1.5 min-w-0">
           <div className="flex items-center gap-2">
             <span className="h-4 w-1 rounded-full bg-amber-400" />
@@ -736,21 +775,23 @@ export default function WorldCupPredictionPage() {
         </div>
       </header>
 
-      {/* ── Action bar (sticky on mobile for quick access) ── */}
+      {/* Action bar */}
       <div className="sticky top-2 z-20 sm:static">
         <ActionBar
           deadline={deadline}
           countdown={countdown}
           votingClosed={votingClosed}
-          hasExistingPrediction={hasExistingPrediction}
+          hasExistingVote={hasExistingVote}
           groupPickCount={groupPickCount}
           totalGroups={totalGroups}
           championPicked={championId != null}
+          goalsPicked={totalGoals !== null}
+          totalGoals={totalGoals}
           onOpen={() => setVotingModalOpen(true)}
         />
       </div>
 
-      {/* ── Groups section ── */}
+      {/* Groups section */}
       <section className="space-y-3 sm:space-y-4">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -763,7 +804,7 @@ export default function WorldCupPredictionPage() {
           </div>
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground/70">
             <span className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-400" /> your pick
+              <span className="w-2 h-2 rounded-full bg-amber-400" /> your picks
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-primary-font/60" />{" "}
@@ -778,14 +819,14 @@ export default function WorldCupPredictionPage() {
               <GroupCard
                 key={group.group_letter}
                 group={group}
-                localPick={groupPicks[group.group_letter] ?? null}
+                localPicks={groupPicks[group.group_letter] ?? []}
               />
             ))}
           </div>
         )}
       </section>
 
-      {/* ── Champion podium ── */}
+      {/* Champion podium */}
       <section className="space-y-3 sm:space-y-4">
         <div>
           <h2 className="text-sm sm:text-base font-black uppercase tracking-[0.14em] leading-none">
@@ -810,7 +851,8 @@ export default function WorldCupPredictionPage() {
           groups={groups}
           initialPicks={groupPicks}
           initialChampionId={championId}
-          hasExistingPrediction={hasExistingPrediction}
+          initialTotalGoals={totalGoals ?? 100}
+          hasExistingVote={hasExistingVote}
           onSave={handleSave}
         />
       )}

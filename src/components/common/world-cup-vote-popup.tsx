@@ -13,9 +13,9 @@ import { Button } from "@/components/ui/button";
 import {
   useWorldCupDeadline,
   useWorldCupGroups,
-  useMyPrediction,
-  useSubmitPrediction,
-  useUpdatePrediction,
+  useMyVote,
+  useSubmitVote,
+  useUpdateVote,
 } from "@/services/fastapi/world-cup-vote";
 import { VotingModal } from "@/app/(features)/world-cup/prediction/components/world-cup-vote";
 
@@ -45,27 +45,26 @@ export default function WorldCupVotePopup() {
 
   const { data: deadline } = useWorldCupDeadline();
   const { data: groups } = useWorldCupGroups();
-  const { data: existingPrediction, error: predictionError } =
-    useMyPrediction(votingOpen);
+  const { data: existingVote, error: voteError } = useMyVote(votingOpen);
 
-  const submitMutation = useSubmitPrediction();
-  const updateMutation = useUpdatePrediction();
+  const submitMutation = useSubmitVote();
+  const updateMutation = useUpdateVote();
 
-  const hasExistingPrediction = !!existingPrediction && !predictionError;
+  const hasExistingVote = !!existingVote && !voteError;
 
-  const initialPicks = useMemo(() => {
-    if (!existingPrediction) return {};
-    const picks: Record<string, number> = {};
-    for (const gp of existingPrediction.group_predictions) {
-      if (gp.winner_team_id != null) picks[gp.group_letter] = gp.winner_team_id;
+  const initialPicks = useMemo((): Record<string, number[]> => {
+    if (!existingVote) return {};
+    const picks: Record<string, number[]> = {};
+    for (const [group, ids] of Object.entries(existingVote.selections)) {
+      picks[group] = [...ids];
     }
     return picks;
-  }, [existingPrediction]);
+  }, [existingVote]);
 
   useEffect(() => {
     if (!deadline) return;
     if (!deadline.is_open) return;
-    if (deadline.your_prediction_exists) return;
+    if (deadline.your_vote_exists) return;
     const dismissedAt = localStorage.getItem(DISMISSED_KEY);
     if (dismissedAt && Date.now() - Number(dismissedAt) < COOLDOWN_MS) return;
     if (teaserOpen) return;
@@ -98,20 +97,17 @@ export default function WorldCupVotePopup() {
   }
 
   async function handleSave(
-    picks: Record<string, number>,
+    picks: Record<string, number[]>,
     champTeamId: number,
+    totalGoals: number,
   ): Promise<void> {
-    if (!groups) throw new Error("Groups not loaded.");
-
     const payload = {
-      group_predictions: groups.map((g) => ({
-        group_letter: g.group_letter,
-        winner_team_id: picks[g.group_letter],
-      })),
+      selections: picks,
       champion_team_id: champTeamId,
+      total_goals: totalGoals,
     };
 
-    if (hasExistingPrediction) {
+    if (hasExistingVote) {
       await updateMutation.mutateAsync(payload);
     } else {
       await submitMutation.mutateAsync(payload);
@@ -149,7 +145,8 @@ export default function WorldCupVotePopup() {
                   Predict the World Cup.
                 </DialogTitle>
                 <DialogDescription className="text-sm sm:text-base text-white/85">
-                  Pick group winners and the champion before kickoff.
+                  Pick 2 qualifiers from each group, choose a champion, and
+                  guess the total goals.
                   {deadline?.deadline && (
                     <span className="mt-1 block text-white font-semibold">
                       Closes {formatDeadline(deadline.deadline)}
@@ -159,7 +156,7 @@ export default function WorldCupVotePopup() {
               </DialogHeader>
 
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
-                <Button onClick={handlePredictNow} className="sm:min-w-36 ">
+                <Button onClick={handlePredictNow} className="sm:min-w-36">
                   Predict Now
                 </Button>
                 <Button
@@ -182,8 +179,9 @@ export default function WorldCupVotePopup() {
           onClose={() => setVotingOpen(false)}
           groups={groups}
           initialPicks={initialPicks}
-          initialChampionId={existingPrediction?.champion_team_id ?? null}
-          hasExistingPrediction={hasExistingPrediction}
+          initialChampionId={existingVote?.champion_team_id ?? null}
+          initialTotalGoals={existingVote?.total_goals ?? 100}
+          hasExistingVote={hasExistingVote}
           onSave={handleSave}
         />
       )}

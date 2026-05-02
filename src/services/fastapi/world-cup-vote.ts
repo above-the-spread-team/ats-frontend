@@ -4,9 +4,9 @@ import type {
   WorldCupGroupResponse,
   WorldCupTeamWithPercentage,
   WorldCupDeadlineResponse,
-  WorldCupPredictionCreate,
-  WorldCupPredictionUpdate,
-  WorldCupPredictionResponse,
+  WorldCupVoteCreate,
+  WorldCupVoteUpdate,
+  WorldCupVoteResponse,
   WorldCupVoteError,
 } from "@/type/fastapi/world-cup-vote";
 import { getAuthHeader } from "./token-storage";
@@ -101,7 +101,7 @@ export async function fetchChampionPercentages(): Promise<
   return handleResponse<WorldCupTeamWithPercentage[]>(res);
 }
 
-/** GET /api/v1/world-cup/deadline — requires auth */
+/** GET /api/v1/world-cup/deadline — optional auth */
 export async function fetchDeadlineStatus(): Promise<WorldCupDeadlineResponse> {
   const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/deadline`, {
     ...authFetchInit(),
@@ -109,49 +109,48 @@ export async function fetchDeadlineStatus(): Promise<WorldCupDeadlineResponse> {
   return handleResponse<WorldCupDeadlineResponse>(res);
 }
 
-/** GET /api/v1/world-cup/prediction/me — requires auth */
-export async function fetchMyPrediction(): Promise<WorldCupPredictionResponse> {
-  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
+/** GET /api/v1/world-cup/vote/me — optional auth */
+export async function fetchMyVote(): Promise<WorldCupVoteResponse> {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/vote/me`, {
     ...authFetchInit(),
   });
-  return handleResponse<WorldCupPredictionResponse>(res);
+  return handleResponse<WorldCupVoteResponse>(res);
 }
 
-/** POST /api/v1/world-cup/prediction — requires auth */
-export async function submitPrediction(
-  data: WorldCupPredictionCreate,
-): Promise<WorldCupPredictionResponse> {
-  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction`, {
+/** POST /api/v1/world-cup/vote — optional auth */
+export async function submitVote(
+  data: WorldCupVoteCreate,
+): Promise<WorldCupVoteResponse> {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/vote`, {
     method: "POST",
     ...authFetchInit(true),
     body: JSON.stringify(data),
   });
   captureWcSession(res);
-  const result = await handleResponse<WorldCupPredictionResponse>(res);
-  // Logged-in submission: backend merged the anonymous prediction, clear stale session ID
+  const result = await handleResponse<WorldCupVoteResponse>(res);
+  // Logged-in submission: backend merged the anonymous vote, clear stale session ID
   if (getAuthHeader()) clearWcSessionId();
   return result;
 }
 
-/** PUT /api/v1/world-cup/prediction/me — requires auth */
-export async function updatePrediction(
-  data: WorldCupPredictionUpdate,
-): Promise<WorldCupPredictionResponse> {
-  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
+/** PUT /api/v1/world-cup/vote/me — optional auth */
+export async function updateVote(
+  data: WorldCupVoteUpdate,
+): Promise<WorldCupVoteResponse> {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/vote/me`, {
     method: "PUT",
     ...authFetchInit(true),
     body: JSON.stringify(data),
   });
   captureWcSession(res);
-  const result = await handleResponse<WorldCupPredictionResponse>(res);
-  // Logged-in submission: backend merged the anonymous prediction, clear stale session ID
+  const result = await handleResponse<WorldCupVoteResponse>(res);
   if (getAuthHeader()) clearWcSessionId();
   return result;
 }
 
-/** DELETE /api/v1/world-cup/prediction/me — requires auth */
-export async function deleteMyPrediction(): Promise<void> {
-  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/prediction/me`, {
+/** DELETE /api/v1/world-cup/vote/me — optional auth */
+export async function deleteMyVote(): Promise<void> {
+  const res = await backendFetch(`${BACKEND_URL}/api/v1/world-cup/vote/me`, {
     method: "DELETE",
     ...authFetchInit(),
   });
@@ -196,10 +195,10 @@ export function useWorldCupDeadline(enabled = true) {
   });
 }
 
-export function useMyPrediction(enabled = true) {
-  return useQuery<WorldCupPredictionResponse, WorldCupVoteError>({
-    queryKey: ["world-cup", "prediction", "me"],
-    queryFn: fetchMyPrediction,
+export function useMyVote(enabled = true) {
+  return useQuery<WorldCupVoteResponse, WorldCupVoteError>({
+    queryKey: ["world-cup", "vote", "me"],
+    queryFn: fetchMyVote,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: "always",
@@ -208,16 +207,12 @@ export function useMyPrediction(enabled = true) {
   });
 }
 
-export function useSubmitPrediction() {
+export function useSubmitVote() {
   const queryClient = useQueryClient();
-  return useMutation<
-    WorldCupPredictionResponse,
-    Error,
-    WorldCupPredictionCreate
-  >({
-    mutationFn: submitPrediction,
+  return useMutation<WorldCupVoteResponse, Error, WorldCupVoteCreate>({
+    mutationFn: submitVote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "vote"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "groups"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "champions"] });
@@ -225,16 +220,12 @@ export function useSubmitPrediction() {
   });
 }
 
-export function useUpdatePrediction() {
+export function useUpdateVote() {
   const queryClient = useQueryClient();
-  return useMutation<
-    WorldCupPredictionResponse,
-    Error,
-    WorldCupPredictionUpdate
-  >({
-    mutationFn: updatePrediction,
+  return useMutation<WorldCupVoteResponse, Error, WorldCupVoteUpdate>({
+    mutationFn: updateVote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "vote"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "groups"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "champions"] });
@@ -242,12 +233,12 @@ export function useUpdatePrediction() {
   });
 }
 
-export function useDeletePrediction() {
+export function useDeleteVote() {
   const queryClient = useQueryClient();
   return useMutation<void, Error, void>({
-    mutationFn: deleteMyPrediction,
+    mutationFn: deleteMyVote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["world-cup", "prediction"] });
+      queryClient.invalidateQueries({ queryKey: ["world-cup", "vote"] });
       queryClient.invalidateQueries({ queryKey: ["world-cup", "deadline"] });
     },
   });
