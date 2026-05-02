@@ -523,7 +523,7 @@ export default function WorldCupPredictionPage() {
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(251,191,36,0.34),transparent_32%),radial-gradient(circle_at_88%_20%,rgba(16,185,129,0.18),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.08)_0_1px,transparent_1px_18px)]"
         />
-        <div className="relative grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-end sm:p-5 lg:p-6">
+        <div className="relative grid gap-4 p-3 sm:grid-cols-[1fr_auto] sm:items-end md:p-4 ">
           <div className="min-w-0 space-y-3">
             <div className="flex justify-between items-center gap-2">
               {!votingClosed && (
@@ -533,7 +533,7 @@ export default function WorldCupPredictionPage() {
                 </span>
               )}
               {deadline && (
-                <span className=" text-xs md:text-md text-white ml-auto">
+                <span className=" text-sm md:text-md font-medium text-white ml-auto">
                   Closes {formatDeadline(deadline.deadline)}
                 </span>
               )}

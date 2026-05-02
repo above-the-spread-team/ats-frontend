@@ -82,8 +82,8 @@ export default function Promotion() {
               <h2 className="text-white font-black text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-none tracking-tight">
                 FIFA World Cup
               </h2>
-              <p className="text-yellow-400 font-black text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-none tracking-tight">
-                2026 ™
+              <p className="text-yellow-400 font-black text-xl  md:text-3xl lg:text-4xl leading-none tracking-tight">
+                Chance to win 500 USD.
               </p>
 
               {/* Host countries */}
