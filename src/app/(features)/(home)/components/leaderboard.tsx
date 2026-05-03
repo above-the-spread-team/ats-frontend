@@ -65,7 +65,7 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
             <p className="text-sm md:text-base font-semibold text-foreground">
               Be the first on the board — win{" "}
               <span className="text-amber-500 dark:text-amber-400">
-                $1,000 USD
+                $1000 USD
               </span>
             </p>
             <p className="text-xs md:text-sm font-medium text-muted-foreground leading-relaxed">
@@ -209,7 +209,7 @@ export default function Leaderboard() {
       </div>
 
       <div className="bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4">
+        <div className="py-2 md:py-3 px-2 md:px-3">
           <LeaderboardTable timeRange={timeRange} />
         </div>
       </div>
