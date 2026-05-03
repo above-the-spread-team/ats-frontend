@@ -5,6 +5,7 @@ import type {
   PredictionHistoryResponse,
   LeaderboardResponse,
   MonthlyWinnerResponse,
+  WorldCup2026WinnerResponse,
   LeaderboardTimeRange,
   PredictionError,
 } from "@/type/fastapi/predictions";
@@ -164,6 +165,66 @@ export function useLeaderboardWinners() {
     queryKey: ["leaderboard", "winners"],
     queryFn: fetchLeaderboardWinners,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// World Cup 2026 leaderboard & prize winner
+// TODO: remove this section after World Cup 2026 ends.
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /api/v1/leaderboard?period=world_cup_2026
+ * Live leaderboard for the World Cup 2026 window (Jun 11 – Jul 20, 2026 UTC).
+ * Convenience wrapper around fetchLeaderboard — no auth required (user_entry
+ * is populated when the caller is authenticated).
+ */
+export async function fetchWorldCupLeaderboard(): Promise<LeaderboardResponse> {
+  return fetchLeaderboard("world_cup_2026");
+}
+
+/**
+ * GET /api/v1/leaderboard/world-cup-2026/winner
+ * Returns the captured prize winner after the tournament ends.
+ * Throws with message "World Cup 2026 winner not yet captured" (HTTP 404)
+ * until an admin calls POST /api/v1/leaderboard/world-cup-2026/capture.
+ */
+export async function fetchWorldCup2026Winner(): Promise<WorldCup2026WinnerResponse> {
+  const res = await fetch(
+    `${BACKEND_URL}/api/v1/leaderboard/world-cup-2026/winner`,
+    authFetchInit(),
+  );
+  return handleResponse<WorldCup2026WinnerResponse>(res);
+}
+
+/**
+ * Live World Cup 2026 leaderboard (top 10 + authenticated user's entry).
+ * Refreshes every 5 minutes — same cadence as other leaderboard hooks.
+ * TODO: remove after World Cup 2026 ends.
+ */
+export function useWorldCupLeaderboard() {
+  return useQuery<LeaderboardResponse, PredictionError>({
+    queryKey: ["leaderboard", "world_cup_2026"],
+    queryFn: fetchWorldCupLeaderboard,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Captured prize winner for the World Cup 2026 period.
+ * Returns undefined while loading, null if the query errors (incl. 404 — not yet captured).
+ * Poll `enabled` from the caller once the tournament is over.
+ * TODO: remove after World Cup 2026 ends.
+ */
+export function useWorldCup2026Winner(enabled = true) {
+  return useQuery<WorldCup2026WinnerResponse, PredictionError>({
+    queryKey: ["leaderboard", "world-cup-2026", "winner"],
+    queryFn: fetchWorldCup2026Winner,
+    enabled,
+    staleTime: Infinity,     // captured once by admin — never changes
+    retry: false,            // 404 means not captured yet; don't hammer the endpoint
     refetchOnWindowFocus: false,
   });
 }

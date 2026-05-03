@@ -62,7 +62,24 @@ export interface MonthlyWinnerResponse {
   captured_at: string;     // ISO 8601
 }
 
-export type LeaderboardTimeRange = "overall" | "monthly" | "last_month";
+/**
+ * Captured prize winner for the World Cup 2026 period.
+ * GET /api/v1/leaderboard/world-cup-2026/winner
+ * Returns 404 until an admin calls POST /api/v1/leaderboard/world-cup-2026/capture.
+ * TODO: remove this type after World Cup 2026 ends.
+ */
+export interface WorldCup2026WinnerResponse {
+  user_id: number | null;  // null if the user account was deleted after capture
+  username: string;
+  avatar_url: string | null;
+  accuracy: number;        // 0–100 raw percentage
+  total_games: number;
+  correct_predictions: number;
+  captured_at: string;     // ISO 8601
+}
+
+/** "world_cup_2026" maps to the Jun 11 – Jul 20 2026 (UTC) window. TODO: remove after WC 2026 ends. */
+export type LeaderboardTimeRange = "overall" | "monthly" | "last_month" | "world_cup_2026";
 
 export interface PredictionError {
   detail: string;
