@@ -208,7 +208,7 @@ export default function News() {
                               ? `${article.comment_count} comments`
                               : "No comments yet"}
                           </div>
-                          <span className="text-primary font-semibold hover:underline">
+                          <span className="text-primary-font font-semibold hover:underline">
                             Read →
                           </span>
                         </div>
