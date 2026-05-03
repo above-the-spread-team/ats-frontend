@@ -1,4 +1,4 @@
-import { Arimo } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -86,8 +86,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const ff = Arimo({
-  weight: ["400", "500", "600", "700"],
+const ff = Geist({
   variable: "--font-alan-sans",
   subsets: ["latin"],
 });
