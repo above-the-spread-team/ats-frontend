@@ -169,11 +169,7 @@ export default function HomeRanking() {
                 </div>
                 {/* Points */}
                 <div className="col-span-3 flex items-center justify-end gap-1">
-                  <span
-                    className={`font-bold text-xs md:text-sm ${
-                      isTopThree ? "text-primary" : "text-foreground"
-                    }`}
-                  >
+                  <span className="font-bold text-xs md:text-sm text-foreground">
                     {standing.points}
                   </span>
                   <span className="text-xs text-muted-foreground ">pts</span>
