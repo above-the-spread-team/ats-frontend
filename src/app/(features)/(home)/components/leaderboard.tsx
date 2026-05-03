@@ -110,9 +110,9 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
   const remaining = data.top_10.length - 3;
   const currentUserId = data.user_entry?.user_id ?? null;
   // True when the authenticated user is already visible in the top-10 list
-  const currentUserInTop10 =
-    currentUserId !== null &&
-    data.top_10.some((e) => e.user_id === currentUserId);
+  // const currentUserInTop10 =
+  //   currentUserId !== null &&
+  //   data.top_10.some((e) => e.user_id === currentUserId);
 
   return (
     <div>
