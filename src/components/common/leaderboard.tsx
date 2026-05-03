@@ -106,7 +106,7 @@ export function LeaderboardRow({
         >
           {entry.username}
           {isCurrentUser && (
-            <span className="ml-1 text-[10px] text-primary-font/70">(you)</span>
+            <span className="ml-1 text-[10px] text-primary-font">(you)</span>
           )}
         </span>
       </div>

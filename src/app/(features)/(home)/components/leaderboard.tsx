@@ -111,36 +111,72 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
 
   const visible = showAll ? data.top_10 : data.top_10.slice(0, 3);
   const remaining = data.top_10.length - 3;
+  const currentUserId = data.user_entry?.user_id ?? null;
+  // True when the authenticated user is already visible in the top-10 list
+  const currentUserInTop10 =
+    currentUserId !== null &&
+    data.top_10.some((e) => e.user_id === currentUserId);
 
   return (
     <div>
       <ColumnHeaders />
       <div className="space-y-1">
         {visible.map((entry) => (
-          <LeaderboardRow key={entry.user_id} entry={entry} />
+          <LeaderboardRow
+            key={entry.user_id}
+            entry={entry}
+            isCurrentUser={entry.user_id === currentUserId}
+          />
         ))}
       </div>
       {data.top_10.length > 3 && (
         <button
           onClick={() => setShowAll((v) => !v)}
-          className="mt-3 w-full py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+          className="mt-2 w-full py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
         >
           {showAll ? (
             <>
               Show less
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.5 15.75l7.5-7.5 7.5 7.5"
+                />
               </svg>
             </>
           ) : (
             <>
               Show {remaining} more
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
               </svg>
             </>
           )}
         </button>
+      )}
+
+      {/* Authenticated user's rank — always shown, even when already in top 10 */}
+      {data.user_entry && (
+        <div className="border-t pt-2 border-border/80">
+          <LeaderboardRow entry={data.user_entry} isCurrentUser />
+        </div>
       )}
     </div>
   );
