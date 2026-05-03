@@ -9,6 +9,8 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { Skeleton } from "@/components/ui/skeleton";
+import HomeFailToLoad from "./home-fail-to-load";
 import { useNews } from "@/services/fastapi/news";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,21 +55,50 @@ export function ScrollNews() {
   if (isLoading) {
     return (
       <div className="relative w-full">
-        <Card className="rounded-none">
-          <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
-            <span className="text-muted-foreground">Loading news...</span>
-          </CardContent>
-        </Card>
+        <div className="p-1 w-full">
+          <Card className="rounded-none overflow-hidden">
+            <CardContent className="p-0 relative aspect-[4/3] overflow-hidden">
+              {/* Main image area */}
+              <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+              {/* Tag badge */}
+              <div className="absolute top-2 left-4 z-20">
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              {/* Bottom overlay */}
+              <div className="absolute inset-x-0 bottom-0 p-6 space-y-2">
+                <Skeleton className="h-5 w-4/5 rounded" />
+                <Skeleton className="h-5 w-3/5 rounded" />
+                <div className="flex items-center gap-2 mt-2">
+                  <Skeleton className="h-3 w-20 rounded" />
+                  <Skeleton className="h-3 w-3 rounded-full" />
+                  <Skeleton className="h-3 w-24 rounded" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        {/* Dots skeleton */}
+        <div className="flex justify-center gap-2 mt-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              className={`h-2 rounded-full ${i === 0 ? "w-8" : "w-2"}`}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="relative w-full ">
-        <Card className="rounded-none">
-          <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
-            <span className="text-destructive">Failed to load news</span>
+      <div className="relative w-full">
+        <Card className="rounded-none overflow-hidden">
+          <CardContent className="p-0 relative aspect-[4/3] overflow-hidden bg-muted/40">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/60 via-muted/30 to-muted/60" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <HomeFailToLoad message="Failed to load news" />
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -9,6 +9,7 @@ import {
   LeaderboardRow,
   LeaderboardSkeleton,
 } from "@/components/common/leaderboard";
+import HomeFailToLoad from "./home-fail-to-load";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -46,11 +47,7 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
   if (isLoading) return <LeaderboardSkeleton rows={3} />;
 
   if (error || !data) {
-    return (
-      <p className="py-12 text-center text-sm text-muted-foreground">
-        Could not load leaderboard. Please try again.
-      </p>
-    );
+    return <HomeFailToLoad message="Could not load leaderboard" />;
   }
 
   if (data.top_10.length === 0) {

@@ -9,6 +9,7 @@ import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { Button } from "@/components/ui/button";
 import VoteColor from "@/components/common/vote-color";
 import { VotingBar } from "@/components/common/voting-bar";
+import HomeFailToLoad from "./home-fail-to-load";
 
 // ── constants ──────────────────────────────────────────────────────────────
 
@@ -273,10 +274,8 @@ export default function VoteResult() {
       {isLoading ? (
         <LoadingSkeleton />
       ) : error ? (
-        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm p-6 text-center">
-          <p className="text-sm md:text-base text-muted-foreground">
-            Failed to load predictions
-          </p>
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+          <HomeFailToLoad message="Failed to load predictions" />
         </div>
       ) : !data || data.length === 0 ? (
         <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm p-10 text-center">

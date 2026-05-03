@@ -5,6 +5,7 @@ import { useNews } from "@/services/fastapi/news";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
+import HomeFailToLoad from "./home-fail-to-load";
 
 
 export default function HomeNews() {
@@ -47,10 +48,8 @@ export default function HomeNews() {
         >
           <h2 className="text-lg md:text-xl font-bold">Latest News</h2>
         </Link>
-        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm p-4">
-          <p className="text-sm text-muted-foreground text-center">
-            Failed to load news
-          </p>
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+          <HomeFailToLoad message="Failed to load news" />
         </div>
       </div>
     );
