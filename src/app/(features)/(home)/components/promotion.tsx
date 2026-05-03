@@ -48,13 +48,13 @@ export default function Promotion() {
       href="/world-cup/prediction"
       className="block group focus:outline-none"
     >
-      <div className="relative w-full overflow-hidden rounded-xl md:rounded-2xl cursor-pointer min-h-[240px] sm:min-h-[280px] md:min-h-[300px]">
+      <div className="relative w-full overflow-hidden rounded-xl md:rounded-2xl cursor-pointer ">
         {/* Background image */}
         <Image
           src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1400&q=80&auto=format&fit=crop"
           alt="FIFA World Cup 2026 stadium"
           fill
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover  transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
           sizes=" (max-width: 768px) 200px, 600px"
         />
@@ -68,9 +68,9 @@ export default function Promotion() {
         <div className="absolute right-10 bottom-0 w-40 h-40 rounded-full bg-red-500/10 blur-2xl pointer-events-none" />
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 md:p-8 min-h-[240px] sm:min-h-[280px] md:min-h-[300px]">
+        <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 md:p-8  ">
           {/* Top row: title + CTA */}
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 ">
             <div className="min-w-0">
               {/* Badge */}
               <span className="inline-flex items-center gap-1.5 bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest px-2 sm:px-2.5 py-1 rounded-full mb-2 sm:mb-3">
@@ -83,7 +83,7 @@ export default function Promotion() {
                 FIFA World Cup
               </h2>
               <p className="text-yellow-400 font-black text-xl  md:text-3xl lg:text-4xl leading-none tracking-tight">
-                Chance to win 500 USD.
+                Total Prize Pool 1,500 USD
               </p>
 
               {/* Host countries */}

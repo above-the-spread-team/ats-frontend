@@ -530,10 +530,13 @@ function VotePopupShell({
         <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <VoteIcon className="w-5 h-5 text-primary-font flex-shrink-0" />
-            Cast Your Vote
+            Vote &amp; Climb the Leaderboard
           </DialogTitle>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Pick the winner for today&apos;s matches
+            Every correct pick moves you up — top predictor wins{" "}
+            <span className="font-semibold text-amber-500 dark:text-amber-400">
+              $1,000 USD
+            </span>
           </p>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 min-h-0">
