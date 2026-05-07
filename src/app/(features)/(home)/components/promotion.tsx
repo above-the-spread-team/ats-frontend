@@ -48,7 +48,7 @@ export default function Promotion() {
         src="https://images.unsplash.com/photo-1637203722998-6b3dc1df589e?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         alt="FIFA World Cup 2026"
         fill
-        className="absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105"
+        className="absolute inset-0 object-cover object-bottom transition-transform duration-700 group-hover:scale-105"
         loading="lazy"
         sizes="(max-width: 768px) 100vw, 896px"
       />

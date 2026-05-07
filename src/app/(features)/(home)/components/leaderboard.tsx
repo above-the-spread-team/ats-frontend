@@ -63,7 +63,7 @@ function LeaderboardTable({ timeRange }: { timeRange: LeaderboardTimeRange }) {
             <p className="text-sm md:text-base font-semibold text-foreground">
               Be the first on the board — win{" "}
               <span className="text-amber-500 dark:text-amber-400">
-                $500 USD
+                $1000 USD
               </span>
             </p>
             <p className="text-xs md:text-sm font-medium text-muted-foreground leading-relaxed">
