@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
 import HomeFailToLoad from "./home-fail-to-load";
 
-
 export default function HomeNews() {
   const { data: newsData, isLoading, error } = useNews(1, 8);
 
@@ -83,7 +82,7 @@ export default function HomeNews() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Tag name={getFirstTag(article)} variant="small" />
-                      <h3 className="font-semibold line-clamp-1 text-sm md:text-base text-foreground min-w-0 flex-1 group-hover:text-primary transition-colors">
+                      <h3 className="font-semibold line-clamp-1 text-sm md:text-base text-foreground min-w-0 flex-1 group-hover:text-primary-font transition-colors">
                         {article.title}
                       </h3>
                     </div>
