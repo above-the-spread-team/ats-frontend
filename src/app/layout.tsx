@@ -35,23 +35,21 @@ export const metadata: Metadata = {
   authors: [{ name: "Above The Spread" }],
   creator: "Above The Spread",
   publisher: "Above The Spread",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://abovethespread.com",
-  ),
+  metadataBase: new URL("https://www.abovethespread.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "/",
+    url: "https://www.abovethespread.com",
     siteName: "Above The Spread",
     title: "Above The Spread | Football Stats, Fixtures & Community",
     description:
       "Live fixtures, deep-dive stats, match predictions, and football discussions — all in one place. Follow the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and European cups.",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://www.abovethespread.com/images/og.jpeg",
         width: 1200,
         height: 630,
         alt: "Above The Spread — Football Stats & Community",
@@ -63,7 +61,7 @@ export const metadata: Metadata = {
     title: "Above The Spread | Football Stats, Fixtures & Community",
     description:
       "Live fixtures, deep-dive stats, match predictions, and football discussions — all in one place.",
-    images: ["/og-image.png"],
+    images: ["https://www.abovethespread.com/images/og.jpeg"],
     creator: "@abovethespread",
   },
   robots: {
