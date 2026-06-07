@@ -1,4 +1,4 @@
-import { Geist } from "next/font/google";
+import { Sora } from "next/font/google";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -84,9 +84,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const ff = Geist({
-  variable: "--font-alan-sans",
+const sora = Sora({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
+  variable: "--font-sora",
 });
 
 export default function RootLayout({
@@ -112,7 +113,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={ff.className}>
+      <body className={`${sora.className} ${sora.variable} font-normal`}>
         <PlausibleProvider
           src={
             process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ??

@@ -61,7 +61,7 @@ export default function Fixtures() {
     data: lastData,
     isLoading,
     error: queryError,
-  } = useFixturesNextLast("next", MAX_FIXTURES, 1);
+  } = useFixturesNextLast("last", MAX_FIXTURES, 2);
 
   // Merge: all live first, then last to fill up to MAX_FIXTURES (15). If live ≥ 15, show only live.
   const fixtures = useMemo(() => {
