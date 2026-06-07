@@ -131,7 +131,7 @@ async function fetchFixture(fixtureId: number): Promise<FixturesApiResponse> {
   return data;
 }
 
-async function fetchFixturesNextLast(
+async function fetchFixturesNextLastSingle(
   type: "next" | "last",
   count: number,
   leagueId?: number,
@@ -157,16 +157,50 @@ async function fetchFixturesNextLast(
   return data;
 }
 
+async function fetchFixturesNextLast(
+  type: "next" | "last",
+  count: number,
+  leagueId?: number | number[],
+): Promise<FixturesApiResponse> {
+  const ids = Array.isArray(leagueId) ? leagueId : leagueId ? [leagueId] : [undefined];
+
+  if (ids.length <= 1) {
+    return fetchFixturesNextLastSingle(type, count, ids[0]);
+  }
+
+  const results = await Promise.all(
+    ids.map((id) => fetchFixturesNextLastSingle(type, count, id)),
+  );
+
+  const allFixtures = results.flatMap((r) => r.response ?? []);
+  const sorted = allFixtures.sort(
+    (a, b) =>
+      new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
+  );
+
+  // "last": keep the most recent `count` items (tail of ascending sort)
+  // "next": keep the earliest `count` items (head of ascending sort)
+  const sliced =
+    type === "last" ? sorted.slice(-count) : sorted.slice(0, count);
+
+  return {
+    ...results[0],
+    response: sliced,
+    results: sliced.length,
+  };
+}
+
 export function useFixturesNextLast(
   type: "next" | "last",
   count: number,
-  leagueId?: number,
+  leagueId?: number | number[],
 ) {
+  const leagueKey = Array.isArray(leagueId) ? leagueId.join(",") : leagueId;
   return useQuery({
-    queryKey: ["fixtures-next-last", type, count, leagueId],
+    queryKey: ["fixtures-next-last", type, count, leagueKey],
     queryFn: () => fetchFixturesNextLast(type, count, leagueId),
-    staleTime: 5 * 60 * 1000, // 5 minutes - past fixtures don't change often
-    refetchInterval: false, // Don't auto-refetch past fixtures
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: false,
     refetchOnWindowFocus: false,
   });
 }

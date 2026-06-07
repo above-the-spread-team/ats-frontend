@@ -61,7 +61,7 @@ export default function Fixtures() {
     data: lastData,
     isLoading,
     error: queryError,
-  } = useFixturesNextLast("last", MAX_FIXTURES, 2);
+  } = useFixturesNextLast("last", MAX_FIXTURES, [1, 2]);
 
   // Merge: all live first, then last to fill up to MAX_FIXTURES (15). If live ≥ 15, show only live.
   const fixtures = useMemo(() => {
@@ -70,7 +70,11 @@ export default function Fixtures() {
     const liveIds = new Set(live.map((f) => f.fixture.id));
     const lastExcludingLive = last.filter((f) => !liveIds.has(f.fixture.id));
     const restSlots = Math.max(0, MAX_FIXTURES - live.length);
-    return [...live, ...lastExcludingLive.slice(0, restSlots)];
+    const merged = [...live, ...lastExcludingLive.slice(0, restSlots)];
+    return merged.sort(
+      (a, b) =>
+        new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
+    );
   }, [liveData?.response, lastData?.response]);
 
   const error =
