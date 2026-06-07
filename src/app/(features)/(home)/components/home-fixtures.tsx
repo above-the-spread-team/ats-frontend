@@ -56,12 +56,12 @@ export default function Fixtures() {
   // Live fixtures (all leagues); best-effort, do not block on error
   const { data: liveData } = useFixturesLive({ enabled: true });
 
-  // Last 15 for league 2 (UEFA Champions League); backbone for the section
+  // Last 15 for league 1 (World Cup); backbone for the section
   const {
     data: lastData,
     isLoading,
     error: queryError,
-  } = useFixturesNextLast("last", MAX_FIXTURES, 2);
+  } = useFixturesNextLast("next", MAX_FIXTURES, 1);
 
   // Merge: all live first, then last to fill up to MAX_FIXTURES (15). If live ≥ 15, show only live.
   const fixtures = useMemo(() => {

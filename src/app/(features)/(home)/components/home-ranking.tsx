@@ -16,7 +16,7 @@ export default function HomeRanking() {
   const [error, setError] = useState<string | null>(null);
   const [leagueName, setLeagueName] = useState<string>("");
 
-  const leagueId = 2;
+  const leagueId = 1;
   const season = calculateSeason(leagueId);
 
   useEffect(() => {
