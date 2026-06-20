@@ -110,7 +110,15 @@ export default function NewsContentRenderer({
   const parsed = parseNewsContent(content);
 
   if (!parsed) {
-    // Legacy markdown content — render as plain paragraphs
+    // Legacy plain-text content — render as paragraphs (not raw JSON)
+    if (content.trimStart().startsWith("{")) {
+      return (
+        <p className="leading-7 text-base text-muted-foreground">
+          Unable to display this article. The content format is not supported.
+        </p>
+      );
+    }
+
     return (
       <div className="space-y-3">
         {content.split("\n\n").map((block, i) => (
