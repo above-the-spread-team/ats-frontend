@@ -363,12 +363,15 @@ export default function News() {
           className="w-full"
         >
           <TabsList className="mb-4 grid w-full grid-cols-2">
-            <TabsTrigger value={TabKey.NEWS} className="w-full">
+            <TabsTrigger
+              value={TabKey.NEWS}
+              className="w-full data-[state=active]:bg-primary-hero"
+            >
               News
             </TabsTrigger>
             <TabsTrigger
               value={TabKey.EXPERT_PERSPECTIVES}
-              className="w-full"
+              className="w-full data-[state=active]:bg-primary-hero"
             >
               Expert Perspectives
             </TabsTrigger>

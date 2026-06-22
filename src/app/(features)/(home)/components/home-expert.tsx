@@ -126,7 +126,11 @@ export default function HomeExpert() {
                   <span className="truncate text-xs font-semibold text-amber-600 dark:text-amber-400">
                     {article.expert_name || "Expert"}
                   </span>
-                  <Tag name={getFirstTag(article)} variant="small" />
+                  <Tag
+                    name={getFirstTag(article)}
+                    variant="small"
+                    className="py-[0.5px] md:py-[1px]"
+                  />
                 </div>
                 <h3 className="line-clamp-1 text-sm font-bold text-foreground transition-colors group-hover:text-primary-font">
                   {article.title}
