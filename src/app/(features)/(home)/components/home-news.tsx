@@ -8,10 +8,16 @@ import { Tag } from "@/components/common/tag";
 import HomeFailToLoad from "./home-fail-to-load";
 
 export default function HomeNews() {
-  const { data: newsData, isLoading, error } = useNews(1, 8);
+  const { data: newsData, isLoading, error } = useNews(1, 16);
 
   const getFirstTag = (news: NewsResponse) => {
     return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
+  };
+
+  const isHomeNewsArticle = (news: NewsResponse) => {
+    return (
+      news.article_type === "general" || news.article_type === "match_preview"
+    );
   };
 
   if (isLoading) {
@@ -55,9 +61,9 @@ export default function HomeNews() {
   }
 
   const newsItems = newsData?.items || [];
-  // Filter published news only
+  // Home keeps expert perspectives in their dedicated section.
   const publishedNews = newsItems
-    .filter((item) => item.is_published)
+    .filter((item) => item.is_published && isHomeNewsArticle(item))
     .slice(0, 8);
 
   return (

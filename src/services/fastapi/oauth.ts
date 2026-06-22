@@ -174,10 +174,11 @@ export function useCurrentUser(options?: { enabled?: boolean }) {
     enabled: options?.enabled !== false, // Default to true, but can be disabled
     retry: (failureCount, error) => {
       // Don't retry on 401 (unauthorized) - user is not authenticated
+      const message =
+        error instanceof Error ? error.message : String(error ?? "");
       if (
-        error instanceof Error &&
-        (error.message.includes("401") ||
-          error.message.includes("Not authenticated"))
+        message.includes("401") ||
+        message.includes("Not authenticated")
       ) {
         return false;
       }
@@ -189,8 +190,7 @@ export function useCurrentUser(options?: { enabled?: boolean }) {
     throwOnError: false, // Don't throw, just return error state
     // Refetch on window focus to catch logout from other tabs
     refetchOnWindowFocus: true,
-    // Ensure query refetches when invalidated (even if staleTime hasn't passed)
-    refetchOnMount: true,
+    refetchOnMount: false,
   });
 }
 

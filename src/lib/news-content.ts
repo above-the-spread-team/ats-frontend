@@ -1,6 +1,7 @@
 import type {
   GeneralNewsContent,
   MatchPreviewContent,
+  ExpertPerspectiveContent,
   NewsSource,
   ParsedNewsContent,
 } from "@/type/fastapi/news";
@@ -75,12 +76,31 @@ function normalizeMatchPreview(
   };
 }
 
+function normalizeExpertPerspective(
+  parsed: Record<string, unknown>,
+): ExpertPerspectiveContent | null {
+  if (!Array.isArray(parsed.paragraphs)) return null;
+
+  const paragraphs = coerceStringArray(parsed.paragraphs);
+  if (paragraphs.length === 0) return null;
+
+  return {
+    type: "expert_perspective",
+    paragraphs,
+    sources: coerceSources(parsed.sources),
+  };
+}
+
 function isMatchPreviewType(type: unknown): boolean {
   return type === "match_preview" || type === "preview";
 }
 
 function isGeneralNewsType(type: unknown): boolean {
   return type === "general_news";
+}
+
+function isExpertPerspectiveType(type: unknown): boolean {
+  return type === "expert_perspective";
 }
 
 /**
@@ -97,6 +117,10 @@ export function parseNewsContent(content: string): ParsedNewsContent | null {
 
     if (isGeneralNewsType(type) || (Array.isArray(parsed.events) && !parsed.paragraphs)) {
       return normalizeGeneralNews(parsed);
+    }
+
+    if (isExpertPerspectiveType(type)) {
+      return normalizeExpertPerspective(parsed);
     }
 
     if (
@@ -134,8 +158,10 @@ export function getNewsPreview(content: string, maxLength = 150): string {
   if (parsed.type === "general_news") {
     const first = parsed.events[0];
     text = first?.paragraphs?.[0] ?? first?.headline ?? "";
-  } else {
+  } else if (parsed.type === "expert_perspective" || parsed.type === "match_preview") {
     text = parsed.paragraphs[0] ?? "";
+  } else {
+    text = "";
   }
 
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;

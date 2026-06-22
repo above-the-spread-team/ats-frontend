@@ -8,7 +8,11 @@ import {
 import type {
   NewsListResponse,
   NewsResponse,
+  NewsCreate,
+  NewsUpdate,
+  ExpertPerspectiveCreate,
   NewsError,
+  ArticleType,
 } from "@/type/fastapi/news";
 import type {
   CommentCreate,
@@ -22,17 +26,22 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 /**
- * Fetch news list with pagination and optional tag filtering
+ * Fetch news list with pagination and optional filtering
  */
 export async function fetchNews(
   page: number = 1,
   pageSize: number = 20,
-  tagIds?: number[]
+  tagIds?: number[],
+  articleType?: ArticleType
 ): Promise<NewsListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
   });
+
+  if (articleType) {
+    params.set("article_type", articleType);
+  }
 
   // Add tag_ids if provided
   if (tagIds && tagIds.length > 0) {
@@ -98,11 +107,12 @@ export async function fetchNewsById(newsId: number): Promise<NewsResponse> {
 export function useNews(
   page: number = 1,
   pageSize: number = 20,
-  tagIds?: number[]
+  tagIds?: number[],
+  articleType?: ArticleType
 ) {
   return useQuery<NewsListResponse, NewsError>({
-    queryKey: ["news", page, pageSize, tagIds],
-    queryFn: () => fetchNews(page, pageSize, tagIds),
+    queryKey: ["news", page, pageSize, tagIds, articleType],
+    queryFn: () => fetchNews(page, pageSize, tagIds, articleType),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
@@ -111,12 +121,12 @@ export function useNews(
  * React Query hook for infinite scrolling news list
  * Fetches 15 items per page, loads more on scroll
  */
-export function useInfiniteNews(tagIds?: number[]) {
+export function useInfiniteNews(tagIds?: number[], articleType?: ArticleType) {
   return useInfiniteQuery<NewsListResponse, NewsError>({
-    queryKey: ["news", "infinite", tagIds],
+    queryKey: ["news", "infinite", tagIds, articleType],
     queryFn: ({ pageParam = 1 }) => {
       const page = typeof pageParam === "number" ? pageParam : 1;
-      return fetchNews(page, 15, tagIds);
+      return fetchNews(page, 15, tagIds, articleType);
     },
     getNextPageParam: (lastPage) => {
       // If current page is less than total pages, return next page number
@@ -140,6 +150,319 @@ export function useNewsById(newsId: number) {
     queryFn: () => fetchNewsById(newsId),
     staleTime: 30 * 1000, // 30 seconds - shorter staleTime helps Safari refresh get fresh data
     enabled: !!newsId && newsId > 0, // Only fetch if newsId is valid
+  });
+}
+
+// ============================================================================
+// News CRUD API
+// ============================================================================
+
+/**
+ * Create a new news article
+ * Requires authentication (admin/manager)
+ */
+export async function createNews(data: NewsCreate): Promise<NewsResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await backendFetch(`${BACKEND_URL}/api/v1/news`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: NewsError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to create news" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(error.detail || "Insufficient permissions");
+    }
+
+    throw new Error(error.detail || "Failed to create news. Please try again.");
+  }
+
+  return response.json();
+}
+
+/**
+ * Create a new expert perspective article
+ * Requires authentication (admin/manager)
+ */
+export async function createExpertPerspective(
+  data: ExpertPerspectiveCreate
+): Promise<NewsResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await backendFetch(
+    `${BACKEND_URL}/api/v1/news/expert-perspective`,
+    {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: NewsError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to create expert perspective" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(error.detail || "Insufficient permissions");
+    }
+
+    throw new Error(
+      error.detail || "Failed to create expert perspective. Please try again."
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Update a news article
+ * Requires authentication - only the article author can update
+ */
+export async function updateNews(
+  newsId: number,
+  data: NewsUpdate
+): Promise<NewsResponse> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await backendFetch(
+    `${BACKEND_URL}/api/v1/news/${newsId}`,
+    {
+      method: "PATCH",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: NewsError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to update news" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "You don't have permission to update this article"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "News article not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to update news. Please try again."
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a news article
+ * Requires authentication - only the article author can delete
+ */
+export async function deleteNews(newsId: number): Promise<void> {
+  const authHeader = getAuthHeader();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+
+  const response = await backendFetch(
+    `${BACKEND_URL}/api/v1/news/${newsId}`,
+    {
+      method: "DELETE",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error: NewsError =
+      errorData.detail && typeof errorData.detail === "string"
+        ? { detail: errorData.detail }
+        : { detail: "Failed to delete news" };
+
+    if (response.status === 401) {
+      throw new Error("401: Not authenticated");
+    }
+    if (response.status === 403) {
+      throw new Error(
+        error.detail || "You don't have permission to delete this article"
+      );
+    }
+    if (response.status === 404) {
+      throw new Error(error.detail || "News article not found");
+    }
+
+    throw new Error(
+      error.detail || "Failed to delete news. Please try again."
+    );
+  }
+}
+
+/**
+ * Get a user's news articles
+ */
+export async function getUserNews(
+  userId: number,
+  page: number = 1,
+  pageSize: number = 20,
+  isPublished?: boolean
+): Promise<NewsListResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    page_size: pageSize.toString(),
+  });
+
+  if (isPublished !== undefined) {
+    params.set("is_published", isPublished.toString());
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/v1/news/users/${userId}/news?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      typeof errorData.detail === "string"
+        ? errorData.detail
+        : "Failed to fetch user news"
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * React Query hook for creating a news article
+ */
+export function useCreateNews() {
+  const queryClient = useQueryClient();
+
+  return useMutation<NewsResponse, Error, NewsCreate>({
+    mutationFn: createNews,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["news"] });
+    },
+  });
+}
+
+/**
+ * React Query hook for creating an expert perspective article
+ */
+export function useCreateExpertPerspective() {
+  const queryClient = useQueryClient();
+
+  return useMutation<NewsResponse, Error, ExpertPerspectiveCreate>({
+    mutationFn: createExpertPerspective,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["news"] });
+    },
+  });
+}
+
+/**
+ * React Query hook for updating a news article
+ */
+export function useUpdateNews() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    NewsResponse,
+    Error,
+    { newsId: number; data: NewsUpdate }
+  >({
+    mutationFn: ({ newsId, data }) => updateNews(newsId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["news"] });
+      queryClient.invalidateQueries({
+        queryKey: ["news", variables.newsId],
+      });
+    },
+  });
+}
+
+/**
+ * React Query hook for deleting a news article
+ */
+export function useDeleteNews() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, number>({
+    mutationFn: deleteNews,
+    onSuccess: (_, newsId) => {
+      queryClient.removeQueries({ queryKey: ["news", newsId] });
+      queryClient.invalidateQueries({ queryKey: ["news"] });
+    },
+  });
+}
+
+/**
+ * React Query hook for fetching a user's news articles
+ */
+export function useUserNews(
+  userId: number | null,
+  page: number = 1,
+  pageSize: number = 20,
+  isPublished?: boolean
+) {
+  return useQuery<NewsListResponse>({
+    queryKey: ["userNews", userId, page, pageSize, isPublished],
+    queryFn: () => getUserNews(userId!, page, pageSize, isPublished),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

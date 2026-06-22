@@ -37,9 +37,17 @@ export interface MatchPreviewContent {
   sources: NewsSource[];
 }
 
-export type ParsedNewsContent = GeneralNewsContent | MatchPreviewContent;
+export interface ExpertPerspectiveContent {
+  type: "expert_perspective";
+  paragraphs: string[];
+  sources: NewsSource[];
+}
+
+export type ParsedNewsContent = GeneralNewsContent | MatchPreviewContent | ExpertPerspectiveContent;
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+export type ArticleType = "general" | "match_preview" | "expert_perspective";
 
 export interface NewsResponse {
   id: number;
@@ -50,6 +58,9 @@ export interface NewsResponse {
   fixture_id: number | null; // For Match Preview
   home_team_logo: string | null; // For Match Preview only
   away_team_logo: string | null; // For Match Preview only
+  article_type: ArticleType; // general, match_preview, or expert_perspective
+  expert_name: string | null; // Expert display name (expert_perspective only)
+  expert_avatar_url: string | null; // Expert avatar URL (expert_perspective only)
   is_published: boolean;
   author_id: number | null;
   author: NewsAuthor | null;
@@ -69,6 +80,40 @@ export interface NewsListResponse {
   page: number;
   page_size: number;
   total_pages: number;
+}
+
+export interface NewsCreate {
+  title: string;
+  content: string;
+  image_url?: string | null;
+  fixture_id?: number | null;
+  home_team_logo?: string | null;
+  away_team_logo?: string | null;
+  article_type?: ArticleType; // Default: "general"
+  expert_name?: string | null; // Expert display name (expert_perspective only)
+  expert_avatar_url?: string | null; // Expert avatar URL (expert_perspective only)
+  is_published?: boolean; // Default: true
+}
+
+export interface NewsUpdate {
+  title?: string | null;
+  content?: string | null;
+  image_url?: string | null;
+  fixture_id?: number | null;
+  home_team_logo?: string | null;
+  away_team_logo?: string | null;
+  article_type?: ArticleType | null;
+  expert_name?: string | null;
+  expert_avatar_url?: string | null;
+  is_published?: boolean | null;
+}
+
+export interface ExpertPerspectiveCreate {
+  title: string;
+  content: string;
+  image_url?: string | null;
+  is_published?: boolean;
+  tag_ids?: number[];
 }
 
 export interface NewsError {

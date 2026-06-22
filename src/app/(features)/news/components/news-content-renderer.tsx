@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type {
   GeneralNewsContent,
   MatchPreviewContent,
+  ExpertPerspectiveContent,
   NewsSource,
 } from "@/type/fastapi/news";
 import { parseNewsContent } from "@/lib/news-content";
@@ -98,6 +99,24 @@ function MatchPreviewRenderer({ content }: { content: MatchPreviewContent }) {
   );
 }
 
+// ── Expert Perspective renderer ───────────────────────────────────────────────
+
+function ExpertPerspectiveRenderer({ content }: { content: ExpertPerspectiveContent }) {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        {content.paragraphs.map((para, i) => (
+          <p key={i} className="leading-7 text-base text-foreground">
+            {para}
+          </p>
+        ))}
+      </div>
+
+      <SourcesList sources={content.sources} />
+    </div>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 interface NewsContentRendererProps {
@@ -132,6 +151,10 @@ export default function NewsContentRenderer({
 
   if (parsed.type === "general_news") {
     return <GeneralNewsRenderer content={parsed} />;
+  }
+
+  if (parsed.type === "expert_perspective") {
+    return <ExpertPerspectiveRenderer content={parsed} />;
   }
 
   return <MatchPreviewRenderer content={parsed} />;
