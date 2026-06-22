@@ -99,6 +99,8 @@ export default function HomeExpert() {
   const experts =
     expertData?.items?.filter((item) => item.is_published).slice(0, 4) ?? [];
 
+  if (experts.length === 0) return null;
+
   return (
     <section className="w-full">
       <Link
@@ -108,42 +110,34 @@ export default function HomeExpert() {
         <h2 className="text-base md:text-lg font-bold">Expert Perspectives</h2>
       </Link>
       <div className="rounded-lg border border-border bg-card shadow-md overflow-hidden">
-        {experts.length > 0 ? (
-          <div className="grid divide-y divide-border   md:divide-x md:divide-y-0">
-            {experts.map((article) => (
-              <Link
-                key={article.id}
-                href={`/news/${article.id}`}
-                className="group flex items-center gap-2.5 px-3 py-1  transition-colors hover:bg-muted"
-              >
-                <ExpertAvatar
-                  avatarUrl={article.expert_avatar_url}
-                  name={article.expert_name}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="mb-0.5 flex items-center gap-1.5">
-                    <span className="truncate text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      {article.expert_name || "Expert"}
-                    </span>
-                    <Tag name={getFirstTag(article)} variant="small" />
-                  </div>
-                  <h3 className="line-clamp-1 text-sm font-bold text-foreground transition-colors group-hover:text-primary-font">
-                    {article.title}
-                  </h3>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                    {article.content_preview ?? ""}
-                  </p>
+        <div className="grid divide-y divide-border md:divide-x md:divide-y-0">
+          {experts.map((article) => (
+            <Link
+              key={article.id}
+              href={`/news/${article.id}`}
+              className="group flex items-center gap-2.5 px-3 py-1 transition-colors hover:bg-muted"
+            >
+              <ExpertAvatar
+                avatarUrl={article.expert_avatar_url}
+                name={article.expert_name}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="mb-0.5 flex items-center gap-1.5">
+                  <span className="truncate text-xs font-semibold text-amber-600 dark:text-amber-400">
+                    {article.expert_name || "Expert"}
+                  </span>
+                  <Tag name={getFirstTag(article)} variant="small" />
                 </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              No expert perspectives available
-            </p>
-          </div>
-        )}
+                <h3 className="line-clamp-1 text-sm font-bold text-foreground transition-colors group-hover:text-primary-font">
+                  {article.title}
+                </h3>
+                <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                  {article.content_preview ?? ""}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

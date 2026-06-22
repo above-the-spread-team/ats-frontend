@@ -63,7 +63,13 @@ function ArticleGrid({
   };
 
   const isMatchPreview = (news: NewsResponse) => {
-    return news.article_type === "match_preview";
+    return (
+      news.article_type === "match_preview" ||
+      (news.article_type !== "expert_perspective" &&
+        !!news.fixture_id &&
+        !!news.home_team_logo &&
+        !!news.away_team_logo)
+    );
   };
 
   const isExpertPerspective = (news: NewsResponse) => {
