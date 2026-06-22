@@ -58,7 +58,7 @@ export interface NewsResponse {
   fixture_id: number | null; // For Match Preview
   home_team_logo: string | null; // For Match Preview only
   away_team_logo: string | null; // For Match Preview only
-  article_type: ArticleType; // general, match_preview, or expert_perspective
+  article_type?: ArticleType; // general, match_preview, or expert_perspective (may be missing in list responses)
   expert_name: string | null; // Expert display name (expert_perspective only)
   expert_avatar_url: string | null; // Expert avatar URL (expert_perspective only)
   is_published: boolean;

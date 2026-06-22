@@ -23,6 +23,7 @@ import {
   useNewsComments,
   useLikeNews,
   useDislikeNews,
+  resolveArticleType,
 } from "@/services/fastapi/news";
 import NoData from "@/components/common/no-data";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
@@ -150,18 +151,12 @@ export default function NewsDetailPage() {
   };
 
   const isMatchPreview = (news: NewsResponse) => {
-    return (
-      news.article_type === "match_preview" ||
-      (news.article_type !== "expert_perspective" &&
-        !!news.fixture_id &&
-        !!news.home_team_logo &&
-        !!news.away_team_logo)
-    );
+    return resolveArticleType(news) === "match_preview";
   };
 
   // Check if news is an expert perspective
   const isExpertPerspective = (news: NewsResponse) => {
-    return news.article_type === "expert_perspective";
+    return resolveArticleType(news) === "expert_perspective";
   };
 
   if (isLoading) {

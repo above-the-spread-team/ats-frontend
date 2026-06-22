@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useNews } from "@/services/fastapi/news";
+import { useNews, resolveArticleType } from "@/services/fastapi/news";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
@@ -15,9 +15,8 @@ export default function HomeNews() {
   };
 
   const isHomeNewsArticle = (news: NewsResponse) => {
-    return (
-      news.article_type === "general" || news.article_type === "match_preview"
-    );
+    const type = resolveArticleType(news);
+    return type === "general" || type === "match_preview";
   };
 
   if (isLoading) {

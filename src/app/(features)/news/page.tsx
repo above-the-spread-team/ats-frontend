@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useNews } from "@/services/fastapi/news";
+import { useNews, resolveArticleType } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -63,17 +63,11 @@ function ArticleGrid({
   };
 
   const isMatchPreview = (news: NewsResponse) => {
-    return (
-      news.article_type === "match_preview" ||
-      (news.article_type !== "expert_perspective" &&
-        !!news.fixture_id &&
-        !!news.home_team_logo &&
-        !!news.away_team_logo)
-    );
+    return resolveArticleType(news) === "match_preview";
   };
 
   const isExpertPerspective = (news: NewsResponse) => {
-    return news.article_type === "expert_perspective";
+    return resolveArticleType(news) === "expert_perspective";
   };
 
   return (
@@ -356,7 +350,7 @@ export default function News() {
   const publishedNews =
     activeTab === TabKey.NEWS
       ? allPublished.filter(
-          (item) => item.article_type !== "expert_perspective",
+          (item) => resolveArticleType(item) !== "expert_perspective",
         )
       : allPublished;
 

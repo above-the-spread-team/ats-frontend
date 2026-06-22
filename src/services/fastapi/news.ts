@@ -26,6 +26,17 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 /**
+ * Resolve article_type from a news response.
+ * The list endpoint may omit article_type; infer it from other fields.
+ */
+export function resolveArticleType(news: NewsResponse): ArticleType {
+  if (news.article_type) return news.article_type;
+  if (news.expert_name || news.expert_avatar_url) return "expert_perspective";
+  if (news.fixture_id) return "match_preview";
+  return "general";
+}
+
+/**
  * Fetch news list with pagination and optional filtering
  */
 export async function fetchNews(
