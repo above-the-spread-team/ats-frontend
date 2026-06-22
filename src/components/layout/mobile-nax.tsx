@@ -12,10 +12,12 @@ export default function MobileNav() {
       <div className="grid grid-cols-5 h-11">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
+          const itemPathname = item.href.split("?")[0];
           const isActive =
-            item.href === "/"
+            itemPathname === "/"
               ? pathname === "/"
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              : pathname === itemPathname ||
+                pathname.startsWith(`${itemPathname}/`);
 
           return (
             <Link

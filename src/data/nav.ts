@@ -28,7 +28,7 @@ export const navItems: NavItem[] = [
 
   {
     label: "Articles",
-    href: "/news",
+    href: "/news?tab=news",
     icon: IoNewspaper,
   },
   {
@@ -56,7 +56,7 @@ export const mobileNavItems: NavItem[] = [
   },
   {
     label: "Articles",
-    href: "/news",
+    href: "/news?tab=news",
     icon: IoNewspaper,
   },
   {

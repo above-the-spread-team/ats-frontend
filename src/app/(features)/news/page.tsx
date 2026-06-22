@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -313,7 +313,7 @@ function ArticleGridSkeleton() {
   );
 }
 
-export default function News() {
+function NewsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -473,5 +473,21 @@ export default function News() {
         </Tabs>
       </div>
     </FullPage>
+  );
+}
+
+export default function News() {
+  return (
+    <Suspense
+      fallback={
+        <FullPage>
+          <div className="container mx-auto max-w-5xl space-y-4 px-4 py-4 mb-8">
+            <ArticleGridSkeleton />
+          </div>
+        </FullPage>
+      }
+    >
+      <NewsContent />
+    </Suspense>
   );
 }
