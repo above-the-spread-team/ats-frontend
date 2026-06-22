@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useNews, resolveArticleType } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -29,6 +30,12 @@ enum TabKey {
   NEWS = "news",
   EXPERT_PERSPECTIVES = "expert_perspectives",
 }
+
+const parseTabParam = (tab: string | null): TabKey =>
+  tab === "expert" ? TabKey.EXPERT_PERSPECTIVES : TabKey.NEWS;
+
+const getTabParam = (tab: TabKey): string =>
+  tab === TabKey.EXPERT_PERSPECTIVES ? "expert" : "news";
 
 function ArticleGrid({
   articles,
@@ -307,8 +314,12 @@ function ArticleGridSkeleton() {
 }
 
 export default function News() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tabFromUrl = parseTabParam(searchParams.get("tab"));
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
-  const [activeTab, setActiveTab] = useState<TabKey>(TabKey.NEWS);
+  const [activeTab, setActiveTab] = useState<TabKey>(tabFromUrl);
   const [newsPage, setNewsPage] = useState(1);
   const [expertPage, setExpertPage] = useState(1);
   const pageSize = 15;
@@ -338,10 +349,23 @@ export default function News() {
     setExpertPage(1);
   }, [selectedTagIds]);
 
+  useEffect(() => {
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
+
   // Reset pages when switching tabs
   useEffect(() => {
     // keep the other tab's page
   }, [activeTab]);
+
+  const handleTabChange = (value: string) => {
+    const nextTab = value as TabKey;
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("tab", getTabParam(nextTab));
+    setActiveTab(nextTab);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const allPublished = data?.items?.filter((item) => item.is_published) || [];
 
@@ -359,19 +383,19 @@ export default function News() {
       <div className="container mx-auto max-w-5xl space-y-4 px-4 py-4 mb-8">
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as TabKey)}
+          onValueChange={handleTabChange}
           className="w-full"
         >
-          <TabsList className="mb-4 grid w-full grid-cols-2">
+          <TabsList className="mb-4 grid w-full px-1 grid-cols-2 bg-primary/40">
             <TabsTrigger
               value={TabKey.NEWS}
-              className="w-full data-[state=active]:bg-primary-hero"
+              className="w-full data-[state=inactive]:text-muted-foreground data-[state=active]:text-white data-[state=active]:bg-primary"
             >
               News
             </TabsTrigger>
             <TabsTrigger
               value={TabKey.EXPERT_PERSPECTIVES}
-              className="w-full data-[state=active]:bg-primary-hero"
+              className="w-full data-[state=inactive]:text-muted-foreground data-[state=active]:text-white data-[state=active]:bg-primary"
             >
               Expert Perspectives
             </TabsTrigger>

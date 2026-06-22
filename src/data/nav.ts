@@ -27,7 +27,7 @@ export const navItems: NavItem[] = [
   },
 
   {
-    label: "News",
+    label: "Articles",
     href: "/news",
     icon: IoNewspaper,
   },
@@ -55,7 +55,7 @@ export const mobileNavItems: NavItem[] = [
     icon: FaCalendarAlt,
   },
   {
-    label: "News",
+    label: "Articles",
     href: "/news",
     icon: IoNewspaper,
   },

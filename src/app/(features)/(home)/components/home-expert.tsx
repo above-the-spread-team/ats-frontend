@@ -84,7 +84,7 @@ export default function HomeExpert() {
     return (
       <section className="w-full">
         <Link
-          href="/news"
+          href="/news?tab=expert"
           className="text-sm px-2 block mb-1.5 text-primary-font hover:underline font-semibold"
         >
           <h2 className="text-lg md:text-xl font-bold">Expert Perspectives</h2>
@@ -104,7 +104,7 @@ export default function HomeExpert() {
   return (
     <section className="w-full">
       <Link
-        href="/news"
+        href="/news?tab=expert"
         className="text-sm px-2 block mb-1.5 text-primary-font hover:underline font-semibold"
       >
         <h2 className="text-base md:text-lg font-bold">Expert Perspectives</h2>
@@ -129,7 +129,7 @@ export default function HomeExpert() {
                   <Tag
                     name={getFirstTag(article)}
                     variant="small"
-                    className="py-[0.5px] md:py-[1px]"
+                    className="!py-[2px]"
                   />
                 </div>
                 <h3 className="line-clamp-1 text-sm font-bold text-foreground transition-colors group-hover:text-primary-font">
