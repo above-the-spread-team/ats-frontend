@@ -386,7 +386,7 @@ function NewsContent() {
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <TabsList className="mb-4 grid w-full px-1 grid-cols-2 bg-primary/40">
+          <TabsList className="mb-4 grid w-full px-1 grid-cols-2 bg-primary/10 gap-1">
             <TabsTrigger
               value={TabKey.NEWS}
               className="w-full data-[state=inactive]:text-muted-foreground data-[state=active]:text-white data-[state=active]:bg-primary"
