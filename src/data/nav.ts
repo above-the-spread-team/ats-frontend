@@ -1,6 +1,6 @@
-import { FaCalendarAlt, FaHome } from "react-icons/fa";
+import { FaCalendarAlt, FaHome, FaLightbulb } from "react-icons/fa";
 import { IoBarChart, IoNewspaper, IoChatbubbles } from "react-icons/io5";
-import { GiTrophyCup } from "react-icons/gi";
+
 import { IconType } from "react-icons";
 
 export interface NavItem {
@@ -21,14 +21,19 @@ export const navItems: NavItem[] = [
     icon: FaCalendarAlt,
   },
   {
-    label: "World Cup",
-    href: "/world-cup/prediction",
-    icon: GiTrophyCup,
+    label: "Our Picks",
+    href: "/our-picks",
+    icon: FaLightbulb,
   },
 
   {
     label: "Articles",
-    href: "/news?tab=news",
+    href: "/articles?tab=news",
+    icon: IoNewspaper,
+  },
+  {
+    label: "News",
+    href: "/news",
     icon: IoNewspaper,
   },
   {

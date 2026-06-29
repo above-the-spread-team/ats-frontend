@@ -14,7 +14,7 @@ import HomeFailToLoad from "./home-fail-to-load";
 import { useNews } from "@/services/fastapi/news";
 import Image from "next/image";
 import Link from "next/link";
-import PreviewImage from "@/app/(features)/news/components/preview-image";
+import PreviewImage from "@/app/(features)/articles/components/preview-image";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Tag } from "@/components/common/tag";

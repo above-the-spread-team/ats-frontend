@@ -107,7 +107,7 @@ export default function HomeExpert() {
         href="/news?tab=expert"
         className="text-sm px-2 block mb-1.5 text-primary-font hover:underline font-semibold"
       >
-        <h2 className="text-base md:text-lg font-bold">Expert Perspectives</h2>
+        <h2 className="text-base md:text-lg font-bold">Our Picks</h2>
       </Link>
       <div className="rounded-lg border border-border bg-card shadow-md overflow-hidden">
         <div className="grid divide-y divide-border md:divide-x md:divide-y-0">

@@ -18,7 +18,7 @@ import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
 
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
-import PreviewImage from "../../news/components/preview-image";
+import PreviewImage from "../../articles/components/preview-image";
 import { Tag } from "@/components/common/tag";
 
 const WORLD_CUP_TAG_ID = 14;

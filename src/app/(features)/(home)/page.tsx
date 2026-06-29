@@ -11,7 +11,7 @@ import HomeExpert from "./components/home-expert";
 
 export default function Home() {
   return (
-    <FullPage minusHeight={40} className="space-y-4 md:space-y-8  pb-10">
+    <FullPage minusHeight={40} className="space-y-4 md:space-y-8 pb-10">
       <Fixtures />
       <div className="container mx-auto px-4   max-w-6xl space-y-6 lg:space-y-10">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
