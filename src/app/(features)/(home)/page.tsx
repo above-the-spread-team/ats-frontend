@@ -4,14 +4,14 @@ import { ScrollNews } from "./components/scroll-news";
 import HomeRanking from "./components/home-ranking";
 import HomeNews from "./components/home-news";
 import HomeDiscuss from "./components/home-discuss";
-import Promotion from "./components/promotion";
+// import Promotion from "./components/promotion";
 import VoteResult from "./components/vote-result";
 import Leaderboard from "./components/leaderboard";
 import HomeExpert from "./components/home-expert";
 
 export default function Home() {
   return (
-    <FullPage minusHeight={40} className="space-y-4 md:space-y-8  pb-10">
+    <FullPage minusHeight={40} className="space-y-4 md:space-y-8 pb-10">
       <Fixtures />
       <div className="container mx-auto px-4   max-w-6xl space-y-6 lg:space-y-10">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
@@ -22,9 +22,9 @@ export default function Home() {
             <HomeRanking />
           </div>
         </div>
-        <div className="max-w-4xl mx-auto">
+        {/* <div className="max-w-4xl mx-auto">
           <Promotion />
-        </div>
+        </div> */}
         <div className="max-w-4xl mx-auto">
           <Leaderboard />
         </div>

@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import { useNews, resolveArticleType } from "@/services/fastapi/news";
+import { useNews } from "@/services/fastapi/news";
 import { ArticleListView, ArticleGridSkeleton } from "@/app/(features)/articles/components/article-list-view";
 import NewsFilter from "@/app/(features)/articles/components/news-filter";
 import FullPage from "@/components/common/full-page";
 
-function NewsContent() {
+function OurPicksContent() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 15;
@@ -16,16 +16,18 @@ function NewsContent() {
       ? [...selectedTagIds].sort((a, b) => a - b)
       : undefined;
 
-  const { data, isLoading, error } = useNews(page, pageSize, sortedTagIds);
+  const { data, isLoading, error } = useNews(
+    page,
+    pageSize,
+    sortedTagIds,
+    "expert_perspective",
+  );
 
   useEffect(() => {
     setPage(1);
   }, [selectedTagIds]);
 
-  const allPublished = data?.items?.filter((item) => item.is_published) || [];
-  const publishedNews = allPublished.filter(
-    (item) => resolveArticleType(item) !== "expert_perspective",
-  );
+  const publishedNews = data?.items?.filter((item) => item.is_published) || [];
 
   return (
     <FullPage>
@@ -41,24 +43,16 @@ function NewsContent() {
           onPageChange={setPage}
           isLoading={isLoading}
           error={error}
-          emptyMessage={
-            selectedTagIds.length > 0
-              ? "No news articles found for selected filters"
-              : "No news articles available"
-          }
-          emptyHelpText={
-            selectedTagIds.length > 0
-              ? "Try adjusting your filter selections."
-              : "Check back later for the latest football news."
-          }
-          errorLabel="Failed to load news"
+          emptyMessage="No expert perspectives available"
+          emptyHelpText="Check back later for expert analysis and perspectives."
+          errorLabel="Failed to load expert perspectives"
         />
       </div>
     </FullPage>
   );
 }
 
-export default function News() {
+export default function OurPicks() {
   return (
     <Suspense
       fallback={
@@ -69,7 +63,7 @@ export default function News() {
         </FullPage>
       }
     >
-      <NewsContent />
+      <OurPicksContent />
     </Suspense>
   );
 }
