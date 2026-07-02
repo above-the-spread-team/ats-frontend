@@ -79,7 +79,7 @@ export default function HomeNews() {
             {publishedNews.map((article) => (
               <Link
                 key={article.id}
-                href={`/news/${article.id}`}
+                href={`/articles/${article.id}`}
                 className="block px-3 py-2 hover:bg-muted/30 transition-colors group"
               >
                 <div className="flex items-start ">

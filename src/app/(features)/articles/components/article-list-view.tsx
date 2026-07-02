@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useNews } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Pagination,
@@ -18,100 +16,55 @@ import NoData from "@/components/common/no-data";
 import type { NewsResponse } from "@/type/fastapi/news";
 
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
-import PreviewImage from "../../articles/components/preview-image";
+import { resolveArticleType } from "@/services/fastapi/news";
+import PreviewImage from "./preview-image";
+import ExpertPerspectiveImage from "./expert-perspective-image";
 import { Tag } from "@/components/common/tag";
 
-const WORLD_CUP_TAG_ID = 14;
-const PAGE_SIZE = 15;
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInHours = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+  );
 
-export default function WorldCupNews() {
-  const [page, setPage] = useState(1);
+  if (diffInHours < 1) return "Just now";
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  if (diffInHours < 48) return "Yesterday";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
-  const { data, isLoading, error } = useNews(page, PAGE_SIZE, [
-    WORLD_CUP_TAG_ID,
-  ]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-    );
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return "Yesterday";
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+function ArticleGrid({
+  articles,
+  data,
+  page,
+  onPageChange,
+}: {
+  articles: NewsResponse[];
+  data: { total_pages: number } | undefined;
+  page: number;
+  onPageChange: (p: number) => void;
+}) {
+  const getFirstTag = (news: NewsResponse) => {
+    return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
   };
 
-  const getFirstTag = (news: NewsResponse) =>
-    news.tags && news.tags.length > 0 ? news.tags[0].name : "World Cup";
+  const isMatchPreview = (news: NewsResponse) => {
+    return resolveArticleType(news) === "match_preview";
+  };
 
-  const isMatchPreview = (news: NewsResponse) =>
-    !!(news.home_team_logo && news.away_team_logo);
-
-  const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-5xl px-4 py-6 pb-20 md:pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i}>
-              <Skeleton className="h-40 w-full mb-4 rounded-xl" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto max-w-5xl px-4 py-10">
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <div className="text-center">
-            <p className="text-destructive mb-2">Failed to load news</p>
-            <p className="text-sm text-muted-foreground">
-              {error instanceof Error ? error.message : "Unknown error"}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const publishedNews = data?.items?.filter((item) => item.is_published) ?? [];
-
-  if (!isLoading && !error && publishedNews.length === 0) {
-    return (
-      <div className="container mx-auto max-w-5xl px-4 py-6">
-        <NoData
-          message="No World Cup news yet"
-          helpText="Check back soon for the latest 2026 World Cup coverage."
-        />
-      </div>
-    );
-  }
+  const isExpertPerspective = (news: NewsResponse) => {
+    return resolveArticleType(news) === "expert_perspective";
+  };
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-4 mb-8 space-y-4">
-      {/* Article count */}
-      {data && (
-        <p className="text-xs text-muted-foreground">
-          {data.total} article{data.total !== 1 ? "s" : ""}
-        </p>
-      )}
-
-      {/* News Articles */}
+    <>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {publishedNews.map((article) => (
+        {articles.map((article) => (
           <Link key={article.id} href={`/articles/${article.id}`}>
             <article className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer group">
               <div className="flex h-full flex-col">
@@ -120,6 +73,15 @@ export default function WorldCupNews() {
                     <PreviewImage
                       homeTeamLogo={article.home_team_logo}
                       awayTeamLogo={article.away_team_logo}
+                      variant="grid"
+                      tagName={getFirstTag(article)}
+                    />
+                  ) : isExpertPerspective(article) ? (
+                    <ExpertPerspectiveImage
+                      homeTeamLogo={article.home_team_logo}
+                      awayTeamLogo={article.away_team_logo}
+                      expertName={article.expert_name}
+                      expertAvatarUrl={article.expert_avatar_url}
                       variant="grid"
                       tagName={getFirstTag(article)}
                     />
@@ -140,11 +102,9 @@ export default function WorldCupNews() {
                       className="object-cover w-full h-full"
                     />
                   )}
-
                   <div className="absolute top-2 left-2">
                     <Tag name={getFirstTag(article)} variant="medium" />
                   </div>
-
                   {isMatchPreview(article) && (
                     <div className="absolute top-2 right-2">
                       <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -152,8 +112,14 @@ export default function WorldCupNews() {
                       </span>
                     </div>
                   )}
+                  {isExpertPerspective(article) && (
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        Expert
+                      </span>
+                    </div>
+                  )}
                 </div>
-
                 <div className="p-3 md:p-4 flex-1 min-w-0 flex flex-col">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
                     {article.author && (
@@ -169,7 +135,7 @@ export default function WorldCupNews() {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2 group-hover:text-primary-font transition-colors duration-150">
+                  <h3 className="font-bold text-xs md:text-base mb-1.5 md:mb-2 line-clamp-2 group-hover:text-primary-font transition-colors">
                     {article.title}
                   </h3>
 
@@ -193,8 +159,6 @@ export default function WorldCupNews() {
           </Link>
         ))}
       </div>
-
-      {/* Pagination */}
       {data && data.total_pages > 1 && (
         <div className="flex justify-center pt-2">
           <Pagination>
@@ -205,8 +169,8 @@ export default function WorldCupNews() {
                   onClick={(e) => {
                     e.preventDefault();
                     if (page > 1) {
-                      setPage(page - 1);
-                      scrollTop();
+                      onPageChange(page - 1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }}
                   className={
@@ -221,43 +185,68 @@ export default function WorldCupNews() {
                 const pages: (number | "ellipsis")[] = [];
                 const totalPages = data.total_pages;
 
-                if (totalPages > 0) pages.push(1);
-                if (page > 3) pages.push("ellipsis");
+                if (totalPages > 0) {
+                  pages.push(1);
+                }
+
+                if (page > 3) {
+                  pages.push("ellipsis");
+                }
 
                 const start = Math.max(2, page - 1);
                 const end = Math.min(totalPages - 1, page + 1);
+
                 for (let i = start; i <= end; i++) {
-                  if (i !== 1 && i !== totalPages) pages.push(i);
-                }
-
-                if (page < totalPages - 2) pages.push("ellipsis");
-                if (totalPages > 1) pages.push(totalPages);
-
-                const unique: (number | "ellipsis")[] = [];
-                let last = 0;
-                for (const p of pages) {
-                  if (p === "ellipsis") {
-                    if (unique[unique.length - 1] !== "ellipsis")
-                      unique.push("ellipsis");
-                  } else if (p > last) {
-                    unique.push(p);
-                    last = p;
+                  if (i !== 1 && i !== totalPages) {
+                    pages.push(i);
                   }
                 }
 
-                return unique.map((p, idx) =>
-                  p === "ellipsis" ? (
-                    <PaginationItem key={`ellipsis-${idx}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  ) : (
+                if (page < totalPages - 2) {
+                  pages.push("ellipsis");
+                }
+
+                if (totalPages > 1) {
+                  pages.push(totalPages);
+                }
+
+                const uniquePages: (number | "ellipsis")[] = [];
+                let lastNum = 0;
+                for (const p of pages) {
+                  if (p === "ellipsis") {
+                    if (
+                      uniquePages.length === 0 ||
+                      uniquePages[uniquePages.length - 1] !== "ellipsis"
+                    ) {
+                      uniquePages.push("ellipsis");
+                    }
+                  } else {
+                    if (p > lastNum) {
+                      uniquePages.push(p);
+                      lastNum = p;
+                    }
+                  }
+                }
+
+                return uniquePages.map((p, idx) => {
+                  if (p === "ellipsis") {
+                    return (
+                      <PaginationItem key={`ellipsis-${idx}`}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    );
+                  }
+                  return (
                     <PaginationItem key={p}>
                       <PaginationLink
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          setPage(p);
-                          scrollTop();
+                          onPageChange(p);
+                          window.scrollTo({
+                            top: 0,
+                            behavior: "smooth",
+                          });
                         }}
                         isActive={p === page}
                         className="cursor-pointer"
@@ -265,8 +254,8 @@ export default function WorldCupNews() {
                         {p}
                       </PaginationLink>
                     </PaginationItem>
-                  ),
-                );
+                  );
+                });
               })()}
 
               <PaginationItem>
@@ -275,8 +264,8 @@ export default function WorldCupNews() {
                   onClick={(e) => {
                     e.preventDefault();
                     if (page < data.total_pages) {
-                      setPage(page + 1);
-                      scrollTop();
+                      onPageChange(page + 1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }}
                   className={
@@ -290,6 +279,79 @@ export default function WorldCupNews() {
           </Pagination>
         </div>
       )}
+    </>
+  );
+}
+
+export function ArticleGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i}>
+          <Skeleton className="h-40 w-full mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      ))}
     </div>
+  );
+}
+
+interface ArticleListViewProps {
+  articles: NewsResponse[];
+  data: { total_pages: number } | undefined;
+  page: number;
+  onPageChange: (p: number) => void;
+  isLoading: boolean;
+  error: unknown;
+  emptyMessage: string;
+  emptyHelpText: string;
+  errorLabel?: string;
+}
+
+export function ArticleListView({
+  articles,
+  data,
+  page,
+  onPageChange,
+  isLoading,
+  error,
+  emptyMessage,
+  emptyHelpText,
+  errorLabel = "Failed to load articles",
+}: ArticleListViewProps) {
+  if (isLoading) {
+    return <ArticleGridSkeleton />;
+  }
+
+  if (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : typeof error === "object" && error !== null && "detail" in error
+          ? String((error as { detail: string }).detail)
+          : "Unknown error";
+
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="text-center">
+          <p className="text-destructive mb-2">{errorLabel}</p>
+          <p className="text-sm text-muted-foreground">{errorMessage}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (articles.length === 0) {
+    return <NoData message={emptyMessage} helpText={emptyHelpText} />;
+  }
+
+  return (
+    <ArticleGrid
+      articles={articles}
+      data={data}
+      page={page}
+      onPageChange={onPageChange}
+    />
   );
 }

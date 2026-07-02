@@ -4,7 +4,7 @@ import { ScrollNews } from "./components/scroll-news";
 import HomeRanking from "./components/home-ranking";
 import HomeNews from "./components/home-news";
 import HomeDiscuss from "./components/home-discuss";
-import Promotion from "./components/promotion";
+// import Promotion from "./components/promotion";
 import VoteResult from "./components/vote-result";
 import Leaderboard from "./components/leaderboard";
 import HomeExpert from "./components/home-expert";
@@ -22,9 +22,9 @@ export default function Home() {
             <HomeRanking />
           </div>
         </div>
-        <div className="max-w-4xl mx-auto">
+        {/* <div className="max-w-4xl mx-auto">
           <Promotion />
-        </div>
+        </div> */}
         <div className="max-w-4xl mx-auto">
           <Leaderboard />
         </div>

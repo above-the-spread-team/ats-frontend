@@ -62,7 +62,7 @@ export default function HomeExpert() {
           <Skeleton className="h-6 w-48" />
         </div>
         <div className="grid gap-1 rounded-lg border border-border bg-card p-2 shadow-sm ">
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 8 }).map((_, index) => (
             <div
               key={index}
               className="flex items-start gap-2 rounded-lg p-1.5"
@@ -114,7 +114,7 @@ export default function HomeExpert() {
           {experts.map((article) => (
             <Link
               key={article.id}
-              href={`/news/${article.id}`}
+              href={`/articles/${article.id}`}
               className="group flex items-center gap-2.5 px-3 py-1 transition-colors hover:bg-muted"
             >
               <ExpertAvatar

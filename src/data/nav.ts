@@ -1,4 +1,4 @@
-import { FaCalendarAlt, FaHome, FaLightbulb } from "react-icons/fa";
+import { FaCalendarAlt, FaHome, FaLightbulb, FaTrophy } from "react-icons/fa";
 import { IoBarChart, IoNewspaper, IoChatbubbles } from "react-icons/io5";
 
 import { IconType } from "react-icons";
@@ -26,11 +26,11 @@ export const navItems: NavItem[] = [
     icon: FaLightbulb,
   },
 
-  {
-    label: "Articles",
-    href: "/articles?tab=news",
-    icon: IoNewspaper,
-  },
+  // {
+  //   label: "Articles",
+  //   href: "/articles?tab=news",
+  //   icon: IoNewspaper,
+  // },
   {
     label: "News",
     href: "/news",
@@ -60,9 +60,9 @@ export const mobileNavItems: NavItem[] = [
     icon: FaCalendarAlt,
   },
   {
-    label: "Articles",
-    href: "/news?tab=news",
-    icon: IoNewspaper,
+    label: "World Cup",
+    href: "/world-cup",
+    icon: FaTrophy,
   },
   {
     label: "Discuss",
