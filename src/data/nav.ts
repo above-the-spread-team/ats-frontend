@@ -26,11 +26,6 @@ export const navItems: NavItem[] = [
     icon: FaLightbulb,
   },
 
-  // {
-  //   label: "Articles",
-  //   href: "/articles?tab=news",
-  //   icon: IoNewspaper,
-  // },
   {
     label: "News",
     href: "/news",
@@ -60,9 +55,9 @@ export const mobileNavItems: NavItem[] = [
     icon: FaCalendarAlt,
   },
   {
-    label: "World Cup",
-    href: "/world-cup",
-    icon: FaTrophy,
+    label: "Articles",
+    href: "/articles?tab=news",
+    icon: IoNewspaper,
   },
   {
     label: "Discuss",
