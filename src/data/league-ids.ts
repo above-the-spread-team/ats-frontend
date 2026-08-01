@@ -1,6 +1,6 @@
 import { SEASON_CONFIG } from "@/config/season-config";
 
-export const LEAGUE_IDS = [1, 2, 3, 848, 39, 140, 135, 78, 61] as const;
+export const LEAGUE_IDS = [1, 2, 3, 848, 39, 140, 135, 78, 61, 98] as const;
 
 /**
  * Returns true if the given league should display seasons as a single year
