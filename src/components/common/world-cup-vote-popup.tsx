@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,7 @@ import {
   useSubmitVote,
   useUpdateVote,
 } from "@/services/fastapi/world-cup-vote";
-import { VotingModal } from "@/app/(features)/world-cup/prediction/components/world-cup-vote";
+import { VotingModal } from "@/app/[locale]/(features)/world-cup/prediction/components/world-cup-vote";
 
 const DISMISSED_KEY = "wc_vote_popup_dismissed_at";
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
@@ -31,6 +32,7 @@ function formatDeadline(iso: string) {
 }
 
 export default function WorldCupVotePopup() {
+  const t = useTranslations("worldCupVotePopup");
   const [teaserOpen, setTeaserOpen] = useState(false);
   const [votingOpen, setVotingOpen] = useState(false);
   const openDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -129,7 +131,7 @@ export default function WorldCupVotePopup() {
           <div className="relative overflow-hidden ">
             <Image
               src="/images/world-cup-popup.jpg"
-              alt="World Cup trophy"
+              alt={t("trophyAlt")}
               width={800}
               height={600}
               priority
@@ -141,24 +143,23 @@ export default function WorldCupVotePopup() {
             <div className="relative flex min-h-[440px] flex-col justify-between p-4 text-white  sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="rounded-full border border-white/15 bg-black/35 px-2.5 py-1 text-[10px] md:text-[11px] font-black uppercase tracking-[0.18em] text-amber-200 shadow-lg shadow-black/25 backdrop-blur-md">
-                  World Cup 2026 Challenge
+                  {t("challenge")}
                 </div>
               </div>
 
               <div className="space-y-3">
                 <DialogHeader className="items-start gap-2 text-left">
                   <DialogTitle className="max-w-[13ch] text-3xl font-black leading-[0.96] tracking-[-0.05em] text-white sm:text-4xl">
-                    Predict the World Cup.
+                    {t("predict")}
                     <span className="mt-2 block text-amber-300">
-                      Win 500 USD.
+                      {t("winPrize")}
                     </span>
                   </DialogTitle>
                   <DialogDescription className="max-w-xs text-xs md:text-sm font-medium leading-relaxed text-white/82 sm:text-xs">
-                    Pick 2 qualifiers from each group, choose the champion, and
-                    guess the total goals. The closest bracket takes the prize.
+                    {t("description")}
                     {deadline?.deadline && (
                       <span className="mt-2 inline-flex rounded-full border border-white/15 bg-black/35 px-2.5 py-1 text-xs md:text-sm font-bold text-white backdrop-blur">
-                        Closes {formatDeadline(deadline.deadline)}
+                        {t("closes", { date: formatDeadline(deadline.deadline) })}
                       </span>
                     )}
                   </DialogDescription>
@@ -168,21 +169,21 @@ export default function WorldCupVotePopup() {
                   <div className="rounded-xl border border-white/10 bg-white/10 p-2 backdrop-blur">
                     <p className="text-sm font-black leading-none">12</p>
                     <p className="mt-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-white/60">
-                      Groups
+                      {t("groups")}
                     </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/10 p-2 backdrop-blur">
                     <p className="text-sm font-black leading-none">1</p>
                     <p className="mt-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-white/60">
-                      Champion
+                      {t("champion")}
                     </p>
                   </div>
                   <div className="rounded-xl border border-amber-300/25 bg-amber-300/15 p-2 backdrop-blur">
                     <p className="text-sm font-black leading-none text-amber-200">
-                      Goals
+                      {t("goals")}
                     </p>
                     <p className="mt-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-amber-100/70">
-                      Tie-break
+                      {t("tieBreak")}
                     </p>
                   </div>
                 </div>
@@ -192,7 +193,7 @@ export default function WorldCupVotePopup() {
                     onClick={handlePredictNow}
                     className="py-3 flex-1 rounded-xl bg-amber-300 text-xs font-black uppercase tracking-[0.1em] text-zinc-950 shadow-[0_16px_36px_rgba(251,191,36,0.3)] hover:bg-amber-200"
                   >
-                    Start Prediction
+                    {t("startPrediction")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -200,7 +201,7 @@ export default function WorldCupVotePopup() {
                     onClick={dismiss}
                     className="h-9 rounded-xl border border-white/10 bg-white/5 px-4 text-xs text-white/85 hover:bg-white/12 hover:text-white"
                   >
-                    Not now
+                    {t("notNow")}
                   </Button>
                 </div>
               </div>

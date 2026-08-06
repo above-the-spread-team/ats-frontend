@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -100,6 +101,8 @@ function FixtureVoteRow({
   voted: VoteChoice | null;
   onVoted: (choice: VoteChoice | null) => void;
 }) {
+  const t = useTranslations("votePopup");
+  const tc = useTranslations("common");
   const { vote } = useVote();
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0); // seconds remaining
@@ -140,11 +143,11 @@ function FixtureVoteRow({
     } catch (e) {
       onVoted(null); // revert on failure
       if (e instanceof RateLimitError) {
-        setError(`Rate limit reached — next slot opens in`);
+        setError(t("rateLimit"));
         startCooldown(e.retryAfter);
         return;
       }
-      const msg = e instanceof Error ? e.message : "Failed to submit";
+      const msg = e instanceof Error ? e.message : t("failedToSubmit");
       if (msg.toLowerCase().includes("already voted")) return;
       setError(msg);
     }
@@ -197,14 +200,14 @@ function FixtureVoteRow({
               </span>
               <div className="min-w-0 flex flex-col justify-center leading-tight">
                 <p className="text-[10px] text-muted-foreground">
-                  Your prediction
+                  {t("yourPrediction")}
                 </p>
                 <p className="text-xs sm:text-sm font-semibold text-foreground truncate max-w-[40vw] sm:max-w-[14rem]">
                   {voted === "home"
                     ? fixture.home_team
                     : voted === "away"
                       ? fixture.away_team
-                      : "Draw"}
+                      : t("draw")}
                 </p>
               </div>
             </div>
@@ -224,7 +227,7 @@ function FixtureVoteRow({
                     : "hover:brightness-110 active:scale-95",
                 ].join(" ")}
               >
-                {v.key === "home" ? "Home" : v.key === "away" ? "Away" : "Draw"}
+                {v.key === "home" ? tc("home") : v.key === "away" ? tc("away") : tc("draw")}
               </button>
             ))}
           </div>
@@ -303,12 +306,14 @@ function LeagueGroup({
 
 // ── popup content ──────────────────────────────────────────────────────────
 
-const DAY_TABS: { label: string; day: "today" | "tomorrow" }[] = [
-  { label: "Tomorrow", day: "tomorrow" },
-  { label: "Today", day: "today" },
+const DAY_TABS: { labelKey: "today" | "tomorrow"; day: "today" | "tomorrow" }[] = [
+  { labelKey: "tomorrow", day: "tomorrow" },
+  { labelKey: "today", day: "today" },
 ];
 
 function VotePopupContent() {
+  const t = useTranslations("votePopup");
+  const tc = useTranslations("common");
   const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
   const { data, isLoading, error } = useAvailableFixtures(selectedDay);
 
@@ -401,7 +406,7 @@ function VotePopupContent() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
-        <p className="text-sm">Failed to load fixtures</p>
+        <p className="text-sm">{t("failedToLoadFixtures")}</p>
       </div>
     );
   }
@@ -423,7 +428,7 @@ function VotePopupContent() {
                     : "text-muted-foreground hover:text-foreground",
                 ].join(" ")}
               >
-                {tab.label}
+                {tc(tab.labelKey)}
               </button>
             ))}
           </div>
@@ -432,16 +437,16 @@ function VotePopupContent() {
           <span className="text-4xl">⚽</span>
           <p className="text-md font-medium text-foreground">
             {selectedDay === "tomorrow"
-              ? "No fixtures scheduled for tomorrow"
-              : "No fixtures available today"}
+              ? t("noFixturesTomorrow")
+              : t("noFixturesToday")}
           </p>
           <p className="text-sm text-muted-foreground">
-            🕐 All fixture times are displayed in UTC
+            {t("utcNotice")}
           </p>
           <p className="text-xs">
             {selectedDay === "tomorrow"
-              ? "Tomorrow's fixtures are pre-loaded at 00:20 UTC"
-              : "All matches have finished or none were scheduled — check back tomorrow"}
+              ? t("tomorrowPreload")
+              : t("allFinished")}
           </p>
         </div>
       </div>
@@ -465,7 +470,7 @@ function VotePopupContent() {
                   : "text-muted-foreground hover:text-foreground",
               ].join(" ")}
             >
-              {tab.label}
+              {tc(tab.labelKey)}
             </button>
           ))}
         </div>
@@ -474,7 +479,7 @@ function VotePopupContent() {
         {totalAvailable > 0 && (
           <div>
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-              <span>Your predictions</span>
+              <span>{t("yourPredictions")}</span>
               <span className="font-medium text-foreground">
                 {totalVoted} / {totalAvailable}
               </span>
@@ -523,20 +528,18 @@ function VotePopupShell({
   onOpenChange: (open: boolean) => void;
   trigger?: React.ReactNode;
 }) {
+  const t = useTranslations("votePopup");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="p-0 gap-0 w-full max-w-[95%] md:max-w-lg sm:max-w-xl flex flex-col max-h-[70vh] sm:max-h-[80vh]">
-        <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border flex-shrink-0">
+          <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <VoteIcon className="w-5 h-5 text-primary-font flex-shrink-0" />
-            Vote &amp; Climb the Leaderboard
+            {t("voteAndClimb")}
           </DialogTitle>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Every correct pick moves you up — top predictor wins{" "}
-            <span className="font-semibold text-amber-500 dark:text-amber-400">
-              $1,000 USD
-            </span>
+            {t("correctPickMoves")}
           </p>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 min-h-0">

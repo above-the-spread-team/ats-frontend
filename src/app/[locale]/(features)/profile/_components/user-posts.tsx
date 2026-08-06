@@ -1,0 +1,154 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FileText } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { useUserPosts } from "@/services/fastapi/posts";
+import PostCard, { mapPostResponse } from "@/app/[locale]/(features)/discuss/_components/post-card";
+
+const PAGE_SIZE = 10;
+
+export interface UserPostsProps {
+  userId: number;
+}
+
+export default function UserPosts({ userId }: UserPostsProps) {
+  const t = useTranslations("profile");
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useUserPosts(userId, page, PAGE_SIZE);
+
+  const items = data?.items ?? [];
+  const totalPages = data?.total_pages ?? 1;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("posts")}
+            </p>
+            <Skeleton className="mt-1 h-5 w-56" />
+          </div>
+          <Skeleton className="h-9 w-28 rounded-md" />
+        </div>
+
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="border-border/50 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <Card className="border-border/50 bg-card shadow-sm">
+        <CardContent className="py-12 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-2 ring-border/50">
+            <FileText className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground mb-2">{t("noPostsYet")}</p>
+          <p className="text-sm text-muted-foreground/80 mb-4">
+            {t("postsAppearHere")}
+          </p>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/discuss">{t("goToDiscuss")}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("posts")}
+          </p>
+          <h2 className="mt-1 text-base font-bold tracking-tight">{t("discussActivity")}</h2>
+        </div>
+        {totalPages > 1 ? (
+          <p className="text-sm text-muted-foreground">
+            {t("pageOf", { page, total: totalPages })}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-3">
+        {items.map((post) => (
+          <PostCard
+            key={post.id}
+            post={mapPostResponse(post)}
+            hideGroupInfo={false}
+          />
+        ))}
+      </div>
+      {totalPages > 1 && (
+        <div className="flex justify-center pt-2">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page > 1) setPage((p) => p - 1);
+                  }}
+                  className={
+                    page <= 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <span className="px-2 text-sm text-muted-foreground">
+                  {t("pageOf", { page, total: totalPages })}
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page < totalPages) setPage((p) => p + 1);
+                  }}
+                  className={
+                    page >= totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+    </div>
+  );
+}

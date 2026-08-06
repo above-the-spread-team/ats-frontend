@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,13 +16,16 @@ interface BackToDiscussionProps {
 
 export default function BackToDiscussion({
   href = "/discuss",
-  label = "Back to Discussion",
+  label,
   variant = "ghost",
   className,
   tabIndex,
   onClick,
 }: BackToDiscussionProps) {
   const router = useRouter();
+  const t = useTranslations("discuss");
+
+  const displayLabel = label ?? t("backToDiscussion");
 
   const handleClick = () => {
     if (onClick) {
@@ -39,7 +43,7 @@ export default function BackToDiscussion({
       className={className}
     >
       <ArrowLeft className="w-4 h-4 text-muted-foreground mr-2" />
-      <span className="text-sm text-muted-foreground font-medium">{label}</span>
+      <span className="text-sm text-muted-foreground font-medium">{displayLabel}</span>
     </Button>
   );
 }

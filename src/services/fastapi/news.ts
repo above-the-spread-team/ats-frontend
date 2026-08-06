@@ -43,7 +43,8 @@ export async function fetchNews(
   page: number = 1,
   pageSize: number = 20,
   tagIds?: number[],
-  articleType?: ArticleType
+  articleType?: ArticleType,
+  lang?: string
 ): Promise<NewsListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -52,6 +53,14 @@ export async function fetchNews(
 
   if (articleType) {
     params.set("article_type", articleType);
+  }
+
+  if (lang) {
+    params.set("lang", lang);
+  }
+
+  if (tagIds && tagIds.length > 0) {
+    tagIds.forEach((id) => params.append("tag_ids", id.toString()));
   }
 
   // Add tag_ids if provided
@@ -85,7 +94,10 @@ export async function fetchNews(
 /**
  * Fetch a single news article by ID
  */
-export async function fetchNewsById(newsId: number): Promise<NewsResponse> {
+export async function fetchNewsById(
+  newsId: number,
+  lang?: string
+): Promise<NewsResponse> {
   const authHeader = getAuthHeader();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -94,7 +106,11 @@ export async function fetchNewsById(newsId: number): Promise<NewsResponse> {
     headers["Authorization"] = authHeader;
   }
 
-  const response = await backendFetch(`${BACKEND_URL}/api/v1/news/${newsId}`, {
+  const url = lang
+    ? `${BACKEND_URL}/api/v1/news/${newsId}?lang=${lang}`
+    : `${BACKEND_URL}/api/v1/news/${newsId}`;
+
+  const response = await backendFetch(url, {
     method: "GET",
     headers,
     credentials: "include",
@@ -119,12 +135,13 @@ export function useNews(
   page: number = 1,
   pageSize: number = 20,
   tagIds?: number[],
-  articleType?: ArticleType
+  articleType?: ArticleType,
+  lang?: string
 ) {
   return useQuery<NewsListResponse, NewsError>({
-    queryKey: ["news", page, pageSize, tagIds, articleType],
-    queryFn: () => fetchNews(page, pageSize, tagIds, articleType),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryKey: ["news", page, pageSize, tagIds, articleType, lang],
+    queryFn: () => fetchNews(page, pageSize, tagIds, articleType, lang),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -132,12 +149,12 @@ export function useNews(
  * React Query hook for infinite scrolling news list
  * Fetches 15 items per page, loads more on scroll
  */
-export function useInfiniteNews(tagIds?: number[], articleType?: ArticleType) {
+export function useInfiniteNews(tagIds?: number[], articleType?: ArticleType, lang?: string) {
   return useInfiniteQuery<NewsListResponse, NewsError>({
-    queryKey: ["news", "infinite", tagIds, articleType],
+    queryKey: ["news", "infinite", tagIds, articleType, lang],
     queryFn: ({ pageParam = 1 }) => {
       const page = typeof pageParam === "number" ? pageParam : 1;
-      return fetchNews(page, 15, tagIds, articleType);
+      return fetchNews(page, 15, tagIds, articleType, lang);
     },
     getNextPageParam: (lastPage) => {
       // If current page is less than total pages, return next page number
@@ -155,12 +172,12 @@ export function useInfiniteNews(tagIds?: number[], articleType?: ArticleType) {
 /**
  * React Query hook for fetching a single news article by ID
  */
-export function useNewsById(newsId: number) {
+export function useNewsById(newsId: number, lang?: string) {
   return useQuery<NewsResponse, NewsError>({
-    queryKey: ["news", newsId],
-    queryFn: () => fetchNewsById(newsId),
-    staleTime: 30 * 1000, // 30 seconds - shorter staleTime helps Safari refresh get fresh data
-    enabled: !!newsId && newsId > 0, // Only fetch if newsId is valid
+    queryKey: ["news", newsId, lang],
+    queryFn: () => fetchNewsById(newsId, lang),
+    staleTime: 30 * 1000,
+    enabled: !!newsId && newsId > 0,
   });
 }
 

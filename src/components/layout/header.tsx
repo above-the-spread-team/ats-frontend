@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { NotificationBell } from "@/components/common/notification";
 import ConfirmDialog from "@/components/common/popup";
@@ -22,6 +23,7 @@ import { useCurrentUser, useLogout } from "@/services/fastapi/oauth";
 export default function Header() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const t = useTranslations("header");
 
   // Use React Query to check authentication status
   const { data: user, error } = useCurrentUser();
@@ -91,21 +93,21 @@ export default function Header() {
       >
         <Image
           src="/images/logo.png"
-          alt="Above The Spread"
+          alt={t("logoAlt")}
           width={600}
           height={600}
           className="w-8"
         />
         <Image
           src="/images/ats-full.png"
-          alt="Above The Spread"
+          alt={t("logoAlt")}
           width={600}
           height={600}
           className="w-48 max-h-8 mt-2 hidden md:block "
         />
         <Image
           src="/images/ats.png"
-          alt="Above The Spread"
+          alt={t("logoAlt")}
           width={600}
           height={600}
           className="w-14 max-h-8  mt-1 block md:hidden "
@@ -123,7 +125,7 @@ export default function Header() {
                 <div className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-white/20 transition-all rounded-full">
                   <UserIcon
                     avatarUrl={user?.avatar_url}
-                    name={user?.username || "User"}
+                    name={user?.username || t("user")}
                     size="small"
                     variant="primary"
                     className="ring-2 !w-8 !h-8 ring-transparent hover:ring-white/20 transition-all"
@@ -135,7 +137,7 @@ export default function Header() {
               <DropdownMenuItem asChild>
                 <Link href="/profile" className="cursor-pointer">
                   <User className="h-4 w-4" />
-                  Profile
+                  {t("profile")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -144,7 +146,7 @@ export default function Header() {
                 className="cursor-pointer text-destructive-foreground hover:text-destructive focus:text-destructive"
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {t("signOut")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -153,7 +155,7 @@ export default function Header() {
             href="/login"
             className="text-mygray font-bold text-sm hover:underline"
           >
-            Login
+            {t("login")}
           </Link>
         )}
       </div>
@@ -163,9 +165,9 @@ export default function Header() {
         open={showLogoutDialog}
         onOpenChange={setShowLogoutDialog}
         onConfirm={handleLogout}
-        title="Sign Out"
-        description="Are you sure you want to sign out? You will need to log in again to access your account."
-        confirmText="Sign out"
+        title={t("signOutTitle")}
+        description={t("signOutDesc")}
+        confirmText={t("signOutConfirm")}
         isPending={logoutMutation.isPending}
         variant="destructive"
       />

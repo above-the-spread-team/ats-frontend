@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const t = useTranslations("common");
 
   // Avoid hydration mismatch
   React.useEffect(() => {
@@ -21,7 +23,7 @@ export function ThemeToggle() {
       className="theme-toggle text-neutral-200/50 hover:bg-primary-active"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       role="button"
-      aria-label="Toggle theme"
+      aria-label={t("toggleTheme")}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {

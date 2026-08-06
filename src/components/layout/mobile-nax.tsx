@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { mobileNavItems } from "@/data/nav";
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const t = useTranslations();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-primary  z-50">
@@ -32,7 +34,7 @@ export default function MobileNav() {
               <Icon
                 className={`w-5 h-5 ${isActive ? "scale-100" : "scale-90"}`}
               />
-              <span className="text-xs scale-90 font-medium">{item.label}</span>
+              <span className="text-xs scale-90 font-medium">{t(item.label)}</span>
             </Link>
           );
         })}

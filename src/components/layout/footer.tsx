@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { navItems } from "@/data/nav";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const pathname = usePathname();
+  const t = useTranslations("footer");
+  const ht = useTranslations("header");
 
   return (
     <footer className="bg-primary-active text-white  hidden md:block">
@@ -18,7 +21,7 @@ export default function Footer() {
           >
             <Image
               src="/images/logo.png"
-              alt="Above The Spread"
+              alt={ht("logoAlt")}
               width={48}
               height={48}
               className="w-10 h-10"
@@ -28,7 +31,7 @@ export default function Footer() {
                 Above The Spread
               </p>
               <p className="text-xs text-white/70">
-                Intelligence for the modern sports fan
+                {t("tagline")}
               </p>
             </div>
           </Link>
@@ -61,7 +64,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-4 text-xs text-white/60 text-center md:text-left">
           <p>
-            © {new Date().getFullYear()} Above The Spread. All rights reserved.
+            {t("copyright", { year: new Date().getFullYear() })}
           </p>
         </div>
       </div>
