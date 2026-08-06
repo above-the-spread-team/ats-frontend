@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 export default function Footer() {
   const pathname = usePathname();
   const t = useTranslations("footer");
+  const nt = useTranslations();
   const ht = useTranslations("header");
 
   return (
@@ -50,7 +51,7 @@ export default function Footer() {
                   className={`group relative rounded-full px-3 py-1 transition text-white/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  <span className="relative z-10">{item.label}</span>
+                  <span className="relative z-10">{nt(item.label)}</span>
                   <span
                     className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-gradient-to-r from-white/10 via-white/80 to-white/10 opacity-0 transition-all duration-300 ${
                       isActive ? "w-[70%] opacity-100" : ""
