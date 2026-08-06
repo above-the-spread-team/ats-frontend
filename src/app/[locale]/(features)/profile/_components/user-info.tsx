@@ -1,0 +1,357 @@
+"use client";
+
+import { useRef } from "react";
+import { useTranslations } from "next-intl";
+import {
+  Mail,
+  Calendar,
+  CheckCircle2,
+  FileText,
+  Users,
+  MessageCircle,
+  Heart,
+  Shield,
+  Clock,
+  CircleDot,
+  Camera,
+  Plus,
+  Target,
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import UserIcon from "@/components/common/user-icon";
+import type { User, UserPublicResponse } from "@/type/fastapi/user";
+import { useUploadUserIcon } from "@/services/fastapi/user";
+import { cn } from "@/lib/utils";
+
+function formatDate(iso: string) {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function formatDateTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+/** Optional stats to show when we have User (e.g. from GET /users/{id}) for "my profile". */
+export interface UserStats {
+  post_count: number;
+  group_count: number;
+  comment_count: number;
+  total_likes: number;
+  prediction_accuracy?: number | null;
+  total_predictions?: number;
+  correct_predictions?: number;
+}
+
+/** Full user has email/email_verified/role/etc.; public profile has counts. */
+export interface UserInfoProps {
+  user: User | UserPublicResponse;
+  /** When true (default for User with email), show email and verified status. Omit for public profiles. */
+  showEmail?: boolean;
+  /** Optional counts (e.g. from GET /users/{id}) when showing full User so "my profile" can show stats. */
+  stats?: UserStats;
+  /** When true, show upload avatar control (only for current user's profile). */
+  canEditAvatar?: boolean;
+}
+
+function isFullUser(user: User | UserPublicResponse): user is User {
+  return "email" in user;
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  valueClassName,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: React.ReactNode;
+  valueClassName?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-2.5 first:pt-0 last:pb-0">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <p
+          className={cn(
+            "mt-0.5 text-sm font-medium text-foreground",
+            valueClassName,
+          )}
+        >
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function UserInfo({
+  user,
+  showEmail,
+  stats,
+  canEditAvatar = false,
+}: UserInfoProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadIcon = useUploadUserIcon();
+  const t = useTranslations("profile");
+  const tc = useTranslations("common");
+  const fullUser = isFullUser(user) ? user : null;
+  const publicUser = "post_count" in user ? user : null;
+  const statsToShow = publicUser ?? stats;
+
+  const hasEmail = fullUser && fullUser.email != null;
+  const showEmailSection = showEmail !== false && hasEmail;
+  const emailVerified =
+    fullUser && "email_verified" in fullUser
+      ? fullUser.email_verified
+      : undefined;
+
+  const handleAvatarClick = () => {
+    if (!canEditAvatar || uploadIcon.isPending) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadIcon.mutate(file);
+    }
+    e.target.value = "";
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Hero: avatar + name + verification badge */}
+      <Card className="overflow-hidden border-border/50 bg-card shadow-sm">
+        <div className="relative bg-gradient-to-br from-primary-active/95 via-primary-active/85 to-primary-active/70 px-4 py-3 text-white">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,hsl(var(--primary-font)/0.35),transparent_55%)]" />
+
+          <div className="relative flex flex-col items-center py-2 px-2 gap-4 text-center sm:flex-row sm:items-center sm:text-left">
+            <div className="relative shrink-0">
+              {canEditAvatar ? (
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={uploadIcon.isPending}
+                  className="ring-primary/20 flex overflow-hidden rounded-full ring-4 ring-offset-4 ring-offset-card cursor-pointer hover:ring-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label={t("uploadPhoto")}
+                >
+                  <UserIcon
+                    avatarUrl={user.avatar_url}
+                    name={user.username}
+                    size="large"
+                    variant="primary"
+                    className={cn(
+                      "h-16 w-16 sm:h-28 sm:w-28",
+                      uploadIcon.isPending && "opacity-60",
+                    )}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="sr-only"
+                    aria-hidden
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity hover:opacity-100 focus-within:opacity-100">
+                    <Camera className="h-8 w-8 text-white sm:h-5 sm:w-6" />
+                  </span>
+                </button>
+              ) : (
+                <div className="ring-primary/20 flex overflow-hidden rounded-full ring-4 ring-offset-4 ring-offset-card">
+                  <UserIcon
+                    avatarUrl={user.avatar_url}
+                    name={user.username}
+                    size="large"
+                    variant="primary"
+                    className="h-16 w-16 sm:h-28 sm:w-28"
+                  />
+                </div>
+              )}
+
+              {canEditAvatar && (
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={uploadIcon.isPending}
+                  aria-label={t("uploadPhoto")}
+                  className={cn(
+                    "absolute -bottom-1 -right-1 bg-primary-font/70 text-white h-5 w-5 rounded-full flex items-center justify-center transition-opacity",
+                    uploadIcon.isPending
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer hover:bg-primary-font/90",
+                  )}
+                  title={t("uploadPhotoTitle")}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="sm:pb-1">
+              <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+                {user.username}
+              </h1>
+
+              {showEmailSection && emailVerified !== undefined && (
+                <span
+                  className={cn(
+                    "mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium border border-white/20 text-white",
+                    emailVerified
+                      ? "bg-green-500/15"
+                      : "bg-amber-500/15",
+                  )}
+                >
+                  {emailVerified ? (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <Mail className="h-3.5 w-3.5" />
+                  )}
+                  {emailVerified ? t("emailVerified") : t("emailNotVerified")}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Details + Activity */}
+      <div
+        className={cn(
+          "grid gap-4",
+          statsToShow ? "md:grid-cols-2" : "md:grid-cols-1",
+        )}
+      >
+        <Card className="border-border/50 bg-card shadow-sm">
+          <div className="p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("details")}
+            </p>
+            <div className="divide-y divide-border/60">
+              {showEmailSection && fullUser && (
+                <InfoRow
+                  icon={Mail}
+                  label={tc("email")}
+                  value={<span className="truncate">{fullUser.email}</span>}
+                />
+              )}
+              <InfoRow
+                icon={Calendar}
+                  label={t("joined")}
+                value={formatDate(user.created_at)}
+              />
+              {fullUser?.role && (
+                <InfoRow
+                  icon={Shield}
+                  label={t("role")}
+                  value={<span className="capitalize">{fullUser.role}</span>}
+                />
+              )}
+              {fullUser?.updated_at && (
+                <InfoRow
+                  icon={Clock}
+                  label={t("lastUpdated")}
+                  value={formatDateTime(fullUser.updated_at)}
+                />
+              )}
+              {fullUser && "is_active" in fullUser && (
+                <InfoRow
+                  icon={CircleDot}
+                  label={t("status")}
+                  value={
+                    <span
+                      className={
+                        fullUser.is_active
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {fullUser.is_active ? t("active") : t("inactive")}
+                    </span>
+                  }
+                />
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {statsToShow && (
+          <Card className="border-border/50 bg-card shadow-sm">
+            <div className="p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("activity")}
+              </p>
+              <div className="divide-y divide-border/60">
+                <InfoRow
+                  icon={FileText}
+                  label={t("posts")}
+                  value={
+                    <span className="tabular-nums">{statsToShow.post_count}</span>
+                  }
+                />
+                <InfoRow
+                  icon={Users}
+                  label={t("groups")}
+                  value={
+                    <span className="tabular-nums">{statsToShow.group_count}</span>
+                  }
+                />
+                <InfoRow
+                  icon={MessageCircle}
+                  label={t("comments")}
+                  value={
+                    <span className="tabular-nums">{statsToShow.comment_count}</span>
+                  }
+                />
+                <InfoRow
+                  icon={Heart}
+                  label={t("likesReceived")}
+                  value={
+                    <span className="tabular-nums">{statsToShow.total_likes}</span>
+                  }
+                />
+                {(statsToShow.total_predictions ?? 0) > 0 && (
+                  <InfoRow
+                    icon={Target}
+                    label={t("predictionAccuracy")}
+                    value={
+                      <span className="tabular-nums">
+                        {statsToShow.prediction_accuracy != null
+                          ? `${statsToShow.prediction_accuracy.toFixed(1)}%`
+                          : "—"}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          ({statsToShow.correct_predictions ?? 0}/{statsToShow.total_predictions ?? 0})
+                        </span>
+                      </span>
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

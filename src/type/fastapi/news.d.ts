@@ -72,6 +72,8 @@ export interface NewsResponse {
   dislikes: number;
   user_reaction: boolean | null; // True for like, False for dislike, null if no reaction or not authenticated
   tags: TagSummary[];
+  language?: string;
+  available_languages?: string[];
 }
 
 export interface NewsListResponse {

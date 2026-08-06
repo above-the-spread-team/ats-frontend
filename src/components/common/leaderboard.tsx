@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry } from "@/type/fastapi/predictions";
@@ -71,6 +72,8 @@ export function LeaderboardRow({
   entry: LeaderboardEntry;
   isCurrentUser?: boolean;
 }) {
+  const t = useTranslations("leaderboard");
+  const tc = useTranslations("common");
   const top = TOP3[entry.rank];
 
   return (
@@ -106,7 +109,7 @@ export function LeaderboardRow({
         >
           {entry.username}
           {isCurrentUser && (
-            <span className="ml-1 text-[10px] text-primary-font">(you)</span>
+            <span className="ml-1 text-[10px] text-primary-font">{tc("you")}</span>
           )}
         </span>
       </div>
@@ -114,7 +117,7 @@ export function LeaderboardRow({
       {/* Stats */}
       <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
         <div className="flex items-center gap-1">
-          <p className="text-[11px] text-muted-foreground">score:</p>
+          <p className="text-[11px] text-muted-foreground">{t("score")}</p>
           <span
             className={cn(
               "text-sm font-bold tabular-nums",
@@ -125,8 +128,11 @@ export function LeaderboardRow({
           </span>
         </div>
         <span className="text-[11px] text-muted-foreground tabular-nums">
-          {entry.accuracy.toFixed(1)}%&nbsp;·&nbsp;{entry.correct_predictions}/
-          {entry.total_games}
+          {t("accuracyFormat", {
+            pct: entry.accuracy.toFixed(1),
+            correct: entry.correct_predictions,
+            total: entry.total_games,
+          })}
         </span>
       </div>
     </div>

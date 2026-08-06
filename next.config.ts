@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Lower default quality reduces bandwidth; logos are small and don't need high fidelity
     qualities: [50, 75],
     remotePatterns: [
       {
@@ -46,8 +48,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Ensure Fast Refresh is enabled
-  // reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "next-intl";
 import { Inbox } from "lucide-react";
 import { IoFootball } from "react-icons/io5";
 
@@ -24,9 +27,9 @@ export default function NoData({
   className = "min-h-[50vh]",
   icon = "inbox",
 }: NoDateProps) {
-  // Determine default message based on props
-  const displayMessage =
-    message || (date ? "No fixtures scheduled" : "No data available");
+  const t = useTranslations("common");
+
+  const displayMessage = message || t("noData");
 
   // Determine if we should show help text
   const shouldShowHelpText = helpText !== undefined || date !== undefined;
@@ -62,7 +65,7 @@ export default function NoData({
             helpText
           ) : date ? (
             <>
-              We have no events to show on this date{" "}
+              {t("noData")}{" "}
               <span className="font-semibold">{date}</span>.
             </>
           ) : null}

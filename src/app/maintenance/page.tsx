@@ -1,13 +1,28 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Under Maintenance",
-  description:
-    "Above The Spread is currently undergoing scheduled maintenance. We'll be back on the pitch shortly.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "maintenance" });
 
-export default function MaintenancePage() {
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: { index: false, follow: false },
+  };
+}
+
+export default async function MaintenancePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "maintenance" });
   return (
     <main className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -69,7 +84,7 @@ export default function MaintenancePage() {
         <div className="flex flex-1 flex-col items-center gap-5 sm:gap-6 lg:items-start">
           <span className="inline-flex items-center gap-2 rounded-full border-l-2 border-primary-hero bg-primary/[0.08] px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-foreground sm:text-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-hero" />
-            Scheduled Maintenance
+            {t("pageTitle")}
           </span>
 
           <h1 className="relative text-5xl font-black leading-none tracking-tight sm:text-7xl lg:text-9xl">
@@ -77,29 +92,26 @@ export default function MaintenancePage() {
               aria-hidden
               className="pointer-events-none absolute inset-0 select-none text-foreground opacity-30 blur-sm"
             >
-              Half
+              {t("half")}
               <br />
-              Time
+              {t("time")}
             </span>
             <span className="relative text-primary-font">
-              Half
+              {t("half")}
               <br />
-              Time
+              {t("time")}
             </span>
           </h1>
 
           <div className="space-y-2 sm:space-y-3">
             <h2 className="text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
-              We&apos;re in the dressing room
+              {t("dressingRoom")}
             </h2>
             <p className="mx-auto max-w-md text-sm text-foreground sm:text-base lg:mx-0 lg:max-w-lg">
-              Above The Spread is undergoing scheduled maintenance to improve
-              your experience. The second half kicks off soon — check back
-              shortly.
+              {t("dressingRoomDesc")}
             </p>
             <p className="mx-auto max-w-md text-sm text-foreground sm:text-base lg:mx-0 lg:max-w-lg">
-              Our team is making key tactical changes. Estimated return:
-              shortly.
+              {t("tacticalChanges")}
             </p>
           </div>
 
@@ -108,7 +120,7 @@ export default function MaintenancePage() {
             aria-valuenow={60}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Maintenance progress"
+            aria-label={t("progressAria")}
             className="h-1 w-full max-w-xs overflow-hidden rounded-full bg-foreground/10"
           >
             <div className="h-full w-3/5 animate-pulse rounded-full bg-foreground/80" />
@@ -117,7 +129,7 @@ export default function MaintenancePage() {
           <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
             <div className="inline-flex h-11 items-center gap-2 rounded-full border-l-2 border-primary-hero bg-primary/[0.08] px-6 text-sm font-semibold text-foreground sm:text-base">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              Back soon
+              {t("backSoon")}
             </div>
           </div>
         </div>
@@ -141,7 +153,7 @@ export default function MaintenancePage() {
               viewBox="0 0 200 200"
               className="h-full w-full"
               role="img"
-              aria-label="Soccer ball"
+              aria-label={t("soccerBall")}
             >
               <defs>
                 <radialGradient id="ballHighlight" cx="32%" cy="28%" r="78%">
@@ -211,9 +223,9 @@ export default function MaintenancePage() {
             <span className="h-2 w-2 rounded-full bg-primary-hero" />
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground">
-                Status
+                {t("status")}
               </p>
-              <p className="text-sm font-bold text-foreground">Maintenance</p>
+              <p className="text-sm font-bold text-foreground">{t("maintenance")}</p>
             </div>
           </div>
 
@@ -221,10 +233,10 @@ export default function MaintenancePage() {
             <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground">
-                Next up
+                {t("nextUp")}
               </p>
               <p className="text-sm font-bold text-foreground">
-                2nd Half soon
+                {t("secondHalf")}
               </p>
             </div>
           </div>

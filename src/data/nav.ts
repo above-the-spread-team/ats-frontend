@@ -11,33 +11,33 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   {
-    label: "Home",
+    label: "nav.home",
     href: "/",
     icon: FaHome,
   },
   {
-    label: "Games",
+    label: "nav.games",
     href: "/games",
     icon: FaCalendarAlt,
   },
   {
-    label: "Our Picks",
+    label: "nav.ourPicks",
     href: "/our-picks",
     icon: FaLightbulb,
   },
 
   {
-    label: "News",
+    label: "nav.news",
     href: "/news",
     icon: IoNewspaper,
   },
   {
-    label: "Discuss",
+    label: "nav.discuss",
     href: "/discuss",
     icon: IoChatbubbles,
   },
   {
-    label: "Stats",
+    label: "nav.stats",
     href: "/stats",
     icon: IoBarChart,
   },
@@ -45,27 +45,27 @@ export const navItems: NavItem[] = [
 
 export const mobileNavItems: NavItem[] = [
   {
-    label: "Home",
+    label: "nav.home",
     href: "/",
     icon: FaHome,
   },
   {
-    label: "Games",
+    label: "nav.games",
     href: "/games",
     icon: FaCalendarAlt,
   },
   {
-    label: "Articles",
+    label: "nav.articles",
     href: "/articles?tab=news",
     icon: IoNewspaper,
   },
   {
-    label: "Discuss",
+    label: "nav.discuss",
     href: "/discuss",
     icon: IoChatbubbles,
   },
   {
-    label: "Stats",
+    label: "nav.stats",
     href: "/stats",
     icon: IoBarChart,
   },

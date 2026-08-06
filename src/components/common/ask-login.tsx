@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Lock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,14 +29,16 @@ interface AskLoginProps {
  * `absolute` utility classes from the parent.
  */
 export default function AskLogin({
-  title = "Members Only",
-  description = "Sign in to access this content.",
+  title,
+  description,
   features = [],
-  ctaLabel = "Sign in",
+  ctaLabel,
   backHref,
-  backLabel = "← Go back",
+  backLabel,
   className,
 }: AskLoginProps) {
+  const t = useTranslations("worldCupVotePopup");
+  const ct = useTranslations("common");
   return (
     <div
       className={cn(
@@ -62,10 +65,10 @@ export default function AskLogin({
         {/* Heading & description */}
         <div className="space-y-2">
           <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-            {title}
+            {title ?? t("membersOnly")}
           </h3>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-            {description}
+            {description ?? t("signInToAccess")}
           </p>
         </div>
 
@@ -90,20 +93,20 @@ export default function AskLogin({
             href="/login"
             className="block w-full py-2 bg-primary-font hover:bg-primary-font/90 text-white font-semibold text-sm  rounded-xl transition-all duration-150 hover:shadow-lg hover:shadow-primary-font/20 active:scale-[0.98] text-center"
           >
-            {ctaLabel}
+            {ctaLabel ?? ct("signIn")}
           </Link>
           {backHref && (
             <Link
               href={backHref}
               className="block w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors "
             >
-              {backLabel}
+              {backLabel ?? t("goBack")}
             </Link>
           )}
         </div>
 
         <p className="text-[11px] text-muted-foreground">
-          Free to join · No credit card required
+          {t("freeToJoin")}
         </p>
       </div>
     </div>

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { navItems } from "@/data/nav";
 
 export default function Nav() {
   const pathname = usePathname();
+  const t = useTranslations();
 
   return (
     <nav className="hidden md:flex justify-center items-center px-6 h-8 bg-primary-active">
@@ -29,7 +31,7 @@ export default function Nav() {
             }`}
           >
             <Icon className={`w-4 h-4 ${isActive ? "scale-110" : ""}`} />
-            <p className={`text-sm font-bold`}>{item.label}</p>
+            <p className={`text-sm font-bold`}>{t(item.label)}</p>
           </Link>
         );
       })}

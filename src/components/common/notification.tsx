@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { useTranslations } from "next-intl";
 import { FaBell } from "react-icons/fa";
 import { IoChatbubbles } from "react-icons/io5";
 import Link from "next/link";
@@ -25,7 +26,7 @@ import {
   formatNotificationMessage,
   getNotificationLink,
 } from "@/lib/notification";
-import { formatTimeAgo } from "@/app/(features)/discuss/_components/comment-item";
+import { formatTimeAgo } from "@/app/[locale]/(features)/discuss/_components/comment-item";
 
 export { formatNotificationMessage, getNotificationLink };
 
@@ -111,6 +112,7 @@ function useNotificationToasts(authenticated: boolean) {
   const queryClient = useQueryClient();
   const { data: recentPollData } = useRecentUnreadPoll(authenticated);
   const markRead = useMarkNotificationsRead();
+  const t = useTranslations("notification");
 
   useEffect(() => {
     const items = recentPollData?.items ?? [];
@@ -156,8 +158,8 @@ function useNotificationToasts(authenticated: boolean) {
         ? item.group_avatar_url
         : (item.sender?.avatar_url ?? null);
       const name = showGroupIcon
-        ? "Group"
-        : (item.sender?.username ?? "Someone");
+        ? t("group")
+        : (item.sender?.username ?? t("someone"));
       const iconVariant = showGroupIcon || item.sender ? "primary" : "muted";
       const notificationId = item.id;
       toast(
@@ -186,7 +188,7 @@ function useNotificationToasts(authenticated: boolean) {
       );
     });
     setLastSeenId(Math.max(...newItems.map((i) => i.id)));
-  }, [recentPollData?.items, markRead, router, queryClient]);
+  }, [recentPollData?.items, markRead, router, queryClient, t]);
 }
 
 export interface NotificationBellProps {
@@ -205,6 +207,7 @@ export function NotificationBell({
 }: NotificationBellProps) {
   useNotificationToasts(authenticated);
 
+  const t = useTranslations("notification");
   const { data: unreadData } = useUnreadCount();
   // Dropdown shows all (read+unread); poll is unread-only for toasts, so we keep both queries.
   const { data: notificationsData } = useNotifications(
@@ -224,7 +227,7 @@ export function NotificationBell({
       <Link
         href="/profile"
         className={`relative inline-flex items-center justify-center p-1 rounded-full hover:bg-white/10 transition-colors ${className ?? ""}`}
-        aria-label="Notifications"
+        aria-label={t("notifications")}
       >
         <FaBell className="h-5 w-5 text-gray-200 hover:text-primary-active cursor-pointer" />
       </Link>
@@ -249,8 +252,8 @@ export function NotificationBell({
           className={`relative inline-flex items-center justify-center p-1 rounded-full hover:bg-white/10 transition-colors outline-none ${className ?? ""}`}
           aria-label={
             unreadCount > 0
-              ? `${unreadCount} unread notifications`
-              : "Notifications"
+              ? t("unread", { count: unreadCount })
+              : t("notifications")
           }
         >
           <FaBell className="h-5 w-5 text-gray-200 hover:text-primary-active cursor-pointer" />
@@ -267,21 +270,21 @@ export function NotificationBell({
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border/60 px-3 py-2">
           <span className="text-sm font-semibold text-foreground">
-            Notifications
+            {t("notifications")}
           </span>
           <Link
             href="/profile/?tab=notifications"
             className="text-sm font-semibold text-primary-font hover:underline"
             onClick={() => setDropdownOpen(false)}
           >
-            View all
+            {t("viewAll")}
           </Link>
         </div>
         <ScrollArea className="h-[min(70vh,320px)]">
           {allItems.length === 0 ? (
             <div className="flex items-center justify-center h-[min(70vh,320px)]">
               <p className="text-sm font-semibold text-muted-foreground">
-                No notifications
+                {t("noNotifications")}
               </p>
             </div>
           ) : (
@@ -337,7 +340,7 @@ export function NotificationBell({
                         }
                         name={
                           showGroupIcon
-                            ? "Group"
+                            ? t("group")
                             : (item.sender?.username ?? "?")
                         }
                         size="small"
