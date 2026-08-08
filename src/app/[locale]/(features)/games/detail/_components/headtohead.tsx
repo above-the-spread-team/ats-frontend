@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { HeadToHeadApiResponse } from "@/type/footballapi/headtohead";
 import { getFixtureStatus } from "@/data/fixture-status";
 import Loading from "@/components/common/loading";
+import { useLocale, useTranslations } from "next-intl";
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;
@@ -24,9 +25,9 @@ function formatGoals(value: number | null): string {
   return value.toString();
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, dateLocale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(dateLocale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -42,6 +43,17 @@ export default function HeadtoHead({
   homeTeamId,
   awayTeamId,
 }: HeadtoHeadProps) {
+  const t = useTranslations("games");
+  const tc = useTranslations("common");
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const [headToHeadData, setHeadToHeadData] =
     useState<HeadToHeadApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,9 +77,7 @@ export default function HeadtoHead({
         });
 
         if (!response.ok) {
-          throw new Error(
-            `Failed to load head-to-head data (${response.status})`
-          );
+          throw new Error(t("h2h.loadFailed", { status: response.status }));
         }
 
         const data = (await response.json()) as HeadToHeadApiResponse;
@@ -79,7 +89,7 @@ export default function HeadtoHead({
         setHeadToHeadData(data);
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tc("unknown"));
         setHeadToHeadData(null);
       } finally {
         if (!controller.signal.aborted) {
@@ -107,7 +117,7 @@ export default function HeadtoHead({
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">
-          {error || "No head-to-head data available"}
+          {error || t("h2h.noData")}
         </p>
       </div>
     );
@@ -118,7 +128,7 @@ export default function HeadtoHead({
   if (matches.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">No head-to-head matches found.</p>
+        <p className="text-muted-foreground">{t("h2h.noMatches")}</p>
       </div>
     );
   }
@@ -144,7 +154,7 @@ export default function HeadtoHead({
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-xl md:text-2xl font-bold">Head to Head</h2>
+        <h2 className="text-xl md:text-2xl font-bold">{t("h2h.title")}</h2>
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             {homeTeam.logo ? (
@@ -197,7 +207,9 @@ export default function HeadtoHead({
           </p>
         </div>
         <div className="text-center p-4 bg-card rounded-lg border border-border">
-          <p className="text-xs md:text-sm text-muted-foreground mb-1">Draws</p>
+          <p className="text-xs md:text-sm text-muted-foreground mb-1">
+            {t("h2h.draws")}
+          </p>
           <p className="text-2xl md:text-3xl font-bold">{draws}</p>
         </div>
         <div className="text-center p-4 bg-card rounded-lg border border-border">
@@ -213,7 +225,7 @@ export default function HeadtoHead({
       {/* Matches List */}
       <div className="space-y-3">
         <h3 className="text-lg md:text-xl font-semibold">
-          Recent Matches ({headToHeadData.results})
+          {t("h2h.recentMatches", { count: headToHeadData.results })}
         </h3>
         <div className="space-y-2">
           {matches.map((match) => {
@@ -221,7 +233,7 @@ export default function HeadtoHead({
             const isFinished = statusInfo.type === "Finished";
             const isInPlay = statusInfo.type === "In Play";
             const hasStarted = isInPlay || isFinished;
-            const matchDate = formatDate(match.fixture.date);
+            const matchDate = formatDate(match.fixture.date, dateLocale);
 
             return (
               <div
@@ -282,7 +294,7 @@ export default function HeadtoHead({
                       <div className="text-center">
                         <p className="text-xs md:text-sm font-medium">
                           {new Date(match.fixture.date).toLocaleTimeString(
-                            undefined,
+                            dateLocale,
                             {
                               hour: "2-digit",
                               minute: "2-digit",

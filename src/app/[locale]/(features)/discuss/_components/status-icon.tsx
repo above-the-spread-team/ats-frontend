@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Crown, Ban, Clock, Check, UserPlus } from "lucide-react";
 
@@ -26,6 +27,7 @@ export default function StatusIcon({
   size = "sm",
   className = "",
 }: StatusIconProps) {
+  const t = useTranslations("discuss");
   const iconSize = size === "sm" ? "w-3 h-3" : "w-4 h-4";
   const buttonSize = size === "sm" ? "h-7 text-xs" : "h-8 text-sm";
 
@@ -37,7 +39,7 @@ export default function StatusIcon({
         className={`${buttonSize} ${className} bg-green-100  hover:bg-green-100 text-green-800`}
       >
         <Crown className={`${iconSize} mr-1`} />
-        Owner
+        {t("owner")}
       </Button>
     );
   }
@@ -50,7 +52,7 @@ export default function StatusIcon({
         className={`${buttonSize} ${className} bg-red-100 hover:bg-red-100 text-red-800`}
       >
         <Ban className={`${iconSize} mr-1`} />
-        Banned
+        {t("banned")}
       </Button>
     );
   }
@@ -63,7 +65,7 @@ export default function StatusIcon({
         className={`${buttonSize} ${className}  bg-yellow-100 hover:bg-yellow-100 text-yellow-800`}
       >
         <Clock className={`${iconSize} mr-1`} />
-        Pending
+        {t("pending")}
       </Button>
     );
   }
@@ -84,12 +86,12 @@ export default function StatusIcon({
         {isUnfollowing ? (
           <>
             <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            Unfollowing...
+            {t("unfollowLoading")}
           </>
         ) : (
           <>
             <Check className={`${iconSize} mr-1`} />
-            Following
+            {t("following")}
           </>
         )}
       </Button>
@@ -111,12 +113,12 @@ export default function StatusIcon({
       {isFollowing ? (
         <>
           <span className="w-3 h-3 mr-1 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          Following...
+          {t("followLoading")}
         </>
       ) : (
         <>
           <UserPlus className={`${iconSize} mr-1`} />
-          Follow
+          {t("follow")}
         </>
       )}
     </Button>

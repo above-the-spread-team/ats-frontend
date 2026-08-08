@@ -156,15 +156,14 @@ export default function GroupFollower({
             <Users className="w-12 h-12 mx-auto text-destructive mb-4" />
           )}
           <h3 className="text-lg font-semibold mb-2">
-            Failed to load{" "}
             {activeView === "pending"
-              ? "pending followers"
+              ? t("failedToLoadPending")
               : activeView === "banned"
-                ? "banned users"
-                : "followers"}
+                ? t("failedToLoadBanned")
+                : t("failedToLoadFollowers")}
           </h3>
           <p className="text-muted-foreground mb-4">
-            {error instanceof Error ? error.message : "An error occurred"}
+            {error instanceof Error ? error.message : t("errorOccurred")}
           </p>
         </CardContent>
       </Card>
@@ -240,10 +239,10 @@ export default function GroupFollower({
             )}
             <p className="text-muted-foreground">
               {activeView === "pending"
-                ? "No pending followers at this time."
+                ? t("noPendingFollowers")
                 : activeView === "banned"
-                  ? "No banned users at this time."
-                  : "No followers in this group yet."}
+                  ? t("noBannedUsers")
+                  : t("noFollowersYet")}
             </p>
           </div>
         </CardContent>
@@ -367,7 +366,7 @@ export default function GroupFollower({
                       ) : (
                         <>
                           <Ban className="w-3 h-3 mr-1" />
-                          Ban
+                          {t("ban")}
                         </>
                       )}
                     </Button>
@@ -403,7 +402,7 @@ export default function GroupFollower({
                       ) : (
                         <>
                           <ShieldCheck className="w-3 h-3 mr-1" />
-                          Unban
+                          {t("unban")}
                         </>
                       )}
                     </Button>
@@ -439,7 +438,7 @@ export default function GroupFollower({
                       ) : (
                         <>
                           <Check className="w-3 h-3 mr-1" />
-                          Accept
+                          {t("accept")}
                         </>
                       )}
                     </Button>
@@ -471,7 +470,7 @@ export default function GroupFollower({
                       ) : (
                         <>
                           <X className="w-3 h-3 mr-1" />
-                          Reject
+                          {t("reject")}
                         </>
                       )}
                     </Button>

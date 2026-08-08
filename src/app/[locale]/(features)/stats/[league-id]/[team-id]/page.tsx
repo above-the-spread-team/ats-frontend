@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   MapPin,
@@ -23,6 +24,8 @@ import Squad from "./_components/squad";
 type TabType = "statistics" | "squad";
 
 export default function TeamPage() {
+  const t = useTranslations("stats");
+  const tCommon = useTranslations("common");
   const params = useParams();
   const searchParams = useSearchParams();
   const leagueId = params["league-id"] as string;
@@ -168,7 +171,7 @@ export default function TeamPage() {
           className="flex items-center my-4 gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Teams
+          {t("teamPage.backToTeams")}
         </Link>
 
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
@@ -187,7 +190,7 @@ export default function TeamPage() {
             <div className="flex flex-col">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-base md:text-lg font-bold text-foreground">
-                  {teamInfo?.team.name || "Team"}
+                  {teamInfo?.team.name || tCommon("team")}
                 </h1>
                 {teamInfo?.team.code && (
                   <span className="px-2.5 py-1 bg-muted/80 rounded-md text-xs font-semibold text-muted-foreground border border-border/50">
@@ -196,7 +199,7 @@ export default function TeamPage() {
                 )}
                 {teamInfo?.team.national && (
                   <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-md text-xs font-semibold border border-primary/20">
-                    National
+                    {t("teamPage.national")}
                   </span>
                 )}
               </div>
@@ -209,7 +212,7 @@ export default function TeamPage() {
                     <>
                       <span className="text-muted-foreground">•</span>
                       <span className="text-sm text-muted-foreground">
-                        Founded {teamInfo.team.founded}
+                        {t("teamPage.founded", { year: teamInfo.team.founded })}
                       </span>
                     </>
                   )}
@@ -262,7 +265,7 @@ export default function TeamPage() {
                   <div className="flex items-center gap-1">
                     <Armchair className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
                     <span className="text-xs md:text-sm text-muted-foreground font-medium">
-                      {teamInfo.venue.capacity.toLocaleString()} seats
+                      {t("teamPage.seats", { count: teamInfo.venue.capacity })}
                     </span>
                   </div>
                 )}
@@ -274,8 +277,8 @@ export default function TeamPage() {
         {/* Tab Navigation */}
         <Nav
           tabs={[
-            { id: "statistics", label: "Statistics", icon: BarChart3 },
-            { id: "squad", label: "Squad", icon: Users },
+            { id: "statistics", label: t("tabs.statistics"), icon: BarChart3 },
+            { id: "squad", label: t("tabs.squad"), icon: Users },
           ]}
           activeTab={activeTab}
           setActiveTab={setActiveTab}

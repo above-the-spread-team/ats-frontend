@@ -6,23 +6,24 @@ import NoData from "@/components/common/no-data";
 import { useOdds } from "@/services/football-api/odds";
 import { TrendingUp, Clock, BookOpen } from "lucide-react";
 import type { OddsBet } from "@/type/footballapi/odds";
+import { useLocale, useTranslations } from "next-intl";
 
 interface OddsProps {
   fixtureId: number;
 }
 
-// Common bet type names mapping
-const BET_TYPE_NAMES: Record<number, string> = {
-  1: "Match Winner",
-  2: "Both Teams Score",
-  3: "Double Chance",
-  4: "Over/Under",
-  5: "Handicap",
-  6: "Correct Score",
-  7: "First Goal",
-  8: "Exact Goals",
-  9: "Odd/Even",
-  10: "Asian Handicap",
+// Common bet type ids mapped to translation keys
+const BET_TYPE_KEYS: Record<number, string> = {
+  1: "matchWinner",
+  2: "bothTeamsScore",
+  3: "doubleChance",
+  4: "overUnder",
+  5: "handicap",
+  6: "correctScore",
+  7: "firstGoal",
+  8: "exactGoals",
+  9: "oddEven",
+  10: "asianHandicap",
 };
 
 function formatOdd(odd: string | number): string {
@@ -30,9 +31,9 @@ function formatOdd(odd: string | number): string {
   return num.toFixed(2);
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, dateLocale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(dateLocale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -41,7 +42,9 @@ function formatDate(dateString: string): string {
 }
 
 function BetSection({ bet }: { bet: OddsBet }) {
-  const betName = BET_TYPE_NAMES[bet.id] || bet.name;
+  const t = useTranslations("games");
+  const betKey = BET_TYPE_KEYS[bet.id];
+  const betName = betKey ? t(`odds.betTypes.${betKey}`) : bet.name;
 
   return (
     <div className="space-y-3">
@@ -69,6 +72,16 @@ function BetSection({ bet }: { bet: OddsBet }) {
 }
 
 export default function Odds({ fixtureId }: OddsProps) {
+  const t = useTranslations("games");
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const { data: oddsData, isLoading, error } = useOdds(fixtureId, 4);
 
   // Handle loading state
@@ -132,7 +145,7 @@ export default function Odds({ fixtureId }: OddsProps) {
   if (errorMessage) {
     return (
       <NoData
-        message="Failed to load odds"
+        message={t("odds.loadFailed")}
         helpText={errorMessage}
         icon={<TrendingUp className="h-12 w-12" />}
       />
@@ -148,8 +161,8 @@ export default function Odds({ fixtureId }: OddsProps) {
   ) {
     return (
       <NoData
-        message="No odds available"
-        helpText="Odds for this fixture are not available yet. Pre-match odds are typically available 1-14 days before the match."
+        message={t("odds.noOdds")}
+        helpText={t("odds.noOddsHelp")}
         icon={<TrendingUp className="h-12 w-12" />}
       />
     );
@@ -163,11 +176,15 @@ export default function Odds({ fixtureId }: OddsProps) {
       <div className="text-center space-y-1">
         <h2 className="text-base md:text-lg font-bold flex items-center justify-center gap-2">
           <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-          Pre-Match Odds
+          {t("odds.title")}
         </h2>
         <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-muted-foreground">
           <Clock className="h-3 w-3 md:h-4 md:w-4" />
-          <span>Last updated: {formatDate(oddsItem.update)}</span>
+          <span>
+            {t("odds.lastUpdated", {
+              date: formatDate(oddsItem.update, dateLocale),
+            })}
+          </span>
         </div>
       </div>
 
@@ -179,7 +196,7 @@ export default function Odds({ fixtureId }: OddsProps) {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2 px-6">
                   <p className="text-xs text-muted-foreground">
-                    Bets provided by
+                    {t("odds.providedBy")}
                   </p>
                   <CardTitle className="text-base md:text-lg">
                     {bookmaker.name}
@@ -193,7 +210,7 @@ export default function Odds({ fixtureId }: OddsProps) {
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No bets available for this bookmaker
+                    {t("odds.noBets")}
                   </p>
                 )}
               </CardContent>
@@ -204,8 +221,8 @@ export default function Odds({ fixtureId }: OddsProps) {
         <Card>
           <CardContent className="py-8">
             <NoData
-              message="No bookmakers available"
-              helpText="No odds data is available for this fixture."
+              message={t("odds.noBookmakers")}
+              helpText={t("odds.noBookmakersHelp")}
               icon={<BookOpen className="h-12 w-12" />}
             />
           </CardContent>
@@ -214,10 +231,7 @@ export default function Odds({ fixtureId }: OddsProps) {
 
       {/* Footer Note */}
       <div className="text-center text-xs text-muted-foreground pt-2">
-        <p>
-          Odds are updated every 3 hours. Pre-match odds are available 1-14 days
-          before the fixture.
-        </p>
+        <p>{t("odds.footerNote")}</p>
       </div>
     </div>
   );

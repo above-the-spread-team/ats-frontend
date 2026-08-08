@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,30 +22,6 @@ import PreviewImage from "./preview-image";
 import ExpertPerspectiveImage from "./expert-perspective-image";
 import { Tag } from "@/components/common/tag";
 
-function formatDate(dateString: string, locale: string = "en") {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-  );
-
-  const labels: Record<string, { justNow: string; hoursAgo: (h: number) => string; yesterday: string }> = {
-    en: { justNow: "Just now", hoursAgo: (h) => `${h}h ago`, yesterday: "Yesterday" },
-    "zh-TW": { justNow: "剛剛", hoursAgo: (h) => `${h} 小時前`, yesterday: "昨天" },
-    "zh-CN": { justNow: "刚刚", hoursAgo: (h) => `${h} 小时前`, yesterday: "昨天" },
-    ja: { justNow: "たった今", hoursAgo: (h) => `${h}時間前`, yesterday: "昨日" },
-  };
-  const l = labels[locale] ?? labels.en;
-
-  if (diffInHours < 1) return l.justNow;
-  if (diffInHours < 24) return l.hoursAgo(diffInHours);
-  if (diffInHours < 48) return l.yesterday;
-  return date.toLocaleDateString(
-    locale === "ja" ? "ja-JP" : locale === "zh-TW" ? "zh-TW" : locale === "zh-CN" ? "zh-CN" : "en-US",
-    { month: "short", day: "numeric", year: "numeric" },
-  );
-}
-
 function ArticleGrid({
   articles,
   data,
@@ -61,8 +37,25 @@ function ArticleGrid({
 }) {
   const t = useTranslations("articles");
   const c = useTranslations("common");
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
+
+    if (diffInHours < 1) return t("time.justNow");
+    if (diffInHours < 24) return t("time.hoursAgo", { hours: diffInHours });
+    if (diffInHours < 48) return t("time.yesterday");
+    return date.toLocaleDateString(
+      locale === "ja" ? "ja-JP" : locale === "zh-TW" ? "zh-TW" : locale === "zh-CN" ? "zh-CN" : "en-US",
+      { month: "short", day: "numeric", year: "numeric" },
+    );
+  };
+
   const getFirstTag = (news: NewsResponse) => {
-    return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
+    return news.tags && news.tags.length > 0 ? news.tags[0].name : t("title");
   };
 
   const isMatchPreview = (news: NewsResponse) => {
@@ -143,7 +136,7 @@ function ArticleGrid({
                       </>
                     )}
                     <span className="flex-shrink-0">
-                      {formatDate(article.created_at, locale)}
+                      {formatDate(article.created_at)}
                     </span>
                   </div>
 
@@ -331,9 +324,12 @@ export function ArticleListView({
   error,
   emptyMessage,
   emptyHelpText,
-  errorLabel = "Failed to load articles",
+  errorLabel,
   locale = "en",
 }: ArticleListViewProps) {
+  const t = useTranslations("articles");
+  const c = useTranslations("common");
+
   if (isLoading) {
     return <ArticleGridSkeleton />;
   }
@@ -344,12 +340,12 @@ export function ArticleListView({
         ? error.message
         : typeof error === "object" && error !== null && "detail" in error
           ? String((error as { detail: string }).detail)
-          : "Unknown error";
+          : c("unknown");
 
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <p className="text-destructive mb-2">{errorLabel}</p>
+          <p className="text-destructive mb-2">{errorLabel ?? t("loadError")}</p>
           <p className="text-sm text-muted-foreground">{errorMessage}</p>
         </div>
       </div>

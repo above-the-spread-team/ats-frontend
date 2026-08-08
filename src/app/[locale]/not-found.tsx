@@ -1,15 +1,13 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Search } from "lucide-react";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
+// Next.js does not pass route props (params) to not-found.tsx — the locale
+// must come from the request context set up by src/i18n/request.ts.
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const t = await getTranslations({ locale, namespace: "notFound" });
 
   return {
@@ -18,12 +16,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function NotFound({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function NotFound() {
+  const locale = await getLocale();
   const t = await getTranslations({ locale, namespace: "notFound" });
 
   return (

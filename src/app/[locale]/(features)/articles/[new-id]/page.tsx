@@ -1,22 +1,19 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import FullPage from "@/components/common/full-page";
 import NewsContentRenderer from "../components/news-content-renderer";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  MessageCircle,
-  Calendar,
-  User,
-  ExternalLink,
-} from "lucide-react";
+import { Calendar, User, ExternalLink } from "lucide-react";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import { serverFetchNewsById } from "@/lib/server-news";
 import PreviewImage from "../components/preview-image";
 import ExpertPerspectiveImage from "../components/expert-perspective-image";
 import { Tag } from "@/components/common/tag";
 import NewsBackButton from "./_components/news-back-button";
+import NewsCommentsLink from "./_components/news-comments-link";
 import NewsReactions from "./_components/news-reactions";
 import NewsCommentsSection from "./_components/news-comments-section";
 import type { NewsResponse } from "@/type/fastapi/news";
@@ -50,41 +47,25 @@ function formatDate(dateString: string, locale: string): string {
   );
 }
 
-function formatRelativeDate(dateString: string, locale: string): string {
+type RelativeTimeTranslator = (
+  key: "time.justNow" | "time.hoursAgo" | "time.yesterday",
+  values?: Record<string, number>,
+) => string;
+
+function formatRelativeDate(
+  dateString: string,
+  locale: string,
+  t: RelativeTimeTranslator,
+): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffInHours = Math.floor(
     (now.getTime() - date.getTime()) / (1000 * 60 * 60),
   );
 
-  const labels: Record<string, { justNow: string; hoursAgo: (h: number) => string; yesterday: string }> = {
-    en: {
-      justNow: "Just now",
-      hoursAgo: (h) => `${h}h ago`,
-      yesterday: "Yesterday",
-    },
-    "zh-TW": {
-      justNow: "剛剛",
-      hoursAgo: (h) => `${h} 小時前`,
-      yesterday: "昨天",
-    },
-    "zh-CN": {
-      justNow: "刚刚",
-      hoursAgo: (h) => `${h} 小时前`,
-      yesterday: "昨天",
-    },
-    ja: {
-      justNow: "たった今",
-      hoursAgo: (h) => `${h}時間前`,
-      yesterday: "昨日",
-    },
-  };
-
-  const l = labels[locale] ?? labels.en;
-
-  if (diffInHours < 1) return l.justNow;
-  if (diffInHours < 24) return l.hoursAgo(diffInHours);
-  if (diffInHours < 48) return l.yesterday;
+  if (diffInHours < 1) return t("time.justNow");
+  if (diffInHours < 24) return t("time.hoursAgo", { hours: diffInHours });
+  if (diffInHours < 48) return t("time.yesterday");
   return date.toLocaleDateString(
     locale === "ja" ? "ja-JP" : locale === "zh-TW" ? "zh-TW" : locale === "zh-CN" ? "zh-CN" : "en-US",
     { month: "short", day: "numeric", year: "numeric" },
@@ -165,6 +146,8 @@ export default async function NewsDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const t = await getTranslations({ locale, namespace: "articles" });
+
   const { data, error } = await serverFetchNewsById(
     newsId,
     locale === "en" ? undefined : locale,
@@ -175,15 +158,15 @@ export default async function NewsDetailPage({ params }: PageProps) {
     return (
       <FullPage center>
         <div className="container mx-auto max-w-4xl px-4 text-center">
-          <p className="text-destructive mb-2">News article not found</p>
+          <p className="text-destructive mb-2">{t("notFound")}</p>
           <p className="text-sm text-muted-foreground mb-4">
-            The article you&apos;re looking for doesn&apos;t exist or has been removed.
+            {t("notFoundHelp")}
           </p>
           <Link
             href="/articles"
             className="text-primary-font font-semibold hover:underline"
           >
-            Back to News
+            {t("backToNews")}
           </Link>
         </div>
       </FullPage>
@@ -215,7 +198,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
               )}
               <div className="absolute top-2 right-2 md:top-3 md:right-3">
                 <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
-                  Match Preview
+                  {t("badges.matchPreview")}
                 </span>
               </div>
             </div>
@@ -240,7 +223,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
               )}
               <div className="absolute top-2 right-2 md:top-3 md:right-3">
                 <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  Expert
+                  {t("badges.expert")}
                 </span>
               </div>
             </div>
@@ -282,23 +265,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div
-                    onClick={() => {
-                      if (typeof document !== "undefined") {
-                        document
-                          .getElementById("comments-section")
-                          ?.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start",
-                          });
-                      }
-                    }}
-                    className="flex items-center hover:text-primary-font transition-colors cursor-pointer"
-                  >
-                    <MessageCircle className="h-5 w-5 mr-2" />
-                    <span>{news.comment_count} </span>
-                    <span className="ml-1 md:block hidden">comments</span>
-                  </div>
+                  <NewsCommentsLink count={news.comment_count} />
 
                   <NewsReactions
                     newsId={newsId}
@@ -313,7 +280,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
                       className="flex items-center gap-2 text-primary-font hover:underline ml-auto"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      <span>View Fixture</span>
+                      <span>{t("viewFixture")}</span>
                     </Link>
                   )}
                 </div>
@@ -338,11 +305,16 @@ export default async function NewsDetailPage({ params }: PageProps) {
             <div className="mt-6 pt-4 border-t flex items-center justify-between">
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="hidden md:block">
-                  Published {formatRelativeDate(news.created_at, locale)}
+                  {t("published", {
+                    time: formatRelativeDate(news.created_at, locale, t),
+                  })}
                 </span>
                 {news.updated_at !== news.created_at && (
                   <span>
-                    &bull; Updated {formatRelativeDate(news.updated_at, locale)}
+                    &bull;{" "}
+                    {t("updatedTime", {
+                      time: formatRelativeDate(news.updated_at, locale, t),
+                    })}
                   </span>
                 )}
               </div>
@@ -353,7 +325,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
-                Back to News
+                {t("backToNews")}
               </Link>
             </div>
           </CardContent>

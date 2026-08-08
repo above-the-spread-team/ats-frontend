@@ -1,6 +1,7 @@
 "use client";
 
 import { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface UnderOverStat {
   over: number;
@@ -22,6 +23,7 @@ export default function UnderOverChart({
   title,
   data,
 }: UnderOverChartProps) {
+  const t = useTranslations("stats");
   return (
     <div className="bg-card border border-border/50 rounded-lg md:rounded-xl p-2.5 md:p-4 shadow-md">
       <div className="flex items-center gap-1 mb-2.5">
@@ -44,10 +46,12 @@ export default function UnderOverChart({
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs md:text-sm text-green-600 dark:text-green-400">
-                    Over: <span className="font-bold">{stat.over}</span>
+                    {t("statistics.over")}:{" "}
+                    <span className="font-bold">{stat.over}</span>
                   </span>
                   <span className="text-xs md:text-sm text-red-600 dark:text-red-400">
-                    Under: <span className="font-bold">{stat.under}</span>
+                    {t("statistics.under")}:{" "}
+                    <span className="font-bold">{stat.under}</span>
                   </span>
                 </div>
               </div>

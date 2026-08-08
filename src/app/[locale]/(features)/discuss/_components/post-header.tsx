@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { toIntlLocale } from "@/app/[locale]/(features)/world-cup/lib/intl-locale";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +64,9 @@ export default function PostHeader({
   onShowBannedChange,
   onPageChange,
 }: PostHeaderProps) {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const followGroupMutation = useFollowGroup();
@@ -139,7 +144,7 @@ export default function PostHeader({
                           onClick={() => setExpandDescription(true)}
                           className="mt-1 text-xs md:text-sm font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-0.5"
                         >
-                          Read more
+                          {t("readMore")}
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
                       )}
@@ -149,7 +154,7 @@ export default function PostHeader({
                           onClick={() => setExpandDescription(false)}
                           className="mt-1 text-xs md:text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
                         >
-                          Read less
+                          {t("readLess")}
                           <ChevronDown className="w-3.5 h-3.5 rotate-180" />
                         </button>
                       )}
@@ -172,8 +177,7 @@ export default function PostHeader({
               {/* Follow/Unfollow/Owner Button and Actions */}
               {groupData.group_type === "fixture" ? (
                 <p className="text-xs text-muted-foreground">
-                  Public match discussion — sign in to post. Follow is not
-                  available for match chats.
+                  {t("fixtureGroupNotice")}
                 </p>
               ) : currentUser?.id === groupData.owner_id ? (
                 <div className="flex -mr-2 items-center gap-2">
@@ -199,7 +203,7 @@ export default function PostHeader({
                         }}
                       >
                         <Edit className="w-4 h-4 mr-2" />
-                        Edit Group
+                        {t("editGroup")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -207,7 +211,7 @@ export default function PostHeader({
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Group
+                        {t("deleteGroup")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -246,7 +250,7 @@ export default function PostHeader({
                   <>
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      <span>Private</span>
+                      <span>{t("private")}</span>
                     </span>
                   </>
                 )}
@@ -268,7 +272,7 @@ export default function PostHeader({
                     {groupData.member_count}
                   </span>
                   <span>
-                    {groupData.member_count === 1 ? "follower" : "followers"}
+                    {t("followersLabel", { count: groupData.member_count })}
                   </span>
                 </button>
                 {groupData.pending_count !== null &&
@@ -291,7 +295,7 @@ export default function PostHeader({
                         {groupData.pending_count}
                       </span>
                       <span>
-                        {groupData.pending_count === 1 ? "pending" : "pending"}
+                        {t("pendingLabel", { count: groupData.pending_count })}
                       </span>
                     </button>
                   )}
@@ -312,7 +316,7 @@ export default function PostHeader({
                   <span className="font-semibold text-foreground">
                     {groupData.post_count}
                   </span>
-                  <span>{groupData.post_count === 1 ? "post" : "posts"}</span>
+                  <span>{t("postsLabel", { count: groupData.post_count })}</span>
                 </button>
               </div>
 
@@ -321,15 +325,15 @@ export default function PostHeader({
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3 h-3" />
                   <span>
-                    Created{" "}
-                    {new Date(groupData.created_at).toLocaleDateString(
-                      "en-US",
-                      {
+                    {t("createdOn", {
+                      date: new Date(
+                        groupData.created_at,
+                      ).toLocaleDateString(toIntlLocale(locale), {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
-                      },
-                    )}
+                      }),
+                    })}
                   </span>
                 </span>
                 <div className="flex items-center pr-3 gap-2">
@@ -339,7 +343,7 @@ export default function PostHeader({
                       {groupData.comment_count}
                     </span>
                     <span>
-                      {groupData.comment_count === 1 ? "comment" : "comments"}
+                      {t("commentsLabel", { count: groupData.comment_count })}
                     </span>
                   </span>
                   <span className="flex items-center gap-1.5 text-muted-foreground">
@@ -348,7 +352,7 @@ export default function PostHeader({
                       {groupData.total_likes}
                     </span>
                     <span>
-                      {groupData.total_likes === 1 ? "like" : "likes"}
+                      {t("likesLabel", { count: groupData.total_likes })}
                     </span>
                   </span>
                 </div>
@@ -362,8 +366,8 @@ export default function PostHeader({
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title="Delete Group"
-        description={`Are you sure you want to delete "${groupData.name}"? This action cannot be undone.`}
+        title={t("deleteGroup")}
+        description={t("deleteGroupConfirm", { name: groupData.name })}
         onConfirm={async () => {
           try {
             await deleteGroupMutation.mutateAsync(groupData.id);
@@ -373,8 +377,8 @@ export default function PostHeader({
             console.error("Failed to delete group:", error);
           }
         }}
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t("delete")}
+        cancelText={tc("cancel")}
         variant="destructive"
         isPending={deleteGroupMutation.isPending}
       />

@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { getMaintenanceLocale } from "./locale";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
+// No params here: this route is outside [locale] (see ./locale.ts).
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getMaintenanceLocale();
   const t = await getTranslations({ locale, namespace: "maintenance" });
 
   return {
@@ -16,12 +14,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function MaintenancePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function MaintenancePage() {
+  const locale = await getMaintenanceLocale();
   const t = await getTranslations({ locale, namespace: "maintenance" });
   return (
     <main className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background px-4 py-12 sm:px-6 lg:px-8">

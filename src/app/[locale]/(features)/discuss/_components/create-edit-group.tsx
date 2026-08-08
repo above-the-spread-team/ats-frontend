@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -53,11 +53,12 @@ interface CreateEditGroupProps {
 // Only allow league tags for groups
 const TAG_TYPE_ORDER: TagType[] = ["league"];
 
-const TAG_TYPE_LABELS: Record<TagType, string> = {
-  league: "Leagues",
-  team: "Teams",
-  player: "Players",
-  topic: "Topics",
+// Translation keys under the "discuss" namespace
+const TAG_TYPE_LABEL_KEYS: Record<TagType, string> = {
+  league: "leagues",
+  team: "teams",
+  player: "players",
+  topic: "topics",
 };
 
 export default function CreateEditGroup({
@@ -309,10 +310,9 @@ export default function CreateEditGroup({
       <Card>
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-10 h-10 mx-auto text-red-300 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Group not found</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("groupNotFound")}</h3>
           <p className="text-muted-foreground mb-4">
-            The group doesn&apos;t exist or you don&apos;t have permission to
-            view it.
+            {t("groupNotFoundDesc")}
           </p>
         </CardContent>
       </Card>
@@ -325,12 +325,10 @@ export default function CreateEditGroup({
     <Card className="shadow-lg border-border/50 bg-gradient-to-br from-card via-card to-card/95">
       <CardHeader className="space-y-2 px-6 pb-2 border-b border-border/60">
         <CardTitle className="text-lg md:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-          {isEditMode ? "Edit Group" : t("createGroup")}
+          {isEditMode ? t("editGroup") : t("createGroup")}
         </CardTitle>
         <CardDescription>
-          {isEditMode
-            ? "Update your group details and settings"
-            : "Start a new community and connect with others"}
+          {isEditMode ? t("editGroupDesc") : t("createGroupDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-3 p-3 md:p-6">
@@ -338,7 +336,7 @@ export default function CreateEditGroup({
           {/* Group Icon */}
           <div className="space-y-3">
             <Label className="text-sm font-semibold text-foreground">
-              Group Icon (Optional)
+              {t("groupIconOptional")}
             </Label>
             <div className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50">
               {previewUrl ? (
@@ -346,7 +344,7 @@ export default function CreateEditGroup({
                   <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden ring-4 ring-primary/20 ring-offset-2 ring-offset-background shadow-lg">
                     <Image
                       src={previewUrl}
-                      alt="Group icon preview"
+                      alt={t("groupIconPreview")}
                       width={96}
                       height={96}
                       className="w-full h-full object-cover"
@@ -385,10 +383,10 @@ export default function CreateEditGroup({
                   className="w-full text-sm   md:w-auto rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  {previewUrl ? "Change Icon" : "Upload Icon"}
+                  {previewUrl ? t("changeIcon") : t("uploadIcon")}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Max 5MB. Recommended: Square image, 512x512px
+                  {t("iconRequirements")}
                 </p>
               </div>
             </div>
@@ -400,12 +398,12 @@ export default function CreateEditGroup({
               htmlFor="group-name"
               className="text-sm font-semibold text-foreground"
             >
-              Group Name <span className="text-destructive">*</span>
+              {t("groupName")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="group-name"
               type="text"
-              placeholder="Enter group name"
+              placeholder={t("enterGroupName")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isSubmitting}
@@ -414,7 +412,7 @@ export default function CreateEditGroup({
               className="w-full rounded-xl border-2 border-input/50 bg-gradient-to-br from-background to-muted/20 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all duration-200 hover:border-input"
             />
             <p className="text-xs text-muted-foreground px-1">
-              {name.length}/50 characters
+              {t("charactersCount", { count: name.length, max: 50 })}
             </p>
           </div>
 
@@ -424,11 +422,11 @@ export default function CreateEditGroup({
               htmlFor="group-description"
               className="text-sm font-semibold text-foreground"
             >
-              Description (Optional)
+              {t("descriptionOptional")}
             </Label>
             <Textarea
               id="group-description"
-              placeholder="Describe your group..."
+              placeholder={t("describeGroupPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={isSubmitting}
@@ -437,14 +435,14 @@ export default function CreateEditGroup({
               className="resize-none rounded-xl border-2 border-input/50 bg-gradient-to-br from-background to-muted/20 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all duration-200 hover:border-input"
             />
             <p className="text-xs text-muted-foreground px-1">
-              {description.length}/1000 characters
+              {t("charactersCount", { count: description.length, max: 1000 })}
             </p>
           </div>
 
           {/* Tag Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-semibold text-foreground">
-              Tags (optional)
+              {t("tagsOptional")}
             </Label>
             <div className="space-y-3">
               {/* Selected tags as chips */}
@@ -485,7 +483,7 @@ export default function CreateEditGroup({
                     className="gap-2 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                   >
                     <Tag className="h-4 w-4" />
-                    <span>Add tags</span>
+                    <span>{t("addTags")}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -500,7 +498,7 @@ export default function CreateEditGroup({
                       <div key={type}>
                         <DropdownMenuGroup>
                           <DropdownMenuLabel className="font-semibold">
-                            {TAG_TYPE_LABELS[type]}
+                            {t(TAG_TYPE_LABEL_KEYS[type])}
                           </DropdownMenuLabel>
                           {tags.map((tag) => {
                             const isSelected = selectedTagIds.includes(tag.id);
@@ -536,11 +534,11 @@ export default function CreateEditGroup({
                   htmlFor="group-private"
                   className="text-sm font-semibold text-foreground cursor-pointer"
                 >
-                  Private Group
+                  {t("privateGroup")}
                 </Label>
               </div>
               <p className="text-xs text-muted-foreground pl-6">
-                Only members can view and post in private groups
+                {t("privateGroupDesc")}
               </p>
             </div>
             <Switch
@@ -558,7 +556,9 @@ export default function CreateEditGroup({
               <p className="text-sm text-destructive font-medium">
                 {currentError instanceof Error
                   ? currentError.message
-                  : `Failed to ${isEditMode ? "update" : "create"} group. Please try again.`}
+                  : isEditMode
+                    ? t("updateGroupFailed")
+                    : t("createGroupFailed")}
               </p>
             </div>
           )}
@@ -582,10 +582,10 @@ export default function CreateEditGroup({
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  {isEditMode ? "Updating..." : "Creating..."}
+                  {isEditMode ? t("updating") : t("creating")}
                 </span>
               ) : isEditMode ? (
-                "Update Group"
+                t("updateGroup")
               ) : (
                 t("createGroup")
               )}

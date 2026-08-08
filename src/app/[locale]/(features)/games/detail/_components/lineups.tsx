@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
 
 import { useFixtureLineups } from "@/services/football-api/fixture-lineups";
+import { useTranslations } from "next-intl";
 
 // Fixed colors for home and away teams (mild/soft colors)
 const HOME_TEAM_BASE = {
@@ -64,6 +65,7 @@ interface LineupsProps {
 }
 
 export default function Lineups({ fixtureId, statusType }: LineupsProps) {
+  const t = useTranslations("games");
   // Use React Query to fetch lineups
   // Pass status type from parent to determine refetch intervals
   const {
@@ -250,8 +252,8 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
   if (error || !lineupsData || !lineupsData.response) {
     return (
       <NoData
-        message={error || "No lineups data available"}
-        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+        message={error || t("lineups.noData")}
+        helpText={t("lineups.helpText")}
       />
     );
   }
@@ -261,8 +263,8 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
   if (lineups.length === 0) {
     return (
       <NoData
-        message="No lineups available."
-        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+        message={t("lineups.noLineups")}
+        helpText={t("lineups.helpText")}
       />
     );
   }
@@ -279,8 +281,8 @@ export default function Lineups({ fixtureId, statusType }: LineupsProps) {
   if (!hasLineupData) {
     return (
       <NoData
-        message="No lineup data available."
-        helpText="Lineups may not be available yet. They are typically available 20-40 minutes before the match."
+        message={t("lineups.noLineupData")}
+        helpText={t("lineups.helpText")}
       />
     );
   }
@@ -312,6 +314,14 @@ interface LineupCardProps {
 }
 
 function LineupCard({ lineup, isHome }: LineupCardProps) {
+  const t = useTranslations("games");
+
+  const getLocalizedPositionLabel = (pos: string): string => {
+    const label = getPositionLabel(pos);
+    return ["GK", "DEF", "MID", "FWD"].includes(label)
+      ? t(`lineups.positions.${label}`)
+      : label;
+  };
   // Group players by position
   const groupPlayersByPosition = (players: typeof lineup.startXI) => {
     const groups: Record<string, typeof lineup.startXI> = {
@@ -372,7 +382,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             )}
             <div className="text-right ">
               <p className="text-xs md:text-sm text-muted-foreground font-medium">
-                Coach
+                {t("lineups.coach")}
               </p>
               <p className="text-[10px] md:text-xs font-semibold truncate max-w-[140px] md:max-w-none">
                 {lineup.coach.name}
@@ -386,7 +396,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
         <div className="space-y-4  md:space-y-5">
           <div className="flex items-center gap-2">
             <h4 className="text-sm md:text-base  font-bold text-foreground">
-              Starting XI
+              {t("lineups.startingXI")}
             </h4>
             <span className="text-xs md:text-sm text-muted-foreground">
               ({lineup.startXI.length})
@@ -398,7 +408,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             {positionGroups.GK.length > 0 && (
               <div className="space-y-2 md:space-y-3">
                 <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Goalkeeper
+                  {t("lineups.goalkeeper")}
                 </h5>
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
                   {positionGroups.GK.map((item) => {
@@ -438,7 +448,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             {positionGroups.DEF.length > 0 && (
               <div className="space-y-2 md:space-y-3">
                 <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Defenders ({positionGroups.DEF.length})
+                  {t("lineups.defenders")} ({positionGroups.DEF.length})
                 </h5>
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
                   {positionGroups.DEF.map((item) => {
@@ -478,7 +488,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             {positionGroups.MID.length > 0 && (
               <div className="space-y-2 md:space-y-3">
                 <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Midfielders ({positionGroups.MID.length})
+                  {t("lineups.midfielders")} ({positionGroups.MID.length})
                 </h5>
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
                   {positionGroups.MID.map((item) => {
@@ -518,7 +528,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
             {positionGroups.FWD.length > 0 && (
               <div className="space-y-2 md:space-y-3">
                 <h5 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Forwards ({positionGroups.FWD.length})
+                  {t("lineups.forwards")} ({positionGroups.FWD.length})
                 </h5>
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
                   {positionGroups.FWD.map((item) => {
@@ -561,7 +571,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
           <div className="space-y-3 md:space-y-4 ">
             <div className="flex items-center gap-2">
               <h4 className="text-sm md:text-base lg:text-lg font-bold text-foreground">
-                Substitutes
+                {t("lineups.substitutes")}
               </h4>
               <span className="text-xs md:text-sm text-muted-foreground">
                 ({lineup.substitutes.length})
@@ -593,7 +603,7 @@ function LineupCard({ lineup, isHome }: LineupCardProps) {
                         {player.name}
                       </p>
                       <p className="text-[9px] md:text-[10px] text-muted-foreground">
-                        {getPositionLabel(player.pos)}
+                        {getLocalizedPositionLabel(player.pos)}
                       </p>
                     </div>
                   </div>

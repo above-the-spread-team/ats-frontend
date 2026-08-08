@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { toIntlLocale } from "../lib/intl-locale";
 import { useNews } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -25,6 +27,9 @@ const WORLD_CUP_TAG_ID = 14;
 const PAGE_SIZE = 15;
 
 export default function WorldCupNews() {
+  const t = useTranslations("worldCup");
+  const tCommon = useTranslations("common");
+  const intlLocale = toIntlLocale(useLocale());
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useNews(page, PAGE_SIZE, [
@@ -38,10 +43,10 @@ export default function WorldCupNews() {
       (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return "Yesterday";
-    return date.toLocaleDateString("en-US", {
+    if (diffInHours < 1) return tCommon("justNow");
+    if (diffInHours < 24) return tCommon("hoursAgo", { hours: diffInHours });
+    if (diffInHours < 48) return tCommon("yesterday");
+    return date.toLocaleDateString(intlLocale, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -49,7 +54,7 @@ export default function WorldCupNews() {
   };
 
   const getFirstTag = (news: NewsResponse) =>
-    news.tags && news.tags.length > 0 ? news.tags[0].name : "World Cup";
+    news.tags && news.tags.length > 0 ? news.tags[0].name : t("news.defaultTag");
 
   const isMatchPreview = (news: NewsResponse) =>
     !!(news.home_team_logo && news.away_team_logo);
@@ -77,9 +82,9 @@ export default function WorldCupNews() {
       <div className="container mx-auto max-w-5xl px-4 py-10">
         <div className="flex items-center justify-center min-h-[40vh]">
           <div className="text-center">
-            <p className="text-destructive mb-2">Failed to load news</p>
+            <p className="text-destructive mb-2">{t("news.failedToLoad")}</p>
             <p className="text-sm text-muted-foreground">
-              {error instanceof Error ? error.message : "Unknown error"}
+              {error instanceof Error ? error.message : tCommon("unknown")}
             </p>
           </div>
         </div>
@@ -93,8 +98,8 @@ export default function WorldCupNews() {
     return (
       <div className="container mx-auto max-w-5xl px-4 py-6">
         <NoData
-          message="No World Cup news yet"
-          helpText="Check back soon for the latest 2026 World Cup coverage."
+          message={t("news.noNewsYet")}
+          helpText={t("news.checkBackSoon")}
         />
       </div>
     );
@@ -105,7 +110,7 @@ export default function WorldCupNews() {
       {/* Article count */}
       {data && (
         <p className="text-xs text-muted-foreground">
-          {data.total} article{data.total !== 1 ? "s" : ""}
+          {t("news.articleCount", { count: data.total })}
         </p>
       )}
 
@@ -134,7 +139,7 @@ export default function WorldCupNews() {
                   ) : (
                     <Image
                       src="https://images.unsplash.com/photo-1430232324554-8f4aebd06683?w=800&q=70&auto=format&fit=crop"
-                      alt="Soccer stadium"
+                      alt={t("news.stadiumAlt")}
                       width={400}
                       height={400}
                       className="object-cover w-full h-full"
@@ -148,7 +153,7 @@ export default function WorldCupNews() {
                   {isMatchPreview(article) && (
                     <div className="absolute top-2 right-2">
                       <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        Preview
+                        {t("news.preview")}
                       </span>
                     </div>
                   )}
@@ -179,12 +184,12 @@ export default function WorldCupNews() {
 
                   <div className="mt-auto flex items-center justify-between text-xs">
                     <div className="text-muted-foreground">
-                      {article.comment_count > 0
-                        ? `${article.comment_count} comments`
-                        : "No comments yet"}
+                      {t("news.commentCount", {
+                        count: article.comment_count,
+                      })}
                     </div>
                     <span className="text-primary-font font-semibold hover:underline">
-                      Read →
+                      {tCommon("readMore")}
                     </span>
                   </div>
                 </div>

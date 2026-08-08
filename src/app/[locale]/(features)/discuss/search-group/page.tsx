@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -298,7 +298,7 @@ export default function SearchGroupPage() {
                 <p className="text-muted-foreground">
                   {searchQuery.trim()
                     ? t("tryAdjustingSearch")
-                    : "Check back later for new groups"}
+                    : t("checkBackLater")}
                 </p>
                 {searchQuery.trim() && (
                   <Button

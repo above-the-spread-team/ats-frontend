@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,8 @@ export default function EditPost({
   initialContent,
   onSuccess,
 }: EditPostProps) {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   const [content, setContent] = useState(initialContent);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -199,8 +202,8 @@ export default function EditPost({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-[93%] px-2 py-4 md:p-4 sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Edit Post</DialogTitle>
-          <DialogDescription>Update your post content</DialogDescription>
+          <DialogTitle>{t("editPost")}</DialogTitle>
+          <DialogDescription>{t("editPostDesc")}</DialogDescription>
         </DialogHeader>
 
         <div>
@@ -211,7 +214,7 @@ export default function EditPost({
                 htmlFor="edit-post-content"
                 className="text-sm pl-2 font-medium text-foreground"
               >
-                What&apos;s on your mind?
+                {t("whatsOnYourMind")}
               </label>
               {/* Emoji Picker Button */}
               <DropdownMenu
@@ -227,7 +230,7 @@ export default function EditPost({
                     className="h-8 w-8 p-0"
                   >
                     <Smile className="scale-110" />
-                    <span className="sr-only">Add emoji</span>
+                    <span className="sr-only">{t("addEmoji")}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -241,7 +244,7 @@ export default function EditPost({
             <Textarea
               ref={textareaRef}
               id="edit-post-content"
-              placeholder="Write something..."
+              placeholder={t("writeSomething")}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isSubmitting}
@@ -258,7 +261,7 @@ export default function EditPost({
             <p className="text-sm text-red-500 px-1 my-1">
               {updatePostMutation.error instanceof Error
                 ? updatePostMutation.error.message
-                : "Failed to update post. Please try again."}
+                : t("updatePostFailed")}
             </p>
           )}
         </div>
@@ -269,13 +272,13 @@ export default function EditPost({
             onClick={handleClose}
             disabled={isSubmitting}
           >
-            Cancel
+            {tc("cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !content.trim()}
           >
-            {isSubmitting ? "Updating..." : "Update"}
+            {isSubmitting ? t("updating") : t("update")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { CheckCircle2, XCircle, Mail, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ZodError } from "zod";

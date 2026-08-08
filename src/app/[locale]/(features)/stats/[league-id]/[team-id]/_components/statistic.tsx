@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,6 +38,8 @@ export default function Statistic({
   teamId,
   season,
 }: StatisticProps) {
+  const t = useTranslations("stats");
+  const tCommon = useTranslations("common");
   const [statistics, setStatistics] = useState<
     TeamStatisticsApiResponse["response"] | null
   >(null);
@@ -59,7 +62,9 @@ export default function Statistic({
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to load statistics (${response.status})`);
+          throw new Error(
+            t("statistics.loadFailed", { status: response.status }),
+          );
         }
 
         const data = (await response.json()) as TeamStatisticsApiResponse;
@@ -70,7 +75,7 @@ export default function Statistic({
         }
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tCommon("unknown"));
         setStatistics(null);
       } finally {
         if (!controller.signal.aborted) {
@@ -84,6 +89,7 @@ export default function Statistic({
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leagueId, teamId, season]);
 
   if (isLoading) {
@@ -120,8 +126,8 @@ export default function Statistic({
     return (
       <FullPage center minusHeight={300}>
         <NoDate
-          message={error || "No statistics data available"}
-          helpText="Team statistics may not be available for this league, team, or season."
+          message={error || t("statistics.noData")}
+          helpText={t("statistics.noDataHelp")}
         />
       </FullPage>
     );
@@ -133,7 +139,7 @@ export default function Statistic({
       {statistics.form && (
         <div className="bg-card border border-border/50 rounded-lg md:rounded-xl p-2.5 md:p-4 shadow-md">
           <h2 className="text-xs md:text-base font-bold mb-2 text-foreground">
-            Recent Form
+            {t("statistics.recentForm")}
           </h2>
           <div className="flex items-center gap-1 flex-wrap">
             {statistics.form.split("").map((result, idx) => {
@@ -170,14 +176,14 @@ export default function Statistic({
           icon={Target}
           iconBgColor="bg-green-500/10"
           iconColor="text-green-600 dark:text-green-400"
-          title="Goals For"
+          title={t("statistics.goalsFor")}
           rows={[
             {
-              label: "Total",
+              label: t("statistics.total"),
               value: statistics.goals.for.total.total,
             },
             {
-              label: "Avg",
+              label: t("statistics.avg"),
               value: statistics.goals.for.average.total,
             },
             {
@@ -185,12 +191,12 @@ export default function Statistic({
               value: "",
               subRows: [
                 {
-                  label: "Home",
+                  label: tCommon("home"),
                   value: statistics.goals.for.total.home,
                   avg: statistics.goals.for.average.home,
                 },
                 {
-                  label: "Away",
+                  label: tCommon("away"),
                   value: statistics.goals.for.total.away,
                   avg: statistics.goals.for.average.away,
                 },
@@ -202,14 +208,14 @@ export default function Statistic({
           icon={Shield}
           iconBgColor="bg-red-500/10"
           iconColor="text-red-600 dark:text-red-400"
-          title="Goals Against"
+          title={t("statistics.goalsAgainst")}
           rows={[
             {
-              label: "Total",
+              label: t("statistics.total"),
               value: statistics.goals.against.total.total,
             },
             {
-              label: "Avg",
+              label: t("statistics.avg"),
               value: statistics.goals.against.average.total,
             },
             {
@@ -217,12 +223,12 @@ export default function Statistic({
               value: "",
               subRows: [
                 {
-                  label: "Home",
+                  label: tCommon("home"),
                   value: statistics.goals.against.total.home,
                   avg: statistics.goals.against.average.home,
                 },
                 {
-                  label: "Away",
+                  label: tCommon("away"),
                   value: statistics.goals.against.total.away,
                   avg: statistics.goals.against.average.away,
                 },
@@ -234,18 +240,18 @@ export default function Statistic({
           icon={Shield}
           iconBgColor="bg-blue-500/10"
           iconColor="text-blue-600 dark:text-blue-400"
-          title="Clean Sheets"
+          title={t("statistics.cleanSheets")}
           rows={[
             {
-              label: "Total",
+              label: t("statistics.total"),
               value: statistics.clean_sheet.total,
             },
             {
-              label: "Home",
+              label: tCommon("home"),
               value: statistics.clean_sheet.home,
             },
             {
-              label: "Away",
+              label: tCommon("away"),
               value: statistics.clean_sheet.away,
             },
           ]}
@@ -254,18 +260,18 @@ export default function Statistic({
           icon={X}
           iconBgColor="bg-orange-500/10"
           iconColor="text-orange-600 dark:text-orange-400"
-          title="Failed to Score"
+          title={t("statistics.failedToScore")}
           rows={[
             {
-              label: "Total",
+              label: t("statistics.total"),
               value: statistics.failed_to_score.total,
             },
             {
-              label: "Home",
+              label: tCommon("home"),
               value: statistics.failed_to_score.home,
             },
             {
-              label: "Away",
+              label: tCommon("away"),
               value: statistics.failed_to_score.away,
             },
           ]}
@@ -278,7 +284,7 @@ export default function Statistic({
           icon={Clock}
           iconBgColor="bg-primary/10"
           iconColor="text-primary"
-          title="Goals For by Minute"
+          title={t("statistics.goalsForByMinute")}
           data={
             statistics.goals.for.minute as unknown as Record<
               string,
@@ -292,7 +298,7 @@ export default function Statistic({
           icon={Clock}
           iconBgColor="bg-red-500/10"
           iconColor="text-red-600 dark:text-red-400"
-          title="Goals Against by Minute"
+          title={t("statistics.goalsAgainstByMinute")}
           data={
             statistics.goals.against.minute as unknown as Record<
               string,
@@ -310,7 +316,7 @@ export default function Statistic({
           icon={BarChart3}
           iconBgColor="bg-purple-500/10"
           iconColor="text-purple-600 dark:text-purple-400"
-          title="Goals For - Under/Over"
+          title={t("statistics.goalsForUnderOver")}
           data={
             statistics.goals.for.under_over as unknown as Record<
               string,
@@ -322,7 +328,7 @@ export default function Statistic({
           icon={BarChart3}
           iconBgColor="bg-indigo-500/10"
           iconColor="text-indigo-600 dark:text-indigo-400"
-          title="Goals Against - Under/Over"
+          title={t("statistics.goalsAgainstUnderOver")}
           data={
             statistics.goals.against.under_over as unknown as Record<
               string,
@@ -335,22 +341,22 @@ export default function Statistic({
       {/* Biggest Stats */}
       <div className="bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-lg md:rounded-xl p-2.5 md:p-4 shadow-md">
         <h2 className="text-sm md:text-base font-bold mb-3 text-foreground">
-          Biggest
+          {t("statistics.biggest")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           <BiggestStatSection
             icon={TrendingUp}
             iconColor="text-green-600 dark:text-green-400"
-            title="Wins"
+            title={t("statistics.wins")}
             stats={[
               {
-                label: "Home",
+                label: tCommon("home"),
                 value: statistics.biggest.wins.home,
                 icon: Home,
                 color: "text-green-600 dark:text-green-400",
               },
               {
-                label: "Away",
+                label: tCommon("away"),
                 value: statistics.biggest.wins.away,
                 icon: Plane,
                 color: "text-green-600 dark:text-green-400",
@@ -360,16 +366,16 @@ export default function Statistic({
           <BiggestStatSection
             icon={TrendingDown}
             iconColor="text-red-600 dark:text-red-400"
-            title="Losses"
+            title={t("statistics.losses")}
             stats={[
               {
-                label: "Home",
+                label: tCommon("home"),
                 value: statistics.biggest.loses.home,
                 icon: Home,
                 color: "text-red-600 dark:text-red-400",
               },
               {
-                label: "Away",
+                label: tCommon("away"),
                 value: statistics.biggest.loses.away,
                 icon: Plane,
                 color: "text-red-600 dark:text-red-400",
@@ -379,20 +385,20 @@ export default function Statistic({
           <BiggestStatSection
             icon={Activity}
             iconColor="text-blue-600 dark:text-blue-400"
-            title="Streaks"
+            title={t("statistics.streaks")}
             stats={[
               {
-                label: "Wins",
+                label: t("statistics.wins"),
                 value: statistics.biggest.streak.wins,
                 color: "text-green-600 dark:text-green-400",
               },
               {
-                label: "Draws",
+                label: t("statistics.draws"),
                 value: statistics.biggest.streak.draws,
                 color: "text-yellow-600 dark:text-yellow-400",
               },
               {
-                label: "Losses",
+                label: t("statistics.losses"),
                 value: statistics.biggest.streak.loses,
                 color: "text-red-600 dark:text-red-400",
               },
@@ -401,28 +407,28 @@ export default function Statistic({
           <BiggestStatSection
             icon={Target}
             iconColor="text-purple-600 dark:text-purple-400"
-            title="Goals"
+            title={t("statistics.goals")}
             stats={[
               {
-                label: "For (H)",
+                label: t("statistics.forHome"),
                 value: statistics.biggest.goals.for.home,
                 icon: TrendingUp,
                 color: "text-green-600 dark:text-green-400",
               },
               {
-                label: "For (A)",
+                label: t("statistics.forAway"),
                 value: statistics.biggest.goals.for.away,
                 icon: TrendingUp,
                 color: "text-green-600 dark:text-green-400",
               },
               {
-                label: "Against (H)",
+                label: t("statistics.againstHome"),
                 value: statistics.biggest.goals.against.home,
                 icon: Shield,
                 color: "text-red-600 dark:text-red-400",
               },
               {
-                label: "Against (A)",
+                label: t("statistics.againstAway"),
                 value: statistics.biggest.goals.against.away,
                 icon: Shield,
                 color: "text-red-600 dark:text-red-400",
@@ -438,7 +444,7 @@ export default function Statistic({
           icon={RectangleVertical}
           iconBgColor="bg-yellow-500/10"
           iconColor="text-yellow-600 dark:text-yellow-400"
-          title="Yellow Cards by Minute"
+          title={t("statistics.yellowCardsByMinute")}
           data={
             statistics.cards.yellow as unknown as Record<
               string,
@@ -452,7 +458,7 @@ export default function Statistic({
           icon={RectangleVertical}
           iconBgColor="bg-red-500/10"
           iconColor="text-red-600 dark:text-red-400"
-          title="Red Cards by Minute"
+          title={t("statistics.redCardsByMinute")}
           data={
             statistics.cards.red as unknown as Record<
               string,
@@ -474,7 +480,7 @@ export default function Statistic({
                 <PersonStanding className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
               <h2 className="text-xs md:text-base font-bold text-foreground">
-                Formations
+                {t("statistics.formations")}
               </h2>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2">
@@ -487,7 +493,7 @@ export default function Statistic({
                     {lineup.formation}
                   </p>
                   <p className="text-xs md:text-sm text-muted-foreground">
-                    {lineup.played} {lineup.played === 1 ? "game" : "games"}
+                    {t("statistics.games", { count: lineup.played })}
                   </p>
                 </div>
               ))}

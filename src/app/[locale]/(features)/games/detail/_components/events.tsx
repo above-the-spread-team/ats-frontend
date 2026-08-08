@@ -4,6 +4,7 @@ import type { FixtureEventsResponseItem } from "@/type/footballapi/fixture-event
 import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
 import { useFixtureEvents } from "@/services/football-api/fixture-events";
+import { useTranslations } from "next-intl";
 import {
   Target,
   Square,
@@ -120,6 +121,7 @@ export default function Events({
   awayTeamId,
   statusType,
 }: EventsProps) {
+  const t = useTranslations("games");
   // Use React Query to fetch events
   // Pass status type from parent to determine refetch intervals
   const {
@@ -262,8 +264,8 @@ export default function Events({
   if (error || !eventsData || !eventsData.response) {
     return (
       <NoData
-        message={error || "No events data available"}
-        helpText="Events are usually available once the match starts or shortly after."
+        message={error || t("events.noData")}
+        helpText={t("events.helpText")}
       />
     );
   }
@@ -273,8 +275,8 @@ export default function Events({
   if (events.length === 0) {
     return (
       <NoData
-        message="No events available for this fixture."
-        helpText="Events are usually available once the match starts or shortly after."
+        message={t("events.noEventsForFixture")}
+        helpText={t("events.helpText")}
       />
     );
   }
@@ -353,7 +355,7 @@ export default function Events({
               >
                 <ArrowRight className="w-2.5 h-2.5 flex-shrink-0" />
                 <span className="font-medium truncate">
-                  Assist: {event.assist.name}
+                  {t("events.assist", { name: event.assist.name })}
                 </span>
               </div>
             )}
@@ -379,11 +381,10 @@ export default function Events({
       {/* Header */}
       <div className="text-center space-y-1">
         <h2 className="text-base md:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-          Match Events
+          {t("events.title")}
         </h2>
         <p className="text-xs md:text-sm text-muted-foreground">
-          {eventsData.results} event{eventsData.results !== 1 ? "s" : ""}{" "}
-          recorded
+          {t("events.recorded", { count: eventsData.results })}
         </p>
       </div>
 
@@ -432,7 +433,7 @@ export default function Events({
                     ) : (
                       <div className="h-full min-h-[40px] md:min-h-[60px] flex items-center justify-center">
                         <div className="text-xs text-muted-foreground/50 italic">
-                          No events
+                          {t("events.none")}
                         </div>
                       </div>
                     )}
@@ -445,7 +446,7 @@ export default function Events({
                     ) : (
                       <div className="h-full min-h-[40px] md:min-h-[60px] flex items-center justify-center">
                         <div className="text-xs text-muted-foreground/50 italic">
-                          No events
+                          {t("events.none")}
                         </div>
                       </div>
                     )}

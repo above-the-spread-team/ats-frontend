@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -100,58 +101,12 @@ interface LeaderProps {
   season: number;
 }
 
-const LEADER_OPTIONS: { value: LeaderType; label: string }[] = [
-  { value: "topscorers", label: "Top Scorers" },
-  { value: "topassists", label: "Top Assists" },
-  { value: "topyellowcards", label: "Yellow Cards" },
-  { value: "topredcards", label: "Red Cards" },
+const LEADER_OPTIONS: { value: LeaderType; labelKey: string }[] = [
+  { value: "topscorers", labelKey: "leaders.topScorers" },
+  { value: "topassists", labelKey: "leaders.topAssists" },
+  { value: "topyellowcards", labelKey: "leaders.yellowCards" },
+  { value: "topredcards", labelKey: "leaders.redCards" },
 ];
-
-// Get table columns based on leader type
-const getTableColumns = (type: LeaderType) => {
-  const baseColumns = [
-    { label: "", align: "left" as const },
-    { label: "Player", align: "left" as const },
-    { label: "Team", align: "left" as const },
-  ];
-
-  if (type === "topscorers") {
-    return [
-      ...baseColumns,
-      { label: "Goals", align: "center" as const },
-      { label: "Assists", align: "center" as const },
-      { label: "Played", align: "center" as const },
-      { label: "G/90", align: "center" as const },
-      { label: "Min/G", align: "center" as const },
-      { label: "Shots", align: "center" as const },
-      { label: "Conv%", align: "center" as const },
-      { label: "Acc%", align: "center" as const },
-      { label: "Pos", align: "center" as const },
-    ];
-  } else if (type === "topassists") {
-    return [
-      ...baseColumns,
-      { label: "Assists", align: "center" as const },
-      { label: "Goals", align: "center" as const },
-      { label: "Played", align: "center" as const },
-      { label: "Chances", align: "center" as const },
-      { label: "C/90", align: "center" as const },
-      { label: "Passes", align: "center" as const },
-      { label: "Pos", align: "center" as const },
-    ];
-  } else {
-    // Cards
-    return [
-      ...baseColumns,
-      {
-        label: type === "topyellowcards" ? "Yellow" : "Red",
-        align: "center" as const,
-      },
-      { label: "Played", align: "center" as const },
-      { label: "Pos", align: "center" as const },
-    ];
-  }
-};
 
 // Reusable cell styles
 const cellBaseClass = "px-1 md:px-4 py-1.5 md:py-2";
@@ -169,7 +124,58 @@ function LeaderCell({
 }
 
 export default function Leader({ leagueId, season }: LeaderProps) {
+  const t = useTranslations("stats");
+  const tCommon = useTranslations("common");
   const [selectedType, setSelectedType] = useState<LeaderType>("topscorers");
+
+  // Get table columns based on leader type
+  const getTableColumns = (type: LeaderType) => {
+    const baseColumns = [
+      { label: "", align: "left" as const },
+      { label: tCommon("player"), align: "left" as const },
+      { label: tCommon("team"), align: "left" as const },
+    ];
+
+    if (type === "topscorers") {
+      return [
+        ...baseColumns,
+        { label: t("leaders.columns.goals"), align: "center" as const },
+        { label: t("leaders.columns.assists"), align: "center" as const },
+        { label: t("leaders.columns.played"), align: "center" as const },
+        { label: t("leaders.columns.goalsPer90"), align: "center" as const },
+        { label: t("leaders.columns.minutesPerGoal"), align: "center" as const },
+        { label: t("leaders.columns.shots"), align: "center" as const },
+        { label: t("leaders.columns.conversion"), align: "center" as const },
+        { label: t("leaders.columns.accuracy"), align: "center" as const },
+        { label: t("leaders.columns.position"), align: "center" as const },
+      ];
+    } else if (type === "topassists") {
+      return [
+        ...baseColumns,
+        { label: t("leaders.columns.assists"), align: "center" as const },
+        { label: t("leaders.columns.goals"), align: "center" as const },
+        { label: t("leaders.columns.played"), align: "center" as const },
+        { label: t("leaders.columns.chances"), align: "center" as const },
+        { label: t("leaders.columns.chancesPer90"), align: "center" as const },
+        { label: t("leaders.columns.passes"), align: "center" as const },
+        { label: t("leaders.columns.position"), align: "center" as const },
+      ];
+    } else {
+      // Cards
+      return [
+        ...baseColumns,
+        {
+          label:
+            type === "topyellowcards"
+              ? t("leaders.columns.yellow")
+              : t("leaders.columns.red"),
+          align: "center" as const,
+        },
+        { label: t("leaders.columns.played"), align: "center" as const },
+        { label: t("leaders.columns.position"), align: "center" as const },
+      ];
+    }
+  };
   const [leaders, setLeaders] = useState<LeaderResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -190,7 +196,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to load leaders (${response.status})`);
+          throw new Error(t("leaders.loadFailed", { status: response.status }));
         }
 
         const data = (await response.json()) as LeadersApiResponse;
@@ -201,7 +207,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
         }
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tCommon("unknown"));
         setLeaders([]);
       } finally {
         if (!controller.signal.aborted) {
@@ -215,6 +221,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leagueId, season, selectedType]);
 
   const getStatValue = (item: LeaderResponseItem): number => {
@@ -290,10 +297,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
   if (error) {
     return (
       <FullPage center minusHeight={300}>
-        <NoDate
-          message={error}
-          helpText="Unable to load leader statistics. Please try again later."
-        />
+        <NoDate message={error} helpText={t("leaders.errorHelp")} />
       </FullPage>
     );
   }
@@ -385,7 +389,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
           htmlFor="leader-type-select"
           className="text-sm font-medium text-muted-foreground"
         >
-          Leader Type:
+          {t("leaders.typeLabel")}
         </label>
         <Select
           value={selectedType}
@@ -395,7 +399,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
             id="leader-type-select"
             className="w-[140px] md:w-[160px] rounded-xl font-medium ring-1 ring-mygray"
           >
-            <SelectValue placeholder="Select type" />
+            <SelectValue placeholder={t("leaders.selectType")} />
           </SelectTrigger>
           <SelectContent className="rounded-2xl p-1 bg-primary-active text-mygray">
             {LEADER_OPTIONS.map((option) => (
@@ -404,7 +408,7 @@ export default function Leader({ leagueId, season }: LeaderProps) {
                 value={option.value}
                 className="rounded-xl font-medium"
               >
-                {option.label}
+                {t(option.labelKey)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -414,8 +418,8 @@ export default function Leader({ leagueId, season }: LeaderProps) {
       {leaders.length === 0 && !isLoading && (
         <FullPage center minusHeight={300}>
           <NoDate
-            message="No leaders found"
-            helpText="No leader statistics available for this league and season."
+            message={t("leaders.empty")}
+            helpText={t("leaders.emptyHelp")}
           />
         </FullPage>
       )}

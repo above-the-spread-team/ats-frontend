@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { FaUsers } from "react-icons/fa";
 
 import { RiCalendarScheduleFill } from "react-icons/ri";
@@ -11,43 +11,44 @@ import { MdSportsSoccer } from "react-icons/md";
 
 const tabs = [
   {
-    label: "Prediction",
+    labelKey: "prediction",
     href: "/world-cup/prediction",
     icon: MdSportsSoccer,
     exact: false,
   },
   {
-    label: "Fixtures",
+    labelKey: "fixtures",
     href: "/world-cup",
     icon: RiCalendarScheduleFill,
     exact: true,
   },
   {
-    label: "Ranking",
+    labelKey: "ranking",
     href: "/world-cup/ranking",
     icon: PiRanking,
     exact: false,
   },
   {
-    label: "News",
+    labelKey: "news",
     href: "/world-cup/news",
     icon: IoNewspaperOutline,
     exact: false,
   },
 
-  { label: "Teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
-];
+  { labelKey: "teams", href: "/world-cup/teams", icon: FaUsers, exact: false },
+] as const;
 
 export default function WorldCupNav() {
+  const t = useTranslations("worldCup");
   const pathname = usePathname();
 
   return (
     <div className="container mx-auto bg-background/95 backdrop-blur-sm border-b border-border">
       <nav
         className="flex w-full items-center md:items-end md:justify-center gap-0.5 md:gap-1 overflow-x-auto scrollbar-none"
-        aria-label="World Cup sections"
+        aria-label={t("nav.ariaLabel")}
       >
-        {tabs.map(({ label, href, icon: Icon, exact }) => {
+        {tabs.map(({ labelKey, href, icon: Icon, exact }) => {
           const isActive = exact
             ? pathname === href
             : pathname.startsWith(href);
@@ -69,7 +70,7 @@ export default function WorldCupNav() {
                 `}
             >
               <Icon className="w-4 h-4 md:w-3.5 md:h-3.5 flex-shrink-0" />
-              {label}
+              {t(`nav.${labelKey}`)}
               {/* Active underline */}
               <span
                 className={`

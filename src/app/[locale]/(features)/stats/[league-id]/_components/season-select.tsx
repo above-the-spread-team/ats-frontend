@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -30,6 +32,7 @@ export default function SeasonSelect({
   activeTab,
   availableSeasons,
 }: SeasonSelectProps) {
+  const t = useTranslations("stats");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -73,14 +76,14 @@ export default function SeasonSelect({
         htmlFor="season-select"
         className="text-sm font-medium text-muted-foreground"
       >
-        Season:
+        {t("season.label")}
       </label>
       <Select value={season.toString()} onValueChange={handleSeasonChange}>
         <SelectTrigger
           id="season-select"
           className="w-[100px] md:w-[120px] rounded-xl  font-medium  ring-1 ring-mygray"
         >
-          <SelectValue placeholder="Select season" />
+          <SelectValue placeholder={t("season.select")} />
         </SelectTrigger>
         <SelectContent className="rounded-2xl p-1 bg-primary-active text-mygray">
           {seasons.map((seasonOption) => (

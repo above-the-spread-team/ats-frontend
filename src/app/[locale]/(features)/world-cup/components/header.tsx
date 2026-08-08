@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const WORLD_CUP_START = new Date("2026-06-11T00:00:00");
 const WORLD_CUP_END = new Date("2026-07-19T00:00:00");
@@ -36,19 +37,20 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 }
 
 const stats = [
-  { value: "48", label: "Teams" },
-  { value: "104", label: "Matches" },
-  { value: "16", label: "Venues" },
-  { value: "3", label: "Nations" },
-];
+  { value: "48", labelKey: "teams" },
+  { value: "104", labelKey: "matches" },
+  { value: "16", labelKey: "venues" },
+  { value: "3", labelKey: "nations" },
+] as const;
 
 const hosts = [
-  { flag: "🇺🇸", name: "USA" },
-  { flag: "🇨🇦", name: "Canada" },
-  { flag: "🇲🇽", name: "Mexico" },
-];
+  { flag: "🇺🇸", nameKey: "usa" },
+  { flag: "🇨🇦", nameKey: "canada" },
+  { flag: "🇲🇽", nameKey: "mexico" },
+] as const;
 
 export default function WorldCupHeader() {
+  const t = useTranslations("worldCup");
   const [timeLeft, setTimeLeft] = useState(getTimeLeft());
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function WorldCupHeader() {
       {/* Background image — different stadium shot from the home promo */}
       <Image
         src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1600&q=85&auto=format&fit=crop"
-        alt="World Cup 2026 stadium"
+        alt={t("header.stadiumAlt")}
         fill
         priority
         className="absolute inset-0 w-full h-full object-cover object-center"
@@ -86,12 +88,12 @@ export default function WorldCupHeader() {
           {isLive ? (
             <span className="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-500/50 text-red-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
-              Live Now
+              {t("header.liveNow")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 bg-yellow-500/15 border border-yellow-500/35 text-yellow-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-              Coming Soon · Jun 11, 2026
+              {t("header.comingSoon")}
             </span>
           )}
 
@@ -104,37 +106,37 @@ export default function WorldCupHeader() {
               🏆
             </span>
             <h1 className="text-white font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-none tracking-tight">
-              FIFA World Cup
+              {t("header.title")}
             </h1>
             <p className="text-yellow-400 font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-none tracking-tight">
-              2026™
+              {t("header.year")}
             </p>
           </div>
 
           {/* Host countries */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
-            {hosts.map(({ flag, name }) => (
+            {hosts.map(({ flag, nameKey }) => (
               <span
-                key={name}
+                key={nameKey}
                 className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 text-white/80 text-xs sm:text-sm font-semibold px-3 py-1 rounded-full backdrop-blur-sm"
               >
                 <span className="text-base leading-none">{flag}</span>
-                {name}
+                {t(`header.hosts.${nameKey}`)}
               </span>
             ))}
           </div>
 
           {/* Dates */}
           <p className="text-white/40 text-[11px] sm:text-xs font-medium tracking-widest uppercase">
-            11 June — 19 July 2026
+            {t("header.dates")}
           </p>
         </div>
 
         {/* ── Middle: Stats row ── */}
         <div className="flex items-center justify-center gap-0 mt-4 sm:mt-6 w-full max-w-sm sm:max-w-md">
-          {stats.map(({ value, label }, i) => (
+          {stats.map(({ value, labelKey }, i) => (
             <div
-              key={label}
+              key={labelKey}
               className={`flex flex-col items-center flex-1 py-2 ${
                 i < stats.length - 1 ? "border-r border-white/15" : ""
               }`}
@@ -143,7 +145,7 @@ export default function WorldCupHeader() {
                 {value}
               </span>
               <span className="text-white/45 text-[9px] sm:text-[10px] uppercase tracking-widest font-medium mt-0.5">
-                {label}
+                {t(`header.stats.${labelKey}`)}
               </span>
             </div>
           ))}
@@ -152,23 +154,37 @@ export default function WorldCupHeader() {
         {/* ── Bottom: Countdown ── */}
         <div className="flex flex-col items-center gap-2 sm:gap-3 mt-4 sm:mt-6">
           <p className="text-white/35 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-semibold">
-            {timeLeft.started ? "Tournament Underway" : "Kick-off Countdown"}
+            {timeLeft.started
+              ? t("header.tournamentUnderway")
+              : t("header.kickoffCountdown")}
           </p>
           {!timeLeft.started && (
             <div className="flex items-end gap-2 sm:gap-3">
-              <CountdownUnit value={timeLeft.days} label="Days" />
+              <CountdownUnit
+                value={timeLeft.days}
+                label={t("header.countdown.days")}
+              />
               <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">
                 :
               </span>
-              <CountdownUnit value={timeLeft.hours} label="Hours" />
+              <CountdownUnit
+                value={timeLeft.hours}
+                label={t("header.countdown.hours")}
+              />
               <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">
                 :
               </span>
-              <CountdownUnit value={timeLeft.minutes} label="Mins" />
+              <CountdownUnit
+                value={timeLeft.minutes}
+                label={t("header.countdown.minutes")}
+              />
               <span className="text-white/25 font-bold text-2xl sm:text-3xl mb-4 leading-none select-none">
                 :
               </span>
-              <CountdownUnit value={timeLeft.seconds} label="Secs" />
+              <CountdownUnit
+                value={timeLeft.seconds}
+                label={t("header.countdown.seconds")}
+              />
             </div>
           )}
         </div>

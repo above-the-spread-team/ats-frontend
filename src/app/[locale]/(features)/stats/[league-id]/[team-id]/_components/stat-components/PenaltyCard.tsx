@@ -1,6 +1,7 @@
 "use client";
 
 import { Gavel } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface PenaltyCardProps {
   scored: { total: number; percentage: string };
@@ -13,6 +14,7 @@ export default function PenaltyCard({
   missed,
   total,
 }: PenaltyCardProps) {
+  const t = useTranslations("stats");
   return (
     <div className="bg-card border border-border/50 rounded-lg md:rounded-xl p-2.5 md:p-4 shadow-md">
       <div className="flex items-center gap-1 mb-3">
@@ -20,7 +22,7 @@ export default function PenaltyCard({
           <Gavel className="w-3 h-3 md:w-4 md:h-4 text-primary" />
         </div>
         <h2 className="text-xs md:text-base font-bold text-foreground">
-          Penalties
+          {t("statistics.penalties")}
         </h2>
       </div>
 
@@ -28,7 +30,7 @@ export default function PenaltyCard({
         {/* Total */}
         <div className="flex items-center justify-between pb-2 border-b border-border/50">
           <span className="text-xs md:text-sm font-semibold text-muted-foreground">
-            Total
+            {t("statistics.total")}
           </span>
           <span className="text-sm md:text-base font-bold text-foreground">
             {total}
@@ -41,7 +43,7 @@ export default function PenaltyCard({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs md:text-sm font-semibold text-muted-foreground">
-                Scored
+                {t("statistics.scored")}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs md:text-sm text-muted-foreground">
@@ -68,7 +70,7 @@ export default function PenaltyCard({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs md:text-sm font-semibold text-muted-foreground">
-                Missed
+                {t("statistics.missed")}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs md:text-sm text-muted-foreground">

@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useWorldCupStandings } from "@/services/football-api/world-cup-standings";
 import type { StandingEntry } from "@/type/footballapi/standing";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,6 +73,7 @@ function GroupTable({
   entries: StandingEntry[];
   leagueId: number;
 }) {
+  const t = useTranslations("worldCup");
   const sorted = [...entries].sort((a, b) => a.rank - b.rank);
 
   return (
@@ -81,7 +83,7 @@ function GroupTable({
         <span className="w-1 h-4 rounded-full bg-yellow-400 flex-shrink-0" />
         <h3 className="text-xs sm:text-sm lg:text-base font-bold">{group}</h3>
         <span className="text-[10px] lg:text-xs text-muted-foreground">
-          {sorted.length} teams
+          {t("ranking.teamsCount", { count: sorted.length })}
         </span>
       </div>
 
@@ -95,16 +97,22 @@ function GroupTable({
             lg:[grid-template-columns:1.5rem_1fr_2.2rem_2.2rem_2.2rem_2.2rem_2.5rem_2.5rem_2.8rem_3rem_7rem]"
         >
           <span className="text-center">#</span>
-          <span className="pl-1">Team</span>
-          <span className="text-center">P</span>
-          <span className="text-center">W</span>
-          <span className="text-center">D</span>
-          <span className="text-center">L</span>
-          <span className="text-center">GF</span>
-          <span className="text-center">GA</span>
-          <span className="text-center font-bold">GD</span>
-          <span className="text-center font-bold text-foreground">Pts</span>
-          <span className="hidden sm:block text-center">Form</span>
+          <span className="pl-1">{t("ranking.table.team")}</span>
+          <span className="text-center">{t("ranking.table.played")}</span>
+          <span className="text-center">{t("ranking.table.win")}</span>
+          <span className="text-center">{t("ranking.table.draw")}</span>
+          <span className="text-center">{t("ranking.table.lose")}</span>
+          <span className="text-center">{t("ranking.table.goalsFor")}</span>
+          <span className="text-center">{t("ranking.table.goalsAgainst")}</span>
+          <span className="text-center font-bold">
+            {t("ranking.table.goalDiff")}
+          </span>
+          <span className="text-center font-bold text-foreground">
+            {t("ranking.table.points")}
+          </span>
+          <span className="hidden sm:block text-center">
+            {t("ranking.table.form")}
+          </span>
         </div>
 
         {/* Data rows */}
@@ -223,6 +231,7 @@ function GroupTable({
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function WorldCupRanking() {
+  const t = useTranslations("worldCup");
   const { data, isLoading, error } = useWorldCupStandings();
 
   if (isLoading) {
@@ -242,7 +251,7 @@ export default function WorldCupRanking() {
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <span className="text-4xl">⚠️</span>
         <p className="text-sm text-muted-foreground text-center max-w-xs">
-          {error instanceof Error ? error.message : "Failed to load standings."}
+          {error instanceof Error ? error.message : t("ranking.failedToLoad")}
         </p>
       </div>
     );
@@ -256,10 +265,10 @@ export default function WorldCupRanking() {
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <span className="text-5xl">🏆</span>
         <p className="text-sm text-muted-foreground">
-          Group standings not available yet.
+          {t("ranking.notAvailableYet")}
         </p>
         <p className="text-xs text-muted-foreground/60">
-          FIFA World Cup 2026 · Group stage begins 11 Jun
+          {t("ranking.groupStageBegins")}
         </p>
       </div>
     );
@@ -270,18 +279,22 @@ export default function WorldCupRanking() {
       {/* Meta bar */}
       <div className="flex items-center justify-between border-b border-border pb-3">
         <span className="text-xs text-muted-foreground font-medium">
-          {groups.length} groups · {groups.flat().length} teams
+          {t("ranking.meta", {
+            groups: groups.length,
+            teams: groups.flat().length,
+          })}
         </span>
         <span className="text-[12px] text-muted-foreground/80 flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
-          Yellow bar = advances to knockout stage
+          {t("ranking.legend")}
         </span>
       </div>
 
       {/* Two-column grid on md+, single column on mobile */}
       <div className="grid grid-cols-1 gap-6 md:gap-8">
         {groups.map((group, idx) => {
-          const groupName = group[0]?.group ?? `Group ${idx + 1}`;
+          const groupName =
+            group[0]?.group ?? t("ranking.groupFallback", { number: idx + 1 });
           return (
             <GroupTable
               key={groupName}

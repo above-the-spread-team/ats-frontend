@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/carousel";
 import { IoCalendar } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
+import { useLocale, useTranslations } from "next-intl";
 
 interface DatepickerProps {
   selectedDate: Date;
@@ -23,6 +24,16 @@ export default function Datepicker({
   selectedDate,
   setSelectedDate,
 }: DatepickerProps) {
+  const tc = useTranslations("common");
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const today = useMemo(() => new Date(), []);
 
   // State for showing calendar
@@ -109,26 +120,14 @@ export default function Datepicker({
   const todayString = today.toDateString();
 
   const getDayAbbreviation = (date: Date) => {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    return days[date.getDay()];
+    return date.toLocaleDateString(dateLocale, { weekday: "short" });
   };
 
   const getMonthYear = (date: Date) => {
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    return date.toLocaleDateString(dateLocale, {
+      month: "long",
+      year: "numeric",
+    });
   };
 
   const [currentMonthYear, setCurrentMonthYear] = useState(
@@ -313,7 +312,7 @@ export default function Datepicker({
             onClick={selectToday}
             className="bg-primary-font   h-6 w-12 md:text-base font-bold rounded-xl"
           >
-            <p className="text-xs  scale-95">Today</p>
+            <p className="text-xs  scale-95">{tc("today")}</p>
           </Button>
         ) : (
           <div className="w-12"></div>

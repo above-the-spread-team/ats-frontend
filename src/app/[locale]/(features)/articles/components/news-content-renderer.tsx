@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type {
   GeneralNewsContent,
   MatchPreviewContent,
@@ -6,21 +7,21 @@ import type {
   NewsSource,
 } from "@/type/fastapi/news";
 import { parseNewsContent } from "@/lib/news-content";
-import Link from "next/link";
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
 function SourcesList({ sources }: { sources: NewsSource[] }) {
+  const t = useTranslations("articles");
   if (!sources || sources.length === 0) return null;
   return (
     <div className="pt-2 pb-4 border-t border-border">
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-        Sources
+        {t("sources")}
       </p>
       <ul className="space-y-1">
         {sources.map((s, i) => (
           <li key={i}>
-            <Link
+            <a
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
@@ -28,7 +29,7 @@ function SourcesList({ sources }: { sources: NewsSource[] }) {
             >
               <ExternalLink className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               {s.title}
-            </Link>
+            </a>
           </li>
         ))}
       </ul>
@@ -63,6 +64,7 @@ function GeneralNewsRenderer({ content }: { content: GeneralNewsContent }) {
 // ── Match Preview renderer ────────────────────────────────────────────────────
 
 function MatchPreviewRenderer({ content }: { content: MatchPreviewContent }) {
+  const t = useTranslations("articles");
   return (
     <div className="space-y-6">
       {/* Analysis paragraphs */}
@@ -78,7 +80,7 @@ function MatchPreviewRenderer({ content }: { content: MatchPreviewContent }) {
       {content.betting_tips && content.betting_tips.length > 0 && (
         <div className="bg-muted/40 rounded-xl border border-border p-4 space-y-2">
           <p className="text-sm font-semibold text-primary-font uppercase tracking-wide">
-            Betting Tips
+            {t("bettingTips")}
           </p>
           <ul className="space-y-1.5">
             {content.betting_tips.map((tip, i) => (
@@ -126,6 +128,7 @@ interface NewsContentRendererProps {
 export default function NewsContentRenderer({
   content,
 }: NewsContentRendererProps) {
+  const t = useTranslations("articles");
   const parsed = parseNewsContent(content);
 
   if (!parsed) {
@@ -133,7 +136,7 @@ export default function NewsContentRenderer({
     if (content.trimStart().startsWith("{")) {
       return (
         <p className="leading-7 text-base text-muted-foreground">
-          Unable to display this article. The content format is not supported.
+          {t("contentError")}
         </p>
       );
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useLayoutEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import Sidebar from "./_components/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ScrollProvider, useScroll } from "./_contexts/scroll-context";

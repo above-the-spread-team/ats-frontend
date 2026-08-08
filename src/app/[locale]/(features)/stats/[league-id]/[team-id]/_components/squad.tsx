@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
@@ -58,6 +59,26 @@ function PlayerImage({
 }
 
 export default function Squad({ teamId, leagueId }: SquadProps) {
+  const t = useTranslations("stats");
+  const tCommon = useTranslations("common");
+
+  const positionLabel = (position: string) => {
+    switch (position) {
+      case "Goalkeeper":
+        return t("squad.positions.goalkeeper");
+      case "Defender":
+        return t("squad.positions.defender");
+      case "Midfielder":
+        return t("squad.positions.midfielder");
+      case "Attacker":
+        return t("squad.positions.attacker");
+      case "Other":
+        return t("squad.positions.other");
+      default:
+        return position;
+    }
+  };
+
   const [squad, setSquad] = useState<SquadsApiResponse["response"][0] | null>(
     null,
   );
@@ -79,7 +100,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to load squad (${response.status})`);
+          throw new Error(t("squad.loadFailed", { status: response.status }));
         }
 
         const data = (await response.json()) as SquadsApiResponse;
@@ -95,7 +116,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
         }
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tCommon("unknown"));
         setSquad(null);
       } finally {
         if (!controller.signal.aborted) {
@@ -109,6 +130,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId]);
 
   const playersByPosition = useMemo(() => {
@@ -201,8 +223,8 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
     return (
       <FullPage center minusHeight={300}>
         <NoDate
-          message={error || "No squad data available"}
-          helpText="Squad information may not be available for this team."
+          message={error || t("squad.noData")}
+          helpText={t("squad.noDataHelp")}
         />
       </FullPage>
     );
@@ -218,11 +240,10 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
           </div>
           <div className="flex flex-col">
             <span className="text-xs md:text-sm font-semibold text-foreground">
-              {squad.players.length}{" "}
-              {squad.players.length === 1 ? "player" : "players"}
+              {t("squad.playerCount", { count: squad.players.length })}
             </span>
             <span className="text-[10px] md:text-xs text-muted-foreground">
-              Total squad members
+              {t("squad.totalMembers")}
             </span>
           </div>
         </div>
@@ -233,7 +254,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
         <div key={position} className="space-y-3 md:space-y-4">
           <div className="flex items-center gap-3 pb-2 border-b border-border/50">
             <h3 className="text-sm md:text-base font-bold text-foreground flex items-center gap-2">
-              <span>{position}</span>
+              <span>{positionLabel(position)}</span>
               <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-xs md:text-sm font-semibold">
                 {players.length}
               </span>
@@ -267,7 +288,7 @@ export default function Squad({ teamId, leagueId }: SquadProps) {
                       </>
                     )}
                     <span className="group-hover:text-foreground transition-colors duration-300">
-                      {player.age} yrs
+                      {t("squad.age", { age: player.age })}
                     </span>
                   </div>
                 </div>

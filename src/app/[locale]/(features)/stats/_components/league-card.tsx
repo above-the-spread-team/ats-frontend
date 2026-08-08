@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import type {
   LeagueResponseItem,
   LeagueSeason,
@@ -20,6 +21,7 @@ export default function LeagueCard({
   season,
   getCurrentSeasonData,
 }: LeagueCardProps) {
+  const t = useTranslations("stats");
   const seasonData = getCurrentSeasonData(league);
   const hasStandings = seasonData?.coverage.standings ?? false;
 
@@ -79,7 +81,7 @@ export default function LeagueCard({
           <div className="flex items-center gap-1.5 flex-wrap">
             {seasonData.current && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-xl text-xs font-medium bg-primary/20 text-primary-font/70">
-                Current Season
+                {t("leagues.currentSeason")}
               </span>
             )}
             <span className="text-xs text-muted-foreground/90">

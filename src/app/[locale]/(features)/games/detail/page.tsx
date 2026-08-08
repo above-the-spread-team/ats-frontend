@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Clock8,
@@ -95,6 +97,8 @@ function GameDetailSkeleton() {
 }
 
 function GameDetailContent() {
+  const t = useTranslations("games");
+  const tc = useTranslations("common");
   const searchParams = useSearchParams();
   const router = useRouter();
   const fixtureIdParam = searchParams.get("id");
@@ -181,7 +185,7 @@ function GameDetailContent() {
       : fixtureData?.errors && fixtureData.errors.length > 0
         ? fixtureData.errors.join("\n")
         : !fixtureId
-          ? "Missing required parameter: id"
+          ? t("detail.missingId")
           : null;
 
   if (
@@ -194,7 +198,7 @@ function GameDetailContent() {
       <FullPage center>
         <div className="text-center space-y-4">
           <p className="text-lg font-semibold text-destructive">
-            {error || "No fixture data available"}
+            {error || t("detail.noFixtureData")}
           </p>
           <button
             onClick={() => {
@@ -208,7 +212,7 @@ function GameDetailContent() {
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {tc("back")}
           </button>
         </div>
       </FullPage>
@@ -221,12 +225,12 @@ function GameDetailContent() {
 
   // Define all available tabs
   const allTabs: NavTab<TabType>[] = [
-    { id: "predictions", label: "Tips", icon: Brain },
-    { id: "odds", label: "Odds", icon: TrendingUp },
-    { id: "statistics", label: "Stats", icon: BarChart3 },
-    { id: "players", label: "Players", icon: User },
-    { id: "events", label: "Events", icon: Activity },
-    { id: "lineups", label: "Lineups", icon: Users },
+    { id: "predictions", label: t("detail.tabs.tips"), icon: Brain },
+    { id: "odds", label: t("detail.tabs.odds"), icon: TrendingUp },
+    { id: "statistics", label: t("detail.tabs.stats"), icon: BarChart3 },
+    { id: "players", label: t("detail.tabs.players"), icon: User },
+    { id: "events", label: t("detail.tabs.events"), icon: Activity },
+    { id: "lineups", label: t("detail.tabs.lineups"), icon: Users },
   ];
 
   // Filter tabs based on fixture status
@@ -243,7 +247,7 @@ function GameDetailContent() {
         {/* Background stadium image */}
         <Image
           src="https://images.unsplash.com/photo-1731312084255-6b38e3ea2484?w=1600&q=80&auto=format&fit=crop"
-          alt="Soccer stadium"
+          alt={t("detail.stadiumAlt")}
           fill
           className="object-cover w-full h-full"
           sizes="(max-width: 768px) 300px, 1000px"
@@ -267,7 +271,7 @@ function GameDetailContent() {
               className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-white hover:text-muted-foreground transition-colors w-fit"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              {tc("back")}
             </button>
             <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-white">
               <Clock8 className="w-4 h-4" />

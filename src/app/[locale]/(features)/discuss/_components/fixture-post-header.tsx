@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,8 @@ function voteFixtureIdFromGroup(group: GroupResponse): number | null {
 }
 
 function FixtureVoteResultBlock({ voteFixtureId }: { voteFixtureId: number }) {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   const { data, isLoading, isError } = useFixtureVotes(voteFixtureId);
 
   if (isError) {
@@ -83,12 +86,11 @@ function FixtureVoteResultBlock({ voteFixtureId }: { voteFixtureId: number }) {
     <div className="space-y-1.5 pt-1 border-t border-white/20">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-white/75">
-          Fan vote
+          {t("fanVote")}
         </span>
         {hasVotes ? (
           <span className="text-[11px] text-white/75 tabular-nums">
-            {data.total_votes.toLocaleString()}{" "}
-            {data.total_votes === 1 ? "vote" : "votes"}
+            {t("voteCount", { count: data.total_votes })}
           </span>
         ) : null}
       </div>
@@ -112,17 +114,17 @@ function FixtureVoteResultBlock({ voteFixtureId }: { voteFixtureId: number }) {
           ))}
         </div>
         {!hasVotes && (
-          <p className="text-[11px] text-white/75">No votes yet</p>
+          <p className="text-[11px] text-white/75">{t("noVotesYet")}</p>
         )}
         {yourVote ? (
           <p className="text-xs text-right text-white/75">
-            Your pick:{" "}
+            {t("yourPick")}{" "}
             <span className="font-semibold text-white">
               {yourVote === "home"
                 ? data.home_team
                 : yourVote === "away"
                   ? data.away_team
-                  : "Draw"}
+                  : tc("draw")}
             </span>
           </p>
         ) : null}
@@ -140,6 +142,8 @@ function FixtureVoteButton({
   teamLabels: { home: string; away: string };
   fixtureStatusShort: string | null;
 }) {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   const { data } = useFixtureVotes(voteFixtureId);
   const { vote, isPending } = useVote();
   const [open, setOpen] = useState(false);
@@ -151,11 +155,9 @@ function FixtureVoteButton({
 
   const subtitle = useMemo(() => {
     if (!data) return null;
-    if (data.total_votes <= 0) return "No votes yet";
-    return `${data.total_votes.toLocaleString()} ${
-      data.total_votes === 1 ? "vote" : "votes"
-    }`;
-  }, [data]);
+    if (data.total_votes <= 0) return t("noVotesYet");
+    return t("voteCount", { count: data.total_votes });
+  }, [data, t]);
 
   async function handleVote(choice: VoteChoice) {
     setError(null);
@@ -163,13 +165,13 @@ function FixtureVoteButton({
       await vote(voteFixtureId, choice);
       setOpen(false);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Failed to submit";
+      const msg = e instanceof Error ? e.message : t("failedToSubmit");
       if (msg.toLowerCase().includes("already voted")) {
         setOpen(false);
         return;
       }
       if (msg.toLowerCase().includes("rate limit")) {
-        setError("Too many votes. Please wait a moment and try again.");
+        setError(t("tooManyVotes"));
         return;
       }
       setError(msg);
@@ -178,13 +180,17 @@ function FixtureVoteButton({
 
   const triggerTitle =
     yourVote != null
-      ? "You already voted"
+      ? t("alreadyVoted")
       : !votingOpen
-        ? "Voting is only available before kickoff"
-        : "Vote on this fixture";
+        ? t("votingBeforeKickoff")
+        : t("voteOnFixture");
 
   const triggerLabel =
-    yourVote != null ? "Voted" : !votingOpen ? "Voting closed" : "Vote";
+    yourVote != null
+      ? t("voted")
+      : !votingOpen
+        ? t("votingClosed")
+        : tc("vote");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -202,13 +208,13 @@ function FixtureVoteButton({
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Vote prediction</DialogTitle>
+          <DialogTitle>{t("votePrediction")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold truncate min-w-0">
-              {teamLabels.home} vs {teamLabels.away}
+              {teamLabels.home} {t("vs")} {teamLabels.away}
             </p>
             {subtitle ? (
               <p className="text-xs text-muted-foreground tabular-nums">
@@ -224,14 +230,14 @@ function FixtureVoteButton({
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] text-muted-foreground">
-                  Your prediction (final)
+                  {t("yourPredictionFinal")}
                 </p>
                 <p className="text-sm font-semibold text-foreground truncate">
                   {yourVote === "home"
                     ? teamLabels.home
                     : yourVote === "away"
                       ? teamLabels.away
-                      : "Draw"}
+                      : tc("draw")}
                 </p>
               </div>
             </div>
@@ -252,10 +258,10 @@ function FixtureVoteButton({
                   ].join(" ")}
                 >
                   {v.key === "home"
-                    ? "Home"
+                    ? tc("home")
                     : v.key === "away"
-                      ? "Away"
-                      : "Draw"}
+                      ? tc("away")
+                      : tc("draw")}
                 </button>
               ))}
             </div>
@@ -266,7 +272,7 @@ function FixtureVoteButton({
           ) : null}
 
           <p className="text-[11px] text-muted-foreground">
-            Votes are final once submitted.
+            {t("votesFinalNote")}
           </p>
         </div>
       </DialogContent>
@@ -323,6 +329,7 @@ function NameLogoVsLogoName({
   homeName: string;
   awayName: string;
 }) {
+  const t = useTranslations("discuss");
   return (
     <h1 className="m-0 font-normal w-full min-w-0">
       <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full min-w-0">
@@ -333,7 +340,7 @@ function NameLogoVsLogoName({
           <TeamCrest logoUrl={homeLogo} teamName={homeName} />
         </div>
         <span className="text-white/80 font-semibold text-xs sm:text-sm shrink-0 px-0.5">
-          vs
+          {t("vs")}
         </span>
         <div className="flex flex-1 min-w-0 items-center justify-start gap-2 sm:gap-2.5">
           <TeamCrest logoUrl={awayLogo} teamName={awayName} />
@@ -350,6 +357,8 @@ export default function FixturePostHeader({
   groupData,
   isLoading,
 }: FixturePostHeaderProps) {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   if (!groupData && !isLoading) {
     return null;
   }
@@ -379,8 +388,8 @@ export default function FixturePostHeader({
   }
 
   const fx = groupData.fixture_meta;
-  const homeName = fx?.home_team ?? "Home";
-  const awayName = fx?.away_team ?? "Away";
+  const homeName = fx?.home_team ?? tc("home");
+  const awayName = fx?.away_team ?? tc("away");
   const homeLogo = fx?.home_team_logo ?? null;
   const awayLogo = fx?.away_team_logo ?? null;
   const leagueName = fx?.league_name?.trim() || null;
@@ -468,7 +477,7 @@ export default function FixturePostHeader({
             <span className="inline-flex items-center gap-1">
               <MessageCircle className="w-3.5 h-3.5 shrink-0" />
               {groupData.post_count}{" "}
-              {groupData.post_count === 1 ? "post" : "posts"}
+              {t("postsLabel", { count: groupData.post_count })}
             </span>
           </div>
         </div>

@@ -1,6 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import BackToDiscussion from "@/components/common/back-to-discussion";
@@ -9,6 +11,8 @@ import { useGroup } from "@/services/fastapi/groups";
 import CreateEditGroup from "../../_components/create-edit-group";
 
 export default function EditGroupPage() {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   const router = useRouter();
   const params = useParams();
   const { data: currentUser, isLoading: isLoadingUser } = useCurrentUser();
@@ -60,7 +64,7 @@ export default function EditGroupPage() {
       <>
         <BackToDiscussion className="" />
         <div className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{tc("loading")}</p>
         </div>
       </>
     );
@@ -74,15 +78,15 @@ export default function EditGroupPage() {
         <div className="text-center py-8">
           <p className="text-destructive font-medium">
             {!groupData
-              ? "Group not found"
-              : "You don't have permission to edit this group"}
+              ? t("groupNotFound")
+              : t("noPermissionEditGroup")}
           </p>
           <Button
             variant="outline"
             onClick={() => router.push("/discuss")}
             className="mt-4 rounded-xl"
           >
-            Back to Discussion
+            {t("backToDiscussion")}
           </Button>
         </div>
       </>

@@ -13,13 +13,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import HomeFailToLoad from "./home-fail-to-load";
 import { useNews } from "@/services/fastapi/news";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import PreviewImage from "@/app/[locale]/(features)/articles/components/preview-image";
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Tag } from "@/components/common/tag";
 
 export function ScrollNews() {
+  const t = useTranslations("home");
+  const ta = useTranslations("articles");
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const { data: newsData, isLoading, error } = useNews(1, 5);
@@ -97,7 +109,7 @@ export function ScrollNews() {
           <CardContent className="p-0 relative aspect-[4/3] overflow-hidden bg-muted/40">
             <div className="absolute inset-0 bg-gradient-to-br from-muted/60 via-muted/30 to-muted/60" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <HomeFailToLoad message="Failed to load news" />
+              <HomeFailToLoad message={t("failedToLoadNews")} />
             </div>
           </CardContent>
         </Card>
@@ -114,7 +126,7 @@ export function ScrollNews() {
 
   // Get first tag name for match preview
   const getFirstTag = (news: NewsResponse) => {
-    return news.tags && news.tags.length > 0 ? news.tags[0].name : "News";
+    return news.tags && news.tags.length > 0 ? news.tags[0].name : ta("title");
   };
 
   if (newsItems.length === 0) {
@@ -122,7 +134,9 @@ export function ScrollNews() {
       <div className="relative w-full ">
         <Card className="rounded-none">
           <CardContent className="flex aspect-[4/3] items-center justify-center p-6">
-            <span className="text-muted-foreground">No news available</span>
+            <span className="text-muted-foreground">
+              {t("noNewsAvailable")}
+            </span>
           </CardContent>
         </Card>
       </div>
@@ -180,7 +194,7 @@ export function ScrollNews() {
                       {isMatchPreview(news) && (
                         <div className="absolute top-2 right-4 z-20">
                           <span className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
-                            Preview
+                            {ta("badges.preview")}
                           </span>
                         </div>
                       )}
@@ -193,7 +207,9 @@ export function ScrollNews() {
                           {news.author && <span>{news.author.username}</span>}
                           {news.author && <span>•</span>}
                           <span>
-                            {new Date(news.created_at).toLocaleDateString()}
+                            {new Date(news.created_at).toLocaleDateString(
+                              dateLocale,
+                            )}
                           </span>
                         </div>
                       </div>
@@ -216,7 +232,7 @@ export function ScrollNews() {
                 ? "w-8 h-2 bg-muted-foreground/60"
                 : "w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
             }`}
-            aria-label={`Go to ${news.title}`}
+            aria-label={t("goToSlide", { title: news.title })}
           />
         ))}
       </div>

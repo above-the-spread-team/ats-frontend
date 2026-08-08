@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useUserGroups } from "@/services/fastapi/groups";
@@ -26,7 +26,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { FixtureVotesResult } from "@/type/fastapi/vote";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { cn, shouldShowDiscussMatchChatsInSidebar } from "@/lib/utils";
 import { useSidebar } from "../_contexts/sidebar-context";
 import { useMobile } from "@/hooks/use-mobile";

@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { navItems } from "@/data/nav";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 
 export default function Footer() {
   const pathname = usePathname();

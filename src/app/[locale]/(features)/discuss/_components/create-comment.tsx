@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCreateComment } from "@/services/fastapi/comments";
 import { useCurrentUser } from "@/services/fastapi/oauth";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Smile } from "lucide-react";
 import UserIcon from "@/components/common/user-icon";
 import EmojiPicker from "@/components/common/emoji-picker";
@@ -32,6 +33,8 @@ export default function CreateComment({
   onCancel,
   autoFocus = false,
 }: CreateCommentProps) {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const createCommentMutation = useCreateComment();
@@ -255,7 +258,7 @@ export default function CreateComment({
                   className="h-8 w-8 p-0"
                 >
                   <Smile className="scale-110" />
-                  <span className="sr-only">Add emoji</span>
+                  <span className="sr-only">{t("addEmoji")}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -280,7 +283,7 @@ export default function CreateComment({
               disabled={createCommentMutation.isPending}
               className="flex-shrink-0 rounded-full h-8 px-4"
             >
-              <p className="text-xs">Cancel</p>
+              <p className="text-xs">{tc("cancel")}</p>
             </Button>
             <Button
               type="submit"
@@ -298,7 +301,7 @@ export default function CreateComment({
                 </>
               ) : (
                 <p className="text-xs">
-                  {parentCommentId ? "Reply" : "Comment"}
+                  {parentCommentId ? t("reply") : t("comment")}
                 </p>
               )}
             </Button>

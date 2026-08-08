@@ -3,8 +3,9 @@
 import * as React from "react";
 import { Suspense, useState, useEffect } from "react";
 import { Eye, EyeClosed, Lock, ArrowLeft, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import {
   resetPasswordSchema,

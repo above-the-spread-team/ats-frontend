@@ -5,6 +5,7 @@ import type { FixtureResponseItem } from "@/type/footballapi/fixture";
 import { getFixtureStatus } from "@/data/fixture-status";
 import TeamInfo from "../../_components/team";
 import { useUserTimezone } from "@/hooks/use-user-timezone";
+import { useLocale, useTranslations } from "next-intl";
 
 function formatGoals(value: number | null): string {
   if (value === null || Number.isNaN(value)) {
@@ -13,9 +14,9 @@ function formatGoals(value: number | null): string {
   return value.toString();
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, dateLocale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(dateLocale, {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -23,9 +24,13 @@ function formatDate(dateString: string): string {
   });
 }
 
-function formatTime(dateString: string, timezone: string): string {
+function formatTime(
+  dateString: string,
+  timezone: string,
+  dateLocale: string,
+): string {
   const date = new Date(dateString);
-  return date.toLocaleTimeString(undefined, {
+  return date.toLocaleTimeString(dateLocale, {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -38,6 +43,16 @@ interface FixtureDetailProps {
 }
 
 export default function FixtureDetail({ fixture }: FixtureDetailProps) {
+  const t = useTranslations("games");
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const statusInfo = getFixtureStatus(fixture.fixture.status.short);
   const isInPlay = statusInfo.type === "In Play";
   const isFinished = statusInfo.type === "Finished";
@@ -69,11 +84,11 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
         {/* Match Date & Time */}
         <div className="text-center  space-y-1">
           <p className="text-xs md:text-sm text-gray-300">
-            {formatDate(fixture.fixture.date)}
+            {formatDate(fixture.fixture.date, dateLocale)}
           </p>
           {!hasStarted && (
             <p className="text-base md:text-lg font-semibold text-white">
-              {formatTime(fixture.fixture.date, userTimezone)}
+              {formatTime(fixture.fixture.date, userTimezone, dateLocale)}
             </p>
           )}
         </div>
@@ -139,7 +154,9 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
             fixture.fixture.status.elapsed &&
             fixture.fixture.status.elapsed >= 45 && (
               <div className="text-center">
-                <p className="text-xs text-gray-300 mb-1">Halftime</p>
+                <p className="text-xs text-gray-300 mb-1">
+                  {t("detail.halftime")}
+                </p>
                 <p className="text-sm font-semibold text-white">
                   {formatGoals(fixture.score.halftime.home)} -{" "}
                   {formatGoals(fixture.score.halftime.away)}
@@ -149,7 +166,9 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           {fixture.score.fulltime.home !== null &&
             fixture.score.fulltime.home !== fixture.goals.home && (
               <div className="text-center">
-                <p className="text-xs text-gray-300 mb-1">Fulltime</p>
+                <p className="text-xs text-gray-300 mb-1">
+                  {t("detail.fulltime")}
+                </p>
                 <p className="text-sm font-semibold text-white">
                   {formatGoals(fixture.score.fulltime.home)} -{" "}
                   {formatGoals(fixture.score.fulltime.away)}
@@ -158,7 +177,9 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
             )}
           {fixture.score.extratime.home !== null && (
             <div className="text-center">
-              <p className="text-xs text-gray-300 mb-1">Extra Time</p>
+              <p className="text-xs text-gray-300 mb-1">
+                {t("detail.extraTime")}
+              </p>
               <p className="text-sm font-semibold">
                 {formatGoals(fixture.score.extratime.home)} -{" "}
                 {formatGoals(fixture.score.extratime.away)}
@@ -167,7 +188,9 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
           )}
           {fixture.score.penalty.home !== null && (
             <div className="text-center">
-              <p className="text-xs text-gray-300 mb-1">Penalties</p>
+              <p className="text-xs text-gray-300 mb-1">
+                {t("detail.penalties")}
+              </p>
               <p className="text-sm font-semibold">
                 {formatGoals(fixture.score.penalty.home)} -{" "}
                 {formatGoals(fixture.score.penalty.away)}

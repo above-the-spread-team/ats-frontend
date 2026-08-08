@@ -5,6 +5,29 @@ import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import NoData from "@/components/common/no-data";
 import { useFixtureStatistics } from "@/services/football-api/fixture-statistics";
+import { useTranslations } from "next-intl";
+
+// Map API-Football statistic type strings to translation keys
+const STAT_TYPE_KEYS: Record<string, string> = {
+  "Shots on Goal": "shotsOnGoal",
+  "Shots off Goal": "shotsOffGoal",
+  "Total Shots": "totalShots",
+  "Blocked Shots": "blockedShots",
+  "Shots insidebox": "shotsInsideBox",
+  "Shots outsidebox": "shotsOutsideBox",
+  Fouls: "fouls",
+  "Corner Kicks": "cornerKicks",
+  Offsides: "offsides",
+  "Ball Possession": "ballPossession",
+  "Yellow Cards": "yellowCards",
+  "Red Cards": "redCards",
+  "Goalkeeper Saves": "goalkeeperSaves",
+  "Total passes": "totalPasses",
+  "Passes accurate": "passesAccurate",
+  "Passes %": "passesPercent",
+  expected_goals: "expectedGoals",
+  goals_prevented: "goalsPrevented",
+};
 
 function getInitials(text: string | null | undefined, fallback = "??") {
   if (!text) return fallback;
@@ -61,7 +84,13 @@ export default function FixtureStatistics({
   awayTeamId,
   statusType,
 }: FixtureStatisticsProps) {
+  const t = useTranslations("games");
   const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  const getStatTypeLabel = (statType: string): string => {
+    const key = STAT_TYPE_KEYS[statType];
+    return key ? t(`stats.types.${key}`) : statType;
+  };
 
   // Use React Query to fetch statistics
   // Pass only status type from parent to determine refetch intervals
@@ -139,8 +168,8 @@ export default function FixtureStatistics({
   if (error || !statisticsData || !statisticsData.response) {
     return (
       <NoData
-        message={error || "No statistics data available"}
-        helpText="Match statistics are usually available during or after the match."
+        message={error || t("stats.noData")}
+        helpText={t("stats.helpText")}
       />
     );
   }
@@ -149,8 +178,8 @@ export default function FixtureStatistics({
   if (teams.length === 0) {
     return (
       <NoData
-        message="No statistics available for this fixture."
-        helpText="Match statistics are usually available during or after the match."
+        message={t("stats.noStatsForFixture")}
+        helpText={t("stats.helpText")}
       />
     );
   }
@@ -250,7 +279,7 @@ export default function FixtureStatistics({
         <div key={statType} className="space-y-2">
           <div className="flex items-center justify-center">
             <span className="text-xs font-medium text-muted-foreground">
-              {statType}
+              {getStatTypeLabel(statType)}
             </span>
           </div>
           <div className="grid  justify-center mx-auto   grid-cols-2 gap-4">
@@ -332,7 +361,7 @@ export default function FixtureStatistics({
         <div key={statType} className="space-y-2">
           <div className="flex items-center justify-center">
             <span className="text-xs font-medium text-muted-foreground">
-              {statType}
+              {getStatTypeLabel(statType)}
             </span>
           </div>
           <div className="grid max justify-center mx-auto   grid-cols-2 gap-4">
@@ -409,7 +438,7 @@ export default function FixtureStatistics({
     <div className="space-y-4">
       {/* Header */}
       <h2 className="text-base md:text-lg text-center font-bold">
-        Match Statistics
+        {t("stats.title")}
       </h2>
 
       {/* Statistics */}

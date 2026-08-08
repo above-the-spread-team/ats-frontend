@@ -1,9 +1,33 @@
 import { serverFetchNewsList } from "@/lib/server-news";
+import { routing } from "@/i18n/routing";
 import type { NewsListResponse } from "@/type/fastapi/news";
 import type { MetadataRoute } from "next";
 
+const baseUrl = "https://www.abovethespread.com";
+
+// en has no prefix (localePrefix: "as-needed"); en doubles as x-default.
+function localizedUrl(locale: string, path: string): string {
+  const normalizedPath = path === "/" ? "" : path;
+  return locale === "en"
+    ? `${baseUrl}${normalizedPath || "/"}`
+    : `${baseUrl}/${locale}${normalizedPath}`;
+}
+
+function languageAlternates(
+  path: string,
+  locales: readonly string[],
+): Record<string, string> {
+  const languages: Record<string, string> = {};
+  for (const locale of locales) {
+    languages[locale] = localizedUrl(locale, path);
+  }
+  if (locales.includes("en")) {
+    languages["x-default"] = localizedUrl("en", path);
+  }
+  return languages;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://www.abovethespread.com";
   const entries: MetadataRoute.Sitemap = [];
 
   const staticPages = [
@@ -17,19 +41,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   for (const page of staticPages) {
-    entries.push({
-      url: `${baseUrl}${page.path}`,
-      lastModified: new Date(),
-      changeFrequency: page.changeFrequency as
-        | "daily"
-        | "weekly"
-        | "monthly"
-        | "yearly"
-        | "always"
-        | "hourly"
-        | "never",
-      priority: page.priority,
-    });
+    for (const locale of routing.locales) {
+      entries.push({
+        url: localizedUrl(locale, page.path),
+        lastModified: new Date(),
+        changeFrequency: page.changeFrequency,
+        priority: page.priority,
+        alternates: {
+          languages: languageAlternates(page.path, routing.locales),
+        },
+      });
+    }
   }
 
   try {
@@ -42,20 +64,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const article of articles) {
         if (!article.is_published) continue;
 
-        const availableLanguages = article.available_languages || ["en"];
+        const availableLanguages = article.available_languages?.length
+          ? article.available_languages
+          : ["en"];
         const articlePath = `/articles/${article.id}`;
 
         for (const lang of availableLanguages) {
-          const url =
-            lang === "en"
-              ? `${baseUrl}${articlePath}`
-              : `${baseUrl}/${lang}${articlePath}`;
-
           entries.push({
-            url,
+            url: localizedUrl(lang, articlePath),
             lastModified: new Date(article.updated_at || article.created_at),
             changeFrequency: "daily",
             priority: 0.6,
+            alternates: {
+              languages: languageAlternates(articlePath, availableLanguages),
+            },
           });
         }
       }

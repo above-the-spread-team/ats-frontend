@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { Trophy, Award, Search, SearchX, Inbox } from "lucide-react";
 import FullPage from "@/components/common/full-page";
 import Nav from "@/components/common/nav-stats";
@@ -15,6 +16,8 @@ import type {
 type LeagueType = "all" | "league" | "cup";
 
 function TablesContent() {
+  const t = useTranslations("stats");
+  const tCommon = useTranslations("common");
   const [leagues, setLeagues] = useState<LeagueResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null); // fatal: no leagues at all
@@ -48,7 +51,7 @@ function TablesContent() {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to load leagues (${response.status})`);
+          throw new Error(t("leagues.loadFailed", { status: response.status }));
         }
 
         const data = (await response.json()) as LeaguesApiResponse;
@@ -62,12 +65,14 @@ function TablesContent() {
             setError(data.errors.join("\n"));
           } else {
             // Some leagues loaded — show a non-blocking warning, keep the list visible
-            setPartialError(`Some leagues could not be loaded: ${data.errors.join(", ")}`);
+            setPartialError(
+              t("leagues.partialLoadFailed", { errors: data.errors.join(", ") }),
+            );
           }
         }
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tCommon("unknown"));
         setLeagues([]);
       } finally {
         if (!controller.signal.aborted) {
@@ -81,6 +86,7 @@ function TablesContent() {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount]);
 
   // Group and filter leagues
@@ -175,7 +181,7 @@ function TablesContent() {
       {/* Header */}
       <div className="space-y-3 md:space-y-4">
         <h1 className="text-xl md:text-2xl font-bold text-primary-title">
-          Leagues & Cups
+          {t("leagues.title")}
         </h1>
 
         {/* Search */}
@@ -185,7 +191,7 @@ function TablesContent() {
           </div>
           <input
             type="text"
-            placeholder="Search leagues or countries..."
+            placeholder={t("search.placeholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full scale-95 md:scale-100 pl-10 pr-4 py-1.5 md:py-2 text-base md:text-sm border border-primary-title/30 rounded-2xl placeholder:text-primary-font/50 bg-background text-primary-font focus:outline-none focus:ring-2 focus:ring-primary"
@@ -197,19 +203,19 @@ function TablesContent() {
           tabs={[
             {
               id: "all" as LeagueType,
-              label: "All",
+              label: t("leagues.all"),
               icon: null,
               count: totalAllCount,
             },
             {
               id: "league" as LeagueType,
-              label: "Leagues",
+              label: t("leagues.leagues"),
               icon: Award,
               count: totalLeaguesCount,
             },
             {
               id: "cup" as LeagueType,
-              label: "Cups",
+              label: t("leagues.cups"),
               icon: Trophy,
               count: totalCupsCount,
             },
@@ -237,7 +243,7 @@ function TablesContent() {
               onClick={() => setRetryCount((c) => c + 1)}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
             >
-              Retry
+              {t("leagues.retry")}
             </button>
           </div>
         </FullPage>
@@ -256,8 +262,8 @@ function TablesContent() {
             </div>
             <p className="text-xs md:text-sm font-semibold text-muted-foreground">
               {searchQuery.trim()
-                ? `No leagues match "${searchQuery}"`
-                : "No leagues found for this season"}
+                ? t("search.noMatch", { query: searchQuery })
+                : t("leagues.empty")}
             </p>
             {searchQuery.trim() && (
               <button
@@ -265,7 +271,7 @@ function TablesContent() {
                 className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-medium text-primary-font bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
               >
                 <SearchX className="w-4 h-4" />
-                Clear search
+                {t("search.clear")}
               </button>
             )}
           </div>
@@ -283,21 +289,21 @@ function TablesContent() {
       {!isLoading && !error && totalFilteredCount > 0 && (
         <FullPage minusHeight={minusHeight} className="space-y-6 mt-6 pb-10">
           <Section
-            title="Cups"
+            title={t("leagues.cups")}
             icon={Trophy}
             count={groupedLeagues.cup.length}
             leagues={groupedLeagues.cup}
             renderLeagueCard={renderLeagueCard}
           />
           <Section
-            title="Leagues"
+            title={t("leagues.leagues")}
             icon={Award}
             count={groupedLeagues.league.length}
             leagues={groupedLeagues.league}
             renderLeagueCard={renderLeagueCard}
           />
           <Section
-            title="Other"
+            title={t("leagues.other")}
             icon={Trophy}
             count={groupedLeagues.other.length}
             leagues={groupedLeagues.other}

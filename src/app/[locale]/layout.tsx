@@ -2,7 +2,11 @@ import { Sora } from "next/font/google";
 import "../globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -53,9 +57,9 @@ export async function generateMetadata({
     creator: "Above The Spread",
     publisher: "Above The Spread",
     metadataBase: new URL("https://www.abovethespread.com"),
-    alternates: {
-      canonical: "/",
-    },
+    // No layout-level canonical: it would be inherited by every child page
+    // that lacks its own metadata, canonicalizing them all to the same URL.
+    // Pages that need one (e.g. article detail) declare it themselves.
     openGraph: {
       type: "website",
       locale:
@@ -107,6 +111,10 @@ export const viewport = {
   viewportFit: "cover",
 } as const;
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export default async function LocaleLayout({
   children,
   params,
@@ -120,16 +128,11 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  const messages = await getMessages();
+  setRequestLocale(locale);
 
-  const jsonLdDescription =
-    locale === "ja"
-      ? "ライブ試合日程、詳細なスタッツ、試合予想、サッカーディスカッション — プレミアリーグ、ラ・リーガ、セリエA、ブンデスリーガ、リーグ・アン、欧州カップ戦をカバー。"
-      : locale === "zh-TW"
-        ? "即時足球賽程、深度數據統計、比賽預測與球迷討論 — 涵蓋英超、西甲、意甲、德甲、法甲及歐洲盃賽事。"
-        : locale === "zh-CN"
-          ? "即时足球赛程、深度数据统计、比赛预测与球迷讨论 — 涵盖英超、西甲、意甲、德甲、法甲及欧洲杯赛事。"
-          : "Live football fixtures, in-depth stats, match predictions, and fan discussions — covering Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and European cups.";
+  const messages = await getMessages();
+  const tMeta = await getTranslations({ locale, namespace: "metadata" });
+  const jsonLdDescription = tMeta("jsonLdDescription");
 
   return (
     <html lang={locale} suppressHydrationWarning>

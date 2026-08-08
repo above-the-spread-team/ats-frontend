@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   BarChart3,
   TrendingUp,
@@ -22,10 +23,11 @@ export default function FixtureSummary({
   draws,
   loses,
 }: FixtureSummaryProps) {
+  const t = useTranslations("stats");
   const stats = [
     {
       icon: BarChart3,
-      label: "Played",
+      label: t("statistics.played"),
       total: played.total,
       home: played.home,
       away: played.away,
@@ -34,7 +36,7 @@ export default function FixtureSummary({
     },
     {
       icon: TrendingUp,
-      label: "Wins",
+      label: t("statistics.wins"),
       total: wins.total,
       home: wins.home,
       away: wins.away,
@@ -43,7 +45,7 @@ export default function FixtureSummary({
     },
     {
       icon: Minus,
-      label: "Draws",
+      label: t("statistics.draws"),
       total: draws.total,
       home: draws.home,
       away: draws.away,
@@ -52,7 +54,7 @@ export default function FixtureSummary({
     },
     {
       icon: TrendingDown,
-      label: "Losses",
+      label: t("statistics.losses"),
       total: loses.total,
       home: loses.home,
       away: loses.away,

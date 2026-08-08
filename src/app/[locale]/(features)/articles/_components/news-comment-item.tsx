@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import UserIcon from "@/components/common/user-icon";
 import {
   ChevronDown,
@@ -54,45 +55,53 @@ export interface NewsComment {
 }
 
 // formatTimeAgo helper function
-export function formatTimeAgo(dateString: string): string {
+type TimeAgoTranslator = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string;
+
+export function formatTimeAgo(
+  dateString: string,
+  t: TimeAgoTranslator,
+): string {
   try {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return "just now";
+      return t("comments.timeAgo.justNow");
     }
 
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
+      return t("comments.timeAgo.minutesAgo", { count: diffInMinutes });
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+      return t("comments.timeAgo.hoursAgo", { count: diffInHours });
     }
 
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+      return t("comments.timeAgo.daysAgo", { count: diffInDays });
     }
 
     const diffInWeeks = Math.floor(diffInDays / 7);
     if (diffInWeeks < 4) {
-      return `${diffInWeeks} week${diffInWeeks > 1 ? "s" : ""} ago`;
+      return t("comments.timeAgo.weeksAgo", { count: diffInWeeks });
     }
 
     const diffInMonths = Math.floor(diffInDays / 30);
     if (diffInMonths < 12) {
-      return `${diffInMonths} month${diffInMonths > 1 ? "s" : ""} ago`;
+      return t("comments.timeAgo.monthsAgo", { count: diffInMonths });
     }
 
     const diffInYears = Math.floor(diffInDays / 365);
-    return `${diffInYears} year${diffInYears > 1 ? "s" : ""} ago`;
+    return t("comments.timeAgo.yearsAgo", { count: diffInYears });
   } catch {
-    return "recently";
+    return t("comments.timeAgo.recently");
   }
 }
 
@@ -138,6 +147,8 @@ export default function NewsCommentItem({
   onReply,
 }: NewsCommentItemProps) {
   const router = useRouter();
+  const t = useTranslations("articles");
+  const c = useTranslations("common");
   const { data: currentUser } = useCurrentUser();
   const [isExpanded, setIsExpanded] = useState(false); // Start collapsed, expand when user clicks
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -312,7 +323,7 @@ export default function NewsCommentItem({
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold">{comment.author.name}</p>
               <span className="text-xs text-muted-foreground">
-                {formatTimeAgo(comment.createdAt)}
+                {formatTimeAgo(comment.createdAt, t)}
               </span>
             </div>
             {isAuthor && (
@@ -328,14 +339,14 @@ export default function NewsCommentItem({
                     className="cursor-pointer"
                   >
                     <Edit className="w-4 h-4 mr-2" />
-                    Edit
+                    {c("edit")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setIsDeleteDialogOpen(true)}
                     className="cursor-pointer text-destructive focus:text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    {c("delete")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -373,7 +384,9 @@ export default function NewsCommentItem({
                   onClick={() => setIsContentExpanded(!isContentExpanded)}
                   className="text-xs text-muted-foreground font-semibold hover:text-primary-font  transition-colors mt-0.5 "
                 >
-                  {isContentExpanded ? "Read less" : "Read more"}
+                  {isContentExpanded
+                    ? t("comments.readLess")
+                    : t("comments.readMore")}
                 </button>
               )}
             </div>
@@ -409,7 +422,9 @@ export default function NewsCommentItem({
               onClick={handleReplyClick}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary-font transition-colors"
             >
-              <span className="text-xs font-medium">Reply</span>
+              <span className="text-xs font-medium">
+                {t("comments.reply")}
+              </span>
             </button>
           </div>
           {comment.replyCount > 0 && (
@@ -420,12 +435,16 @@ export default function NewsCommentItem({
               {isExpanded ? (
                 <>
                   <ChevronUp className="w-4 h-4" />
-                  <span>Hide {comment.replyCount} replies</span>
+                  <span>
+                    {t("comments.hideReplies", { count: comment.replyCount })}
+                  </span>
                 </>
               ) : (
                 <>
                   <ChevronDown className="w-4 h-4" />
-                  <span>Show {comment.replyCount} replies</span>
+                  <span>
+                    {t("comments.showReplies", { count: comment.replyCount })}
+                  </span>
                 </>
               )}
             </button>
@@ -478,7 +497,7 @@ export default function NewsCommentItem({
                 ))
               ) : comment.replyCount > 0 ? (
                 <p className="text-xs text-muted-foreground pl-4">
-                  No replies yet
+                  {t("comments.noRepliesYet")}
                 </p>
               ) : null}
             </div>
@@ -491,9 +510,9 @@ export default function NewsCommentItem({
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Comment"
-        description="Are you sure you want to delete this comment? This action cannot be undone."
-        confirmText="Delete"
+        title={t("comments.deleteTitle")}
+        description={t("comments.deleteDescription")}
+        confirmText={c("delete")}
         isPending={deleteCommentMutation.isPending}
         variant="destructive"
       />

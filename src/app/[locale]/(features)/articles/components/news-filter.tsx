@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,13 +20,6 @@ interface NewsFilterProps {
 
 const TAG_TYPE_ORDER: TagType[] = ["league", "team", "player", "topic"];
 
-const TAG_TYPE_LABELS: Record<TagType, string> = {
-  league: "League",
-  team: "Team",
-  player: "Player",
-  topic: "Topic",
-};
-
 const TAG_TYPE_BADGE: Record<TagType, string> = {
   league: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/25",
   team: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25",
@@ -38,7 +32,15 @@ export default function NewsFilter({
   selectedTagIds,
   onTagIdsChange,
 }: NewsFilterProps) {
+  const t = useTranslations("articles");
   const { data: tagsData, isLoading } = useTags(100);
+
+  const TAG_TYPE_LABELS: Record<TagType, string> = {
+    league: t("filter.league"),
+    team: t("filter.team"),
+    player: t("filter.player"),
+    topic: t("filter.topic"),
+  };
 
   const tagsByType = useMemo(() => {
     const grouped: Record<TagType, TagSummary[]> = {
@@ -138,7 +140,7 @@ export default function NewsFilter({
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   {TAG_TYPE_LABELS[type]}
                   <span className="ml-1 font-normal normal-case">
-                    (select one)
+                    {t("filter.selectOne")}
                   </span>
                 </div>
                 {tags.map((tag) => (

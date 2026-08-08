@@ -3,8 +3,9 @@
 import * as React from "react";
 import { Suspense, useState, useEffect } from "react";
 import { Eye, EyeClosed, Mail, Lock, LogIn, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { ZodError } from "zod";

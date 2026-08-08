@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 import { FaBell } from "react-icons/fa";
 import { IoChatbubbles } from "react-icons/io5";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { FixtureDualTeamIcon } from "@/components/common/fixture-dual-team-icon";
 import UserIcon from "@/components/common/user-icon";
 import {

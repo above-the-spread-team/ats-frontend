@@ -1,6 +1,7 @@
 "use client";
 
 import { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface StatRow {
   label: string;
@@ -23,6 +24,7 @@ export default function StatCard({
   title,
   rows,
 }: StatCardProps) {
+  const t = useTranslations("stats");
   return (
     <div className="bg-card border border-border/50 rounded-lg md:rounded-xl p-2.5 md:p-4 shadow-md">
       <div className="flex items-center gap-1 mb-2">
@@ -57,7 +59,7 @@ export default function StatCard({
                     <div className="flex items-center gap-2">
                       {subRow.avg && (
                         <span className="text-xs md:text-sm text-muted-foreground text-right">
-                          avg: {subRow.avg}
+                          {t("statistics.avgValue", { value: subRow.avg })}
                         </span>
                       )}
                       <span className="text-xs md:text-sm w-6 text-right text-foreground font-medium">

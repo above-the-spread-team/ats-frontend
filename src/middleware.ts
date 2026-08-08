@@ -7,7 +7,7 @@ const intlMiddleware = createMiddleware(routing);
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|_next/|favicon.ico|images/|api/|maintenance).*)",
+    "/((?!_next/static|_next/image|_next/|favicon.ico|images/|api/|maintenance|sitemap.xml|robots.txt).*)",
   ],
 };
 

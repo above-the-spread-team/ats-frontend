@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import type {
   FixturePlayersResponseItem,
   FixturePlayersPlayerItem,
@@ -63,7 +64,63 @@ export default function FixturePlayers({
   awayTeamId,
   statusType,
 }: FixturePlayersProps) {
+  const t = useTranslations("games");
+  const tc = useTranslations("common");
   const router = useRouter();
+
+  const tableHeader = (
+    <TableHeader>
+      <TableRow>
+        <TableHead className="min-w-[200px]">{tc("player")}</TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.rating")}
+        </TableHead>
+        <TableHead className="text-center">{t("players.headers.min")}</TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.goals")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.assists")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.shots")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.passes")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.passAccuracy")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.keyPasses")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.tackles")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.duels")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.dribbles")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.fouls")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.cards")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.goalsConceded")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.saves")}
+        </TableHead>
+        <TableHead className="text-center">
+          {t("players.headers.penalties")}
+        </TableHead>
+      </TableRow>
+    </TableHeader>
+  );
 
   // Use React Query to fetch players
   // Pass status type from parent to determine refetch intervals
@@ -98,27 +155,7 @@ export default function FixturePlayers({
             {/* Players Table Skeleton */}
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[200px]">Player</TableHead>
-                    <TableHead className="text-center">Rating</TableHead>
-                    <TableHead className="text-center">Min</TableHead>
-                    <TableHead className="text-center">G</TableHead>
-                    <TableHead className="text-center">A</TableHead>
-                    <TableHead className="text-center">Shots</TableHead>
-                    <TableHead className="text-center">Passes</TableHead>
-                    <TableHead className="text-center">Pass%</TableHead>
-                    <TableHead className="text-center">KP</TableHead>
-                    <TableHead className="text-center">Tkl</TableHead>
-                    <TableHead className="text-center">Duels</TableHead>
-                    <TableHead className="text-center">Drib</TableHead>
-                    <TableHead className="text-center">Fouls</TableHead>
-                    <TableHead className="text-center">Cards</TableHead>
-                    <TableHead className="text-center">GC</TableHead>
-                    <TableHead className="text-center">Saves</TableHead>
-                    <TableHead className="text-center">Pen</TableHead>
-                  </TableRow>
-                </TableHeader>
+                {tableHeader}
                 <TableBody>
                   {Array.from({ length: 11 }).map((_, idx) => (
                     <TableRow key={idx}>
@@ -234,27 +271,7 @@ export default function FixturePlayers({
             {/* Players Table Skeleton */}
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[200px]">Player</TableHead>
-                    <TableHead className="text-center">Rating</TableHead>
-                    <TableHead className="text-center">Min</TableHead>
-                    <TableHead className="text-center">G</TableHead>
-                    <TableHead className="text-center">A</TableHead>
-                    <TableHead className="text-center">Shots</TableHead>
-                    <TableHead className="text-center">Passes</TableHead>
-                    <TableHead className="text-center">Pass%</TableHead>
-                    <TableHead className="text-center">KP</TableHead>
-                    <TableHead className="text-center">Tkl</TableHead>
-                    <TableHead className="text-center">Duels</TableHead>
-                    <TableHead className="text-center">Drib</TableHead>
-                    <TableHead className="text-center">Fouls</TableHead>
-                    <TableHead className="text-center">Cards</TableHead>
-                    <TableHead className="text-center">GC</TableHead>
-                    <TableHead className="text-center">Saves</TableHead>
-                    <TableHead className="text-center">Pen</TableHead>
-                  </TableRow>
-                </TableHeader>
+                {tableHeader}
                 <TableBody>
                   {Array.from({ length: 8 }).map((_, idx) => (
                     <TableRow key={idx}>
@@ -365,8 +382,8 @@ export default function FixturePlayers({
   if (error || !playersData || !playersData.response) {
     return (
       <NoData
-        message={error || "No players data available"}
-        helpText="Player statistics are usually available during or after the match."
+        message={error || t("players.noData")}
+        helpText={t("players.helpText")}
       />
     );
   }
@@ -376,8 +393,8 @@ export default function FixturePlayers({
   if (teams.length === 0) {
     return (
       <NoData
-        message="No players data available for this fixture."
-        helpText="Player statistics are usually available during or after the match."
+        message={t("players.noPlayersForFixture")}
+        helpText={t("players.helpText")}
       />
     );
   }
@@ -441,7 +458,7 @@ export default function FixturePlayers({
                 {stat.games.substitute && (
                   <>
                     <span>•</span>
-                    <span className="text-blue-500">Sub</span>
+                    <span className="text-blue-500">{t("players.sub")}</span>
                   </>
                 )}
               </div>
@@ -480,7 +497,7 @@ export default function FixturePlayers({
           {formatValue(stat.shots.total)}
           {stat.shots.on !== null && stat.shots.on > 0 && (
             <span className="text-muted-foreground text-[10px] block">
-              ({formatValue(stat.shots.on)} on)
+              {t("players.shotsOn", { count: stat.shots.on })}
             </span>
           )}
         </TableCell>
@@ -628,35 +645,14 @@ export default function FixturePlayers({
           )}
           <h2 className="text-sm md:text-base font-bold">{team.team.name}</h2>
           <p className="text-xs md:text-sm text-muted-foreground">
-            {sortedPlayers.length} player
-            {sortedPlayers.length !== 1 ? "s" : ""}
+            {t("players.playerCount", { count: sortedPlayers.length })}
           </p>
         </div>
 
         {/* Players Table */}
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[200px]">Player</TableHead>
-                <TableHead className="text-center">Rating</TableHead>
-                <TableHead className="text-center">Min</TableHead>
-                <TableHead className="text-center">G</TableHead>
-                <TableHead className="text-center">A</TableHead>
-                <TableHead className="text-center">Shots</TableHead>
-                <TableHead className="text-center">Passes</TableHead>
-                <TableHead className="text-center">Pass%</TableHead>
-                <TableHead className="text-center">KP</TableHead>
-                <TableHead className="text-center">Tkl</TableHead>
-                <TableHead className="text-center">Duels</TableHead>
-                <TableHead className="text-center">Drib</TableHead>
-                <TableHead className="text-center">Fouls</TableHead>
-                <TableHead className="text-center">Cards</TableHead>
-                <TableHead className="text-center">GC</TableHead>
-                <TableHead className="text-center">Saves</TableHead>
-                <TableHead className="text-center">Pen</TableHead>
-              </TableRow>
-            </TableHeader>
+            {tableHeader}
             <TableBody>
               {sortedPlayers.map((playerItem) => renderPlayerRow(playerItem))}
             </TableBody>

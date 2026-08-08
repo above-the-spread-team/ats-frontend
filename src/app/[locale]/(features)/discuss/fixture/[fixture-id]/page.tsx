@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { getFixtureGroup } from "@/services/fastapi/groups";
 import PostContent from "../../_components/post-content";
@@ -9,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MessageCircle } from "lucide-react";
 
 export default function FixturePage() {
+  const t = useTranslations("discuss");
   const params = useParams();
   const fixtureIdParam = params["fixture-id"] as string | undefined;
   const fixtureId = fixtureIdParam ? parseInt(fixtureIdParam, 10) : null;
@@ -32,7 +34,9 @@ export default function FixturePage() {
       <Card>
         <CardContent className="py-12 text-center">
           <MessageCircle className="w-8 h-8 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground text-sm">Invalid fixture ID.</p>
+          <p className="text-muted-foreground text-sm">
+            {t("invalidFixtureId")}
+          </p>
         </CardContent>
       </Card>
     );
@@ -53,9 +57,11 @@ export default function FixturePage() {
       <Card>
         <CardContent className="py-12 text-center">
           <MessageCircle className="w-8 h-8 mx-auto text-muted-foreground mb-4" />
-          <p className="text-sm font-semibold mb-1">No discussion found</p>
+          <p className="text-sm font-semibold mb-1">
+            {t("noDiscussionFound")}
+          </p>
           <p className="text-muted-foreground text-sm">
-            This fixture does not have a discussion group yet.
+            {t("noDiscussionFoundDesc")}
           </p>
         </CardContent>
       </Card>

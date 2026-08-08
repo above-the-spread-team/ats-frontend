@@ -2,8 +2,8 @@
 
 import { Suspense, useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useNews, resolveArticleType } from "@/services/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -60,17 +60,9 @@ function ArticleGrid({
       (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
-    const labels: Record<string, { justNow: string; hoursAgo: (h: number) => string; yesterday: string }> = {
-      en: { justNow: "Just now", hoursAgo: (h) => `${h}h ago`, yesterday: "Yesterday" },
-      "zh-TW": { justNow: "剛剛", hoursAgo: (h) => `${h} 小時前`, yesterday: "昨天" },
-      "zh-CN": { justNow: "刚刚", hoursAgo: (h) => `${h} 小时前`, yesterday: "昨天" },
-      ja: { justNow: "たった今", hoursAgo: (h) => `${h}時間前`, yesterday: "昨日" },
-    };
-    const l = labels[locale] ?? labels.en;
-
-    if (diffInHours < 1) return l.justNow;
-    if (diffInHours < 24) return l.hoursAgo(diffInHours);
-    if (diffInHours < 48) return l.yesterday;
+    if (diffInHours < 1) return t("time.justNow");
+    if (diffInHours < 24) return t("time.hoursAgo", { hours: diffInHours });
+    if (diffInHours < 48) return t("time.yesterday");
     return date.toLocaleDateString(
       locale === "ja" ? "ja-JP" : locale === "zh-TW" ? "zh-TW" : locale === "zh-CN" ? "zh-CN" : "en-US",
       { month: "short", day: "numeric", year: "numeric" },

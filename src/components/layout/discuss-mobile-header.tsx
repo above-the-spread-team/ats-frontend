@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { NotificationBell } from "@/components/common/notification";
+import LocaleSwitcher from "@/components/common/locale-switcher";
 import ConfirmDialog from "@/components/common/popup";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { User, LogOut, Menu } from "lucide-react";
 import UserIcon from "@/components/common/user-icon";
 import {
@@ -126,6 +127,7 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-3">
+        <LocaleSwitcher />
         <ThemeToggle />
         <NotificationBell authenticated={authenticated} />
         {authenticated ? (

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUpdateNewsComment } from "@/services/fastapi/news";
+import { useTranslations } from "next-intl";
 import { Loader2, Smile } from "lucide-react";
 import EmojiPicker from "@/components/common/emoji-picker";
 import type { EmojiClickData } from "emoji-picker-react";
@@ -26,6 +27,8 @@ export default function EditNewsComment({
   onSuccess,
   onCancel,
 }: EditNewsCommentProps) {
+  const t = useTranslations("articles");
+  const c = useTranslations("common");
   const [content, setContent] = useState(initialContent);
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const updateCommentMutation = useUpdateNewsComment();
@@ -220,7 +223,7 @@ export default function EditNewsComment({
                 className="h-8 w-8 p-0"
               >
                 <Smile className="scale-110" />
-                <span className="sr-only">Add emoji</span>
+                <span className="sr-only">{t("comments.addEmoji")}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -239,7 +242,7 @@ export default function EditNewsComment({
             <span className="text-xs text-destructive">
               {updateCommentMutation.error instanceof Error
                 ? updateCommentMutation.error.message
-                : "Failed to update comment. Please try again."}
+                : t("comments.updateError")}
             </span>
           )}
         </div>
@@ -252,7 +255,7 @@ export default function EditNewsComment({
             disabled={updateCommentMutation.isPending}
             className="flex-shrink-0 rounded-full h-8 px-4"
           >
-            <p className="text-xs">Cancel</p>
+            <p className="text-xs">{c("cancel")}</p>
           </Button>
           <Button
             type="submit"
@@ -267,7 +270,7 @@ export default function EditNewsComment({
             {updateCommentMutation.isPending ? (
               <Loader2 className="w-4 animate-spin" />
             ) : (
-              <p className="text-xs">Update</p>
+              <p className="text-xs">{t("comments.update")}</p>
             )}
           </Button>
         </div>

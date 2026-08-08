@@ -5,6 +5,7 @@ import "@ncdai/react-wheel-picker/style.css";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   WheelPicker,
   WheelPickerWrapper,
@@ -134,6 +135,7 @@ export function TeamLogo({
 // ─── QualifierBadge ───────────────────────────────────────────────────────────
 
 function QualifierBadge({ count, max = 2 }: { count: number; max?: number }) {
+  const t = useTranslations("worldCup");
   const full = count === max;
   return (
     <span
@@ -146,7 +148,7 @@ function QualifierBadge({ count, max = 2 }: { count: number; max?: number }) {
       }`}
     >
       {count}/{max}
-      {full ? " ✓" : " picked"}
+      {full ? " ✓" : ` ${t("prediction.modal.picked")}`}
     </span>
   );
 }
@@ -189,6 +191,8 @@ export function VotingModal({
   hasExistingVote,
   onSave,
 }: VotingModalProps) {
+  const t = useTranslations("worldCup");
+  const tCommon = useTranslations("common");
   const prefersReducedMotion = usePrefersReducedMotion();
   const {
     data: currentUser,
@@ -334,7 +338,9 @@ export function VotingModal({
       await onSave(picks, champId, totalGoals);
       setSubmissionState("success");
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "Something went wrong.");
+      setSubmitError(
+        e instanceof Error ? e.message : t("prediction.modal.errorFallback"),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -374,9 +380,12 @@ export function VotingModal({
 
   // Step title
   let stepTitle = "";
-  if (isGoalsStep) stepTitle = "⚽ Predict total goals";
-  else if (isChampionStep) stepTitle = "🏆 Who will win the World Cup?";
-  else stepTitle = `Group ${currentGroup?.group_letter} — Pick 2 qualifiers`;
+  if (isGoalsStep) stepTitle = t("prediction.modal.titleGoals");
+  else if (isChampionStep) stepTitle = t("prediction.modal.titleChampion");
+  else
+    stepTitle = t("prediction.modal.titleGroup", {
+      letter: currentGroup?.group_letter ?? "",
+    });
 
   return createPortal(
     <>
@@ -391,14 +400,17 @@ export function VotingModal({
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground flex-shrink-0"
-              aria-label="Close"
+              aria-label={tCommon("close")}
             >
               <XIcon className="w-4 h-4" />
             </button>
 
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm text-muted-foreground font-medium uppercase tracking-wide">
-                Step {displayStep + 1} of {TOTAL}
+                {t("prediction.modal.stepOf", {
+                  current: displayStep + 1,
+                  total: TOTAL,
+                })}
               </p>
               <p className="text-sm md:text-lg font-bold truncate">
                 {stepTitle}
@@ -410,7 +422,7 @@ export function VotingModal({
                 onClick={() => goTo(displayStep - 1)}
                 disabled={displayStep === 0 || animPhase !== "idle"}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30 transition-colors text-muted-foreground"
-                aria-label="Previous step"
+                aria-label={t("prediction.modal.previousStep")}
               >
                 <ChevronLeftIcon className="w-4 h-4" />
               </button>
@@ -418,7 +430,7 @@ export function VotingModal({
                 onClick={() => goTo(displayStep + 1)}
                 disabled={displayStep === TOTAL - 1 || animPhase !== "idle"}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30 transition-colors text-muted-foreground"
-                aria-label="Next step"
+                aria-label={t("prediction.modal.nextStep")}
               >
                 <ChevronRightIcon className="w-4 h-4" />
               </button>
@@ -451,11 +463,13 @@ export function VotingModal({
                 <div className="px-5 pt-4 pb-2 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
-                      Select the{" "}
-                      <span className="font-semibold text-foreground">
-                        2 teams
-                      </span>{" "}
-                      that advance from this group
+                      {t.rich("prediction.modal.selectTwoTeams", {
+                        strong: (chunks) => (
+                          <span className="font-semibold text-foreground">
+                            {chunks}
+                          </span>
+                        ),
+                      })}
                     </p>
                     <QualifierBadge count={currentGroupPicks.length} max={2} />
                   </div>
@@ -534,7 +548,7 @@ export function VotingModal({
                               {team.name}
                             </p>
                             <p className="text-xs text-white/80">
-                              Your champion pick
+                              {t("prediction.modal.yourChampionPick")}
                             </p>
                           </div>
                           <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
@@ -547,7 +561,7 @@ export function VotingModal({
                     type="text"
                     value={champSearch}
                     onChange={(e) => setChampSearch(e.target.value)}
-                    placeholder="Search teams…"
+                    placeholder={t("prediction.modal.searchTeams")}
                     className="w-full h-9 px-3 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary-font/60 transition-colors"
                   />
 
@@ -582,14 +596,18 @@ export function VotingModal({
                               isSelected ? "text-white" : "text-foreground/80"
                             }`}
                           >
-                            Grp {team.group_letter}
+                            {t("prediction.modal.groupShort", {
+                              letter: team.group_letter,
+                            })}
                           </span>
                         </button>
                       );
                     })}
                     {filteredTeams.length === 0 && (
                       <p className="text-xs text-muted-foreground text-center py-4">
-                        No teams match &ldquo;{champSearch}&rdquo;
+                        {t("prediction.modal.noTeamsMatch", {
+                          query: champSearch,
+                        })}
                       </p>
                     )}
                   </div>
@@ -607,17 +625,18 @@ export function VotingModal({
                       </div>
                       <div>
                         <p className="text-lg sm:text-xl font-extrabold">
-                          Prediction submitted!
+                          {t("prediction.modal.predictionSubmitted")}
                         </p>
 
                         {showAnonymousPrizeNote && (
                           <p className="text-md sm:text-base font-medium text-muted-foreground mt-2 max-w-[42ch] mx-auto">
-                            Prediction saved!{" "}
-                            <strong className="font-bold text-foreground">
-                              Log in now
-                            </strong>{" "}
-                            to qualify for the prize—anonymous entries are not
-                            eligible to win.
+                            {t.rich("prediction.modal.anonymousNote", {
+                              strong: (chunks) => (
+                                <strong className="font-bold text-foreground">
+                                  {chunks}
+                                </strong>
+                              ),
+                            })}
                           </p>
                         )}
                       </div>
@@ -639,7 +658,7 @@ export function VotingModal({
                                     {team.name}
                                   </p>
                                   <p className="text-[11px] text-white/80">
-                                    Your champion pick
+                                    {t("prediction.modal.yourChampionPick")}
                                   </p>
                                 </div>
                                 <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />
@@ -652,12 +671,12 @@ export function VotingModal({
                         <span className="text-2xl">⚽</span>
                         <div>
                           <p className="text-[11px] text-muted-foreground text-left">
-                            Total goals prediction
+                            {t("prediction.modal.totalGoalsPrediction")}
                           </p>
                           <p className="text-2xl font-black tabular-nums text-foreground leading-tight">
                             {totalGoals}
                             <span className="text-base font-medium text-muted-foreground ml-1">
-                              goals
+                              {t("prediction.modal.goalsUnit")}
                             </span>
                           </p>
                         </div>
@@ -668,11 +687,10 @@ export function VotingModal({
                     <>
                       <div className="text-center space-y-1">
                         <p className="text-xs md:text-sm text-muted-foreground">
-                          Predict the total goals scored in the entire
-                          tournament. Closest guess wins tiebreaks.
+                          {t("prediction.modal.goalsHint")}
                         </p>
                         <p className="text-xs md:text-sm text-muted-foreground/60">
-                          2022 Qatar: 172 · 2018 Russia: 169 · 2014 Brazil: 171
+                          {t("prediction.modal.pastTournaments")}
                         </p>
                       </div>
 
@@ -682,7 +700,7 @@ export function VotingModal({
                           {totalGoals}
                         </span>
                         <span className="text-base font-semibold text-muted-foreground self-end pb-1.5">
-                          goals
+                          {t("prediction.modal.goalsUnit")}
                         </span>
                       </div>
 
@@ -708,7 +726,7 @@ export function VotingModal({
 
                         {/* Bottom hint */}
                         <p className="text-center text-xs md:text-sm text-muted-foreground/60 py-2">
-                          Scroll or drag · typical range 130–200
+                          {t("prediction.modal.scrollHint")}
                         </p>
                       </div>
                     </>
@@ -731,7 +749,7 @@ export function VotingModal({
                   onClick={onClose}
                   className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-150 bg-primary-font text-white hover:opacity-90 active:scale-[0.98]"
                 >
-                  Done
+                  {t("prediction.modal.done")}
                 </button>
               ) : (
                 <button
@@ -744,14 +762,16 @@ export function VotingModal({
                   }`}
                 >
                   {isSubmitting
-                    ? "Submitting…"
+                    ? t("prediction.modal.submitting")
                     : champId == null
-                      ? "Select a champion first"
+                      ? t("prediction.modal.selectChampionFirst")
                       : missingGroups > 0
-                        ? `${missingGroups} group${missingGroups > 1 ? "s" : ""} incomplete`
+                        ? t("prediction.modal.groupsIncomplete", {
+                            count: missingGroups,
+                          })
                         : hasExistingVote
-                          ? "Update Prediction"
-                          : "Submit Prediction"}
+                          ? t("prediction.modal.updatePrediction")
+                          : t("prediction.modal.submitPrediction")}
                 </button>
               ))}
 
@@ -767,8 +787,8 @@ export function VotingModal({
                 }`}
               >
                 {champId == null
-                  ? "Select a champion to continue"
-                  : "Next — Predict Goals →"}
+                  ? t("prediction.modal.selectChampionToContinue")
+                  : t("prediction.modal.nextPredictGoals")}
               </button>
             )}
 
@@ -785,9 +805,11 @@ export function VotingModal({
               >
                 {currentGroupComplete
                   ? displayStep === CHAMPION_STEP - 1
-                    ? "Next — Pick Champion →"
-                    : "Next →"
-                  : `Pick ${2 - currentGroupPicks.length} more team${2 - currentGroupPicks.length > 1 ? "s" : ""} to continue`}
+                    ? t("prediction.modal.nextPickChampion")
+                    : t("prediction.modal.next")
+                  : t("prediction.modal.pickMoreTeams", {
+                      count: 2 - currentGroupPicks.length,
+                    })}
               </button>
             )}
           </div>

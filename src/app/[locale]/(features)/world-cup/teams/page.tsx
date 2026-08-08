@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useWorldCupTeams } from "@/services/football-api/world-cup-teams";
 import type { TeamResponseItem } from "@/type/footballapi/teams-info";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -166,55 +167,50 @@ function getConfederation(country: string | null | undefined): Confed {
   return CONFED_BY_COUNTRY[country.trim().toLowerCase()] ?? "Other";
 }
 
+// `label` is a proper-noun acronym (not translated); the "Other" label and the
+// region names are translated at render time via `worldCup.teams.region.*`.
 const CONFED_META: Record<
   Confed,
-  { label: string; full: string; stripe: string; chip: string; dot: string }
+  { label: string; stripe: string; chip: string; dot: string }
 > = {
   UEFA: {
     label: "UEFA",
-    full: "Europe",
     stripe: "bg-sky-500",
     chip: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25",
     dot: "bg-sky-500",
   },
   CONMEBOL: {
     label: "CONMEBOL",
-    full: "South America",
     stripe: "bg-amber-500",
     chip: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25",
     dot: "bg-amber-500",
   },
   AFC: {
     label: "AFC",
-    full: "Asia",
     stripe: "bg-red-500",
     chip: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25",
     dot: "bg-red-500",
   },
   CAF: {
     label: "CAF",
-    full: "Africa",
     stripe: "bg-emerald-500",
     chip: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
     dot: "bg-emerald-500",
   },
   CONCACAF: {
     label: "CONCACAF",
-    full: "N. & C. America",
     stripe: "bg-violet-500",
     chip: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25",
     dot: "bg-violet-500",
   },
   OFC: {
     label: "OFC",
-    full: "Oceania",
     stripe: "bg-teal-500",
     chip: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/25",
     dot: "bg-teal-500",
   },
   Other: {
     label: "Other",
-    full: "Other",
     stripe: "bg-muted-foreground/40",
     chip: "bg-muted text-muted-foreground border-border",
     dot: "bg-muted-foreground/40",
@@ -303,6 +299,7 @@ function TeamLogo({ src, name }: { src: string; name: string }) {
 // ─── Host nation banner card ─────────────────────────────────────────────────
 
 function HostCard({ item }: { item: TeamResponseItem }) {
+  const t = useTranslations("worldCup");
   const { team, venue } = item;
   const flag = HOST_FLAGS[team.id] ?? "🏳️";
 
@@ -343,7 +340,7 @@ function HostCard({ item }: { item: TeamResponseItem }) {
                 {flag}
               </span>
               <span className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">
-                Host nation
+                {t("teams.hostNation")}
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-black tracking-tight leading-tight truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
@@ -352,7 +349,9 @@ function HostCard({ item }: { item: TeamResponseItem }) {
             <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
               {venue.name ?? team.country}
               {venue.capacity
-                ? ` · ${(venue.capacity / 1000).toFixed(0)}k seats`
+                ? ` · ${t("teams.seats", {
+                    count: (venue.capacity / 1000).toFixed(0),
+                  })}`
                 : ""}
             </p>
           </div>
@@ -365,9 +364,12 @@ function HostCard({ item }: { item: TeamResponseItem }) {
 // ─── regular team card ───────────────────────────────────────────────────────
 
 function TeamCard({ item }: { item: TeamResponseItem }) {
+  const t = useTranslations("worldCup");
   const { team } = item;
   const confed = getConfederation(team.country);
   const meta = CONFED_META[confed];
+  const confedLabel =
+    confed === "Other" ? t("teams.region.Other") : meta.label;
 
   return (
     <Link
@@ -409,16 +411,16 @@ function TeamCard({ item }: { item: TeamResponseItem }) {
             )}
             <span
               className={`text-[10px] font-bold uppercase tracking-wider border px-1.5 py-0.5 rounded-md ${meta.chip}`}
-              title={meta.full}
+              title={t(`teams.region.${confed}`)}
             >
-              {meta.label}
+              {confedLabel}
             </span>
           </div>
 
           {/* Meta (secondary, only if there's room) */}
           {team.founded && (
             <p className="text-[10px] text-muted-foreground/70 mt-auto pt-1">
-              Est. {team.founded}
+              {t("teams.established", { year: team.founded })}
             </p>
           )}
         </div>
@@ -494,6 +496,7 @@ function FilterChip({
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function WorldCupTeams() {
+  const t = useTranslations("worldCup");
   const { data, isLoading, error } = useWorldCupTeams();
   const [search, setSearch] = useState("");
   const [confedFilter, setConfedFilter] = useState<Confed | "ALL">("ALL");
@@ -586,12 +589,15 @@ export default function WorldCupTeams() {
           <div className="flex items-center gap-2">
             <span className="h-4 w-1 rounded-full bg-amber-400" />
             <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
-              Teams · World Cup 2026
+              {t("teams.eyebrow")}
             </span>
           </div>
           <h1 className="text-md sm:text-lg lg:text-xl font-black tracking-tight leading-[1.05] max-w-xl">
-            48 nations,
-            <span className="text-muted-foreground/70"> one trophy.</span>
+            {t("teams.headline")}
+            <span className="text-muted-foreground/70">
+              {" "}
+              {t("teams.headlineAccent")}
+            </span>
           </h1>
         </div>
         {/* Stats strip */}
@@ -601,7 +607,7 @@ export default function WorldCupTeams() {
               {isLoading ? "—" : totalAll}
             </p>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-              Teams
+              {t("teams.statTeams")}
             </p>
           </div>
           <div className="px-3 sm:px-4 py-2">
@@ -609,7 +615,7 @@ export default function WorldCupTeams() {
               {isLoading ? "—" : confedTally || 6}
             </p>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-              Confeds
+              {t("teams.statConfeds")}
             </p>
           </div>
           <div className="px-3 sm:px-4 py-2">
@@ -617,7 +623,7 @@ export default function WorldCupTeams() {
               3
             </p>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-              Hosts
+              {t("teams.statHosts")}
             </p>
           </div>
         </div>
@@ -632,7 +638,7 @@ export default function WorldCupTeams() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by team, code, or country…"
+            placeholder={t("teams.searchPlaceholder")}
             className="w-full h-10 sm:h-11 pl-10 pr-10 text-sm rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary-font/30 focus:border-primary-font/40 transition-colors shadow-sm"
           />
           {search && (
@@ -640,7 +646,7 @@ export default function WorldCupTeams() {
               type="button"
               onClick={() => setSearch("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Clear search"
+              aria-label={t("teams.clearSearch")}
             >
               <XCircleIcon className="w-4 h-4" />
             </button>
@@ -651,7 +657,7 @@ export default function WorldCupTeams() {
         <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto scrollbar-hide">
           <div className="flex items-center gap-1.5 sm:gap-2 w-max sm:w-auto sm:flex-wrap">
             <FilterChip
-              label="All"
+              label={t("teams.all")}
               count={confedCounts.ALL}
               active={confedFilter === "ALL"}
               onClick={() => setConfedFilter("ALL")}
@@ -661,7 +667,7 @@ export default function WorldCupTeams() {
             ).map((c) => (
               <FilterChip
                 key={c}
-                label={CONFED_META[c].label}
+                label={c === "Other" ? t("teams.region.Other") : CONFED_META[c].label}
                 count={confedCounts[c]}
                 active={confedFilter === c}
                 dotClass={CONFED_META[c].dot}
@@ -679,7 +685,7 @@ export default function WorldCupTeams() {
             <XCircleIcon className="w-6 h-6 text-red-500" />
           </div>
           <p className="text-sm text-muted-foreground text-center max-w-xs">
-            {error instanceof Error ? error.message : "Failed to load teams."}
+            {error instanceof Error ? error.message : t("teams.failedToLoad")}
           </p>
         </div>
       )}
@@ -718,11 +724,18 @@ export default function WorldCupTeams() {
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
             <SearchIcon className="w-5 h-5 text-muted-foreground" />
           </div>
-          <p className="text-sm font-semibold">No teams found</p>
+          <p className="text-sm font-semibold">{t("teams.noTeamsFound")}</p>
           <p className="text-xs text-muted-foreground text-center max-w-xs -mt-1">
             {search.trim()
-              ? `Nothing matches "${search}"`
-              : `No teams in ${confedFilter !== "ALL" ? CONFED_META[confedFilter].label : "this filter"} yet.`}
+              ? t("teams.nothingMatches", { query: search })
+              : t("teams.noTeamsInFilter", {
+                  filter:
+                    confedFilter !== "ALL"
+                      ? confedFilter === "Other"
+                        ? t("teams.region.Other")
+                        : CONFED_META[confedFilter].label
+                      : t("teams.thisFilter"),
+                })}
           </p>
           {(search.trim() || confedFilter !== "ALL") && (
             <button
@@ -732,7 +745,7 @@ export default function WorldCupTeams() {
               }}
               className="text-xs font-semibold text-primary-font hover:opacity-70 underline underline-offset-2"
             >
-              Reset filters
+              {t("teams.resetFilters")}
             </button>
           )}
         </div>
@@ -744,7 +757,7 @@ export default function WorldCupTeams() {
           <div className="flex items-center gap-2">
             <span className="h-3.5 w-1 rounded-full bg-amber-400" />
             <h2 className="text-sm font-black uppercase tracking-[0.14em]">
-              Host nations
+              {t("teams.hostNations")}
             </h2>
             <span className="text-[11px] text-muted-foreground">
               ({hosts.length})
@@ -773,13 +786,15 @@ export default function WorldCupTeams() {
                         className={`h-3.5 w-1 rounded-full ${meta.stripe}`}
                       />
                       <h2 className="text-sm font-black uppercase tracking-[0.14em]">
-                        {meta.label}
+                        {confed === "Other"
+                          ? t("teams.region.Other")
+                          : meta.label}
                       </h2>
                       <span className="text-[11px] text-muted-foreground/80">
-                        {meta.full}
+                        {t(`teams.region.${confed}`)}
                       </span>
                       <span className="text-[11px] text-muted-foreground ml-auto">
-                        {teams.length} team{teams.length !== 1 ? "s" : ""}
+                        {t("teams.teamCount", { count: teams.length })}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
@@ -801,13 +816,15 @@ export default function WorldCupTeams() {
                   }`}
                 />
                 <h2 className="text-sm font-black uppercase tracking-[0.14em]">
-                  {CONFED_META[confedFilter].label}
+                  {confedFilter === "Other"
+                    ? t("teams.region.Other")
+                    : CONFED_META[confedFilter].label}
                 </h2>
                 <span className="text-[11px] text-muted-foreground/80">
-                  {CONFED_META[confedFilter].full}
+                  {t(`teams.region.${confedFilter}`)}
                 </span>
                 <span className="text-[11px] text-muted-foreground ml-auto">
-                  {qualified.length} team{qualified.length !== 1 ? "s" : ""}
+                  {t("teams.teamCount", { count: qualified.length })}
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">

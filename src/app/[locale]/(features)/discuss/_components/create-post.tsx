@@ -50,11 +50,12 @@ interface CreatePostProps {
 // Only allow league tags for posts
 const TAG_TYPE_ORDER: TagType[] = ["league"];
 
-const TAG_TYPE_LABELS: Record<TagType, string> = {
-  league: "Leagues",
-  team: "Teams",
-  player: "Players",
-  topic: "Topics",
+// Translation keys under the "discuss" namespace
+const TAG_TYPE_LABEL_KEYS: Record<TagType, string> = {
+  league: "leagues",
+  team: "teams",
+  player: "players",
+  topic: "topics",
 };
 
 export default function CreatePost({
@@ -585,7 +586,7 @@ export default function CreatePost({
                         <div key={type}>
                           <DropdownMenuGroup>
                             <DropdownMenuLabel>
-                              {TAG_TYPE_LABELS[type]}
+                              {t(TAG_TYPE_LABEL_KEYS[type])}
                             </DropdownMenuLabel>
                             {tags.map((tag) => {
                               const isSelected = selectedTagIds.includes(

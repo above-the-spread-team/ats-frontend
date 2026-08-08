@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { toIntlLocale } from "../lib/intl-locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useWorldCupGroups,
@@ -36,8 +38,8 @@ function LockIcon({ className }: { className?: string }) {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function formatDeadline(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
+function formatDeadline(iso: string, intlLocale: string) {
+  return new Date(iso).toLocaleString(intlLocale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -58,6 +60,7 @@ function TeamRow({
   isPicked: boolean;
   size?: "sm" | "md";
 }) {
+  const t = useTranslations("worldCup");
   const pct = team.prediction_percentage;
   return (
     <div
@@ -103,7 +106,7 @@ function TeamRow({
       {isPicked && (
         <span className="inline-flex items-center gap-0.5 rounded-md bg-amber-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-950 shadow-sm">
           <CheckIcon className="w-2.5 h-2.5" aria-hidden />
-          Pick
+          {t("prediction.pick")}
         </span>
       )}
 
@@ -140,6 +143,7 @@ function GroupCard({
   /** Up to 2 picked team IDs for this group */
   localPicks: number[];
 }) {
+  const t = useTranslations("worldCup");
   const sorted = useMemo(
     () =>
       [...group.teams].sort(
@@ -156,7 +160,7 @@ function GroupCard({
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/80 leading-none">
-            Group {group.group_letter}
+            {t("prediction.group", { letter: group.group_letter })}
           </p>
         </div>
       </div>
@@ -252,6 +256,7 @@ function ChampionPanel({
   isLoading: boolean;
   currentChampionId: number | null;
 }) {
+  const t = useTranslations("worldCup");
   const [showAllContenders, setShowAllContenders] = useState(false);
   const sorted = useMemo(
     () =>
@@ -280,10 +285,10 @@ function ChampionPanel({
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">
-              Who lifts the trophy?
+              {t("prediction.whoLiftsTrophy")}
             </h2>
             <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug">
-              Live community picks · updated in real time
+              {t("prediction.liveCommunityPicks")}
             </p>
           </div>
           {myChampion && (
@@ -308,7 +313,7 @@ function ChampionPanel({
               size={16}
             />
             <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 truncate">
-              Your pick · {myChampion.name}
+              {t("prediction.yourPickTeam", { team: myChampion.name })}
             </span>
           </div>
         )}
@@ -352,7 +357,7 @@ function ChampionPanel({
             <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-2">
               <span className="h-px flex-1 bg-border" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
-                Contenders
+                {t("prediction.contenders")}
               </span>
               <span className="h-px flex-1 bg-border" />
             </div>
@@ -378,8 +383,10 @@ function ChampionPanel({
                   className="mt-3 w-full rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {showAllContenders
-                    ? "Show less"
-                    : `Show all teams (${hiddenRestCount} more)`}
+                    ? t("prediction.showLess")
+                    : t("prediction.showAllTeams", {
+                        count: hiddenRestCount,
+                      })}
                 </button>
               )}
             </div>
@@ -417,6 +424,8 @@ function GroupCardSkeleton() {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function WorldCupPredictionPage() {
+  const t = useTranslations("worldCup");
+  const intlLocale = toIntlLocale(useLocale());
   const [votingModalOpen, setVotingModalOpen] = useState(false);
   /** 2 qualifier IDs per group letter */
   const [groupPicks, setGroupPicks] = useState<Record<string, number[]>>({});
@@ -508,12 +517,12 @@ export default function WorldCupPredictionPage() {
   ).length;
   const totalGroups = groups?.length ?? 12;
   const heroCtaLabel = votingClosed
-    ? "Voting Closed"
+    ? t("prediction.votingClosed")
     : hasExistingVote
-      ? "Edit Prediction"
+      ? t("prediction.editPrediction")
       : groupPickCount > 0 || championId !== null || totalGoals !== null
-        ? "Continue Prediction"
-        : "Start Prediction";
+        ? t("prediction.continuePrediction")
+        : t("prediction.startPrediction");
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8 pb-20 space-y-4 sm:space-y-6">
@@ -529,26 +538,28 @@ export default function WorldCupPredictionPage() {
               {!votingClosed && (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                  Open now
+                  {t("prediction.openNow")}
                 </span>
               )}
               {deadline && (
                 <span className=" text-sm md:text-md font-medium text-white ml-auto">
-                  Closes {formatDeadline(deadline.deadline)}
+                  {t("prediction.closes", {
+                    date: formatDeadline(deadline.deadline, intlLocale),
+                  })}
                 </span>
               )}
             </div>
 
             <div>
               <h1 className="max-w-2xl text-2xl font-black leading-[0.98] tracking-[-0.05em] sm:text-3xl lg:text-4xl">
-                Predict the World Cup.
-                <span className="block text-amber-300">Win 500 USD.</span>
+                {t("prediction.heroTitle")}
+                <span className="block text-amber-300">
+                  {t("prediction.heroPrize")}
+                </span>
               </h1>
               <div className=" flex   flex-col md:flex-row items-end justify-between gap-4">
                 <p className="mt-3 max-w-xl text-xs font-medium leading-relaxed text-white/72 sm:text-sm">
-                  Pick 2 qualifiers from each group, choose the champion, and
-                  guess the tournament total goals. Your goals pick becomes the
-                  tie-breaker if the bracket race is close.
+                  {t("prediction.heroDescription")}
                 </p>
                 <button
                   type="button"
@@ -577,10 +588,10 @@ export default function WorldCupPredictionPage() {
       <section className="space-y-3 sm:space-y-4">
         <div>
           <h2 className="text-sm sm:text-base font-black uppercase tracking-[0.14em] leading-none">
-            Championship
+            {t("prediction.championship")}
           </h2>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
-            The one team to rule them all
+            {t("prediction.championshipSubtitle")}
           </p>
         </div>
 
@@ -596,19 +607,23 @@ export default function WorldCupPredictionPage() {
         <div className="flex items-end justify-between gap-3">
           <div>
             <h2 className="text-sm sm:text-base font-black uppercase tracking-[0.14em] leading-none">
-              Group stage
+              {t("prediction.groupStage")}
             </h2>
             <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
-              {groupPickCount} of {totalGroups} groups decided
+              {t("prediction.groupsDecided", {
+                count: groupPickCount,
+                total: totalGroups,
+              })}
             </p>
           </div>
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground/70">
             <span className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-400" /> your picks
+              <span className="w-2 h-2 rounded-full bg-amber-400" />{" "}
+              {t("prediction.legendYourPicks")}
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-primary-font/60" />{" "}
-              community
+              {t("prediction.legendCommunity")}
             </span>
           </div>
         </div>

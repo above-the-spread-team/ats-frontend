@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { FixtureDualTeamIcon } from "@/components/common/fixture-dual-team-icon";
 import UserIcon from "@/components/common/user-icon";
@@ -267,7 +266,7 @@ export default function PostCard({
                     {post.author.name}
                   </Link>
                   <p className="text-xs text-muted-foreground">
-                    {formatTimeAgo(post.createdAt)}
+                    {formatTimeAgo(post.createdAt, t)}
                   </p>
                 </div>
               </>
@@ -285,7 +284,7 @@ export default function PostCard({
                     <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-border/50 ring-offset-2 ring-offset-background">
                       <Image
                         src={post.groupIconUrl}
-                        alt={post.groupName || "Group"}
+                        alt={post.groupName || t("group")}
                         fill
                         className="object-cover"
                         sizes="40px"
@@ -312,7 +311,7 @@ export default function PostCard({
                     href={`/discuss/group-posts/${post.groupId}`}
                     className="text-sm truncate  md:text-base font-semibold line-clamp-2 hover:text-primary-font hover:underline focus:outline-none focus:underline block"
                   >
-                    {post.groupName || "Group"}
+                    {post.groupName || t("group")}
                   </Link>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <Link
@@ -322,7 +321,7 @@ export default function PostCard({
                       {post.author.name}
                     </Link>
                     <span>·</span>
-                    <span>{formatTimeAgo(post.createdAt)}</span>
+                    <span>{formatTimeAgo(post.createdAt, t)}</span>
                   </p>
                 </div>
               </>

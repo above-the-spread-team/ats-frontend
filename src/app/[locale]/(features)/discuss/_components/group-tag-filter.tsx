@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,17 +20,19 @@ interface GroupTagFilterProps {
 
 const TAG_TYPE_ORDER: TagType[] = ["league"]; // Only league tags for groups
 
-const TAG_TYPE_LABELS: Record<TagType, string> = {
-  league: "Leagues",
-  team: "Teams",
-  player: "Players",
-  topic: "Topics",
+// Translation keys under the "discuss" namespace
+const TAG_TYPE_LABEL_KEYS: Record<TagType, string> = {
+  league: "leagues",
+  team: "teams",
+  player: "players",
+  topic: "topics",
 };
 
 export default function GroupTagFilter({
   selectedTagIds,
   onTagIdsChange,
 }: GroupTagFilterProps) {
+  const t = useTranslations("discuss");
   // Fetch all tags
   const { data: tagsData, isLoading } = useTags(100);
 
@@ -94,7 +97,7 @@ export default function GroupTagFilter({
                 className="rounded-full bg-primary !ring-0 text-white hover:bg-primary-active hover:text-white data-[state=open]:bg-primary-active"
               >
                 <Button variant="outline" size="sm" className="gap-1">
-                  <span>{TAG_TYPE_LABELS[type]}</span>
+                  <span>{t(TAG_TYPE_LABEL_KEYS[type])}</span>
                   {selectedCount > 0 && (
                     <span className="ml-1 rounded-full bg-white/20 px-1.5 py-0.5 text-xs">
                       {selectedCount}

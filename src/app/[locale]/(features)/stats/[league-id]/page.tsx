@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Trophy, Award, Earth, BarChart3, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +28,7 @@ function getDefaultSeasonFromApi(seasons: LeagueSeason[]): number | undefined {
 }
 
 export default function LeagueStatsPage() {
+  const t = useTranslations("stats");
   const params = useParams();
   const searchParams = useSearchParams();
   const leagueId = params["league-id"] as string;
@@ -145,7 +147,11 @@ export default function LeagueStatsPage() {
                           <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
                         ) : null}
                         <span className="text-sm text-muted-foreground capitalize">
-                          {league.league.type}
+                          {league.league.type === "League"
+                            ? t("leagues.typeLeague")
+                            : league.league.type === "Cup"
+                              ? t("leagues.typeCup")
+                              : league.league.type}
                         </span>
                       </div>
                     </>
@@ -155,7 +161,7 @@ export default function LeagueStatsPage() {
             </div>
           ) : (
             <div className="text-sm text-muted-foreground">
-              League information unavailable
+              {t("leagues.infoUnavailable")}
             </div>
           )}
 
@@ -173,9 +179,9 @@ export default function LeagueStatsPage() {
         {/* Tab Navigation */}
         <Nav
           tabs={[
-            { id: "standings", label: "Standings", icon: BarChart3 },
-            { id: "leaders", label: "Leaders", icon: Trophy },
-            { id: "teams", label: "Teams", icon: Users },
+            { id: "standings", label: t("tabs.standings"), icon: BarChart3 },
+            { id: "leaders", label: t("tabs.leaders"), icon: Trophy },
+            { id: "teams", label: t("tabs.teams"), icon: Users },
           ]}
           activeTab={activeTab}
           setActiveTab={setActiveTab}

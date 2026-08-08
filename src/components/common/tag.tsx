@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTagColor } from "@/data/league-theme";
 import { cn } from "@/lib/utils";
 

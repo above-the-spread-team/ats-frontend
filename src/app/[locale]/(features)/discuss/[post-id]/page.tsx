@@ -1,6 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,8 @@ import type { Post } from "@/type/fastapi/posts";
 import BackToDiscussion from "@/components/common/back-to-discussion";
 
 export default function DiscussPostPage() {
+  const t = useTranslations("discuss");
+  const tc = useTranslations("common");
   const params = useParams();
   const router = useRouter();
   const postId = params["post-id"]
@@ -86,10 +90,10 @@ export default function DiscussPostPage() {
             <CardContent className="py-12 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-destructive mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                Failed to load post
+                {t("failedToLoadPost")}
               </h3>
               <p className="text-muted-foreground mb-4">
-                {error instanceof Error ? error.message : "An error occurred"}
+                {error instanceof Error ? error.message : t("errorOccurred")}
               </p>
               <div className="flex gap-2 justify-center">
                 <BackToDiscussion
@@ -97,7 +101,7 @@ export default function DiscussPostPage() {
                   onClick={handleBackToDiscussion}
                 />
                 <Button onClick={() => refetch()} variant="outline">
-                  Try again
+                  {tc("tryAgain")}
                 </Button>
               </div>
             </CardContent>
@@ -109,10 +113,11 @@ export default function DiscussPostPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Post not found</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {t("postNotFound")}
+              </h3>
               <p className="text-muted-foreground mb-4">
-                The post you&apos;re looking for doesn&apos;t exist or has been
-                deleted.
+                {t("postNotFoundDesc")}
               </p>
               <BackToDiscussion
                 variant="outline"

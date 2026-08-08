@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import FullPage from "@/components/common/full-page";
 import NoDate from "@/components/common/no-data";
@@ -53,6 +54,8 @@ interface TeamsProps {
 }
 
 export default function Teams({ leagueId, season }: TeamsProps) {
+  const t = useTranslations("stats");
+  const tCommon = useTranslations("common");
   const [teams, setTeams] = useState<TeamResponseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +76,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to load teams (${response.status})`);
+          throw new Error(t("teams.loadFailed", { status: response.status }));
         }
 
         const data = (await response.json()) as TeamsApiResponse;
@@ -84,7 +87,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
         }
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tCommon("unknown"));
         setTeams([]);
       } finally {
         if (!controller.signal.aborted) {
@@ -98,6 +101,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leagueId, season]);
 
   const sortedTeams = useMemo(() => {
@@ -144,10 +148,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
   if (error) {
     return (
       <FullPage center minusHeight={300}>
-        <NoDate
-          message={error}
-          helpText="Unable to load teams. Please try again later."
-        />
+        <NoDate message={error} helpText={t("teams.errorHelp")} />
       </FullPage>
     );
   }
@@ -155,10 +156,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
   if (sortedTeams.length === 0) {
     return (
       <FullPage center minusHeight={300}>
-        <NoDate
-          message="No teams found"
-          helpText="No teams available for this league and season."
-        />
+        <NoDate message={t("teams.empty")} helpText={t("teams.emptyHelp")} />
       </FullPage>
     );
   }
@@ -206,7 +204,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
                   {/* Team Info */}
                   {item.team.founded && (
                     <span className="font-medium text-xs text-muted-foreground">
-                      Founded {item.team.founded}
+                      {t("teamPage.founded", { year: item.team.founded })}
                     </span>
                   )}
                 </div>
@@ -228,8 +226,7 @@ export default function Teams({ leagueId, season }: TeamsProps) {
         {/* Results Count */}
         <div className="text-center text-xs text-muted-foreground pt-2">
           <span className="font-medium">
-            Showing {sortedTeams.length} team
-            {sortedTeams.length !== 1 ? "s" : ""}
+            {t("teams.showing", { count: sortedTeams.length })}
           </span>
         </div>
       </div>

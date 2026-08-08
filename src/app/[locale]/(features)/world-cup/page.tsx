@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { toIntlLocale } from "./lib/intl-locale";
 import { useWorldCupFixtures } from "@/services/football-api/world-cup-fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
 import type { FixtureResponseItem } from "@/type/footballapi/fixture";
@@ -22,8 +24,8 @@ function formatGoals(v: number | null) {
   return v === null || Number.isNaN(v) ? "–" : String(v);
 }
 
-function formatTime(dateStr: string, tz: string) {
-  return new Date(dateStr).toLocaleTimeString(undefined, {
+function formatTime(dateStr: string, tz: string, intlLocale: string) {
+  return new Date(dateStr).toLocaleTimeString(intlLocale, {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -31,8 +33,8 @@ function formatTime(dateStr: string, tz: string) {
   });
 }
 
-function formatMatchDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString(undefined, {
+function formatMatchDate(dateStr: string, intlLocale: string) {
+  return new Date(dateStr).toLocaleDateString(intlLocale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -48,10 +50,13 @@ interface FixtureGroup {
   fixtures: FixtureResponseItem[];
 }
 
-function groupByStage(fixtures: FixtureResponseItem[]): FixtureGroup[] {
+function groupByStage(
+  fixtures: FixtureResponseItem[],
+  unknownLabel: string,
+): FixtureGroup[] {
   const map = new Map<string, FixtureResponseItem[]>();
   for (const f of fixtures) {
-    const round = f.league.round ?? "Unknown";
+    const round = f.league.round ?? unknownLabel;
     if (!map.has(round)) map.set(round, []);
     map.get(round)!.push(f);
   }
@@ -72,10 +77,13 @@ function groupByStage(fixtures: FixtureResponseItem[]): FixtureGroup[] {
     });
 }
 
-function groupByDate(fixtures: FixtureResponseItem[]): FixtureGroup[] {
+function groupByDate(
+  fixtures: FixtureResponseItem[],
+  intlLocale: string,
+): FixtureGroup[] {
   const map = new Map<string, FixtureResponseItem[]>();
   for (const f of fixtures) {
-    const day = new Date(f.fixture.date).toLocaleDateString(undefined, {
+    const day = new Date(f.fixture.date).toLocaleDateString(intlLocale, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -170,6 +178,7 @@ function FixtureCard({
   fixture: FixtureResponseItem;
   timezone: string;
 }) {
+  const intlLocale = toIntlLocale(useLocale());
   const info = getFixtureStatus(fixture.fixture.status.short);
   const isInPlay = info.type === "In Play";
   const hasStarted = isInPlay || info.type === "Finished";
@@ -191,11 +200,11 @@ function FixtureCard({
       {/* Date/time column */}
       <div className="w-14 sm:w-16 lg:w-20 flex-shrink-0 text-center">
         <p className="text-[10px] sm:text-[11px] lg:text-xs text-muted-foreground leading-tight">
-          {formatMatchDate(fixture.fixture.date)}
+          {formatMatchDate(fixture.fixture.date, intlLocale)}
         </p>
         {!hasStarted && (
           <p className="text-xs sm:text-sm lg:text-base font-semibold mt-0.5">
-            {formatTime(fixture.fixture.date, timezone)}
+            {formatTime(fixture.fixture.date, timezone, intlLocale)}
           </p>
         )}
         <StatusBadge fixture={fixture} />
@@ -270,6 +279,7 @@ function GroupSection({
   fixtures: FixtureResponseItem[];
   timezone: string;
 }) {
+  const t = useTranslations("worldCup");
   const completedCount = fixtures.filter(
     (f) => getFixtureStatus(f.fixture.status.short).type === "Finished",
   ).length;
@@ -288,12 +298,15 @@ function GroupSection({
           {liveCount > 0 && (
             <span className="flex items-center gap-1 text-[10px] lg:text-xs font-semibold text-green-400">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              {liveCount} live
+              {t("fixtures.liveCount", { count: liveCount })}
             </span>
           )}
         </div>
         <span className="text-[10px] lg:text-xs text-muted-foreground">
-          {completedCount}/{fixtures.length} played
+          {t("fixtures.playedCount", {
+            played: completedCount,
+            total: fixtures.length,
+          })}
         </span>
       </div>
 
@@ -376,16 +389,19 @@ function WorldCupPageSkeleton() {
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function WorldCupFixtures() {
+  const t = useTranslations("worldCup");
+  const intlLocale = toIntlLocale(useLocale());
   const timezone = useUserTimezone();
   const [sortMode, setSortMode] = useState<SortMode>("date");
   const { data, isLoading, error } = useWorldCupFixtures(timezone);
 
+  const unknownStageLabel = t("fixtures.unknownStage");
   const groups = useMemo(() => {
     if (!data?.response) return [];
     return sortMode === "date"
-      ? groupByDate(data.response)
-      : groupByStage(data.response);
-  }, [data?.response, sortMode]);
+      ? groupByDate(data.response, intlLocale)
+      : groupByStage(data.response, unknownStageLabel);
+  }, [data?.response, sortMode, intlLocale, unknownStageLabel]);
 
   if (isLoading) {
     return <WorldCupPageSkeleton />;
@@ -396,7 +412,7 @@ export default function WorldCupFixtures() {
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <span className="text-4xl">⚠️</span>
         <p className="text-sm text-muted-foreground text-center max-w-xs">
-          {error instanceof Error ? error.message : "Failed to load fixtures."}
+          {error instanceof Error ? error.message : t("fixtures.failedToLoad")}
         </p>
       </div>
     );
@@ -407,10 +423,10 @@ export default function WorldCupFixtures() {
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <span className="text-5xl">🏆</span>
         <p className="text-sm text-muted-foreground">
-          No fixtures available yet.
+          {t("fixtures.noFixturesYet")}
         </p>
         <p className="text-xs text-muted-foreground/60">
-          FIFA World Cup 2026 · 11 Jun – 19 Jul
+          {t("fixtures.tournamentDates")}
         </p>
       </div>
     );
@@ -422,8 +438,15 @@ export default function WorldCupFixtures() {
       <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
         <div className="flex flex-col gap-0.5">
           <span className="text-xs lg:text-sm text-muted-foreground font-medium">
-            {data?.results ?? 0} fixtures · {groups.length}{" "}
-            {sortMode === "date" ? "days" : "stages"}
+            {sortMode === "date"
+              ? t("fixtures.metaByDate", {
+                  count: data?.results ?? 0,
+                  groups: groups.length,
+                })
+              : t("fixtures.metaByStage", {
+                  count: data?.results ?? 0,
+                  groups: groups.length,
+                })}
           </span>
           <span className="text-[10px] md:text-xs lg:text-xs text-muted-foreground flex items-center gap-1">
             <svg
@@ -452,10 +475,10 @@ export default function WorldCupFixtures() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="date" className="text-xs lg:text-sm">
-              By Date
+              {t("fixtures.sortByDate")}
             </SelectItem>
             <SelectItem value="stage" className="text-xs lg:text-sm">
-              By Stage
+              {t("fixtures.sortByStage")}
             </SelectItem>
           </SelectContent>
         </Select>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface DateCardProps {
   date: Date;
   day: string;
@@ -13,6 +15,7 @@ export default function DateCard({
   isToday,
   isSelected,
 }: DateCardProps) {
+  const tc = useTranslations("common");
   const dayNumber = date.getDate();
 
   return (
@@ -21,7 +24,7 @@ export default function DateCard({
         isSelected ? "bg-primary-font text-white hover:bg-primary-font" : ""
       } flex flex-col w-12 justify-center items-center mx-1 py-1 hover:bg-icon-hover rounded-xl transition-colors duration-150`}
     >
-      <p className="text-xs font-medium">{isToday ? "Today" : day}</p>
+      <p className="text-xs font-medium">{isToday ? tc("today") : day}</p>
       <p className="text-sm font-semibold">{dayNumber}</p>
     </div>
   );

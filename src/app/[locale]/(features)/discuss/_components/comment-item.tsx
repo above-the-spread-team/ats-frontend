@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import UserIcon from "@/components/common/user-icon";
 import {
@@ -34,46 +34,70 @@ import type { PostComment } from "@/type/fastapi/posts";
 /** Discuss comment row — same shape as PostComment (re-export for existing imports). */
 export type Comment = PostComment;
 
-// formatTimeAgo helper function
-export function formatTimeAgo(dateString: string): string {
+// Translator signature compatible with next-intl's useTranslations("discuss")
+type TimeAgoTranslator = (
+  key: string,
+  values?: Record<string, string | number | Date>,
+) => string;
+
+// formatTimeAgo helper function.
+// Pass `t` (useTranslations("discuss")) for localized output; without it,
+// English is returned (kept for backwards compatibility with callers
+// outside the discuss area).
+export function formatTimeAgo(
+  dateString: string,
+  t?: TimeAgoTranslator,
+): string {
   try {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return "just now";
+      return t ? t("timeJustNow") : "just now";
     }
 
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} min${diffInMinutes > 1 ? "s" : ""} ago`;
+      return t
+        ? t("timeMinutesAgo", { count: diffInMinutes })
+        : `${diffInMinutes} min${diffInMinutes > 1 ? "s" : ""} ago`;
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+      return t
+        ? t("timeHoursAgo", { count: diffInHours })
+        : `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
     }
 
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+      return t
+        ? t("timeDaysAgo", { count: diffInDays })
+        : `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
     }
 
     const diffInWeeks = Math.floor(diffInDays / 7);
     if (diffInWeeks < 4) {
-      return `${diffInWeeks} week${diffInWeeks > 1 ? "s" : ""} ago`;
+      return t
+        ? t("timeWeeksAgo", { count: diffInWeeks })
+        : `${diffInWeeks} week${diffInWeeks > 1 ? "s" : ""} ago`;
     }
 
     const diffInMonths = Math.floor(diffInDays / 30);
     if (diffInMonths < 12) {
-      return `${diffInMonths} month${diffInMonths > 1 ? "s" : ""} ago`;
+      return t
+        ? t("timeMonthsAgo", { count: diffInMonths })
+        : `${diffInMonths} month${diffInMonths > 1 ? "s" : ""} ago`;
     }
 
     const diffInYears = Math.floor(diffInDays / 365);
-    return `${diffInYears} year${diffInYears > 1 ? "s" : ""} ago`;
+    return t
+      ? t("timeYearsAgo", { count: diffInYears })
+      : `${diffInYears} year${diffInYears > 1 ? "s" : ""} ago`;
   } catch {
-    return "recently";
+    return t ? t("timeRecently") : "recently";
   }
 }
 
@@ -328,7 +352,7 @@ export default function CommentItem({
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold">{comment.author.name}</p>
               <span className="text-xs text-muted-foreground">
-                {formatTimeAgo(comment.createdAt)}
+                {formatTimeAgo(comment.createdAt, t)}
               </span>
             </div>
             {isAuthor && (
@@ -389,7 +413,7 @@ export default function CommentItem({
                   onClick={() => setIsContentExpanded(!isContentExpanded)}
                   className="text-xs text-muted-foreground font-semibold hover:text-primary-font  transition-colors mt-0.5 "
                 >
-                  {isContentExpanded ? "Read less" : "Read more"}
+                  {isContentExpanded ? t("readLess") : t("readMore")}
                 </button>
               )}
             </div>
@@ -425,7 +449,7 @@ export default function CommentItem({
               onClick={handleReplyClick}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary-font transition-colors"
             >
-              <span className="text-xs font-medium">Reply</span>
+              <span className="text-xs font-medium">{t("reply")}</span>
             </button>
           </div>
           {comment.replyCount > 0 && (
@@ -436,12 +460,12 @@ export default function CommentItem({
               {isExpanded ? (
                 <>
                   <ChevronUp className="w-4 h-4" />
-                  <span>Hide {comment.replyCount} replies</span>
+                  <span>{t("hideReplies", { count: comment.replyCount })}</span>
                 </>
               ) : (
                 <>
                   <ChevronDown className="w-4 h-4" />
-                  <span>Show {comment.replyCount} replies</span>
+                  <span>{t("showReplies", { count: comment.replyCount })}</span>
                 </>
               )}
             </button>
@@ -507,8 +531,8 @@ export default function CommentItem({
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Comment"
-        description="Are you sure you want to delete this comment? This action cannot be undone."
+        title={t("deleteComment")}
+        description={t("deleteCommentConfirm")}
         confirmText={t("delete")}
         isPending={deleteCommentMutation.isPending}
         variant="destructive"

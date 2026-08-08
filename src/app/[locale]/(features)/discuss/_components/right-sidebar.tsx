@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFixtures } from "@/services/fastapi/vote";
 import type { FixtureVotesResult, VoteChoice } from "@/type/fastapi/vote";
 import { VotingBar } from "@/components/common/voting-bar";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 
 function TeamLogo({ src, name }: { src: string | null; name: string }) {
   if (src) {
@@ -41,6 +41,7 @@ function FixtureRow({
   href: string | null;
   isActive: boolean;
 }) {
+  const t = useTranslations("discuss");
   const hasVotes = fixture.total_votes > 0;
 
   const yourVote: VoteChoice | null = fixture.user_vote;
@@ -95,7 +96,7 @@ function FixtureRow({
           userVote={yourVote}
         />
         {!hasVotes && (
-          <p className="text-[11px] text-muted-foreground">No votes yet</p>
+          <p className="text-[11px] text-muted-foreground">{t("noVotesYet")}</p>
         )}
       </div>
     </div>
@@ -222,9 +223,9 @@ export default function RightSidebar() {
             </div>
           ) : (
             <div className="p-3 rounded-xl bg-muted/20 border border-border/60">
-              <p className="text-xs font-semibold">No fixtures</p>
+              <p className="text-xs font-semibold">{t("noFixtures")}</p>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Try switching tabs.
+                {t("trySwitchingTabs")}
               </p>
             </div>
           )}

@@ -9,6 +9,7 @@ import { useCurrentUser } from "@/services/fastapi/oauth";
 import { TrendingUp, BarChart2 } from "lucide-react";
 import AskLogin from "@/components/common/ask-login";
 import { Sparkles } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
   Trophy,
@@ -35,20 +36,42 @@ function parsePercentage(value: string): number {
   return match ? parseFloat(match[1]) : 0;
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, dateLocale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(dateLocale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 }
 
+// API comparison keys mapped to translation keys
+const COMPARISON_KEYS: Record<string, string> = {
+  form: "form",
+  att: "att",
+  def: "def",
+  poisson_distribution: "poissonDistribution",
+  h2h: "h2h",
+  goals: "goals",
+  total: "total",
+};
+
 interface PredictionsProps {
   fixtureId: number;
 }
 
 export default function Predictions({ fixtureId }: PredictionsProps) {
+  const t = useTranslations("games");
+  const tc = useTranslations("common");
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const { data: currentUser, isLoading: isAuthLoading } = useCurrentUser();
   const isLoggedIn = !!currentUser;
 
@@ -81,7 +104,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to load predictions (${response.status})`);
+          throw new Error(t("tips.loadFailed", { status: response.status }));
         }
 
         const data = (await response.json()) as PredictionsApiResponse;
@@ -93,7 +116,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
         setPredictionsData(data);
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : tc("unknown"));
         setPredictionsData(null);
       } finally {
         if (!controller.signal.aborted) {
@@ -178,13 +201,13 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
         {/* Login gate */}
         <div className="absolute inset-0 flex items-center justify-center px-4">
           <AskLogin
-            description="Sign in to unlock AI-powered match predictions, win probabilities, and in-depth tips."
+            description={t("tips.loginDescription")}
             features={[
-              { icon: Sparkles, label: "AI Match Prediction" },
-              { icon: TrendingUp, label: "Win Probabilities" },
-              { icon: BarChart2, label: "In-depth Stats & Tips" },
+              { icon: Sparkles, label: t("tips.featurePrediction") },
+              { icon: TrendingUp, label: t("tips.featureProbabilities") },
+              { icon: BarChart2, label: t("tips.featureStats") },
             ]}
-            ctaLabel="Sign in to view"
+            ctaLabel={t("tips.signInToView")}
             className="max-w-xs sm:max-w-sm"
           />
         </div>
@@ -414,8 +437,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
   if (error || !predictionsData || !predictionsData.response) {
     return (
       <NoData
-        message={error || "No predictions data available"}
-        helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
+        message={error || t("tips.noData")}
+        helpText={t("tips.helpText")}
       />
     );
   }
@@ -424,8 +447,8 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
   if (!prediction) {
     return (
       <NoData
-        message="No predictions available for this fixture."
-        helpText="Predictions are usually available before the match starts or up to 20 minutes before kickoff."
+        message={t("tips.noPredictionsForFixture")}
+        helpText={t("tips.helpText")}
       />
     );
   }
@@ -440,13 +463,15 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       <div>
         <div className="flex items-center gap-2 justify-center ">
           <Trophy className="w-4 h-4 md:w-5 md:h-5 text-bar-yellow" />
-          <h3 className="text-base md:text-lg font-bold">Match Prediction</h3>
+          <h3 className="text-base md:text-lg font-bold">
+            {t("tips.matchPrediction")}
+          </h3>
         </div>
         {/* Winner Prediction */}
         <div className="flex items-center justify-end gap-4 ">
           <div className="flex items-center gap-2">
             <p className="text-xs md:text-sm font-semibold text-primary-font">
-              Predicted Winner :
+              {t("tips.predictedWinner")}
             </p>
             <div className="flex items-center gap-2">
               {teams.home.id === predictions.winner.id ? (
@@ -480,7 +505,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
           </div>
           {predictions.win_or_draw && (
             <span className="text-xs bg-primary-font/20 text-primary-font px-2 py-1 rounded-xl font-medium">
-              Win or Draw
+              {t("tips.winOrDraw")}
             </span>
           )}
         </div>
@@ -489,14 +514,16 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       <div className="space-y-3 border-b border-border pb-4  md:pb-6">
         <div className="flex items-center gap-2 justify-start pl-2">
           <Percent className="w-4 h-4 text-primary-font" />
-          <h3 className="text-sm md:text-base font-bold">Win Probability</h3>
+          <h3 className="text-sm md:text-base font-bold">
+            {t("tips.winProbability")}
+          </h3>
         </div>
         {/* Main Prediction Section */}
         <div className="bg-card rounded-xl p-4 md:p-6 space-y-4 shadow-sm">
           {/* Win Probability */}
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center space-y-2">
-              <p className="text-xs text-muted-foreground">Home</p>
+              <p className="text-xs text-muted-foreground">{tc("home")}</p>
               <p className="text-sm md:text-base font-bold">
                 {predictions.percent.home}
               </p>
@@ -508,7 +535,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               </div>
             </div>
             <div className="text-center space-y-2">
-              <p className="text-xs text-muted-foreground">Draw</p>
+              <p className="text-xs text-muted-foreground">{tc("draw")}</p>
               <p className="text-sm md:text-base font-bold">
                 {predictions.percent.draw}
               </p>
@@ -520,7 +547,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               </div>
             </div>
             <div className="text-center space-y-2">
-              <p className="text-xs text-muted-foreground">Away</p>
+              <p className="text-xs text-muted-foreground">{tc("away")}</p>
               <p className="text-sm md:text-base font-bold">
                 {predictions.percent.away}
               </p>
@@ -536,7 +563,9 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
           {/* Goals & Advice */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-border">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Under/Over</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("tips.underOver")}
+              </p>
               {predictions.under_over ? (
                 <p className="text-sm md:text-base font-bold">
                   {predictions.under_over}
@@ -547,7 +576,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">
-                Expected Goals
+                {t("tips.expectedGoals")}
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-sm md:text-base font-bold text-green-600">
@@ -564,7 +593,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                 <Target className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">
-                    Recommendation
+                    {t("tips.recommendation")}
                   </p>
                   <p className="text-xs  font-medium text-foreground leading-relaxed">
                     {predictions.advice}
@@ -580,7 +609,9 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       <div className="space-y-3 border-b border-border pb-4 md:pb-6">
         <div className="flex items-center gap-2 justify-start pl-2">
           <BarChart3 className="w-4 h-4 text-primary-font" />
-          <h3 className="text-sm md:text-base font-bold">Team Comparison</h3>
+          <h3 className="text-sm md:text-base font-bold">
+            {t("tips.teamComparison")}
+          </h3>
         </div>
         <div className=" space-y-6 md:space-y-8 max-w-xl px-4 mx-auto">
           {Object.entries(comparison).map(([key, value]) => {
@@ -614,7 +645,9 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                     <span className="text-xs font-bold">{value.home}</span>
                   </div>
                   <span className="text-xs md:text-sm text-center  text-primary-font font-bold capitalize block ">
-                    {key.replace(/_/g, " ")}
+                    {COMPARISON_KEYS[key]
+                      ? t(`tips.comparison.${COMPARISON_KEYS[key]}`)
+                      : key.replace(/_/g, " ")}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold">{value.away}</span>
@@ -662,7 +695,9 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
       <div className="space-y-3 border-b border-border pb-4 md:pb-6">
         <div className="flex items-center gap-2 justify-start pl-2">
           <Activity className="w-4 h-4 text-primary" />
-          <h3 className="text-sm md:text-base font-bold">Team Statistics</h3>
+          <h3 className="text-sm md:text-base font-bold">
+            {t("tips.teamStatistics")}
+          </h3>
         </div>
         <div className="bg-card border-2 border-border rounded-xl p-3 md:p-4 space-y-6 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -690,23 +725,31 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               {/* Last 5 */}
               <div className="space-y-2">
                 <h5 className="text-xs font-semibold text-muted-foreground">
-                  Last 5 Matches
+                  {t("tips.last5")}
                 </h5>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Form</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.form")}
+                    </span>
                     <span className="font-bold">{teams.home.last_5.form}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Attack</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.attack")}
+                    </span>
                     <span className="font-bold">{teams.home.last_5.att}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Defense</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.defense")}
+                    </span>
                     <span className="font-bold">{teams.home.last_5.def}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Goals</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.goals")}
+                    </span>
                     <span className="font-bold">
                       {teams.home.last_5.goals.for.total} /{" "}
                       {teams.home.last_5.goals.against.total}
@@ -718,26 +761,34 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               {/* League Stats */}
               <div className="space-y-2 pt-3 border-t border-border">
                 <h5 className="text-xs font-semibold text-muted-foreground">
-                  League Form
+                  {t("tips.leagueForm")}
                 </h5>
                 <div className="text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Record</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.record")}
+                    </span>
                     <span className="font-bold">
-                      {teams.home.league.fixtures.wins.total}W -{" "}
-                      {teams.home.league.fixtures.draws.total}D -{" "}
-                      {teams.home.league.fixtures.loses.total}L
+                      {t("tips.recordValue", {
+                        wins: teams.home.league.fixtures.wins.total,
+                        draws: teams.home.league.fixtures.draws.total,
+                        losses: teams.home.league.fixtures.loses.total,
+                      })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Goals</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.goals")}
+                    </span>
                     <span className="font-bold">
                       {teams.home.league.goals.for.total.total} /{" "}
                       {teams.home.league.goals.against.total.total}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Average</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.average")}
+                    </span>
                     <span className="font-bold">
                       {teams.home.league.goals.for.average.total} /{" "}
                       {teams.home.league.goals.against.average.total}
@@ -771,23 +822,31 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               {/* Last 5 */}
               <div className="space-y-2">
                 <h5 className="text-xs font-semibold text-muted-foreground">
-                  Last 5 Matches
+                  {t("tips.last5")}
                 </h5>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Form</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.form")}
+                    </span>
                     <span className="font-bold">{teams.away.last_5.form}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Attack</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.attack")}
+                    </span>
                     <span className="font-bold">{teams.away.last_5.att}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Defense</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.defense")}
+                    </span>
                     <span className="font-bold">{teams.away.last_5.def}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Goals</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.goals")}
+                    </span>
                     <span className="font-bold">
                       {teams.away.last_5.goals.for.total} /{" "}
                       {teams.away.last_5.goals.against.total}
@@ -799,26 +858,34 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
               {/* League Stats */}
               <div className="space-y-2 pt-3 border-t border-border">
                 <h5 className="text-xs font-semibold text-muted-foreground">
-                  League Form
+                  {t("tips.leagueForm")}
                 </h5>
                 <div className="text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Record</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.record")}
+                    </span>
                     <span className="font-bold">
-                      {teams.away.league.fixtures.wins.total}W -{" "}
-                      {teams.away.league.fixtures.draws.total}D -{" "}
-                      {teams.away.league.fixtures.loses.total}L
+                      {t("tips.recordValue", {
+                        wins: teams.away.league.fixtures.wins.total,
+                        draws: teams.away.league.fixtures.draws.total,
+                        losses: teams.away.league.fixtures.loses.total,
+                      })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Goals</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.goals")}
+                    </span>
                     <span className="font-bold">
                       {teams.away.league.goals.for.total.total} /{" "}
                       {teams.away.league.goals.against.total.total}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Average</span>
+                    <span className="text-muted-foreground">
+                      {t("tips.average")}
+                    </span>
                     <span className="font-bold">
                       {teams.away.league.goals.for.average.total} /{" "}
                       {teams.away.league.goals.against.average.total}
@@ -837,7 +904,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
           <div className="flex items-center gap-2 justify-start pl-2">
             <Swords className="w-4 h-4 text-primary-font" />
             <h3 className="text-sm md:text-base font-bold">
-              Last {h2h.length} games history
+              {t("tips.h2hHistory", { count: h2h.length })}
             </h3>
           </div>
           <div className=" max-w-xl mx-auto">
@@ -879,7 +946,7 @@ export default function Predictions({ fixtureId }: PredictionsProps) {
                     </span>
                   </div>
                   <div className=" text-[11px] md:text-xs text-muted-foreground ">
-                    {formatDate(match.fixture.date)}
+                    {formatDate(match.fixture.date, dateLocale)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,11 +26,12 @@ interface TagFilterProps {
 
 const TAG_TYPE_ORDER: TagType[] = ["league"];
 
-const TAG_TYPE_LABELS: Record<TagType, string> = {
-  league: "League",
-  team: "Team",
-  player: "Player",
-  topic: "Topic",
+// Translation keys under the "discuss" namespace
+const TAG_TYPE_LABEL_KEYS: Record<TagType, string> = {
+  league: "league",
+  team: "team",
+  player: "player",
+  topic: "topic",
 };
 
 const TAG_TYPE_BADGE: Record<TagType, string> = {
@@ -39,16 +41,17 @@ const TAG_TYPE_BADGE: Record<TagType, string> = {
   topic:  "bg-primary-font/10 text-primary-font border-primary-font/25",
 };
 
-const DATE_RANGE_OPTIONS: { value: PostDateFilter; label: string }[] = [
-  { value: "24h", label: "Last 24 hrs" },
-  { value: "week", label: "Past week" },
-  { value: "month", label: "Past month" },
+// Translation keys under the "discuss" namespace
+const DATE_RANGE_OPTIONS: { value: PostDateFilter; labelKey: string }[] = [
+  { value: "24h", labelKey: "last24Hours" },
+  { value: "week", labelKey: "pastWeek" },
+  { value: "month", labelKey: "pastMonth" },
 ];
 
-const SORT_OPTIONS: { value: PostSortOption; label: string }[] = [
-  { value: "most_liked", label: "Most liked" },
-  { value: "most_disliked", label: "Most disliked" },
-  { value: "most_commented", label: "Most commented" },
+const SORT_OPTIONS: { value: PostSortOption; labelKey: string }[] = [
+  { value: "most_liked", labelKey: "mostLiked" },
+  { value: "most_disliked", labelKey: "mostDisliked" },
+  { value: "most_commented", labelKey: "mostCommented" },
 ];
 
 export default function TagFilter({
@@ -59,6 +62,7 @@ export default function TagFilter({
   sortBy,
   onSortByChange,
 }: TagFilterProps) {
+  const t = useTranslations("discuss");
   const { data: tagsData, isLoading } = useTags(100);
 
   const tagsByType = useMemo(() => {
@@ -94,13 +98,17 @@ export default function TagFilter({
       (t) => t.type === type && selectedTagIds.includes(t.id),
     ) ?? null;
 
-  const selectedDateRangeLabel = dateRange
-    ? DATE_RANGE_OPTIONS.find((o) => o.value === dateRange)?.label
-    : "All time";
+  const selectedDateRangeKey = dateRange
+    ? DATE_RANGE_OPTIONS.find((o) => o.value === dateRange)?.labelKey
+    : undefined;
+  const selectedDateRangeLabel = selectedDateRangeKey
+    ? t(selectedDateRangeKey)
+    : t("allTime");
 
-  const selectedSortLabel = sortBy
-    ? SORT_OPTIONS.find((o) => o.value === sortBy)?.label
-    : "Newest";
+  const selectedSortKey = sortBy
+    ? SORT_OPTIONS.find((o) => o.value === sortBy)?.labelKey
+    : undefined;
+  const selectedSortLabel = selectedSortKey ? t(selectedSortKey) : t("newest");
 
   if (isLoading) {
     return (
@@ -134,7 +142,7 @@ export default function TagFilter({
               checked={!dateRange}
               onCheckedChange={(checked) => { if (checked) onDateRangeChange(undefined); }}
             >
-              All time
+              {t("allTime")}
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             {DATE_RANGE_OPTIONS.map((opt) => (
@@ -145,7 +153,7 @@ export default function TagFilter({
                   onDateRangeChange(checked ? opt.value : undefined)
                 }
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
@@ -168,7 +176,7 @@ export default function TagFilter({
               checked={!sortBy}
               onCheckedChange={(checked) => { if (checked) onSortByChange(undefined); }}
             >
-              Newest
+              {t("newest")}
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             {SORT_OPTIONS.map((opt) => (
@@ -179,7 +187,7 @@ export default function TagFilter({
                   onSortByChange(checked ? opt.value : undefined)
                 }
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
@@ -207,7 +215,9 @@ export default function TagFilter({
                   ].join(" ")}
                 >
                   <span className="max-w-[100px] truncate">
-                    {hasSelection ? selectedTag!.name : TAG_TYPE_LABELS[type]}
+                    {hasSelection
+                      ? selectedTag!.name
+                      : t(TAG_TYPE_LABEL_KEYS[type])}
                   </span>
                   <ChevronDown className="h-3.5 w-3.5 flex-shrink-0" />
                 </Button>
@@ -218,9 +228,11 @@ export default function TagFilter({
                 className="w-56 max-h-[360px] overflow-y-auto rounded-2xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full"
               >
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  {TAG_TYPE_LABELS[type]}
+                  {t(TAG_TYPE_LABEL_KEYS[type])}
                   {type !== "topic" && (
-                    <span className="ml-1 font-normal normal-case">(select one)</span>
+                    <span className="ml-1 font-normal normal-case">
+                      {t("selectOne")}
+                    </span>
                   )}
                 </div>
 
@@ -248,7 +260,7 @@ export default function TagFilter({
               className="inline-flex items-center gap-1.5 h-7 text-xs font-medium px-2.5 rounded-full border bg-muted text-muted-foreground border-border hover:opacity-80 transition-opacity"
             >
               <ArrowUp className="h-3 w-3" />
-              {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+              {selectedSortKey ? t(selectedSortKey) : null}
               <X className="h-3 w-3" strokeWidth={2.5} />
             </button>
           )}
@@ -258,7 +270,7 @@ export default function TagFilter({
               className="inline-flex items-center gap-1.5 h-7 text-xs font-medium px-2.5 rounded-full border bg-muted text-muted-foreground border-border hover:opacity-80 transition-opacity"
             >
               <Calendar className="h-3 w-3" />
-              {DATE_RANGE_OPTIONS.find((o) => o.value === dateRange)?.label}
+              {selectedDateRangeKey ? t(selectedDateRangeKey) : null}
               <X className="h-3 w-3" strokeWidth={2.5} />
             </button>
           )}
@@ -275,7 +287,7 @@ export default function TagFilter({
                 ].join(" ")}
               >
                 <span className="uppercase text-[10px] font-bold opacity-60">
-                  {TAG_TYPE_LABELS[tag.type]}
+                  {t(TAG_TYPE_LABEL_KEYS[tag.type])}
                 </span>
                 {tag.name}
                 <X className="h-3 w-3 flex-shrink-0" strokeWidth={2.5} />

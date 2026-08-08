@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronRight, ChevronLeft, X } from "lucide-react";
+import { useLocale } from "next-intl";
 
 interface CalendarProps {
   selectedDate: Date;
@@ -14,6 +15,15 @@ export default function Calendar({
   onDateSelect,
   onClose,
 }: CalendarProps) {
+  const locale = useLocale();
+  const dateLocale =
+    locale === "ja"
+      ? "ja-JP"
+      : locale === "zh-TW"
+        ? "zh-TW"
+        : locale === "zh-CN"
+          ? "zh-CN"
+          : "en-US";
   const [currentMonth, setCurrentMonth] = React.useState(
     selectedDate.getMonth(),
   );
@@ -21,22 +31,12 @@ export default function Calendar({
     selectedDate.getFullYear(),
   );
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  // Localized short weekday names, Sunday first (2023-01-01 was a Sunday)
+  const daysOfWeek = Array.from({ length: 7 }, (_, i) =>
+    new Date(2023, 0, 1 + i).toLocaleDateString(dateLocale, {
+      weekday: "short",
+    }),
+  );
 
   // Get the first day of the month and number of days
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -119,7 +119,10 @@ export default function Calendar({
             </button>
 
             <h2 className="text-md font-bold  w-40 text-center text-primary-font">
-              {months[currentMonth]} {currentYear}
+              {new Date(currentYear, currentMonth, 1).toLocaleDateString(
+                dateLocale,
+                { month: "long", year: "numeric" },
+              )}
             </h2>
 
             <button
