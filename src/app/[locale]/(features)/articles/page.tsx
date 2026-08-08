@@ -26,6 +26,7 @@ import ExpertPerspectiveImage from "./components/expert-perspective-image";
 import NewsFilter from "./components/news-filter";
 import FullPage from "@/components/common/full-page";
 import { Tag } from "@/components/common/tag";
+import { articlePath } from "@/lib/article-url";
 
 enum TabKey {
   NEWS = "news",
@@ -85,7 +86,7 @@ function ArticleGrid({
     <>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {articles.map((article) => (
-          <Link key={article.id} href={`/articles/${article.id}`}>
+          <Link key={article.id} href={articlePath(article)}>
             <article className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:border-primary-font/30 transition-all duration-200 cursor-pointer group">
               <div className="flex h-full flex-col">
                 <div className="relative h-44 bg-muted">

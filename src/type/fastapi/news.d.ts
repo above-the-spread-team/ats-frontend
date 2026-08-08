@@ -52,6 +52,8 @@ export type ArticleType = "general" | "match_preview" | "expert_perspective";
 export interface NewsResponse {
   id: number;
   title: string;
+  slug?: string | null; // Frozen English URL slug; null/absent for unslugifiable titles
+
   content: string | null; // Full JSON string (detail view only). Null in list responses — use content_preview instead.
   content_preview: string | null; // ~25-word plain-text preview (list views only). Null in detail responses.
   image_url: string | null; // For General News

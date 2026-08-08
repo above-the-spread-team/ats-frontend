@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import { Link, permanentRedirect } from "@/i18n/navigation";
+import { articleUrlSegment, parseArticleId } from "@/lib/article-url";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import FullPage from "@/components/common/full-page";
@@ -93,8 +94,8 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { locale, "new-id": newId } = await params;
-  const newsId = parseInt(newId);
-  if (isNaN(newsId)) return { title: "Article Not Found" };
+  const newsId = parseArticleId(newId);
+  if (newsId === null) return { title: "Article Not Found" };
 
   const { data } = await serverFetchNewsById(newsId, locale === "en" ? undefined : locale);
   const news = data as NewsResponse | null;
@@ -104,13 +105,14 @@ export async function generateMetadata({
   const description = getFirstParagraph(news).substring(0, 160);
   const availableLanguages = news.available_languages || (news.language ? [news.language] : ["en"]);
 
+  const canonicalSegment = articleUrlSegment(news);
   const alternates: Record<string, string> = {};
   for (const lang of availableLanguages) {
     if (lang === "en") {
-      alternates["en"] = `https://www.abovethespread.com/articles/${newsId}`;
-      alternates["x-default"] = `https://www.abovethespread.com/articles/${newsId}`;
+      alternates["en"] = `https://www.abovethespread.com/articles/${canonicalSegment}`;
+      alternates["x-default"] = `https://www.abovethespread.com/articles/${canonicalSegment}`;
     } else {
-      alternates[lang] = `https://www.abovethespread.com/${lang}/articles/${newsId}`;
+      alternates[lang] = `https://www.abovethespread.com/${lang}/articles/${canonicalSegment}`;
     }
   }
 
@@ -131,8 +133,8 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: locale === "en"
-        ? `https://www.abovethespread.com/articles/${newsId}`
-        : `https://www.abovethespread.com/${locale}/articles/${newsId}`,
+        ? `https://www.abovethespread.com/articles/${canonicalSegment}`
+        : `https://www.abovethespread.com/${locale}/articles/${canonicalSegment}`,
       languages: alternates,
     },
   };
@@ -140,9 +142,9 @@ export async function generateMetadata({
 
 export default async function NewsDetailPage({ params }: PageProps) {
   const { locale, "new-id": newId } = await params;
-  const newsId = parseInt(newId);
+  const newsId = parseArticleId(newId);
 
-  if (isNaN(newsId)) {
+  if (newsId === null) {
     notFound();
   }
 
@@ -171,6 +173,12 @@ export default async function NewsDetailPage({ params }: PageProps) {
         </div>
       </FullPage>
     );
+  }
+
+  // Bare-id and stale-slug URLs permanently redirect to the canonical slug URL
+  const canonicalSegment = articleUrlSegment(news);
+  if (newId !== canonicalSegment) {
+    permanentRedirect({ href: `/articles/${canonicalSegment}`, locale });
   }
 
   return (

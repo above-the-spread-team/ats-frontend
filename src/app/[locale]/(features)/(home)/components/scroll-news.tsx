@@ -19,6 +19,7 @@ import PreviewImage from "@/app/[locale]/(features)/articles/components/preview-
 import { getOptimizedNewsImage } from "@/lib/cloudinary";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Tag } from "@/components/common/tag";
+import { articlePath } from "@/lib/article-url";
 
 export function ScrollNews() {
   const t = useTranslations("home");
@@ -157,7 +158,7 @@ export function ScrollNews() {
           {newsItems.map((news) => (
             <CarouselItem key={news.id}>
               <div className="p-1 w-full">
-                <Link href={`/articles/${news.id}`}>
+                <Link href={articlePath(news)}>
                   <Card className="rounded-none overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                     <CardContent className="p-0  relative aspect-[4/3] overflow-hidden">
                       {isMatchPreview(news) ? (

@@ -7,6 +7,7 @@ import type { NewsResponse } from "@/type/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
 import HomeFailToLoad from "./home-fail-to-load";
+import { articlePath } from "@/lib/article-url";
 
 export default function HomeNews() {
   const { data: newsData, isLoading, error } = useNews(1, 16);
@@ -81,7 +82,7 @@ export default function HomeNews() {
             {publishedNews.map((article) => (
               <Link
                 key={article.id}
-                href={`/articles/${article.id}`}
+                href={articlePath(article)}
                 className="block px-3 py-2 hover:bg-muted/30 transition-colors group"
               >
                 <div className="flex items-start ">

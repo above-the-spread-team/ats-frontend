@@ -10,6 +10,7 @@ import { useNews } from "@/services/fastapi/news";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { cn } from "@/lib/utils";
 import HomeFailToLoad from "./home-fail-to-load";
+import { articlePath } from "@/lib/article-url";
 
 function ExpertAvatar({
   avatarUrl,
@@ -118,7 +119,7 @@ export default function HomeExpert() {
           {experts.map((article) => (
             <Link
               key={article.id}
-              href={`/articles/${article.id}`}
+              href={articlePath(article)}
               className="group flex items-center gap-2.5 px-3 py-1 transition-colors hover:bg-muted"
             >
               <ExpertAvatar

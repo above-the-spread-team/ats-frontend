@@ -1,4 +1,5 @@
 import { serverFetchNewsList } from "@/lib/server-news";
+import { articlePath as buildArticlePath } from "@/lib/article-url";
 import { routing } from "@/i18n/routing";
 import type { NewsListResponse } from "@/type/fastapi/news";
 import type { MetadataRoute } from "next";
@@ -67,7 +68,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const availableLanguages = article.available_languages?.length
           ? article.available_languages
           : ["en"];
-        const articlePath = `/articles/${article.id}`;
+        const articlePath = buildArticlePath(article);
 
         for (const lang of availableLanguages) {
           entries.push({
