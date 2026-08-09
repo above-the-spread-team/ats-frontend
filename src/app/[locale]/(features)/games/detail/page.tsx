@@ -122,7 +122,7 @@ function GameDetailContent() {
   // Ref to track the last user-selected tab (prevents flickering)
   const lastUserSelectedTab = useRef<TabType | null>(null);
 
-  const timezone = useUserTimezone();
+  const timezone = useUserTimezone() ?? "UTC";
 
   // Use React Query to fetch fixture
   const {

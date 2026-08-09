@@ -56,10 +56,10 @@ async function fetchFixturesLive(): Promise<FixturesApiResponse> {
   return data;
 }
 
-export function useFixturesByDate(dateStr: string, timezone: string) {
+export function useFixturesByDate(dateStr: string, timezone: string | null) {
   return useQuery({
     queryKey: ["fixtures-by-date", dateStr, timezone],
-    queryFn: () => fetchFixturesByDate(dateStr, timezone),
+    queryFn: () => fetchFixturesByDate(dateStr, timezone!),
     enabled: !!dateStr && !!timezone,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
@@ -78,9 +78,9 @@ export function useFixturesLive(options?: { enabled?: boolean }) {
   });
 }
 
-export function useFixtures(date: Date, timezone: string) {
+export function useFixtures(date: Date, timezone: string | null) {
   const dateStr = useMemo(
-    () => formatDateParam(date, timezone),
+    () => formatDateParam(date, timezone ?? undefined),
     [date, timezone],
   );
 
@@ -91,7 +91,7 @@ export function useFixtures(date: Date, timezone: string) {
     ...rest
   } = useFixturesByDate(dateStr, timezone);
 
-  const isToday = dateStr === formatDateParam(new Date(), timezone);
+  const isToday = dateStr === formatDateParam(new Date(), timezone ?? undefined);
   const { data: liveData } = useFixturesLive({ enabled: isToday });
 
   const data = useMemo(() => {

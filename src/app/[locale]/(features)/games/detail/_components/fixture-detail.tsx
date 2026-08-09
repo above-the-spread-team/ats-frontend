@@ -58,7 +58,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
   const isFinished = statusInfo.type === "Finished";
   const hasStarted = isInPlay || isFinished;
 
-  const userTimezone = useUserTimezone();
+  const userTimezone = useUserTimezone() ?? "UTC";
 
   return (
     <div className="space-y-0 flex flex-col items-center justify-center gap-1 md:gap-2">

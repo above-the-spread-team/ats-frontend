@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LEAGUE_IDS } from "@/data/league-ids";
-import { calculateSeason } from "@/lib/utils";
-import type {
-  FixtureResponseItem,
-  FixturesApiResponse,
-} from "@/type/footballapi/fixture";
+import type { FixturesApiResponse } from "@/type/footballapi/fixture";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 const DEFAULT_TIMEZONE = "Europe/London";
@@ -49,10 +45,13 @@ async function fetchWithTimeout(
   }
 }
 
+const TRACKED_LEAGUE_IDS = new Set<number>(LEAGUE_IDS);
+
 /**
  * GET /api/fixture-by-date?date=2020-01-30&timezone=Europe/London
- * Fetches fixtures for one date across 8 leagues using
- * fixtures?date=YYYY-MM-DD&league={id}&season=YYYY&timezone=...
+ * Single upstream call (fixtures?date=YYYY-MM-DD&timezone=…) returning the
+ * whole day worldwide, filtered server-side to LEAGUE_IDS. Data cache is
+ * bucketed per (date, timezone).
  * Cache: 5 minutes.
  */
 export async function GET(req: NextRequest) {
@@ -74,75 +73,55 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Sequential fetching to avoid bursting the football API rate limit (10 req/min on free
-  // plans). Fixture requests are per-date so the Next.js cache only helps for repeated
-  // requests on the same date; new dates always trigger real API calls.
-  const results: {
-    leagueId: (typeof LEAGUE_IDS)[number];
-    data: FixtureResponseItem[];
-    error: string | null;
-  }[] = [];
+  const params = new URLSearchParams({ date: dateParam, timezone });
 
-  for (const leagueId of LEAGUE_IDS) {
-    // Each league may belong to a different season (e.g. World Cup 2026 vs regular 2025)
-    const season = calculateSeason(leagueId);
-    const params = new URLSearchParams({
-      date: dateParam,
-      league: leagueId.toString(),
-      season: season.toString(),
-      timezone,
+  try {
+    const response = await fetchWithTimeout(`${API_URL}?${params.toString()}`, {
+      headers: { "x-apisports-key": API_KEY },
+      next: { revalidate: CACHE_SECONDS },
     });
-    try {
-      const response = await fetchWithTimeout(
-        `${API_URL}?${params.toString()}`,
-        {
-          headers: { "x-apisports-key": API_KEY },
-          next: { revalidate: CACHE_SECONDS },
-        },
-      );
-      if (!response.ok)
-        throw new Error(`Fetch failed ${response.status} ${response.statusText}`);
-      const data = (await response.json()) as FixturesApiResponse;
-      if (!data || !Array.isArray(data.response))
-        throw new Error("Unexpected payload structure");
-      results.push({ leagueId, data: data.response, error: null });
-    } catch (error) {
-      results.push({
-        leagueId,
-        data: [],
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+    if (!response.ok)
+      throw new Error(`Fetch failed ${response.status} ${response.statusText}`);
+    const data = (await response.json()) as FixturesApiResponse;
+    if (!data || !Array.isArray(data.response))
+      throw new Error("Unexpected payload structure");
+
+    const filtered = data.response.filter((f) =>
+      TRACKED_LEAGUE_IDS.has(f.league.id)
+    );
+
+    const headers = new Headers();
+    headers.set(
+      "Cache-Control",
+      `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS * 2}`
+    );
+
+    return NextResponse.json(
+      {
+        get: "fixtures",
+        parameters: { date: dateParam, timezone, leagues: [...LEAGUE_IDS] },
+        results: filtered.length,
+        errors: [],
+        paging: { current: 1, total: 1 },
+        response: filtered,
+      },
+      { headers }
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const headers = new Headers();
+    // Don't let a transient upstream failure get CDN-cached for 5 minutes
+    headers.set("Cache-Control", "no-store");
+    return NextResponse.json(
+      {
+        get: "fixtures",
+        parameters: { date: dateParam, timezone, leagues: [...LEAGUE_IDS] },
+        results: 0,
+        errors: [message],
+        paging: { current: 1, total: 1 },
+        response: [],
+      },
+      { headers }
+    );
   }
-
-  const fixtures = results.flatMap((r) => r.data);
-  const errors: Record<string, string> = {};
-  results.forEach((r) => {
-    if (r.error) errors[r.leagueId.toString()] = r.error;
-  });
-
-  const uniqueFixtures = Array.from(
-    new Map(fixtures.map((f) => [f.fixture.id, f])).values()
-  );
-  const errorMessages = Object.entries(errors).map(
-    ([id, msg]) => `League ${id}: ${msg}`
-  );
-
-  const headers = new Headers();
-  headers.set(
-    "Cache-Control",
-    `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS * 2}`
-  );
-
-  return NextResponse.json(
-    {
-      get: "fixtures",
-      parameters: { date: dateParam, timezone, leagues: [...LEAGUE_IDS] },
-      results: uniqueFixtures.length,
-      errors: errorMessages,
-      paging: { current: 1, total: 1 },
-      response: uniqueFixtures,
-    },
-    { headers }
-  );
 }

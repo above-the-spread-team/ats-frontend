@@ -391,7 +391,7 @@ function WorldCupPageSkeleton() {
 export default function WorldCupFixtures() {
   const t = useTranslations("worldCup");
   const intlLocale = toIntlLocale(useLocale());
-  const timezone = useUserTimezone();
+  const timezone = useUserTimezone() ?? "UTC";
   const [sortMode, setSortMode] = useState<SortMode>("date");
   const { data, isLoading, error } = useWorldCupFixtures(timezone);
 

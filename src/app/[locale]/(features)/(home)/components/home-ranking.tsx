@@ -19,7 +19,7 @@ export default function HomeRanking() {
   const t = useTranslations("home");
   const st = useTranslations("stats");
 
-  const leagueId = 1;
+  const leagueId = 39;
   const season = calculateSeason(leagueId);
 
   useEffect(() => {
