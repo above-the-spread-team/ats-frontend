@@ -50,8 +50,7 @@ async function fetchWithTimeout(
 /**
  * GET /api/fixture-live?live=all | live=39-140-135-78-61
  * Fetches fixtures currently in play. Events are included in the API response.
- * - live=all: every league
- * - live=id-id-id: our LEAGUE_IDS by default (2-3-848-39-140-135-78-61)
+ * Defaults to LEAGUE_IDS joined by "-"; pass live=all or live=id-id-id to override.
  * Cache: 2 minutes (live scores/status change often).
  */
 export async function GET(req: NextRequest) {

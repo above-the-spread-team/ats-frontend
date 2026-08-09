@@ -135,11 +135,15 @@ async function fetchFixturesNextLastSingle(
   type: "next" | "last",
   count: number,
   leagueId?: number,
+  status?: string,
 ): Promise<FixturesApiResponse> {
   const params = new URLSearchParams();
   params.append(type, count.toString());
   if (leagueId) {
     params.append("league", leagueId.toString());
+  }
+  if (status) {
+    params.append("status", status);
   }
 
   const response = await fetch(`/api/fixtures-next-last?${params.toString()}`);
@@ -160,17 +164,33 @@ async function fetchFixturesNextLastSingle(
 async function fetchFixturesNextLast(
   type: "next" | "last",
   count: number,
-  leagueId?: number | number[],
+  leagueId?: number | readonly number[],
+  status?: string,
 ): Promise<FixturesApiResponse> {
-  const ids = Array.isArray(leagueId) ? leagueId : leagueId ? [leagueId] : [undefined];
+  const ids = Array.isArray(leagueId)
+    ? leagueId
+    : leagueId
+      ? [leagueId as number]
+      : [undefined];
 
   if (ids.length <= 1) {
-    return fetchFixturesNextLastSingle(type, count, ids[0]);
+    return fetchFixturesNextLastSingle(type, count, ids[0], status);
   }
 
-  const results = await Promise.all(
-    ids.map((id) => fetchFixturesNextLastSingle(type, count, id)),
+  // Best-effort: a single failing league must not take down the whole section
+  const settled = await Promise.allSettled(
+    ids.map((id) => fetchFixturesNextLastSingle(type, count, id, status)),
   );
+  const results = settled
+    .filter(
+      (r): r is PromiseFulfilledResult<FixturesApiResponse> =>
+        r.status === "fulfilled",
+    )
+    .map((r) => r.value);
+
+  if (results.length === 0) {
+    throw new Error("Failed to load fixtures for all leagues");
+  }
 
   const allFixtures = results.flatMap((r) => r.response ?? []);
   const sorted = allFixtures.sort(
@@ -193,12 +213,13 @@ async function fetchFixturesNextLast(
 export function useFixturesNextLast(
   type: "next" | "last",
   count: number,
-  leagueId?: number | number[],
+  leagueId?: number | readonly number[],
+  status?: string,
 ) {
   const leagueKey = Array.isArray(leagueId) ? leagueId.join(",") : leagueId;
   return useQuery({
-    queryKey: ["fixtures-next-last", type, count, leagueKey],
-    queryFn: () => fetchFixturesNextLast(type, count, leagueId),
+    queryKey: ["fixtures-next-last", type, count, leagueKey, status ?? null],
+    queryFn: () => fetchFixturesNextLast(type, count, leagueId, status),
     staleTime: 5 * 60 * 1000,
     refetchInterval: false,
     refetchOnWindowFocus: false,

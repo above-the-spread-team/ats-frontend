@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getFixtureStatus } from "@/data/fixture-status";
+import { LEAGUE_IDS } from "@/data/league-ids";
 import {
   useFixturesLive,
   useFixturesNextLast,
@@ -53,30 +54,38 @@ export default function Fixtures() {
   const [canScrollNext, setCanScrollNext] = useState(false);
   const t = useTranslations("home");
 
-  const MAX_FIXTURES = 15;
+  const MAX_FIXTURES = 20;
 
-  // Live fixtures (all leagues); best-effort, do not block on error
+  // Live fixtures (configured leagues); best-effort, do not block on error
   const { data: liveData } = useFixturesLive({ enabled: true });
 
-  // Last 15 for league 1 (World Cup); backbone for the section
+  // Most recent finished results (FT/AET/PEN) across all configured leagues
   const {
     data: lastData,
     isLoading,
     error: queryError,
-  } = useFixturesNextLast("last", MAX_FIXTURES, [1, 2]);
+  } = useFixturesNextLast("last", MAX_FIXTURES, LEAGUE_IDS, "FT-AET-PEN");
 
-  // Merge: all live first, then last to fill up to MAX_FIXTURES (15). If live ≥ 15, show only live.
+  // Live pinned first (earliest kickoff first), then finished results
+  // newest→oldest, filling up to MAX_FIXTURES total.
   const fixtures = useMemo(() => {
-    const live = liveData?.response ?? [];
-    const last = lastData?.response ?? [];
+    const live = [...(liveData?.response ?? [])]
+      .sort(
+        (a, b) =>
+          new Date(a.fixture.date).getTime() -
+          new Date(b.fixture.date).getTime(),
+      )
+      .slice(0, MAX_FIXTURES);
     const liveIds = new Set(live.map((f) => f.fixture.id));
-    const lastExcludingLive = last.filter((f) => !liveIds.has(f.fixture.id));
-    const restSlots = Math.max(0, MAX_FIXTURES - live.length);
-    const merged = [...live, ...lastExcludingLive.slice(0, restSlots)];
-    return merged.sort(
-      (a, b) =>
-        new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
-    );
+    const results = (lastData?.response ?? [])
+      .filter((f) => !liveIds.has(f.fixture.id))
+      .sort(
+        (a, b) =>
+          new Date(b.fixture.date).getTime() -
+          new Date(a.fixture.date).getTime(),
+      )
+      .slice(0, Math.max(0, MAX_FIXTURES - live.length));
+    return [...live, ...results];
   }, [liveData?.response, lastData?.response]);
 
   const error =

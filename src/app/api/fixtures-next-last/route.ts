@@ -53,7 +53,8 @@ async function fetchWithTimeout(
 }
 
 /**
- * GET /api/fixtures-next-last?next=…|last=…&league=…
+ * GET /api/fixtures-next-last?next=…|last=…&league=…&status=…
+ * status accepts one or more short codes joined by "-", e.g. FT-AET-PEN.
  * Cache: 5 minutes.
  */
 export async function GET(req: NextRequest) {
@@ -122,6 +123,21 @@ export async function GET(req: NextRequest) {
       );
     }
     params.append("league", league.toString());
+  }
+
+  // Add status filter if provided (e.g. FT-AET-PEN)
+  const statusParam = req.nextUrl.searchParams.get("status");
+  if (statusParam) {
+    if (!/^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/.test(statusParam)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid 'status' parameter. Use short codes joined by '-', e.g. FT-AET-PEN.",
+        },
+        { status: 400 }
+      );
+    }
+    params.append("status", statusParam);
   }
 
   try {
