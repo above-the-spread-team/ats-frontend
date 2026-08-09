@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import type { TeamsApiResponse } from "@/type/footballapi/teams-info";
-
-const WORLD_CUP_LEAGUE_ID = 1;
-const WORLD_CUP_SEASON = 2026;
+import { WORLD_CUP } from "@/config/season-config";
 
 async function fetchWorldCupTeams(): Promise<TeamsApiResponse> {
   const params = new URLSearchParams({
-    league: WORLD_CUP_LEAGUE_ID.toString(),
-    season: WORLD_CUP_SEASON.toString(),
+    league: WORLD_CUP.LEAGUE_ID.toString(),
+    season: WORLD_CUP.SEASON.toString(),
   });
   const response = await fetch(`/api/teams-info?${params.toString()}`, {
     cache: "default",

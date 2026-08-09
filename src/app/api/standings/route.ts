@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { StandingsApiResponse } from "@/type/footballapi/standing";
+import { calculateSeason } from "@/lib/utils";
 
 const DEFAULT_API_URL = "https://v3.football.api-sports.io";
 
@@ -46,11 +47,11 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Get required season parameter, default to current year
+  // Get required season parameter, default to the league's configured season
   const seasonParam = req.nextUrl.searchParams.get("season");
   const season = seasonParam
     ? parseInt(seasonParam, 10)
-    : new Date().getFullYear();
+    : calculateSeason(leagueId);
 
   // Get optional team parameter
   const teamParam = req.nextUrl.searchParams.get("team");

@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useWorldCupStandings } from "@/services/football-api/world-cup-standings";
 import type { StandingEntry } from "@/type/footballapi/standing";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WORLD_CUP } from "@/config/season-config";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ function GroupTable({
           return (
             <Link
               key={entry.team.id}
-              href={`/stats/${leagueId}/${entry.team.id}?season=2026`}
+              href={`/stats/${leagueId}/${entry.team.id}?season=${WORLD_CUP.SEASON}`}
               className={`grid items-center px-2 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 border-t border-border/60 transition-colors hover:bg-muted/40 cursor-pointer
                 [grid-template-columns:1.2rem_1fr_1.8rem_1.8rem_1.8rem_1.8rem_2rem_2rem_2.2rem_2.5rem]
                 sm:[grid-template-columns:1.2rem_1fr_1.8rem_1.8rem_1.8rem_1.8rem_2rem_2rem_2.2rem_2.5rem_5.5rem]
@@ -300,7 +301,7 @@ export default function WorldCupRanking() {
               key={groupName}
               group={groupName}
               entries={group}
-              leagueId={league?.id ?? 1}
+              leagueId={league?.id ?? WORLD_CUP.LEAGUE_ID}
             />
           );
         })}

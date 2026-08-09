@@ -1,6 +1,6 @@
 import { SEASON_CONFIG } from "@/config/season-config";
 
-export const LEAGUE_IDS = [2, 3, 848, 39, 140, 135, 78, 61, 98] as const;
+export { LEAGUE_IDS } from "@/config/season-config";
 
 /**
  * Returns true if the given league should display seasons as a single year
@@ -12,6 +12,6 @@ export function isTournamentLeague(
   season: number,
 ): boolean {
   const id = typeof leagueId === "string" ? parseInt(leagueId, 10) : leagueId;
-  const ids = (SEASON_CONFIG as Record<number, number[]>)[season];
+  const ids = SEASON_CONFIG[season];
   return ids?.includes(id) ?? false;
 }

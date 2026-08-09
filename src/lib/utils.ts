@@ -55,10 +55,13 @@ export function getUserTimezone(): string {
 
 /**
  * Returns the season year for a given league by looking it up in SEASON_CONFIG.
- * If the league is not found in any configured season, returns the most recent
- * season year in the config as a safe default.
+ * Leagues not in the config (e.g. arbitrary ids from stats URLs) get the
+ * fallback, defaulting to the current calendar year.
  */
-export function calculateSeason(leagueId?: number | string | null): number {
+export function calculateSeason(
+  leagueId?: number | string | null,
+  fallback: number = new Date().getFullYear(),
+): number {
   if (leagueId != null) {
     const id =
       typeof leagueId === "string" ? parseInt(leagueId, 10) : leagueId;
@@ -71,7 +74,5 @@ export function calculateSeason(leagueId?: number | string | null): number {
     }
   }
 
-  // Default: the most recent season defined in the config
-  const years = Object.keys(SEASON_CONFIG).map(Number);
-  return Math.max(...years);
+  return fallback;
 }

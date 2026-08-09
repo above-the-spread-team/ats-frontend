@@ -7,9 +7,10 @@ import { Link } from "@/i18n/navigation";
 import { useWorldCupTeams } from "@/services/football-api/world-cup-teams";
 import type { TeamResponseItem } from "@/type/footballapi/teams-info";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WORLD_CUP } from "@/config/season-config";
 
-const LEAGUE_ID = 1;
-const SEASON = 2026;
+const LEAGUE_ID = WORLD_CUP.LEAGUE_ID;
+const SEASON = WORLD_CUP.SEASON;
 
 const HOST_IDS = new Set([5529, 16, 2384]); // Canada, Mexico, USA
 const HOST_FLAGS: Record<number, string> = {

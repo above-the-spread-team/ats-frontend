@@ -20,6 +20,7 @@ import type { TeamResponseItem } from "@/type/footballapi/teams-info";
 import SeasonSelect from "../_components/season-select";
 import Statistic from "./_components/statistic";
 import Squad from "./_components/squad";
+import { calculateSeason } from "@/lib/utils";
 
 type TabType = "statistics" | "squad";
 
@@ -39,7 +40,7 @@ export default function TeamPage() {
     : undefined;
   const season = seasonParam
     ? parseInt(seasonParam, 10)
-    : (latestTeamSeason ?? new Date().getFullYear());
+    : (latestTeamSeason ?? calculateSeason(leagueId));
 
   // Get tab from URL or default to statistics
   const tabParam = searchParams.get("tab") as TabType;

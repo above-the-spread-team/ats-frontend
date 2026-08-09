@@ -443,6 +443,6 @@ User avatar uploads go to Cloudinary via the backend. Optimized URLs are generat
 
 **New league**
 
-1. Add the league ID to `src/data/league-ids.ts`
+1. Add the league ID under its season in `src/config/season-config.ts` (`LEAGUE_IDS` is derived from it — do not edit `src/data/league-ids.ts`)
 2. Add a theme entry in `src/data/league-theme.ts`
-3. Add the season ID in `src/config/season-config.ts`
+3. Mirror the same `SEASON_CONFIG` change in `ats-backend/app/core/leagues.py` and `ats-news/app/services/league_constants.py` (see the KEEP IN SYNC header in each file)

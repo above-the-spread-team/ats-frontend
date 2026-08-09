@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { FixturesApiResponse } from "@/type/footballapi/fixture";
+import { WORLD_CUP } from "@/config/season-config";
 
-const WORLD_CUP_LEAGUE_ID = 1;
-const WORLD_CUP_SEASON = 2026;
 const CACHE_SECONDS = 300; // 5 minutes
 
 const API_URL =
@@ -33,8 +32,8 @@ export async function GET(req: NextRequest) {
     req.nextUrl.searchParams.get("timezone") ?? "Europe/London";
 
   const params = new URLSearchParams({
-    league: WORLD_CUP_LEAGUE_ID.toString(),
-    season: WORLD_CUP_SEASON.toString(),
+    league: WORLD_CUP.LEAGUE_ID.toString(),
+    season: WORLD_CUP.SEASON.toString(),
     timezone,
   });
 

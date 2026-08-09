@@ -8,6 +8,7 @@ import Nav from "@/components/common/nav-stats";
 import Section from "./_components/section";
 import LeagueCard from "./_components/league-card";
 import StatsSkeleton from "./_components/skeleton";
+import { calculateSeason } from "@/lib/utils";
 import type {
   LeaguesApiResponse,
   LeagueResponseItem,
@@ -165,7 +166,7 @@ function TablesContent() {
 
   const renderLeagueCard = (league: LeagueResponseItem) => {
     const seasonData = getCurrentSeasonData(league);
-    const season = seasonData?.year ?? new Date().getFullYear();
+    const season = seasonData?.year ?? calculateSeason(league.league.id);
     return (
       <LeagueCard
         key={league.league.id}

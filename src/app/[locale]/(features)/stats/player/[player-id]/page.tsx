@@ -18,6 +18,7 @@ import NoDate from "@/components/common/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { PlayerStatisticsApiResponse } from "@/type/footballapi/player-statistics";
+import { calculateSeason } from "@/lib/utils";
 
 export default function PlayerPage() {
   const t = useTranslations("stats");
@@ -43,12 +44,12 @@ export default function PlayerPage() {
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Season: URL param > latest from player-seasons API > current year
+  // Season: URL param > latest from player-seasons API > configured season
   const latestFromApi =
     availableSeasons.length > 0 ? Math.max(...availableSeasons) : undefined;
   const season = seasonParam
     ? parseInt(seasonParam, 10)
-    : latestFromApi ?? new Date().getFullYear();
+    : latestFromApi ?? calculateSeason(leagueId);
 
   // Fetch available seasons for the player
   useEffect(() => {

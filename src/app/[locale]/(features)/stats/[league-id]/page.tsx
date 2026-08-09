@@ -11,6 +11,7 @@ import SeasonSelect from "./_components/season-select";
 import Standings from "./_components/standing";
 import Leader from "./_components/leader";
 import Teams from "./_components/teams";
+import { calculateSeason } from "@/lib/utils";
 import type {
   LeagueResponseItem,
   LeagueSeason,
@@ -43,14 +44,14 @@ export default function LeagueStatsPage() {
       : "standings"
   );
 
-  // Season: URL param > API seasons (current or latest) > current year fallback
+  // Season: URL param > API seasons (current or latest) > configured season
   const seasonParam = searchParams.get("season");
   const defaultFromApi = league?.seasons?.length
     ? getDefaultSeasonFromApi(league.seasons)
     : undefined;
   const selectedSeason = seasonParam
     ? parseInt(seasonParam, 10)
-    : defaultFromApi ?? new Date().getFullYear();
+    : defaultFromApi ?? calculateSeason(leagueId);
 
   // Fetch league information
   useEffect(() => {
