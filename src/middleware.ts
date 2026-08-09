@@ -2,8 +2,49 @@ import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { get } from "@vercel/edge-config";
 import { routing } from "./i18n/routing";
+import { countryLocale, primaryLanguageLocale } from "./i18n/locale-detection";
 
 const intlMiddleware = createMiddleware(routing);
+
+// First visit only (no NEXT_LOCALE cookie): pick the locale from the
+// browser's primary language, falling back to the visitor's region (Vercel
+// geo header). This replaces next-intl's full Accept-Language negotiation
+// for two reasons: browsers append en with low q-values almost universally,
+// so the region signal would otherwise never win; and next-intl's best-fit
+// matcher sends zh-HK/zh-MO to zh-CN instead of zh-TW. Crawlers without a
+// mapped country are never redirected, keeping the unprefixed en canonical
+// intact.
+function resolveFirstVisitRedirect(req: NextRequest): NextResponse | undefined {
+  if (req.method !== "GET" && req.method !== "HEAD") return undefined;
+  if (req.cookies.has("NEXT_LOCALE")) return undefined;
+
+  const { pathname } = req.nextUrl;
+  const hasLocalePrefix = routing.locales.some(
+    (locale) =>
+      locale !== routing.defaultLocale &&
+      (pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)),
+  );
+  if (hasLocalePrefix) return undefined;
+
+  const locale =
+    primaryLanguageLocale(req.headers.get("accept-language")) ??
+    countryLocale(req.headers.get("x-vercel-ip-country"));
+  if (!locale || locale === routing.defaultLocale) return undefined;
+
+  const url = req.nextUrl.clone();
+  url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
+  const res = NextResponse.redirect(url);
+  res.cookies.set("NEXT_LOCALE", locale, {
+    path: "/",
+    maxAge: 31536000,
+    sameSite: "lax",
+  });
+  return res;
+}
+
+function handleI18n(req: NextRequest) {
+  return resolveFirstVisitRedirect(req) ?? intlMiddleware(req);
+}
 
 export const config = {
   matcher: [
@@ -19,7 +60,7 @@ export async function middleware(req: NextRequest) {
       const bypassSecret = await get<string>("maintenanceBypassSecret");
       const devCookie = req.cookies.get("__ats_dev")?.value;
       if (bypassSecret && devCookie === bypassSecret) {
-        return intlMiddleware(req);
+        return handleI18n(req);
       }
 
       if (req.nextUrl.pathname === "/maintenance") {
@@ -29,8 +70,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.rewrite(new URL("/maintenance", req.url));
     }
 
-    return intlMiddleware(req);
+    return handleI18n(req);
   } catch {
-    return intlMiddleware(req);
+    return handleI18n(req);
   }
 }
