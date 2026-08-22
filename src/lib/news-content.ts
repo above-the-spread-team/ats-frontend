@@ -33,6 +33,25 @@ function coerceSources(value: unknown): NewsSource[] {
     .filter((source) => source.title || source.url);
 }
 
+// Guard against generation bugs that leaked the `expert_pick` object into
+// `paragraphs` as raw JSON text (seen in production expert articles, Jun–Aug 2026).
+const LEAK_PATTERNS = [
+  /^\s*[[{]/,
+  /expert_pick/,
+  /"(team|confidence|reasons|key_stats)"\s*:/,
+  /^\s*(team|confidence|reasons|key_stats)\s*[:{]?\s*$/,
+];
+
+function isLeakedJson(paragraph: string): boolean {
+  return LEAK_PATTERNS.some((re) => re.test(paragraph));
+}
+
+function coerceParagraphs(value: unknown): string[] {
+  return coerceStringArray(value).filter(
+    (paragraph) => paragraph.trim().length > 0 && !isLeakedJson(paragraph),
+  );
+}
+
 function normalizeGeneralNews(
   parsed: Record<string, unknown>,
 ): GeneralNewsContent | null {
@@ -65,7 +84,7 @@ function normalizeMatchPreview(
 ): MatchPreviewContent | null {
   if (!Array.isArray(parsed.paragraphs)) return null;
 
-  const paragraphs = coerceStringArray(parsed.paragraphs);
+  const paragraphs = coerceParagraphs(parsed.paragraphs);
   if (paragraphs.length === 0) return null;
 
   return {
@@ -81,7 +100,7 @@ function normalizeExpertPerspective(
 ): ExpertPerspectiveContent | null {
   if (!Array.isArray(parsed.paragraphs)) return null;
 
-  const paragraphs = coerceStringArray(parsed.paragraphs);
+  const paragraphs = coerceParagraphs(parsed.paragraphs);
   if (paragraphs.length === 0) return null;
 
   return {
