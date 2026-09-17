@@ -45,6 +45,19 @@ JWT in HttpOnly cookies (primary) + `localStorage` fallback for Safari. Token st
 
 `src/middleware.ts` checks Vercel Edge Config (`isInMaintenance`). If active and no valid `__ats_dev` bypass cookie, all requests rewrite to `/maintenance`. Matcher excludes `_next/static`, `_next/image`, `favicon.ico`, `maintenance`, `api/maintenance-bypass`.
 
+## SEO
+
+Server-rendered, crawlable surface — keep it that way when touching these pages.
+
+- **Shared helpers**: `src/lib/seo.ts` (`SITE_URL`, `localizedUrl`, `languageAlternates`, `buildPageMetadata` — canonical + hreflang + OG + Twitter + RSS in one call; Next *replaces* the layout's `openGraph` once a page sets its own, so always go through it), `src/lib/json-ld.tsx` (`<JsonLd>`, `graphLd`, `newsArticleLd`, `sportsEventLd`, `breadcrumbLd`, `faqLd`, `itemListLd`), `src/lib/og-image.tsx`.
+- **URL schemes** (trailing numeric id is the lookup key, slug is cosmetic, bare id / stale slug → 308 to canonical): articles `/articles/{slug}-{id}` (`lib/article-url.ts`), match pages `/games/{home}-vs-{away}-{fixtureId}` (`lib/game-url.ts`; `/games/detail?id=` only redirects), hubs `/teams/{slug}-{tagId}` and `/leagues/{slug}-{tagId}` (`lib/hub-url.ts`). `permanentRedirect` must come from `@/i18n/navigation` and never sit inside try/catch.
+- **Status codes**: missing/unpublished → `notFound()` (real 404); backend or API-Football outage → `throw` (5xx via `(features)/error.tsx`). Never render a "not found" UI with HTTP 200 — that de-indexes the URL.
+- **Article page** (`articles/[new-id]/page.tsx`): one JSON-LD `@graph` (NewsArticle + BreadcrumbList, + SportsEvent when `home_team_name`/`away_team_name`/`match_date` exist, + FAQPage when `faq` exists). Meta description = `content.meta_description` (LLM-written) → clamped lead paragraph. `news-content.ts` normalizers rebuild the content object explicitly — a new content field is DROPPED unless added there and in `type/fastapi/news.d.ts`.
+- **List pages** are server `page.tsx` (metadata + `HydrationBoundary` prefetch of page 1) wrapping a `_components/*-client.tsx`. The prefetch must use the exact `newsQueryKey(...)` (`lib/news-query.ts`) and args the client hook uses (`lang` is `undefined` for en). `/articles` is a duplicate view: canonical → `/news` or `/our-picks`.
+- **Root SEO routes** (route handlers, rendered per request + CDN `Cache-Control`, short cache on backend failure): `/sitemap.xml` (index) → `/sitemaps/{static,hubs,games,articles-N}.xml` (500 articles per file — Vercel 4.5 MB response cap), `/news-sitemap.xml` (48 h, Google News), `/feed.xml` + `/{locale}/feed.xml`, `/llms.txt`, `/og/default`, `/og/article/[id]` (not under `/api/` — robots.txt blocks it). **Any new root-level route must be added to the middleware matcher exclusion**, or next-intl will locale-prefix / redirect it.
+- **robots.ts**: named AI-crawler group repeats the disallow list on purpose (a named group replaces `*`).
+- **Maintenance**: middleware answers 503 + `Retry-After` with the maintenance HTML (a 200 rewrite + the page's noindex would de-index articles); `/maintenance` redirects home once maintenance is off.
+
 ## Tech Stack
 
 | Concern | Technology |

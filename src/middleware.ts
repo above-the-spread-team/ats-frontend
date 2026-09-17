@@ -48,9 +48,43 @@ function handleI18n(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|_next/|favicon.ico|images/|api/|maintenance|sitemap.xml|robots.txt).*)",
+    // Root-level SEO routes (sitemaps, feed, llms.txt, OG images) must stay out of the
+    // locale handling, or next-intl would prefix / redirect them.
+    "/((?!_next/static|_next/image|_next/|favicon.ico|images/|api/|og/|sitemaps/|maintenance|sitemap.xml|news-sitemap.xml|feed.xml|llms.txt|robots.txt).*)",
   ],
 };
+
+// A rewrite would answer 200, and the maintenance page is noindex — crawlers hitting any
+// article during a window would be told to drop it. Serve the same HTML as a 503 instead
+// (NextResponse.rewrite ignores `status`, so the page is fetched and returned as the body).
+// /maintenance is excluded from the matcher, so this fetch never re-enters the middleware.
+async function maintenanceResponse(req: NextRequest): Promise<NextResponse> {
+  try {
+    const page = await fetch(new URL("/maintenance", req.url), {
+      headers: {
+        "accept-language": req.headers.get("accept-language") ?? "",
+        "x-vercel-ip-country": req.headers.get("x-vercel-ip-country") ?? "",
+        cookie: req.headers.get("cookie") ?? "",
+      },
+      cache: "no-store",
+      // The page redirects home once maintenance is over — never serve that as the 503 body
+      redirect: "manual",
+    });
+    if (page.status === 200) {
+      return new NextResponse(await page.text(), {
+        status: 503,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Retry-After": "3600",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+  } catch {
+    // fall through to the plain rewrite
+  }
+  return NextResponse.rewrite(new URL("/maintenance", req.url));
+}
 
 export async function middleware(req: NextRequest) {
   try {
@@ -67,7 +101,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
       }
 
-      return NextResponse.rewrite(new URL("/maintenance", req.url));
+      return maintenanceResponse(req);
     }
 
     return handleI18n(req);

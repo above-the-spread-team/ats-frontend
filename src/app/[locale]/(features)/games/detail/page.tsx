@@ -1,368 +1,53 @@
-"use client";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { permanentRedirect } from "@/i18n/navigation";
+import { gamePath } from "@/lib/game-url";
+import { serverFetchFixture } from "@/lib/server-fixture";
 
-import { useEffect, useState, useMemo, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
-import {
-  ArrowLeft,
-  Clock8,
-  Users,
-  BarChart3,
-  Activity,
-  User,
-  Brain,
-  TrendingUp,
-} from "lucide-react";
-import Image from "next/image";
-import FullPage from "@/components/common/full-page";
-import Nav, { NavTab } from "@/components/common/nav";
-import { Skeleton } from "@/components/ui/skeleton";
-import FixtureDetail from "./_components/fixture-detail";
-import Lineups from "./_components/lineups";
-import FixtureStatistics from "./_components/fixture-stats";
-import Events from "./_components/events";
-import FixturePlayers from "./_components/fixture-players";
-import Predictions from "./_components/tips";
-import Odds from "./_components/odds";
-import { useFixture } from "@/services/football-api/fixtures";
-import { getFixtureStatus } from "@/data/fixture-status";
-import { useUserTimezone } from "@/hooks/use-user-timezone";
+// Legacy URL: /games/detail?id={fixtureId}&date=&tab= → /games/{home}-vs-{away}-{fixtureId}
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
 
-type TabType =
-  | "lineups"
-  | "statistics"
-  | "events"
-  | "players"
-  | "predictions"
-  | "odds";
-
-function GameDetailSkeleton() {
-  return (
-    <FullPage minusHeight={0}>
-      {/* Header Skeleton */}
-      <div className="flex items-center justify-between my-2 container mx-auto max-w-4xl px-4">
-        <Skeleton className="h-8 w-20" />
-        <Skeleton className="h-6 w-32" />
-      </div>
-
-      {/* Fixture Detail Skeleton */}
-      <div className="container mx-auto max-w-5xl px-1">
-        <div className="space-y-0 flex flex-col items-center justify-center gap-1 md:gap-2">
-          {/* League Header Skeleton */}
-          <div className="flex items-center justify-center gap-3">
-            <Skeleton className="w-6 h-6 rounded-md" />
-            <Skeleton className="h-5 w-48 md:w-56" />
-          </div>
-
-          {/* Date & Time Skeleton */}
-          <div className="space-y-1 text-center">
-            <Skeleton className="h-3 md:h-4 w-40 md:w-48 mx-auto" />
-            <Skeleton className="h-4 md:h-5 w-20 md:w-24 mx-auto" />
-          </div>
-
-          {/* Teams & Score Skeleton */}
-          <div className="w-[270px] md:w-full max-w-lg grid grid-cols-7  ">
-            {/* Home Team */}
-            <div className="col-span-3 flex flex-col-reverse md:flex-row items-center gap-3 md:gap-4">
-              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
-              <Skeleton className="w-10 h-10 md:w-16 md:h-16 rounded-md" />
-            </div>
-
-            {/* Score/VS */}
-            <div className="col-span-1 flex flex-col items-center justify-center gap-2">
-              <Skeleton className="h-8 md:h-9 w-16 md:w-20" />
-              <Skeleton className="h-3 w-12 md:w-16" />
-            </div>
-
-            {/* Away Team */}
-            <div className="col-span-3 flex flex-col md:flex-row items-center gap-3 md:gap-4 justify-end">
-              <Skeleton className="w-10 h-10 md:w-16 md:h-16 rounded-md" />
-              <Skeleton className="h-3 md:h-4 w-24 md:w-32" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation Skeleton */}
-      <div className="mt-6 mb-6 max-w-4xl mx-auto px-2">
-        <div className="flex items-center justify-between gap-1">
-          {Array.from({ length: 5 }).map((_, idx) => (
-            <Skeleton key={idx} className="h-10 flex-1 rounded-md" />
-          ))}
-        </div>
-      </div>
-    </FullPage>
-  );
+interface PageProps {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{
+    id?: string | string[];
+    date?: string | string[];
+    tab?: string | string[];
+  }>;
 }
 
-function GameDetailContent() {
-  const t = useTranslations("games");
-  const tc = useTranslations("common");
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const fixtureIdParam = searchParams.get("id");
-  const dateParam = searchParams.get("date");
-
-  // Parse fixture ID
-  const fixtureId = fixtureIdParam ? parseInt(fixtureIdParam, 10) : null;
-
-  // Get tab from URL or default to predictions
-  const tabParam = searchParams.get("tab") as TabType;
-  const allValidTabs = useMemo<TabType[]>(
-    () => ["lineups", "statistics", "events", "players", "predictions", "odds"],
-    [],
-  );
-
-  // Initial tab state - will be adjusted after fixture loads
-  const [activeTab, setActiveTab] = useState<TabType>(
-    tabParam && allValidTabs.includes(tabParam) ? tabParam : "predictions",
-  );
-
-  // Ref to track the last user-selected tab (prevents flickering)
-  const lastUserSelectedTab = useRef<TabType | null>(null);
-
-  const timezone = useUserTimezone() ?? "UTC";
-
-  // Use React Query to fetch fixture
-  const {
-    data: fixtureData,
-    isLoading,
-    error: queryError,
-  } = useFixture(fixtureId);
-
-  // Sync tab state with URL parameter and fixture status
-  // Only sync FROM URL TO STATE to prevent flickering when user clicks tabs
-  useEffect(() => {
-    if (!fixtureData?.response?.[0]) return;
-
-    const fixture = fixtureData.response[0];
-    const fixtureStatus = getFixtureStatus(fixture.fixture.status.short);
-    const isScheduled = fixtureStatus.type === "Scheduled";
-    const validTabsForScheduled: TabType[] = ["predictions", "odds"];
-    // For non-scheduled fixtures, exclude odds from allowed tabs
-    const allowedTabs = isScheduled
-      ? validTabsForScheduled
-      : allValidTabs.filter((tab) => tab !== "odds");
-
-    const tabFromUrl = searchParams.get("tab") as TabType;
-
-    // Skip syncing from URL when user just clicked a tab: URL may not have updated yet,
-    // so tabFromUrl can be stale and would revert the selected tab (flicker).
-    // Nav already called setActiveTab; we only validate and clear the ref.
-    if (lastUserSelectedTab.current) {
-      setActiveTab((currentTab) => {
-        if (!allowedTabs.includes(currentTab)) return "predictions";
-        return currentTab;
-      });
-      setTimeout(() => {
-        lastUserSelectedTab.current = null;
-      }, 100);
-      return;
-    }
-
-    // Sync from URL to state (initial load or browser back/forward)
-    setActiveTab((currentTab) => {
-      if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
-        return tabFromUrl;
-      }
-      if (!allowedTabs.includes(currentTab)) {
-        return "predictions";
-      }
-      return currentTab;
-    });
-  }, [searchParams, fixtureData, allValidTabs]);
-
-  // Handle loading state
-  if (isLoading) {
-    return <GameDetailSkeleton />;
-  }
-
-  // Handle error state
-  const error =
-    queryError instanceof Error
-      ? queryError.message
-      : fixtureData?.errors && fixtureData.errors.length > 0
-        ? fixtureData.errors.join("\n")
-        : !fixtureId
-          ? t("detail.missingId")
-          : null;
-
-  if (
-    error ||
-    !fixtureData ||
-    !fixtureData.response ||
-    fixtureData.response.length === 0
-  ) {
-    return (
-      <FullPage center>
-        <div className="text-center space-y-4">
-          <p className="text-lg font-semibold text-destructive">
-            {error || t("detail.noFixtureData")}
-          </p>
-          <button
-            onClick={() => {
-              // Preserve date parameter when going back
-              if (dateParam) {
-                router.push(`/games?date=${dateParam}`);
-              } else {
-                router.back();
-              }
-            }}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {tc("back")}
-          </button>
-        </div>
-      </FullPage>
-    );
-  }
-
-  const fixture = fixtureData.response[0];
-  const fixtureStatus = getFixtureStatus(fixture.fixture.status.short);
-  const isScheduled = fixtureStatus.type === "Scheduled";
-
-  // Define all available tabs
-  const allTabs: NavTab<TabType>[] = [
-    { id: "predictions", label: t("detail.tabs.tips"), icon: Brain },
-    { id: "odds", label: t("detail.tabs.odds"), icon: TrendingUp },
-    { id: "statistics", label: t("detail.tabs.stats"), icon: BarChart3 },
-    { id: "players", label: t("detail.tabs.players"), icon: User },
-    { id: "events", label: t("detail.tabs.events"), icon: Activity },
-    { id: "lineups", label: t("detail.tabs.lineups"), icon: Users },
-  ];
-
-  // Filter tabs based on fixture status
-  // For Scheduled fixtures: only show Tips and Odds
-  // For non-Scheduled fixtures: show all tabs except Odds
-  const tabs = isScheduled
-    ? allTabs.filter((tab) => tab.id === "predictions" || tab.id === "odds")
-    : allTabs.filter((tab) => tab.id !== "odds");
-
-  return (
-    <FullPage minusHeight={10}>
-      {/* Fixture Detail - Always visible at top */}
-      <div className="relative overflow-hidden pb-10 md:pb-12">
-        {/* Background stadium image */}
-        <Image
-          src="https://images.unsplash.com/photo-1731312084255-6b38e3ea2484?w=1600&q=80&auto=format&fit=crop"
-          alt={t("detail.stadiumAlt")}
-          fill
-          className="object-cover w-full h-full"
-          sizes="(max-width: 768px) 300px, 1000px"
-        />
-        {/* Dark overlay keeping the original teal tint */}
-        {/* <div className="absolute inset-0 bg-gradient-to-r from-[#0d3030]/40 via-[#1b4d53]/80 to-[#0d3030]/90" /> */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80" />
-
-        {/* Content */}
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-2 container mx-auto max-w-4xl px-4">
-            <button
-              onClick={() => {
-                // Preserve date parameter when going back
-                if (dateParam) {
-                  router.push(`/games?date=${dateParam}`);
-                } else {
-                  router.back();
-                }
-              }}
-              className="flex items-center gap-2 py-2 md:py-3 text-sm font-semibold text-white hover:text-muted-foreground transition-colors w-fit"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {tc("back")}
-            </button>
-            <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-white">
-              <Clock8 className="w-4 h-4" />
-              <p>{timezone}</p>
-            </div>
-          </div>
-          <div className="container mx-auto max-w-5xl px-1">
-            <FixtureDetail fixture={fixture} />
-          </div>
-        </div>
-      </div>
-      {/* Tab Navigation */}
-      {fixtureId && (
-        <Nav
-          tabs={tabs}
-          activeTab={activeTab}
-          setActiveTab={(tab) => {
-            // Store the user-selected tab to prevent useEffect from interfering
-            lastUserSelectedTab.current = tab;
-            setActiveTab(tab);
-          }}
-          preserveParams={true}
-          additionalParams={{ id: fixtureId.toString() }}
-          containerClassName="max-w-4xl mx-auto"
-          hideIconOnMobile={true}
-        />
-      )}
-
-      <div className="pt-5 md:pt-6 pb-10">
-        {/* Tab Content */}
-        {activeTab === "lineups" && (
-          <div className="container mx-auto w-[95%]  max-w-4xl ">
-            <Lineups
-              fixtureId={fixture.fixture.id}
-              statusType={getFixtureStatus(fixture.fixture.status.short).type}
-            />
-          </div>
-        )}
-        {activeTab === "statistics" && (
-          <div className="container mx-auto w-[90%] max-w-3xl px-1">
-            <FixtureStatistics
-              fixtureId={fixture.fixture.id}
-              homeTeamId={fixture.teams.home.id}
-              awayTeamId={fixture.teams.away.id}
-              statusType={getFixtureStatus(fixture.fixture.status.short).type}
-            />
-          </div>
-        )}
-
-        {activeTab === "events" && (
-          <div className="container mx-auto w-[95%]  max-w-2xl ">
-            <Events
-              fixtureId={fixture.fixture.id}
-              homeTeamId={fixture.teams.home.id}
-              awayTeamId={fixture.teams.away.id}
-              statusType={getFixtureStatus(fixture.fixture.status.short).type}
-            />
-          </div>
-        )}
-
-        {activeTab === "players" && (
-          <div className="container mx-auto  max-w-5xl ">
-            <FixturePlayers
-              fixtureId={fixture.fixture.id}
-              homeTeamId={fixture.teams.home.id}
-              awayTeamId={fixture.teams.away.id}
-              statusType={getFixtureStatus(fixture.fixture.status.short).type}
-            />
-          </div>
-        )}
-
-        {activeTab === "predictions" && (
-          <div className="container mx-auto w-[95%]  max-w-4xl ">
-            <Predictions fixtureId={fixture.fixture.id} />
-          </div>
-        )}
-
-        {activeTab === "odds" && (
-          <div className="container mx-auto w-[95%]  max-w-4xl ">
-            <Odds fixtureId={fixture.fixture.id} />
-          </div>
-        )}
-      </div>
-    </FullPage>
-  );
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
-export default function GameDetailPage() {
-  return (
-    <Suspense fallback={<GameDetailSkeleton />}>
-      <GameDetailContent />
-    </Suspense>
-  );
+export default async function LegacyGameDetailPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const { locale } = await params;
+  const query = await searchParams;
+
+  // Digits only — parseInt would accept "123abc"
+  const idParam = first(query.id) ?? "";
+  const fixtureId = /^\d+$/.test(idParam) ? Number.parseInt(idParam, 10) : NaN;
+  if (!Number.isSafeInteger(fixtureId) || fixtureId <= 0) notFound();
+
+  // Names are only needed to land on the canonical slug in one hop; if the lookup fails
+  // the bare-id path still resolves (and the match page answers 404 / 5xx itself).
+  const { fixture } = await serverFetchFixture(fixtureId);
+  const pathname = gamePath({
+    id: fixtureId,
+    home: fixture?.teams.home.name,
+    away: fixture?.teams.away.name,
+  });
+
+  const preserved: Record<string, string> = {};
+  const date = first(query.date);
+  const tab = first(query.tab);
+  if (date) preserved.date = date;
+  if (tab) preserved.tab = tab;
+
+  permanentRedirect({ href: { pathname, query: preserved }, locale });
 }

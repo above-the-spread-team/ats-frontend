@@ -4,7 +4,36 @@
     "description": "Above The Spread is your go-to football platform for live fixtures, in-depth stats, match predictions, and fan discussions.",
     "ogTitle": "Above The Spread | Football Stats, Fixtures & Community",
     "ogDescription": "Live fixtures, deep-dive stats, match predictions, and football discussions — all in one place. Follow the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and European cups.",
-    "jsonLdDescription": "Live football fixtures, in-depth stats, match predictions, and fan discussions — covering Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and European cups."
+    "jsonLdDescription": "Live football fixtures, in-depth stats, match predictions, and fan discussions — covering Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and European cups.",
+    "homeTitle": "Football Predictions, Match Previews, Live Scores & Stats",
+    "homeDescription": "Daily football match previews, expert picks and predictions, live scores, lineups and stats for the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and European cups.",
+    "newsTitle": "Football News & Match Previews",
+    "newsDescription": "Daily football news reports and data-driven match previews with predictions, odds and betting tips across Europe's top leagues.",
+    "ourPicksTitle": "Expert Football Picks & Predictions",
+    "ourPicksDescription": "Expert perspectives on upcoming fixtures: who our analysts back, how confident they are, and the stats behind every pick.",
+    "articlesTitle": "Football Articles: News, Previews & Expert Picks",
+    "articlesDescription": "Every Above The Spread article in one place — daily league reports, match previews and expert picks, filterable by league and team.",
+    "gamesTitle": "Football Fixtures, Live Scores & Results",
+    "gamesDescription": "Today's football fixtures and live scores by date, with lineups, match stats, head-to-head records, odds and predictions for every game.",
+    "statsTitle": "Football League Tables, Standings & Stats",
+    "statsDescription": "League tables, standings, top scorers and team statistics for the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and European competitions.",
+    "discussTitle": "Football Community & Match Discussion",
+    "discussDescription": "Join football fans discussing matches, predictions, transfers and tactics. Share your take and vote on upcoming fixtures.",
+    "worldCupNewsTitle": "World Cup 2026 News & Match Previews",
+    "worldCupNewsDescription": "The latest FIFA World Cup 2026 news, match previews and predictions.",
+    "gameTitle": "{home} vs {away} Live Score, Lineups, Stats & H2H - {league}",
+    "gameTitleNoLeague": "{home} vs {away} Live Score, Lineups, Stats & H2H",
+    "gameDescription": "{home} vs {away} ({league}, {date}): live score, confirmed lineups, match statistics, head-to-head record, odds and predictions.",
+    "teamHubTitle": "{name} News, Match Previews & Predictions",
+    "teamHubDescription": "The latest {name} news, match previews, expert picks and predictions from Above The Spread.",
+    "leagueHubTitle": "{name} News, Match Previews & Predictions",
+    "leagueHubDescription": "Daily {name} news reports, match previews, expert picks and predictions from Above The Spread.",
+    "teamsIndexTitle": "Football Teams: News & Match Previews by Club",
+    "teamsIndexDescription": "Browse football clubs and national teams to find their latest news, match previews and expert predictions.",
+    "leaguesIndexTitle": "Football Leagues: News & Match Previews by Competition",
+    "leaguesIndexDescription": "Browse football leagues and competitions to find daily news reports, match previews and expert predictions.",
+    "feedTitle": "Above The Spread — Football News, Previews & Expert Picks",
+    "feedDescription": "Daily football news reports, match previews and expert picks."
   },
   "nav": {
     "home": "Home",
@@ -67,7 +96,8 @@
     "score": "Score",
     "accuracy": "Accuracy",
     "player": "Player",
-    "team": "Team"
+    "team": "Team",
+    "breadcrumb": "Breadcrumb"
   },
   "articles": {
     "title": "News",
@@ -141,7 +171,29 @@
       "player": "Player",
       "topic": "Topic",
       "selectOne": "(select one)"
-    }
+    },
+    "keyTakeaways": "Key Takeaways",
+    "faqHeading": "Frequently Asked Questions",
+    "expertPick": {
+      "heading": "{expert}'s Pick",
+      "headingGeneric": "Expert Pick",
+      "confidenceLabel": "Confidence",
+      "confidence": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "reasons": "Why this pick",
+      "keyStats": "Key stats"
+    },
+    "breadcrumb": {
+      "label": "Breadcrumb",
+      "home": "Home",
+      "news": "News",
+      "expertPicks": "Expert Picks"
+    },
+    "kickoff": "Kick-off",
+    "matchCentre": "{home} vs {away}: live score, lineups & stats"
   },
   "auth": {
     "login": "Login",
@@ -1169,5 +1221,33 @@
         "errorFallback": "Something went wrong."
       }
     }
+  },
+  "gamesDetail": {
+    "summaryScheduled": "{home} host {away} on {date} — {league}.",
+    "summaryScheduledVenue": "{home} host {away} at {venue} on {date} — {league}.",
+    "summaryLive": "{home} {homeGoals}–{awayGoals} {away} — live now, {league}.",
+    "summaryFinished": "{home} {homeGoals}–{awayGoals} {away} — full time, {league}, {date}.",
+    "summaryOther": "{home} vs {away} — {league}, {date}: {status}.",
+    "relatedArticles": "Previews & expert picks for this match",
+    "readPreview": "Match preview",
+    "readExpertPick": "Expert pick",
+    "breadcrumbGames": "Games"
+  },
+  "hubs": {
+    "latestArticles": "Latest articles",
+    "empty": "No articles yet. Check back soon.",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}",
+    "pagination": "Pagination",
+    "articleCount": "{count, plural, one {# article} other {# articles}}",
+    "teams": "Teams",
+    "leagues": "Leagues",
+    "allTeams": "All teams",
+    "allLeagues": "All leagues",
+    "teamIntro": "News, match previews and expert picks featuring {name}.",
+    "leagueIntro": "{name}: daily reports, match previews and expert picks.",
+    "teamsIntro": "Pick a team to see its latest news, match previews and expert predictions.",
+    "leaguesIntro": "Pick a competition to see its daily reports, match previews and expert predictions."
   }
 }

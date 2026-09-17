@@ -14,6 +14,14 @@ import { MyQueryClientProvider } from "@/providers/query-client";
 import { ToastContainer } from "react-toastify";
 import PlausibleProvider from "next-plausible";
 import type { Metadata } from "next";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_NAME,
+  SITE_URL,
+  feedUrl,
+  ogLocale,
+} from "@/lib/seo";
+import { JsonLd, PUBLISHER_LD, graphLd } from "@/lib/json-ld";
 
 const sora = Sora({
   weight: ["400", "500", "600", "700"],
@@ -56,38 +64,27 @@ export async function generateMetadata({
     authors: [{ name: "Above The Spread" }],
     creator: "Above The Spread",
     publisher: "Above The Spread",
-    metadataBase: new URL("https://www.abovethespread.com"),
+    metadataBase: new URL(SITE_URL),
     // No layout-level canonical: it would be inherited by every child page
     // that lacks its own metadata, canonicalizing them all to the same URL.
     // Pages that need one (e.g. article detail) declare it themselves.
+    alternates: {
+      types: { "application/rss+xml": feedUrl(locale) },
+    },
     openGraph: {
       type: "website",
-      locale:
-        locale === "ja"
-          ? "ja_JP"
-          : locale === "zh-TW"
-            ? "zh_TW"
-            : locale === "zh-CN"
-              ? "zh_CN"
-              : "en_US",
-      url: "https://www.abovethespread.com",
-      siteName: "Above The Spread",
+      locale: ogLocale(locale),
+      url: SITE_URL,
+      siteName: SITE_NAME,
       title: t("ogTitle"),
       description: t("ogDescription"),
-      images: [
-        {
-          url: "https://www.abovethespread.com/images/og.jpeg",
-          width: 1200,
-          height: 630,
-          alt: "Above The Spread — Football Stats & Community",
-        },
-      ],
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: t("ogTitle"),
       description: t("ogDescription"),
-      images: ["https://www.abovethespread.com/images/og.jpeg"],
+      images: [DEFAULT_OG_IMAGE.url],
       creator: "@abovethespread",
     },
     robots: {
@@ -137,18 +134,18 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SportsOrganization",
-              name: "Above The Spread",
-              url: "https://abovethespread.com",
-              logo: "https://abovethespread.com/logo.png",
-              description: jsonLdDescription,
-            }),
-          }}
+        <JsonLd
+          data={graphLd([
+            { ...PUBLISHER_LD, description: jsonLdDescription },
+            {
+              "@type": "WebSite",
+              "@id": `${SITE_URL}/#website`,
+              url: SITE_URL,
+              name: SITE_NAME,
+              inLanguage: locale,
+              publisher: { "@id": PUBLISHER_LD["@id"] },
+            },
+          ])}
         />
       </head>
       <body className={`${sora.className} ${sora.variable} font-normal`}>

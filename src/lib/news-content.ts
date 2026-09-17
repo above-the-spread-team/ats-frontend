@@ -2,7 +2,10 @@ import type {
   GeneralNewsContent,
   MatchPreviewContent,
   ExpertPerspectiveContent,
+  ExpertPick,
+  FaqItem,
   NewsSource,
+  SeoFields,
   ParsedNewsContent,
 } from "@/type/fastapi/news";
 
@@ -52,6 +55,66 @@ function coerceParagraphs(value: unknown): string[] {
   );
 }
 
+// SEO block (meta_description / key_takeaways / faq) — optional on every content type.
+function coerceSeoFields(parsed: Record<string, unknown>): SeoFields {
+  const meta =
+    typeof parsed.meta_description === "string"
+      ? parsed.meta_description.trim()
+      : "";
+
+  const takeaways = Array.isArray(parsed.key_takeaways)
+    ? parsed.key_takeaways
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0 && !isLeakedJson(item))
+    : [];
+
+  const faq: FaqItem[] = Array.isArray(parsed.faq)
+    ? parsed.faq
+        .filter(
+          (item): item is Record<string, unknown> =>
+            item != null && typeof item === "object",
+        )
+        .map((item) => ({
+          question: typeof item.question === "string" ? item.question.trim() : "",
+          answer: typeof item.answer === "string" ? item.answer.trim() : "",
+        }))
+        .filter((item) => item.question && item.answer)
+    : [];
+
+  return {
+    meta_description: meta || null,
+    key_takeaways: takeaways,
+    faq,
+  };
+}
+
+function coerceExpertPick(value: unknown): ExpertPick | null {
+  if (value == null || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  const pick = value as Record<string, unknown>;
+  const team = typeof pick.team === "string" ? pick.team.trim() : "";
+  const confidence = String(pick.confidence ?? "").toLowerCase();
+  if (!team || team.toLowerCase() === "unknown") return null;
+  if (confidence !== "high" && confidence !== "medium" && confidence !== "low") {
+    return null;
+  }
+  const clean = (list: unknown) =>
+    Array.isArray(list)
+      ? list
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0 && !isLeakedJson(item))
+      : [];
+  return {
+    team,
+    confidence,
+    reasons: clean(pick.reasons),
+    key_stats: clean(pick.key_stats),
+  };
+}
+
 function normalizeGeneralNews(
   parsed: Record<string, unknown>,
 ): GeneralNewsContent | null {
@@ -76,6 +139,7 @@ function normalizeGeneralNews(
     league: String(parsed.league ?? ""),
     date: String(parsed.date ?? ""),
     events,
+    ...coerceSeoFields(parsed),
   };
 }
 
@@ -92,6 +156,7 @@ function normalizeMatchPreview(
     paragraphs,
     betting_tips: coerceStringArray(parsed.betting_tips),
     sources: coerceSources(parsed.sources),
+    ...coerceSeoFields(parsed),
   };
 }
 
@@ -106,7 +171,9 @@ function normalizeExpertPerspective(
   return {
     type: "expert_perspective",
     paragraphs,
+    expert_pick: coerceExpertPick(parsed.expert_pick),
     sources: coerceSources(parsed.sources),
+    ...coerceSeoFields(parsed),
   };
 }
 
@@ -184,4 +251,14 @@ export function getNewsPreview(content: string, maxLength = 150): string {
   }
 
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+}
+
+/** First body paragraph (or lead headline) — the fallback source for a meta description. */
+export function getLeadText(parsed: ParsedNewsContent | null): string {
+  if (!parsed) return "";
+  if (parsed.type === "general_news") {
+    const first = parsed.events[0];
+    return first?.paragraphs?.[0] ?? first?.headline ?? "";
+  }
+  return parsed.paragraphs[0] ?? "";
 }

@@ -1,4 +1,5 @@
 import type { NotificationItem } from "@/type/fastapi/notification";
+import { gamePath } from "@/lib/game-url";
 
 /**
  * Returns a human-readable message for a notification (e.g. "Alice liked your post").
@@ -61,7 +62,7 @@ export function getNotificationLink(item: NotificationItem): string | null {
   if (!meta) return null;
   if (typeof meta.post_id === "number") return `/discuss/${meta.post_id}`;
   if (typeof meta.fixture_id === "number")
-    return `/games/detail?id=${meta.fixture_id}`;
+    return gamePath({ id: meta.fixture_id });
   if (typeof meta.group_id === "number") {
     const base = `/discuss/group-posts/${meta.group_id}`;
     if (item.notification_type === "follow_request")

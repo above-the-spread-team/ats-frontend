@@ -4,7 +4,36 @@
     "description": "Above The Spread 是您的首選足球平台，提供即時賽程、深度數據、比賽預測與球迷討論。",
     "ogTitle": "Above The Spread | 足球數據、賽程與社群",
     "ogDescription": "即時賽程、深度數據分析、比賽預測與足球討論 — 盡在一個平台。關注英超、西甲、義甲、德甲、法甲及歐洲盃賽事。",
-    "jsonLdDescription": "即時足球賽程、深度數據統計、比賽預測與球迷討論 — 涵蓋英超、西甲、意甲、德甲、法甲及歐洲盃賽事。"
+    "jsonLdDescription": "即時足球賽程、深度數據統計、比賽預測與球迷討論 — 涵蓋英超、西甲、意甲、德甲、法甲及歐洲盃賽事。",
+    "homeTitle": "足球預測、賽前分析、即時比分與數據",
+    "homeDescription": "每日足球賽前分析、專家選邊與預測、即時比分、先發陣容與數據,涵蓋英超、西甲、義甲、德甲、法甲及歐洲盃賽。",
+    "newsTitle": "足球新聞與賽前分析",
+    "newsDescription": "每日足球新聞報導與數據導向的賽前分析,含歐洲各大聯賽的預測、賠率與投注建議。",
+    "ourPicksTitle": "專家足球選邊與預測",
+    "ourPicksDescription": "專家對即將開踢賽事的觀點:看好哪一隊、信心多高,以及每個選擇背後的數據。",
+    "articlesTitle": "足球文章:新聞、賽前分析與專家選邊",
+    "articlesDescription": "Above The Spread 所有文章一次看 — 每日聯賽報導、賽前分析與專家選邊,可依聯賽與球隊篩選。",
+    "gamesTitle": "足球賽程、即時比分與賽果",
+    "gamesDescription": "依日期查看今日足球賽程與即時比分,每場比賽皆有先發陣容、數據、對戰紀錄、賠率與預測。",
+    "statsTitle": "足球聯賽積分榜、排名與數據",
+    "statsDescription": "英超、西甲、義甲、德甲、法甲及歐洲賽事的積分榜、排名、射手榜與球隊數據。",
+    "discussTitle": "足球社群與賽事討論",
+    "discussDescription": "與球迷一起討論比賽、預測、轉會與戰術,分享你的看法並為即將開踢的賽事投票。",
+    "worldCupNewsTitle": "2026 世界盃新聞與賽前分析",
+    "worldCupNewsDescription": "2026 FIFA 世界盃最新新聞、賽前分析與預測。",
+    "gameTitle": "{home} vs {away} 即時比分、先發陣容、數據與對戰紀錄 - {league}",
+    "gameTitleNoLeague": "{home} vs {away} 即時比分、先發陣容、數據與對戰紀錄",
+    "gameDescription": "{league} {home} vs {away}({date}):即時比分、先發陣容、比賽數據、對戰紀錄、賠率與預測。",
+    "teamHubTitle": "{name} 新聞、賽前分析與預測",
+    "teamHubDescription": "Above The Spread 為你整理 {name} 的最新新聞、賽前分析、專家選邊與預測。",
+    "leagueHubTitle": "{name} 新聞、賽前分析與預測",
+    "leagueHubDescription": "Above The Spread 每日 {name} 新聞報導、賽前分析、專家選邊與預測。",
+    "teamsIndexTitle": "足球球隊:依球隊瀏覽新聞與賽前分析",
+    "teamsIndexDescription": "瀏覽各足球俱樂部與國家隊,查看最新新聞、賽前分析與專家預測。",
+    "leaguesIndexTitle": "足球聯賽:依賽事瀏覽新聞與賽前分析",
+    "leaguesIndexDescription": "瀏覽各足球聯賽與盃賽,查看每日新聞報導、賽前分析與專家預測。",
+    "feedTitle": "Above The Spread — 足球新聞、賽前分析與專家選邊",
+    "feedDescription": "每日足球新聞報導、賽前分析與專家選邊。"
   },
   "nav": {
     "home": "首頁",
@@ -67,7 +96,8 @@
     "score": "分數",
     "accuracy": "準確率",
     "player": "玩家",
-    "team": "球隊"
+    "team": "球隊",
+    "breadcrumb": "導覽路徑"
   },
   "articles": {
     "title": "新聞",
@@ -141,7 +171,29 @@
       "player": "球員",
       "topic": "主題",
       "selectOne": "（選擇一項）"
-    }
+    },
+    "keyTakeaways": "重點摘要",
+    "faqHeading": "常見問題",
+    "expertPick": {
+      "heading": "{expert} 的選擇",
+      "headingGeneric": "專家選擇",
+      "confidenceLabel": "信心程度",
+      "confidence": {
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "reasons": "選擇理由",
+      "keyStats": "關鍵數據"
+    },
+    "breadcrumb": {
+      "label": "導覽路徑",
+      "home": "首頁",
+      "news": "新聞",
+      "expertPicks": "專家選邊"
+    },
+    "kickoff": "開賽時間",
+    "matchCentre": "{home} vs {away}:即時比分、先發陣容與數據"
   },
   "auth": {
     "login": "登入",
@@ -1169,5 +1221,33 @@
         "errorFallback": "發生錯誤。"
       }
     }
+  },
+  "gamesDetail": {
+    "summaryScheduled": "{league}:{home} 將於 {date} 主場迎戰 {away}。",
+    "summaryScheduledVenue": "{league}:{home} 將於 {date} 在 {venue} 主場迎戰 {away}。",
+    "summaryLive": "{home} {homeGoals}–{awayGoals} {away} — {league} 比賽進行中。",
+    "summaryFinished": "{home} {homeGoals}–{awayGoals} {away} — {league} 終場({date})。",
+    "summaryOther": "{league}:{home} vs {away}({date})— {status}。",
+    "relatedArticles": "本場比賽的賽前分析與專家選邊",
+    "readPreview": "賽前分析",
+    "readExpertPick": "專家選邊",
+    "breadcrumbGames": "比賽"
+  },
+  "hubs": {
+    "latestArticles": "最新文章",
+    "empty": "目前尚無文章,請稍後再來。",
+    "previous": "上一頁",
+    "next": "下一頁",
+    "pageOf": "第 {page} 頁,共 {total} 頁",
+    "pagination": "分頁",
+    "articleCount": "{count} 篇文章",
+    "teams": "球隊",
+    "leagues": "聯賽",
+    "allTeams": "所有球隊",
+    "allLeagues": "所有聯賽",
+    "teamIntro": "{name} 的相關新聞、賽前分析與專家選邊。",
+    "leagueIntro": "{name} 的每日報導、賽前分析與專家選邊。",
+    "teamsIntro": "選擇球隊,查看最新新聞、賽前分析與專家預測。",
+    "leaguesIntro": "選擇賽事,查看每日報導、賽前分析與專家預測。"
   }
 }

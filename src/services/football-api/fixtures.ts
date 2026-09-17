@@ -226,11 +226,48 @@ export function useFixturesNextLast(
   });
 }
 
-export function useFixture(fixtureId: number | null) {
+interface UseFixtureOptions {
+  /**
+   * Fixture already fetched on the server (match page SSR). A bare item is wrapped into
+   * the API envelope so consumers keep reading `data.response[0]`.
+   */
+  initialData?: FixturesApiResponse | FixtureResponseItem;
+  /**
+   * When the server fetched it (ms epoch). Defaults to "now", i.e. fresh for one staleTime;
+   * the status-based refetchInterval below still polls live matches either way.
+   */
+  initialDataUpdatedAt?: number;
+}
+
+function toFixturesApiResponse(
+  data: FixturesApiResponse | FixtureResponseItem,
+): FixturesApiResponse {
+  if ("response" in data) return data;
+  return {
+    get: "fixtures",
+    parameters: { id: data.fixture.id },
+    errors: [],
+    results: 1,
+    paging: { current: 1, total: 1 },
+    response: [data],
+  };
+}
+
+export function useFixture(
+  fixtureId: number | null,
+  options?: UseFixtureOptions,
+) {
   return useQuery({
     queryKey: ["fixture", fixtureId],
     queryFn: () => fetchFixture(fixtureId!),
     enabled: !!fixtureId,
+    // Only seeds an empty cache entry — a fixture already in the cache wins.
+    initialData: options?.initialData
+      ? () => toFixturesApiResponse(options.initialData!)
+      : undefined,
+    initialDataUpdatedAt: options?.initialData
+      ? options.initialDataUpdatedAt
+      : undefined,
     // Stale time: 30 seconds - matches In Play refetch interval
     // Data is considered fresh for 30 seconds, then refetchInterval handles background updates
     // For Finished/Scheduled fixtures, refetchInterval is longer but staleTime ensures

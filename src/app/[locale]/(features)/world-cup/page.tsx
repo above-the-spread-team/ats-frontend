@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { toIntlLocale } from "./lib/intl-locale";
 import { useWorldCupFixtures } from "@/services/football-api/world-cup-fixtures";
 import { getFixtureStatus } from "@/data/fixture-status";
+import { gamePath } from "@/lib/game-url";
 import type { FixtureResponseItem } from "@/type/footballapi/fixture";
 import { useUserTimezone } from "@/hooks/use-user-timezone";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -185,7 +186,11 @@ function FixtureCard({
 
   return (
     <Link
-      href={`/games/detail?id=${fixture.fixture.id}`}
+      href={gamePath({
+        id: fixture.fixture.id,
+        home: fixture.teams.home.name,
+        away: fixture.teams.away.name,
+      })}
       className={`
         group relative flex items-center gap-3 px-3 sm:px-4 lg:px-5 py-3 lg:py-4
         bg-card hover:bg-muted/40 transition-colors rounded-lg border border-border/60

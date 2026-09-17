@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useNews, resolveArticleType } from "@/services/fastapi/news";
 import type { NewsResponse } from "@/type/fastapi/news";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +10,9 @@ import HomeFailToLoad from "./home-fail-to-load";
 import { articlePath } from "@/lib/article-url";
 
 export default function HomeNews() {
-  const { data: newsData, isLoading, error } = useNews(1, 16);
+  const locale = useLocale();
+  const lang = locale === "en" ? undefined : locale;
+  const { data: newsData, isLoading, error } = useNews(1, 16, undefined, undefined, lang);
   const t = useTranslations("home");
 
   const getFirstTag = (news: NewsResponse) => {

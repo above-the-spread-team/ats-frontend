@@ -33,7 +33,8 @@ function ArticleGrid({
   articles: NewsResponse[];
   data: { total_pages: number } | undefined;
   page: number;
-  onPageChange: (p: number) => void;
+  /** Omit to render the grid only (server pages that paginate with real links) */
+  onPageChange?: (p: number) => void;
   locale?: string;
 }) {
   const t = useTranslations("articles");
@@ -136,7 +137,8 @@ function ArticleGrid({
                         <span className="flex-shrink-0">•</span>
                       </>
                     )}
-                    <span className="flex-shrink-0">
+                    {/* Relative to "now" and the viewer's timezone, so server and browser text can differ */}
+                    <span className="flex-shrink-0" suppressHydrationWarning>
                       {formatDate(article.created_at)}
                     </span>
                   </div>
@@ -165,7 +167,7 @@ function ArticleGrid({
           </Link>
         ))}
       </div>
-      {data && data.total_pages > 1 && (
+      {onPageChange && data && data.total_pages > 1 && (
         <div className="flex justify-center pt-2">
           <Pagination>
             <PaginationContent>
@@ -307,7 +309,8 @@ interface ArticleListViewProps {
   articles: NewsResponse[];
   data: { total_pages: number } | undefined;
   page: number;
-  onPageChange: (p: number) => void;
+  /** Omit to render the grid only (server pages that paginate with real links) */
+  onPageChange?: (p: number) => void;
   isLoading: boolean;
   error: unknown;
   emptyMessage: string;

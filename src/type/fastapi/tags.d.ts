@@ -20,6 +20,8 @@ export interface TagUpdate {
 
 export interface TagResponse extends TagBase {
   id: number;
+  slug?: string | null; // From the English name; null for unslugifiable names
+  translated_name?: string | null; // Only with ?lang=
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +38,18 @@ export interface TagSummary {
   id: number;
   name: string;
   type: TagType;
+  slug?: string | null; // Always from the English name, even when `name` is translated
+}
+
+// GET /api/v1/tags/hubs — league/team tags with at least one published article
+export interface TagHub {
+  id: number;
+  name: string;
+  translated_name?: string | null;
+  slug?: string | null;
+  type: TagType;
+  news_count: number;
+  last_news_at?: string | null;
 }
 
 export interface ContentTagsCreate {

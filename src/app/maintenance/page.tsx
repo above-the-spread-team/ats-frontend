@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { get } from "@vercel/edge-config";
 import { getTranslations } from "next-intl/server";
 import { getMaintenanceLocale } from "./locale";
 
@@ -14,7 +16,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// The middleware serves this page's HTML as a 503 on every URL during a window, and the
+// client router may then settle the address bar on /maintenance. Once maintenance is over,
+// a reload of that URL should land on the site instead of a stale "we're down" page.
+async function isMaintenanceOver(): Promise<boolean> {
+  try {
+    return (await get<boolean>("isInMaintenance")) === false;
+  } catch {
+    return false; // Edge Config unreachable (e.g. local dev) — just render the page
+  }
+}
+
 export default async function MaintenancePage() {
+  if (await isMaintenanceOver()) redirect("/");
+
   const locale = await getMaintenanceLocale();
   const t = await getTranslations({ locale, namespace: "maintenance" });
   return (

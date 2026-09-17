@@ -4,7 +4,36 @@
     "description": "Above The Spreadは、ライブ試合日程、詳細な統計、試合予想、ファン同士の議論を提供する総合サッカープラットフォームです。",
     "ogTitle": "Above The Spread | サッカー統計・試合日程・コミュニティ",
     "ogDescription": "プレミアリーグ、ラ・リーガ、セリエA、ブンデスリーガ、リーグ・アン、欧州カップ戦のライブ日程、詳細統計、試合予想、サッカー討論を一か所で。",
-    "jsonLdDescription": "ライブ試合日程、詳細なスタッツ、試合予想、サッカーディスカッション — プレミアリーグ、ラ・リーガ、セリエA、ブンデスリーガ、リーグ・アン、欧州カップ戦をカバー。"
+    "jsonLdDescription": "ライブ試合日程、詳細なスタッツ、試合予想、サッカーディスカッション — プレミアリーグ、ラ・リーガ、セリエA、ブンデスリーガ、リーグ・アン、欧州カップ戦をカバー。",
+    "homeTitle": "サッカー予想・試合プレビュー・ライブスコア・スタッツ",
+    "homeDescription": "プレミアリーグ、ラ・リーガ、セリエA、ブンデスリーガ、リーグ・アン、欧州カップ戦の試合プレビュー、専門家の予想、ライブスコア、スタメン、スタッツを毎日お届けします。",
+    "newsTitle": "サッカーニュースと試合プレビュー",
+    "newsDescription": "毎日のサッカーニュースと、予想・オッズ・ベッティングのヒントを含むデータに基づいた欧州主要リーグの試合プレビュー。",
+    "ourPicksTitle": "専門家のサッカー予想とピック",
+    "ourPicksDescription": "注目試合に対する専門家の見解:どちらを支持するか、自信の度合い、そしてその根拠となるデータ。",
+    "articlesTitle": "サッカー記事:ニュース・プレビュー・専門家のピック",
+    "articlesDescription": "Above The Spread の全記事 — リーグ別デイリーレポート、試合プレビュー、専門家のピックをリーグやチームで絞り込めます。",
+    "gamesTitle": "サッカー日程・ライブスコア・試合結果",
+    "gamesDescription": "日付別のサッカー日程とライブスコア。各試合のスタメン、スタッツ、対戦成績、オッズ、予想を掲載。",
+    "statsTitle": "サッカーリーグ順位表とスタッツ",
+    "statsDescription": "プレミアリーグ、ラ・リーガ、セリエA、ブンデスリーガ、リーグ・アン、欧州大会の順位表、得点ランキング、チームスタッツ。",
+    "discussTitle": "サッカーコミュニティと試合ディスカッション",
+    "discussDescription": "試合、予想、移籍、戦術についてファンと語り合い、今後の試合に投票しましょう。",
+    "worldCupNewsTitle": "ワールドカップ2026 ニュースと試合プレビュー",
+    "worldCupNewsDescription": "FIFAワールドカップ2026の最新ニュース、試合プレビュー、予想。",
+    "gameTitle": "{home} vs {away} ライブスコア・スタメン・スタッツ・対戦成績 - {league}",
+    "gameTitleNoLeague": "{home} vs {away} ライブスコア・スタメン・スタッツ・対戦成績",
+    "gameDescription": "{league} {home} vs {away}({date}):ライブスコア、スタメン、試合スタッツ、対戦成績、オッズ、予想。",
+    "teamHubTitle": "{name} ニュース・試合プレビュー・予想",
+    "teamHubDescription": "{name} の最新ニュース、試合プレビュー、専門家のピックと予想を Above The Spread がお届けします。",
+    "leagueHubTitle": "{name} ニュース・試合プレビュー・予想",
+    "leagueHubDescription": "{name} のデイリーレポート、試合プレビュー、専門家のピックと予想を Above The Spread がお届けします。",
+    "teamsIndexTitle": "サッカーチーム一覧:クラブ別ニュースと試合プレビュー",
+    "teamsIndexDescription": "クラブや代表チームごとに最新ニュース、試合プレビュー、専門家の予想をチェック。",
+    "leaguesIndexTitle": "サッカーリーグ一覧:大会別ニュースと試合プレビュー",
+    "leaguesIndexDescription": "リーグや大会ごとにデイリーレポート、試合プレビュー、専門家の予想をチェック。",
+    "feedTitle": "Above The Spread — サッカーニュース・プレビュー・専門家のピック",
+    "feedDescription": "毎日のサッカーニュース、試合プレビュー、専門家のピック。"
   },
   "nav": {
     "home": "ホーム",
@@ -67,7 +96,8 @@
     "score": "スコア",
     "accuracy": "精度",
     "player": "プレイヤー",
-    "team": "チーム"
+    "team": "チーム",
+    "breadcrumb": "パンくずリスト"
   },
   "articles": {
     "title": "ニュース",
@@ -141,7 +171,29 @@
       "player": "選手",
       "topic": "トピック",
       "selectOne": "（1つ選択）"
-    }
+    },
+    "keyTakeaways": "要点まとめ",
+    "faqHeading": "よくある質問",
+    "expertPick": {
+      "heading": "{expert} のピック",
+      "headingGeneric": "専門家のピック",
+      "confidenceLabel": "自信度",
+      "confidence": {
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "reasons": "このピックの理由",
+      "keyStats": "注目スタッツ"
+    },
+    "breadcrumb": {
+      "label": "パンくずリスト",
+      "home": "ホーム",
+      "news": "ニュース",
+      "expertPicks": "専門家のピック"
+    },
+    "kickoff": "キックオフ",
+    "matchCentre": "{home} vs {away}:ライブスコア・スタメン・スタッツ"
   },
   "auth": {
     "login": "ログイン",
@@ -1169,5 +1221,33 @@
         "errorFallback": "エラーが発生しました。"
       }
     }
+  },
+  "gamesDetail": {
+    "summaryScheduled": "{league}:{home} が {date} にホームで {away} と対戦します。",
+    "summaryScheduledVenue": "{league}:{home} が {date} に {venue} で {away} と対戦します。",
+    "summaryLive": "{home} {homeGoals}–{awayGoals} {away} — {league} 試合中。",
+    "summaryFinished": "{home} {homeGoals}–{awayGoals} {away} — {league} 試合終了({date})。",
+    "summaryOther": "{league}:{home} vs {away}({date})— {status}。",
+    "relatedArticles": "この試合のプレビューと専門家のピック",
+    "readPreview": "試合プレビュー",
+    "readExpertPick": "専門家のピック",
+    "breadcrumbGames": "試合"
+  },
+  "hubs": {
+    "latestArticles": "最新記事",
+    "empty": "まだ記事がありません。後ほどご確認ください。",
+    "previous": "前へ",
+    "next": "次へ",
+    "pageOf": "{page} / {total} ページ",
+    "pagination": "ページネーション",
+    "articleCount": "{count} 件の記事",
+    "teams": "チーム",
+    "leagues": "リーグ",
+    "allTeams": "すべてのチーム",
+    "allLeagues": "すべてのリーグ",
+    "teamIntro": "{name} に関するニュース、試合プレビュー、専門家のピック。",
+    "leagueIntro": "{name} のデイリーレポート、試合プレビュー、専門家のピック。",
+    "teamsIntro": "チームを選んで最新ニュース、試合プレビュー、専門家の予想をチェック。",
+    "leaguesIntro": "大会を選んでデイリーレポート、試合プレビュー、専門家の予想をチェック。"
   }
 }

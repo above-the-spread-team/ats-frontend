@@ -25,6 +25,7 @@ export function ScrollNews() {
   const t = useTranslations("home");
   const ta = useTranslations("articles");
   const locale = useLocale();
+  const lang = locale === "en" ? undefined : locale;
   const dateLocale =
     locale === "ja"
       ? "ja-JP"
@@ -35,7 +36,7 @@ export function ScrollNews() {
           : "en-US";
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const { data: newsData, isLoading, error } = useNews(1, 5);
+  const { data: newsData, isLoading, error } = useNews(1, 5, undefined, undefined, lang);
 
   useEffect(() => {
     if (!api || !newsData?.items?.length) {

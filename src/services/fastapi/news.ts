@@ -21,6 +21,7 @@ import type {
   CommentListResponse,
 } from "@/type/fastapi/comments";
 import { getAuthHeader } from "./token-storage";
+import { newsQueryKey } from "@/lib/news-query";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -44,7 +45,8 @@ export async function fetchNews(
   pageSize: number = 20,
   tagIds?: number[],
   articleType?: ArticleType,
-  lang?: string
+  lang?: string,
+  excludeArticleType?: ArticleType
 ): Promise<NewsListResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -55,15 +57,14 @@ export async function fetchNews(
     params.set("article_type", articleType);
   }
 
+  if (excludeArticleType) {
+    params.set("exclude_article_type", excludeArticleType);
+  }
+
   if (lang) {
     params.set("lang", lang);
   }
 
-  if (tagIds && tagIds.length > 0) {
-    tagIds.forEach((id) => params.append("tag_ids", id.toString()));
-  }
-
-  // Add tag_ids if provided
   if (tagIds && tagIds.length > 0) {
     tagIds.forEach((id) => params.append("tag_ids", id.toString()));
   }
@@ -136,11 +137,21 @@ export function useNews(
   pageSize: number = 20,
   tagIds?: number[],
   articleType?: ArticleType,
-  lang?: string
+  lang?: string,
+  excludeArticleType?: ArticleType
 ) {
   return useQuery<NewsListResponse, NewsError>({
-    queryKey: ["news", page, pageSize, tagIds, articleType, lang],
-    queryFn: () => fetchNews(page, pageSize, tagIds, articleType, lang),
+    // Key lives in lib/news-query so the server prefetch hydrates this exact entry
+    queryKey: newsQueryKey(
+      page,
+      pageSize,
+      tagIds,
+      articleType,
+      lang,
+      excludeArticleType
+    ),
+    queryFn: () =>
+      fetchNews(page, pageSize, tagIds, articleType, lang, excludeArticleType),
     staleTime: 5 * 60 * 1000,
   });
 }

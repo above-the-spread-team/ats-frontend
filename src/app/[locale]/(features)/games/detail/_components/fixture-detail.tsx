@@ -14,13 +14,20 @@ function formatGoals(value: number | null): string {
   return value.toString();
 }
 
-function formatDate(dateString: string, dateLocale: string): string {
+// timeZone is explicit so the server render (UTC until the browser zone resolves)
+// and the first client render agree — the header is now part of the SSR output.
+function formatDate(
+  dateString: string,
+  timezone: string,
+  dateLocale: string,
+): string {
   const date = new Date(dateString);
   return date.toLocaleDateString(dateLocale, {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: timezone,
   });
 }
 
@@ -84,7 +91,7 @@ export default function FixtureDetail({ fixture }: FixtureDetailProps) {
         {/* Match Date & Time */}
         <div className="text-center  space-y-1">
           <p className="text-xs md:text-sm text-gray-300">
-            {formatDate(fixture.fixture.date, dateLocale)}
+            {formatDate(fixture.fixture.date, userTimezone, dateLocale)}
           </p>
           {!hasStarted && (
             <p className="text-base md:text-lg font-semibold text-white">

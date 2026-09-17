@@ -23,6 +23,7 @@ import {
   Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { gamePath } from "@/lib/game-url";
 import {
   useMyStats,
   useMyHistory,
@@ -250,7 +251,11 @@ function HistoryRow({ item, tc }: { item: PredictionHistoryItem; tc: (key: strin
 
   return (
     <Link
-      href={`/games/detail?id=${item.fixture_id}`}
+      href={gamePath({
+        id: item.fixture_id,
+        home: item.home_team,
+        away: item.away_team,
+      })}
       className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0 -mx-1 px-1 rounded-md transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
       aria-label={`View match: ${item.home_team} vs ${item.away_team}, pick ${voteChoiceLabel(item.vote_choice, tc)}`}
     >

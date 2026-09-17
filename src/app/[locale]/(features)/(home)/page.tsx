@@ -1,3 +1,8 @@
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { HydrationBoundary } from "@tanstack/react-query";
+import { buildPageMetadata } from "@/lib/seo";
+import { prefetchNewsLists } from "@/lib/prefetch-news";
 import Fixtures from "./components/home-fixtures";
 import FullPage from "@/components/common/full-page";
 import { ScrollNews } from "./components/scroll-news";
@@ -9,40 +14,74 @@ import VoteResult from "./components/vote-result";
 import Leaderboard from "./components/leaderboard";
 import HomeExpert from "./components/home-expert";
 
-export default function Home() {
+interface PageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+
+  return buildPageMetadata({
+    locale,
+    path: "/",
+    title: t("homeTitle"),
+    description: t("homeDescription"),
+  });
+}
+
+export default async function Home({ params }: PageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "metadata" });
+
+  // Same arguments as ScrollNews, HomeExpert and HomeNews, so their article links are
+  // server-rendered instead of appearing only after the client fetch.
+  const lang = locale === "en" ? undefined : locale;
+  const dehydratedState = await prefetchNewsLists([
+    { pageSize: 5, lang },
+    { pageSize: 4, lang, articleType: "expert_perspective" },
+    { pageSize: 16, lang },
+  ]);
+
   return (
-    <FullPage minusHeight={40} className="space-y-4 md:space-y-8 pb-10">
-      <Fixtures />
-      <div className="container mx-auto px-4   max-w-6xl space-y-6 lg:space-y-10">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
-          <div className="lg:col-span-3  -mx-[16px] md:mx-0 flex items-center justify-center">
-            <ScrollNews />
+    <HydrationBoundary state={dehydratedState}>
+      <FullPage minusHeight={40} className="space-y-4 md:space-y-8 pb-10">
+        <h1 className="sr-only">{t("homeTitle")}</h1>
+        <Fixtures />
+        <div className="container mx-auto px-4   max-w-6xl space-y-6 lg:space-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
+            <div className="lg:col-span-3  -mx-[16px] md:mx-0 flex items-center justify-center">
+              <ScrollNews />
+            </div>
+            <div className="lg:col-span-2 ">
+              <HomeRanking />
+            </div>
           </div>
-          <div className="lg:col-span-2 ">
-            <HomeRanking />
-          </div>
-        </div>
-        {/* <div className="max-w-4xl mx-auto">
+          {/* <div className="max-w-4xl mx-auto">
           <Promotion />
         </div> */}
-        <div className="max-w-4xl mx-auto">
-          <Leaderboard />
-        </div>
-        <div className="max-w-4xl mx-auto">
-          <VoteResult />
-        </div>
-        <div className="max-w-4xl mx-auto">
-          <HomeExpert />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
-          <div className="md:col-span-2">
-            <HomeNews />
+          <div className="max-w-4xl mx-auto">
+            <Leaderboard />
           </div>
-          <div className="md:col-span-2">
-            <HomeDiscuss />
+          <div className="max-w-4xl mx-auto">
+            <VoteResult />
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <HomeExpert />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
+            <div className="md:col-span-2">
+              <HomeNews />
+            </div>
+            <div className="md:col-span-2">
+              <HomeDiscuss />
+            </div>
           </div>
         </div>
-      </div>
-    </FullPage>
+      </FullPage>
+    </HydrationBoundary>
   );
 }

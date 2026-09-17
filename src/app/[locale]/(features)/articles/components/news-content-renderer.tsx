@@ -5,8 +5,12 @@ import type {
   MatchPreviewContent,
   ExpertPerspectiveContent,
   NewsSource,
+  ParsedNewsContent,
 } from "@/type/fastapi/news";
 import { parseNewsContent } from "@/lib/news-content";
+import KeyTakeaways from "./key-takeaways";
+import ArticleFaq from "./article-faq";
+import ExpertPickCard from "./expert-pick-card";
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
@@ -43,10 +47,10 @@ function GeneralNewsRenderer({ content }: { content: GeneralNewsContent }) {
   return (
     <div className="space-y-8">
       {content.events.map((event, i) => (
-        <div key={i} className="space-y-3">
-          <h3 className="text-lg md:text-xl font-bold text-foreground border-l-4 border-primary pl-3">
+        <section key={i} className="space-y-3">
+          <h2 className="text-lg md:text-xl font-bold text-foreground border-l-4 border-primary pl-3">
             {event.headline}
-          </h3>
+          </h2>
           <div className="space-y-3">
             {event.paragraphs.map((para, j) => (
               <p key={j} className="leading-7 text-base text-foreground">
@@ -55,7 +59,7 @@ function GeneralNewsRenderer({ content }: { content: GeneralNewsContent }) {
             ))}
           </div>
           <SourcesList sources={event.sources} />
-        </div>
+        </section>
       ))}
     </div>
   );
@@ -78,10 +82,16 @@ function MatchPreviewRenderer({ content }: { content: MatchPreviewContent }) {
 
       {/* Betting Tips */}
       {content.betting_tips && content.betting_tips.length > 0 && (
-        <div className="bg-muted/40 rounded-xl border border-border p-4 space-y-2">
-          <p className="text-sm font-semibold text-primary-font uppercase tracking-wide">
+        <section
+          aria-labelledby="betting-tips-heading"
+          className="bg-muted/40 rounded-xl border border-border p-4 space-y-2"
+        >
+          <h2
+            id="betting-tips-heading"
+            className="text-sm font-semibold text-primary-font uppercase tracking-wide"
+          >
             {t("bettingTips")}
-          </p>
+          </h2>
           <ul className="space-y-1.5">
             {content.betting_tips.map((tip, i) => (
               <li
@@ -93,7 +103,7 @@ function MatchPreviewRenderer({ content }: { content: MatchPreviewContent }) {
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
 
       <SourcesList sources={content.sources} />
@@ -103,7 +113,13 @@ function MatchPreviewRenderer({ content }: { content: MatchPreviewContent }) {
 
 // ── Expert Perspective renderer ───────────────────────────────────────────────
 
-function ExpertPerspectiveRenderer({ content }: { content: ExpertPerspectiveContent }) {
+function ExpertPerspectiveRenderer({
+  content,
+  expertName,
+}: {
+  content: ExpertPerspectiveContent;
+  expertName?: string | null;
+}) {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
@@ -114,6 +130,8 @@ function ExpertPerspectiveRenderer({ content }: { content: ExpertPerspectiveCont
         ))}
       </div>
 
+      <ExpertPickCard pick={content.expert_pick} expertName={expertName} />
+
       <SourcesList sources={content.sources} />
     </div>
   );
@@ -123,13 +141,18 @@ function ExpertPerspectiveRenderer({ content }: { content: ExpertPerspectiveCont
 
 interface NewsContentRendererProps {
   content: string;
+  /** Already-parsed content, when the page parsed it for metadata / structured data */
+  parsed?: ParsedNewsContent | null;
+  expertName?: string | null;
 }
 
 export default function NewsContentRenderer({
   content,
+  parsed: preParsed,
+  expertName,
 }: NewsContentRendererProps) {
   const t = useTranslations("articles");
-  const parsed = parseNewsContent(content);
+  const parsed = preParsed === undefined ? parseNewsContent(content) : preParsed;
 
   if (!parsed) {
     // Legacy plain-text content — render as paragraphs (not raw JSON)
@@ -152,13 +175,17 @@ export default function NewsContentRenderer({
     );
   }
 
-  if (parsed.type === "general_news") {
-    return <GeneralNewsRenderer content={parsed} />;
-  }
-
-  if (parsed.type === "expert_perspective") {
-    return <ExpertPerspectiveRenderer content={parsed} />;
-  }
-
-  return <MatchPreviewRenderer content={parsed} />;
+  return (
+    <div className="space-y-6">
+      <KeyTakeaways items={parsed.key_takeaways} />
+      {parsed.type === "general_news" ? (
+        <GeneralNewsRenderer content={parsed} />
+      ) : parsed.type === "expert_perspective" ? (
+        <ExpertPerspectiveRenderer content={parsed} expertName={expertName} />
+      ) : (
+        <MatchPreviewRenderer content={parsed} />
+      )}
+      <ArticleFaq items={parsed.faq} />
+    </div>
+  );
 }

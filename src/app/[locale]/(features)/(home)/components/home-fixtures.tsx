@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getFixtureStatus } from "@/data/fixture-status";
+import { gamePath } from "@/lib/game-url";
 import { LEAGUE_IDS } from "@/data/league-ids";
 import {
   useFixturesLive,
@@ -210,7 +211,11 @@ export default function Fixtures() {
           const isInPlay = statusInfo.type === "In Play";
           const hasStarted = isInPlay || statusInfo.type === "Finished";
           const currentDateStr = formatDate(fixture.fixture.date);
-          const detailUrl = `/games/detail?id=${fixture.fixture.id}&date=${currentDateStr}`;
+          const detailUrl = `${gamePath({
+            id: fixture.fixture.id,
+            home: fixture.teams.home.name,
+            away: fixture.teams.away.name,
+          })}?date=${currentDateStr}`;
 
           return (
             <CarouselItem

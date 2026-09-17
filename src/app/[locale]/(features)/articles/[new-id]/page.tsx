@@ -8,8 +8,29 @@ import FullPage from "@/components/common/full-page";
 import NewsContentRenderer from "../components/news-content-renderer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, User, ExternalLink } from "lucide-react";
-import { getOptimizedNewsImage } from "@/lib/cloudinary";
+import { getOgNewsImage, getOptimizedNewsImage } from "@/lib/cloudinary";
 import { serverFetchNewsById } from "@/lib/server-news";
+import { getLeadText, parseNewsContent } from "@/lib/news-content";
+import { gamePath } from "@/lib/game-url";
+import { hubPath } from "@/lib/hub-url";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_NAME,
+  SITE_URL,
+  clampDescription,
+  feedUrl,
+  languageAlternates,
+  localizedUrl,
+  ogLocale,
+} from "@/lib/seo";
+import {
+  JsonLd,
+  breadcrumbLd,
+  faqLd,
+  graphLd,
+  newsArticleLd,
+  sportsEventLd,
+} from "@/lib/json-ld";
 import PreviewImage from "../components/preview-image";
 import ExpertPerspectiveImage from "../components/expert-perspective-image";
 import { Tag } from "@/components/common/tag";
@@ -17,7 +38,7 @@ import NewsBackButton from "./_components/news-back-button";
 import NewsCommentsLink from "./_components/news-comments-link";
 import NewsReactions from "./_components/news-reactions";
 import NewsCommentsSection from "./_components/news-comments-section";
-import type { NewsResponse } from "@/type/fastapi/news";
+import type { NewsResponse, ParsedNewsContent } from "@/type/fastapi/news";
 
 function resolveArticleType(news: NewsResponse): string {
   if (news.article_type) return news.article_type;
@@ -37,7 +58,7 @@ function isExpertPerspective(news: NewsResponse): boolean {
 function formatDate(dateString: string, locale: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString(
-    locale === "ja" ? "ja-JP" : locale === "zh-TW" ? "zh-TW" : locale === "zh-CN" ? "zh-CN" : "en-US",
+    LOCALE_TAGS[locale] ?? "en-US",
     {
       year: "numeric",
       month: "long",
@@ -68,22 +89,51 @@ function formatRelativeDate(
   if (diffInHours < 24) return t("time.hoursAgo", { hours: diffInHours });
   if (diffInHours < 48) return t("time.yesterday");
   return date.toLocaleDateString(
-    locale === "ja" ? "ja-JP" : locale === "zh-TW" ? "zh-TW" : locale === "zh-CN" ? "zh-CN" : "en-US",
+    LOCALE_TAGS[locale] ?? "en-US",
     { month: "short", day: "numeric", year: "numeric" },
   );
 }
 
-function getFirstParagraph(news: NewsResponse): string {
-  try {
-    const content = news.content ? JSON.parse(news.content) : null;
-    if (!content) return "";
-    if (content.paragraphs?.[0]) return content.paragraphs[0];
-    if (content.events?.[0]?.paragraphs?.[0]) return content.events[0].paragraphs[0];
-    if (content.events?.[0]?.headline) return content.events[0].headline;
-    return "";
-  } catch {
-    return "";
+const LOCALE_TAGS: Record<string, string> = {
+  ja: "ja-JP",
+  "zh-TW": "zh-TW",
+  "zh-CN": "zh-CN",
+};
+
+function articleLanguages(news: NewsResponse): string[] {
+  return news.available_languages?.length
+    ? news.available_languages
+    : [news.language ?? "en"];
+}
+
+/** LLM-written meta description when the article has one, else the clamped lead paragraph. */
+function articleDescription(
+  parsed: ParsedNewsContent | null,
+  locale: string,
+): string {
+  return clampDescription(parsed?.meta_description || getLeadText(parsed), locale);
+}
+
+/**
+ * Social image, always a true 1200×630: the cover crop for general news, a generated
+ * team-logo card for match previews / expert perspectives (which have no cover image).
+ */
+function articleOgImage(news: NewsResponse) {
+  const type = resolveArticleType(news);
+  if (type !== "general" && news.home_team_name && news.away_team_name) {
+    // updated_at busts social-platform caches when the article is regenerated
+    const version = encodeURIComponent(news.updated_at);
+    return {
+      url: `${SITE_URL}/og/article/${news.id}?v=${version}`,
+      width: 1200,
+      height: 630,
+      alt: `${news.home_team_name} vs ${news.away_team_name}`,
+    };
   }
+  const cover = type === "general" ? getOgNewsImage(news.image_url) : null;
+  return cover
+    ? { url: cover, width: 1200, height: 630, alt: news.title }
+    : DEFAULT_OG_IMAGE;
 }
 
 interface PageProps {
@@ -100,21 +150,14 @@ export async function generateMetadata({
   const { data } = await serverFetchNewsById(newsId, locale === "en" ? undefined : locale);
   const news = data as NewsResponse | null;
 
-  if (!news) return { title: "Article Not Found" };
+  if (!news || !news.is_published) return { title: "Article Not Found" };
 
-  const description = getFirstParagraph(news).substring(0, 160);
-  const availableLanguages = news.available_languages || (news.language ? [news.language] : ["en"]);
-
-  const canonicalSegment = articleUrlSegment(news);
-  const alternates: Record<string, string> = {};
-  for (const lang of availableLanguages) {
-    if (lang === "en") {
-      alternates["en"] = `https://www.abovethespread.com/articles/${canonicalSegment}`;
-      alternates["x-default"] = `https://www.abovethespread.com/articles/${canonicalSegment}`;
-    } else {
-      alternates[lang] = `https://www.abovethespread.com/${lang}/articles/${canonicalSegment}`;
-    }
-  }
+  const parsed = news.content ? parseNewsContent(news.content) : null;
+  const description = articleDescription(parsed, locale);
+  const path = `/articles/${articleUrlSegment(news)}`;
+  const canonical = localizedUrl(locale, path);
+  const image = articleOgImage(news);
+  const tagNames = news.tags?.map((tag) => tag.name) ?? [];
 
   return {
     title: news.title,
@@ -123,19 +166,26 @@ export async function generateMetadata({
       title: news.title,
       description,
       type: "article",
+      url: canonical,
+      siteName: SITE_NAME,
       publishedTime: news.created_at,
       modifiedTime: news.updated_at,
-      locale:
-        locale === "ja" ? "ja_JP" : locale === "zh-TW" ? "zh_TW" : locale === "zh-CN" ? "zh_CN" : "en_US",
-      images: news.image_url
-        ? [{ url: getOptimizedNewsImage(news.image_url, 1200), width: 1200, height: 630 }]
-        : [],
+      section: tagNames[0],
+      tags: tagNames,
+      locale: ogLocale(locale),
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: news.title,
+      description,
+      images: [image.url],
+      creator: "@abovethespread",
     },
     alternates: {
-      canonical: locale === "en"
-        ? `https://www.abovethespread.com/articles/${canonicalSegment}`
-        : `https://www.abovethespread.com/${locale}/articles/${canonicalSegment}`,
-      languages: alternates,
+      canonical,
+      languages: languageAlternates(path, articleLanguages(news)),
+      types: { "application/rss+xml": feedUrl(locale) },
     },
   };
 }
@@ -150,30 +200,16 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
   const t = await getTranslations({ locale, namespace: "articles" });
 
-  const { data, error } = await serverFetchNewsById(
+  const { data, status } = await serverFetchNewsById(
     newsId,
     locale === "en" ? undefined : locale,
   );
   const news = data as NewsResponse | null;
 
-  if (error || !news) {
-    return (
-      <FullPage center>
-        <div className="container mx-auto max-w-4xl px-4 text-center">
-          <p className="text-destructive mb-2">{t("notFound")}</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t("notFoundHelp")}
-          </p>
-          <Link
-            href="/articles"
-            className="text-primary-font font-semibold hover:underline"
-          >
-            {t("backToNews")}
-          </Link>
-        </div>
-      </FullPage>
-    );
-  }
+  // A real 404 for missing / unpublished articles; a backend outage must surface as a 5xx
+  // (error boundary), never as a "not found" page that would get the URL de-indexed.
+  if (status === 404 || (news && !news.is_published)) notFound();
+  if (!news) throw new Error(`Failed to load article ${newsId} (status ${status})`);
 
   // Bare-id and stale-slug URLs permanently redirect to the canonical slug URL
   const canonicalSegment = articleUrlSegment(news);
@@ -181,10 +217,98 @@ export default async function NewsDetailPage({ params }: PageProps) {
     permanentRedirect({ href: `/articles/${canonicalSegment}`, locale });
   }
 
+  const parsed = news.content ? parseNewsContent(news.content) : null;
+  const articleType = resolveArticleType(news);
+  const pageUrl = localizedUrl(locale, `/articles/${canonicalSegment}`);
+  const hasMatch = Boolean(news.home_team_name && news.away_team_name);
+  const matchPath =
+    articleType !== "general" && news.fixture_id
+      ? gamePath({
+          id: news.fixture_id,
+          home: news.home_team_name,
+          away: news.away_team_name,
+        })
+      : null;
+  const leagueTag = news.tags?.find((tag) => tag.type === "league");
+  const leaguePath = leagueTag ? hubPath(leagueTag) : undefined;
+  const section =
+    articleType === "expert_perspective"
+      ? { name: t("breadcrumb.expertPicks"), path: "/our-picks" }
+      : { name: t("breadcrumb.news"), path: "/news" };
+  // Same locale-independent @id as the match page's SportsEvent, so both describe one entity
+  const eventId =
+    hasMatch && news.match_date && matchPath
+      ? `${SITE_URL}${matchPath}#event`
+      : undefined;
+
+  const structuredData = graphLd([
+    newsArticleLd({
+      url: pageUrl,
+      headline: news.title,
+      description: articleDescription(parsed, locale),
+      image: articleOgImage(news).url,
+      datePublished: news.created_at,
+      dateModified: news.updated_at,
+      locale,
+      section: leagueTag?.name,
+      keywords: news.tags?.map((tag) => tag.name),
+      aboutEventId: eventId,
+    }),
+    breadcrumbLd([
+      { name: t("breadcrumb.home"), url: localizedUrl(locale, "/") },
+      { name: section.name, url: localizedUrl(locale, section.path) },
+      ...(leagueTag && leaguePath
+        ? [{ name: leagueTag.name, url: localizedUrl(locale, leaguePath) }]
+        : []),
+      { name: news.title, url: pageUrl },
+    ]),
+    eventId && matchPath
+      ? sportsEventLd({
+          id: eventId,
+          url: localizedUrl(locale, matchPath),
+          home: { name: news.home_team_name!, logo: news.home_team_logo },
+          away: { name: news.away_team_name!, logo: news.away_team_logo },
+          startDate: news.match_date!,
+          competition: leagueTag?.name,
+        })
+      : null,
+    parsed?.faq?.length ? faqLd(pageUrl, parsed.faq) : null,
+  ]);
+
   return (
     <FullPage>
-      <div className="container mx-auto max-w-4xl px-2 mb-8">
-        <NewsBackButton fallbackHref="/articles" />
+      <JsonLd data={structuredData} />
+      <article className="container mx-auto max-w-4xl px-2 mb-8">
+        <NewsBackButton fallbackHref={section.path} />
+
+        <nav
+          aria-label={t("breadcrumb.label")}
+          className="mb-3 px-1 text-xs text-muted-foreground"
+        >
+          <ol className="flex flex-wrap items-center gap-1.5">
+            <li>
+              <Link href="/" className="hover:underline">
+                {t("breadcrumb.home")}
+              </Link>
+            </li>
+            <li aria-hidden>›</li>
+            <li>
+              <Link href={section.path} className="hover:underline">
+                {section.name}
+              </Link>
+            </li>
+            {leagueTag && leaguePath && (
+              <>
+                <li aria-hidden>›</li>
+                <li>
+                  <Link href={leaguePath} className="hover:underline">
+                    {leagueTag.name}
+                  </Link>
+                </li>
+              </>
+            )}
+          </ol>
+        </nav>
 
         <Card className="overflow-hidden">
           {isMatchPreview(news) ? (
@@ -268,7 +392,9 @@ export default async function NewsDetailPage({ params }: PageProps) {
                   )}
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <span>{formatDate(news.created_at, locale)}</span>
+                    <time dateTime={news.created_at}>
+                      {formatDate(news.created_at, locale)}
+                    </time>
                   </div>
                 </div>
 
@@ -282,9 +408,9 @@ export default async function NewsDetailPage({ params }: PageProps) {
                     initialUserReaction={news.user_reaction}
                   />
 
-                  {isMatchPreview(news) && news.fixture_id && (
+                  {matchPath && (
                     <Link
-                      href={`/games/detail?id=${news.fixture_id}`}
+                      href={matchPath}
                       className="flex items-center gap-2 text-primary-font hover:underline ml-auto"
                     >
                       <ExternalLink className="h-4 w-4" />
@@ -301,14 +427,20 @@ export default async function NewsDetailPage({ params }: PageProps) {
                       key={tag.id}
                       name={tag.name}
                       variant="medium"
-                      href={`/discuss?tag=${tag.id}`}
+                      href={hubPath(tag)}
                     />
                   ))}
                 </div>
               )}
             </div>
 
-            {news.content && <NewsContentRenderer content={news.content} />}
+            {news.content && (
+              <NewsContentRenderer
+                content={news.content}
+                parsed={parsed}
+                expertName={news.expert_name}
+              />
+            )}
 
             <div className="mt-6 pt-4 border-t flex items-center justify-between">
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -327,7 +459,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
                 )}
               </div>
               <Link
-                href="/articles"
+                href={section.path}
                 className="inline-flex items-center gap-2 text-primary-font rounded-full border border-input px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -340,7 +472,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
         </Card>
 
         <NewsCommentsSection newsId={newsId} />
-      </div>
+      </article>
     </FullPage>
   );
 }

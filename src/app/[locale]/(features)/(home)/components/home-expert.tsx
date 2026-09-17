@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { UserRound } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/common/tag";
@@ -48,11 +48,13 @@ function ExpertAvatar({
 }
 
 export default function HomeExpert() {
+  const locale = useLocale();
+  const lang = locale === "en" ? undefined : locale;
   const {
     data: expertData,
     isLoading,
     error,
-  } = useNews(1, 4, undefined, "expert_perspective");
+  } = useNews(1, 4, undefined, "expert_perspective", lang);
   const t = useTranslations("home");
   const at = useTranslations("articles");
 

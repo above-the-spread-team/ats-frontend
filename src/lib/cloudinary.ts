@@ -191,3 +191,21 @@ export function getOptimizedNewsImage(
   // If not a Cloudinary URL (shouldn't happen for general news, but handle gracefully)
   return imageUrl;
 }
+
+/**
+ * Open Graph variant of a news cover: a real 1200×630 crop (getOptimizedNewsImage uses
+ * c_fit, which keeps the source aspect ratio). Returns null for non-Cloudinary URLs so the
+ * caller can fall back to a generated image instead of declaring a size it can't guarantee.
+ */
+export function getOgNewsImage(
+  imageUrl: string | null | undefined
+): string | null {
+  if (!imageUrl) return null;
+  const marker = "/image/upload/";
+  const uploadIndex = imageUrl.indexOf(marker);
+  if (!imageUrl.includes("cloudinary.com") || uploadIndex === -1) return null;
+
+  const baseUrl = imageUrl.substring(0, uploadIndex + marker.length);
+  const afterUpload = imageUrl.substring(uploadIndex + marker.length);
+  return `${baseUrl}c_fill,g_auto,w_1200,h_630,f_jpg,q_auto/${afterUpload}`;
+}

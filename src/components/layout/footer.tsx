@@ -11,6 +11,7 @@ export default function Footer() {
   const t = useTranslations("footer");
   const nt = useTranslations();
   const ht = useTranslations("header");
+  const hubsT = useTranslations("hubs");
 
   return (
     <footer className="bg-primary-active text-white  hidden md:block">
@@ -63,10 +64,19 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-4 text-xs text-white/60 text-center md:text-left">
+        <div className="flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-white/60 text-center md:flex-row md:items-center md:justify-between md:text-left">
           <p>
             {t("copyright", { year: new Date().getFullYear() })}
           </p>
+          {/* Crawl path to the hub index pages from every page */}
+          <div className="flex items-center justify-center gap-4">
+            <Link href="/teams" className="transition hover:text-white">
+              {hubsT("teams")}
+            </Link>
+            <Link href="/leagues" className="transition hover:text-white">
+              {hubsT("leagues")}
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
